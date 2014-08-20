@@ -27,7 +27,7 @@
 #define xgrid 100.0
 #define ygrid 100.0
 #define tinit 0.0
-#define tfinal 10.0
+#define tfinal 10 
 #define dt 0.01
 
 
@@ -348,7 +348,7 @@ public:
         rho=density;
         av_vel=0;
         visc=vis;
-        nmonomer = 10; //10; //hard coded number of monomers per filament
+        nmonomer = 2; //10; //hard coded number of monomers per filament
         npolymer=1; //int(ceil(density*fov[0]*fov[1]) / nmonomer);
         ld=len;//rng_n(len,1.0);
         link_ld = link_len;
@@ -961,12 +961,12 @@ public:
     {
         for (int i=0; i<n_motors.size(); i++) {
             double stretch=dis_points(n_motors[i].get_heads()[0],n_motors[i].get_heads()[1],n_motors[i].get_heads()[2],n_motors[i].get_heads()[3])-mld;
-            if (stretch>3*0.25) {
+         /*   if (stretch>3*0.25) {
                 continue;
             }
             else{
-            fout<<n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_heads()[2]-n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[3]-n_motors[i].get_heads()[1]<<"\n";
-            }
+         */   fout<<n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_heads()[2]-n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[3]-n_motors[i].get_heads()[1]<<"\n";
+           //}
         } 
     }
     
@@ -1011,7 +1011,7 @@ int main(int argc, char* argv[])
     double m_koff=1.0; 
     double viscosity=0.5;
    
-    double link_length = motor_length; 
+    double link_length = motor_length/10; 
     double link_stiffness = motor_stiffness/100;
     if (argc>1) {
         mainpath=argv[1];
@@ -1059,6 +1059,10 @@ int main(int argc, char* argv[])
     int monomer_index;
     std::vector<double> motor_coords;
     // loop through each actin polymer
+    std::cout << "\nactin length : "<<actin_length<< "\n";
+    std::cout << "\nmotor length : "<<motor_length<< "\n";
+    std::cout << "\nlink length : "<<link_length<< "\n";
+
     for (int i = 0; i < mono_map_ptr->size(); i++){
 //        std::cout<<"i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
         for (int j = 0; j < mono_map_ptr->at(i).size(); j++){
@@ -1073,7 +1077,8 @@ int main(int argc, char* argv[])
         }
     }
     double t=tinit;
-	std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
+	int print_dt = 1;
+    std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     while (t<tfinal) {
         //print time count
 		if (count%1000==0) {
@@ -1089,10 +1094,11 @@ int main(int argc, char* argv[])
         
         
         //print to file
-		if (count%10==0) {
-			sprintf (afile, "afile%d.txt", count/10);
-			sprintf (mfile, "mfile%d.txt", count/10);
-            sprintf (tfile, "tfile%d.txt", count/10);
+		
+		if (count%print_dt==0) {
+			sprintf (afile, "afile%d.txt", count/print_dt);
+			sprintf (mfile, "mfile%d.txt", count/print_dt);
+            sprintf (tfile, "tfile%d.txt", count/print_dt);
 			std::ofstream file_a, file_m, file_t;
 			file_a.open(afile);
 			file_m.open(mfile);

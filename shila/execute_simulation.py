@@ -4,8 +4,8 @@ import subprocess
 for i in range(1,2,1):
     for j in range(1,2,1):
         npolymer = 1.
-        nmonomer = 10.
-        nmotor = 1.
+        nmonomer = 2.
+        nmotor = 0 
         dx = 30.
         dy = 30.
         Mainpath = './'
