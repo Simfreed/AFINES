@@ -4,10 +4,10 @@ import subprocess
 for i in range(1,2,1):
     for j in range(1,2,1):
         npolymer = 1.
-        nmonomer = 2.
+        nmonomer = 10.
         nmotor = 0 
-        dx = 30.
-        dy = 30.
+        dx = 50.
+        dy = 50.
         Mainpath = './'
         Output_Filename = "output"+str(i)+str(j)+".txt"
         Actin_length=3.

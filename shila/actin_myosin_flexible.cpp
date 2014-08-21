@@ -22,12 +22,12 @@
 #define pi 3.14159265358979323
 
 
-#define xrange 30.0
-#define yrange 30.0
+#define xrange 50.0
+#define yrange 50.0
 #define xgrid 100.0
 #define ygrid 100.0
 #define tinit 0.0
-#define tfinal 10 
+#define tfinal 10.0
 #define dt 0.01
 
 
@@ -348,7 +348,7 @@ public:
         rho=density;
         av_vel=0;
         visc=vis;
-        nmonomer = 2; //10; //hard coded number of monomers per filament
+        nmonomer = 10; //hard coded number of monomers per filament
         npolymer=1; //int(ceil(density*fov[0]*fov[1]) / nmonomer);
         ld=len;//rng_n(len,1.0);
         link_ld = link_len;
@@ -390,11 +390,12 @@ public:
                 if ( xcm > (0.5*(view*fovx - ld)) || xcm < (-0.5*(view*fovx - ld)) 
                         || ycm > (0.5*(view*fovy - ld)) || ycm < (-0.5*(view*fovy - ld)) )
                 {
-                    std::cout<<"\nMonomer outside field of view; stopped building polymer "<<i<<"\n";
+                    std::cout<<"\n"<<j+1<<"th monomer of "<<i<<"th polymer outside field of view; stopped building polymer\n";
                     break;
                 }else{
                     
                     // Load the link map: {monomer index} --> {link_xcm, link_ycm, link_angle} 
+                    link_map_value.clear();
                     link_map_value.push_back(lx);
                     link_map_value.push_back(ly);
                     link_map_value.push_back(ltheta);
@@ -590,10 +591,15 @@ public:
         aindex[0]=aindex0;//   actin index for head in state[0]
         aindex[1]=aindex1;// actin index for head in state[1]
         actin_network=network;
-		pos_actin[0]=0;
-        pos_a_end[0]=0;
+		pos_actin[0]=0; // I don't think this variable get's ACCESSED anywhere 
+        pos_a_end[0]=0; //distance from pointy end -- by default 0
         pos_a_end[1]=0;
-		pos_actin[1]=0;
+        if (state0)
+            pos_a_end[0] = dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[2],actin_network->get_ends(aindex[0])[3]);
+		if (state1)
+            pos_a_end[1] = dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[2],actin_network->get_ends(aindex[1])[3]);
+
+        pos_actin[1]=0;
 		fov[0]=fovx;
 		fov[1]=fovy;
         
@@ -828,8 +834,9 @@ private:
     
     inline void move_end_detach(int hd, double speed, double pos)
     {
-        if (pos>=actin_network->get_alength(aindex[hd])) {
+        if (pos>=actin_network->get_alength(aindex[hd])) { //not sure why only "greater than or equal"
             if (event(kend,dt)==1) {
+                //std::cout<<"\nThe new myosin position of head "<<hd<<" is OFF the actin filament AND detaching";
                 state[hd]=0;
                 aindex[hd]=-1;
                 pos_actin[hd]=0;
@@ -838,6 +845,7 @@ private:
                 hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
             }
             else {
+                //std::cout<<"\nThe new myosin position of head "<<hd<<" is OFF the actin filament BUT not detaching";
                 hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
                 hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
                 mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
@@ -845,6 +853,7 @@ private:
             }
         }
         else {
+            //std::cout<<"\nThe new myosin position of head "<<hd<<" is "<<pos<<" away from the pointy end of the actin filament "; //still on the actin filament";
             pos_a_end[hd]=pos;
             hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
             hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
@@ -1066,11 +1075,11 @@ int main(int argc, char* argv[])
     for (int i = 0; i < mono_map_ptr->size(); i++){
 //        std::cout<<"i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
         for (int j = 0; j < mono_map_ptr->at(i).size(); j++){
-            
 //            for(std::vector<int>::iterator it=mono_map_ptr->at(i).begin(); it<mono_map_ptr->at(i).end() - 1; it++)
             monomer_index = mono_map_ptr->at(i).at(j);
             motor_coords = link_map_ptr->at(monomer_index);
-
+//            std::cout<<"\nAdding a link to the "<<i<<"th polymer at the "<<monomer_index<<"th monomer\n";            
+//            std::cout<<"motor_coords[0] : "<<motor_coords[0]<<";motor_coords[1] : "<<motor_coords[1]<<";motor_coords[2] : "<<motor_coords[2]<<"\n";
             myosins.add_motor( motor( motor_coords[0], motor_coords[1], motor_coords[2], 
                        link_length, &net, 1, 1, monomer_index, monomer_index+1, xrange, yrange, 0, link_stiffness,
                        0, 0, 0, actin_length, viscosity) );
@@ -1079,20 +1088,17 @@ int main(int argc, char* argv[])
     double t=tinit;
 	int print_dt = 1;
     std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
-    while (t<tfinal) {
+    while (t<=tfinal) {
         //print time count
 		if (count%1000==0) {
 			std::cout<<"\nTime counts: "<<count;
 		}
+        
+        
         //update network
         
         net.update();
-        //myosins.reshape();
         net.quad_update();
-        myosins.motor_walk();
-        //
-        
-        
         //print to file
 		
 		if (count%print_dt==0) {
@@ -1113,6 +1119,9 @@ int main(int argc, char* argv[])
 			
 		}
         
+        //myosins.reshape();
+        myosins.motor_walk();
+        //
         t+=dt;
 		count++;
     }
