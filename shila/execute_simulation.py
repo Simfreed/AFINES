@@ -1,16 +1,17 @@
 import os
 import subprocess
+import sys
 
 for i in range(1,2,1):
     for j in range(1,2,1):
-        npolymer = 1.
+        npolymer = 500 
         nmonomer = 10.
-        nmotor = 0 
+        nmotor = 1 
         dx = 50.
         dy = 50.
         Mainpath = './'
         Output_Filename = "output"+str(i)+str(j)+".txt"
-        Actin_length=3.
+        Actin_length=1
         Actin_density=npolymer * nmonomer/(dx*dy)
         Motor_length=0.5
         Motor_density=nmotor /(dx*dy)#i*0.1
@@ -39,7 +40,8 @@ for i in range(1,2,1):
                                                                    Actin_final,\
                                                                    Myosin_final,\
                                                                    Viscosity))
-        main_dr = "amf_{0}_{1}".format(round(Actin_density,3), round(Motor_density,3))
+        main_dr = raw_input('Enter a directory name for this simulation:\n')
+#        main_dr = "amf_{0}_{1}".format(round(Actin_density,3), round(Motor_density,3))
         png_dr = main_dr + os.sep + "png_stack"
         txt_dr = main_dr + os.sep + "txt_files"
 

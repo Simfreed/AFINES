@@ -27,9 +27,9 @@
 #define xgrid 100.0
 #define ygrid 100.0
 #define tinit 0.0
-#define tfinal 10.0
-#define dt 0.01
-
+#define tfinal 0.005
+#define dt 0.001
+#define print_dt 1
 
 
 #define temperature 0.004
@@ -349,7 +349,7 @@ public:
         av_vel=0;
         visc=vis;
         nmonomer = 10; //hard coded number of monomers per filament
-        npolymer=1; //int(ceil(density*fov[0]*fov[1]) / nmonomer);
+        npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
         ld=len;//rng_n(len,1.0);
         link_ld = link_len;
         std::cout<<"\nNumber of filament:"<<npolymer<<"\n";
@@ -371,7 +371,7 @@ public:
                 }
             }
             // add monomers to the polymer
-            
+            mono_map[i] = empty_vector; 
             for (int j=0; j<nmonomer-1; j++) {
                 
                 // Calculate a link (represented as a dead motor) at the end of the rod
@@ -558,6 +558,7 @@ private:
     double link_ld, lx, ly, ltheta;
     int npolymer, nmonomer, nq[2], xn, yn, qxcm, qycm;
     std::vector<actin> network;
+    std::vector<int> empty_vector;
     std::map<int, std::vector<double> > link_map; //Maps {monomer} --> {link_xcm, link_ycm, link_angle} 
     std::map<int, std::vector<int> > mono_map; //Maps {filament index} --> {list of monomer indices}
     std::map<int, std::map<int,std::vector<int> > > quad_fils;
@@ -1009,7 +1010,7 @@ int main(int argc, char* argv[])
     std::string output_file="output.txt";
     std::string actin_output="actin_final.txt";
     std::string myosin_output="myosin_final.txt";
-    double actin_length=3.0;
+    double actin_length=3.0; //length of a monomer
     double actin_density= npolymer_desired*nmonomer_desired/(xrange*yrange);//0.65;
     double motor_length=0.5;
     double motor_density=0.5;
@@ -1020,8 +1021,6 @@ int main(int argc, char* argv[])
     double m_koff=1.0; 
     double viscosity=0.5;
    
-    double link_length = motor_length/10; 
-    double link_stiffness = motor_stiffness/100;
     if (argc>1) {
         mainpath=argv[1];
         output_file=argv[2];
@@ -1038,6 +1037,8 @@ int main(int argc, char* argv[])
         myosin_output=argv[13];
         viscosity=std::atof(argv[14]);
     }
+    double link_length = actin_length/10; 
+    double link_stiffness = motor_stiffness/2;
     
     std::ofstream a_final, m_final;
     a_final.open(actin_output.c_str());
@@ -1047,7 +1048,9 @@ int main(int argc, char* argv[])
     o_file.open(output_file.c_str());
     o_file << " FILE: " << output_file <<"\n"<< "Actin Density: " << actin_density  << ", Actin Mean Length: " << actin_length << "\n";
     o_file << " Motor Density: " << motor_density << ", Motor Rest Length: " << motor_length << ", Motor Stiffness: " << motor_stiffness<<"\n";
-    o_file << ", Motor unloaded speed: " << vmotor << ", Motor binding rate: " << m_kon <<"\n"<<"Motor unbinding rate: " << m_koff << ", Motor end detachment rate: " << m_kend<<", Viscosity: "<<viscosity;
+    o_file << ", Motor unloaded speed: " << vmotor << ", Motor binding rate: " << m_kon <<"\n"<<"Motor unbinding rate: " << m_koff << ", Motor end detachment rate: " << m_kend<<", Viscosity: "<<viscosity<<"\n";
+    o_file << " Link Rest Length: "<< link_length <<", Link Stiffness: " << link_stiffness <<"\n";
+    o_file << " Simulation time: " << tfinal - tinit << ", dt: " << dt <<", Number of time steps between output files: "<< print_dt<<"\n";
     o_file.close();
     
     
@@ -1068,25 +1071,21 @@ int main(int argc, char* argv[])
     int monomer_index;
     std::vector<double> motor_coords;
     // loop through each actin polymer
-    std::cout << "\nactin length : "<<actin_length<< "\n";
-    std::cout << "\nmotor length : "<<motor_length<< "\n";
-    std::cout << "\nlink length : "<<link_length<< "\n";
 
     for (int i = 0; i < mono_map_ptr->size(); i++){
-//        std::cout<<"i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
+        std::cout<<"i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
         for (int j = 0; j < mono_map_ptr->at(i).size(); j++){
 //            for(std::vector<int>::iterator it=mono_map_ptr->at(i).begin(); it<mono_map_ptr->at(i).end() - 1; it++)
             monomer_index = mono_map_ptr->at(i).at(j);
             motor_coords = link_map_ptr->at(monomer_index);
-//            std::cout<<"\nAdding a link to the "<<i<<"th polymer at the "<<monomer_index<<"th monomer\n";            
-//            std::cout<<"motor_coords[0] : "<<motor_coords[0]<<";motor_coords[1] : "<<motor_coords[1]<<";motor_coords[2] : "<<motor_coords[2]<<"\n";
+            std::cout<<"\nAdding a link to the "<<i<<"th polymer at the "<<monomer_index<<"th monomer\n";            
+            std::cout<<"motor_coords[0] : "<<motor_coords[0]<<";motor_coords[1] : "<<motor_coords[1]<<";motor_coords[2] : "<<motor_coords[2]<<"\n";
             myosins.add_motor( motor( motor_coords[0], motor_coords[1], motor_coords[2], 
                        link_length, &net, 1, 1, monomer_index, monomer_index+1, xrange, yrange, 0, link_stiffness,
                        0, 0, 0, actin_length, viscosity) );
         }
     }
     double t=tinit;
-	int print_dt = 1;
     std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     while (t<=tfinal) {
         //print time count
