@@ -27,9 +27,9 @@
 #define xgrid 100.0
 #define ygrid 100.0
 #define tinit 0.0
-#define tfinal 0.005
+#define tfinal 10 
 #define dt 0.001
-#define print_dt 1
+#define print_dt 100
 
 
 #define temperature 0.004
@@ -348,18 +348,20 @@ public:
         rho=density;
         av_vel=0;
         visc=vis;
-        nmonomer = 10; //hard coded number of monomers per filament
+        nmonomer_min = 10; //hard coded number of min/max monomers per filament
+        nmonomer_max = 100;
+        int nmonomer = (nmonomer_max - nmonomer_min)/2;
         npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
         ld=len;//rng_n(len,1.0);
         link_ld = link_len;
-        std::cout<<"\nNumber of filament:"<<npolymer<<"\n";
+        std::cout<<"\nDEBUG: Number of filament:"<<npolymer<<"\n";
         
         std::vector<double> link_map_value; // xcm, ycm, angle
         double * rod_end_pts;
         double  xcm, ycm, theta;
         for (int i=0; i<npolymer; i++) {
             theta=rng(0,2*pi);
-            
+            nmonomer = (int) rng(nmonomer_min, nmonomer_max);
             //the start of the polymer: 
             network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
                         theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
@@ -390,7 +392,7 @@ public:
                 if ( xcm > (0.5*(view*fovx - ld)) || xcm < (-0.5*(view*fovx - ld)) 
                         || ycm > (0.5*(view*fovy - ld)) || ycm < (-0.5*(view*fovy - ld)) )
                 {
-                    std::cout<<"\n"<<j+1<<"th monomer of "<<i<<"th polymer outside field of view; stopped building polymer\n";
+//                    std::cout<<"\nDEBUG:"<<j+1<<"th monomer of "<<i<<"th polymer outside field of view; stopped building polymer\n";
                     break;
                 }else{
                     
@@ -556,7 +558,7 @@ public:
 private:
     double fov[2], rho, ld, xnew, ynew, phinew, vpar, omega, vperp, vx, vy, alength, view, a_ends[4], av_vel, visc;
     double link_ld, lx, ly, ltheta;
-    int npolymer, nmonomer, nq[2], xn, yn, qxcm, qycm;
+    int npolymer, nmonomer_max, nmonomer_min, nq[2], xn, yn, qxcm, qycm;
     std::vector<actin> network;
     std::vector<int> empty_vector;
     std::map<int, std::vector<double> > link_map; //Maps {monomer} --> {link_xcm, link_ycm, link_angle} 
@@ -571,7 +573,7 @@ private:
 class motor 
 {
 public:
-    motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int aindex0, int aindex1, double fovx, double fovy, double v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis)
+    motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int aindex0, int aindex1, double fovx, double fovy, double v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis, std::string col)
     {
         vs=v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
         dm=0.25;//actin_len/10;
@@ -603,7 +605,7 @@ public:
         pos_actin[1]=0;
 		fov[0]=fovx;
 		fov[1]=fovy;
-        
+        color = col; 
         
     }
     ~motor(){};
@@ -616,7 +618,7 @@ public:
         return sptr;
     }
     
-    
+     
     double* get_heads()
     {
         double h[4];
@@ -629,6 +631,11 @@ public:
         return gh;
     }
     
+    std::string get_color()
+    {
+        return color;
+    }
+
     double tension()
     {
         double lf=dis_points(hx[0],hy[0],hx[1],hy[1]);
@@ -829,6 +836,7 @@ private:
     int state[2], aindex[2];
     double dm,fmax,mk, kon, koff, kend;
     std::map<int, double> dist;
+    std::string color;
     actin_ensemble *actin_network;
 	double pos_actin[2], pos_a_end[2], fov[2];
     
@@ -912,15 +920,15 @@ public:
         mrho=mdensity;
         mld=mlen;
         nm=int(ceil(mrho*fov[0]*fov[1]));
-        std::cout<<"\nNumber of motors:"<<nm<<"\n";
+        std::cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
         a_network=network;
         alpha=0.8;
-        
+        color = "1";//"green"; 
         for (int i=1; i<=nm; i++) {
             motorx=rng(-0.5*(fovx*alpha-mld),0.5*(fovx*alpha-mld));
             motory=rng(-0.5*(fovy*alpha-mld),0.5*(fovy*alpha-mld));
             mang=rng(0,2*pi);
-            n_motors.push_back(motor(motorx,motory,mang,mld,a_network,0,0,-1,-1,fov[0],fov[1],v0,stiffness,ron,roff,rend,actin_len,vis));
+            n_motors.push_back(motor(motorx,motory,mang,mld,a_network,0,0,-1,-1,fov[0],fov[1],v0,stiffness,ron,roff,rend,actin_len,vis,color));
         }
     }
     ~motor_ensemble(){};
@@ -975,7 +983,7 @@ public:
                 continue;
             }
             else{
-         */   fout<<n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_heads()[2]-n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[3]-n_motors[i].get_heads()[1]<<"\n";
+         */   fout<<n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_heads()[2]-n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[3]-n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_color()<<"\n";
            //}
         } 
     }
@@ -997,6 +1005,7 @@ private:
     int nm, s[2],a[2];
     actin_ensemble *a_network;
     std::vector<motor> n_motors;  
+    std::string color;
 };
 
 
@@ -1071,18 +1080,18 @@ int main(int argc, char* argv[])
     int monomer_index;
     std::vector<double> motor_coords;
     // loop through each actin polymer
-
+    std::string link_color = "2"; //"blue";
     for (int i = 0; i < mono_map_ptr->size(); i++){
-        std::cout<<"i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
+//        std::cout<<"DEBUG: i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
         for (int j = 0; j < mono_map_ptr->at(i).size(); j++){
 //            for(std::vector<int>::iterator it=mono_map_ptr->at(i).begin(); it<mono_map_ptr->at(i).end() - 1; it++)
             monomer_index = mono_map_ptr->at(i).at(j);
             motor_coords = link_map_ptr->at(monomer_index);
-            std::cout<<"\nAdding a link to the "<<i<<"th polymer at the "<<monomer_index<<"th monomer\n";            
-            std::cout<<"motor_coords[0] : "<<motor_coords[0]<<";motor_coords[1] : "<<motor_coords[1]<<";motor_coords[2] : "<<motor_coords[2]<<"\n";
+//            std::cout<<"\nDEBUG: Adding a link to the "<<i<<"th polymer at the "<<monomer_index<<"th monomer\n";            
+//            std::cout<<"DEBUG: motor_coords[0] : "<<motor_coords[0]<<";motor_coords[1] : "<<motor_coords[1]<<";motor_coords[2] : "<<motor_coords[2]<<"\n";
             myosins.add_motor( motor( motor_coords[0], motor_coords[1], motor_coords[2], 
                        link_length, &net, 1, 1, monomer_index, monomer_index+1, xrange, yrange, 0, link_stiffness,
-                       0, 0, 0, actin_length, viscosity) );
+                       0, 0, 0, actin_length, viscosity, link_color) );
         }
     }
     double t=tinit;
