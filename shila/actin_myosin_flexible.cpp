@@ -546,7 +546,39 @@ public:
             fout<<network.at(i).getendpts()[0]<<"\t"<<network.at(i).getendpts()[1]<<"\t"<<network.at(i).getendpts()[2]-network.at(i).getendpts()[0]<<"\t"<<network.at(i).getendpts()[3]-network.at(i).getendpts()[1]<<"\n";
         } 
     }
+   
+    std::map<double, double> get_angle_correlation(int polymer_index)
+    {
+        //wikipedia says < cos(theta) > = Exp[-L/P]
+        //where L is the length of the polymer and P is the persistence length
+        //and theta is the angle between subsequent rods
+        // This function will return a map of x --> <cos theta>
+        // where x is a distance and <cos theta> is the correlation between cosines of the angles between subsequent
+        // rods. 
+        double phi1, phi2;
+        double sum = 0;
+        std::map<double, double> corr;
+        for(int i = 0; i < mono_map[polymer_index].size() - 1; i++){
+            phi1 = network.at(mono_map[polymer_index][i]).getpos()[2];
+            phi2 = network.at(mono_map[polymer_index][i + 1]).getpos()[2];
+            sum += cos(phi2 - phi1);
+            corr[ (i+1) * alength] = sum/(i+1);
+        }
+        return corr;
+
+    }
     
+    std::map<int, std::map<double, double> > get_all_angle_correlations()
+    {
+        std::map<int, std::map<double, double> > corrs;
+        
+        for(int i = 0; i < mono_map.size(); i++){
+            corrs[i] = this->get_angle_correlation(i);
+        }
+
+        return corrs;
+    }
+
     std::map<int, std::vector<double> > * get_link_map(){
         return &link_map;
     }
@@ -1096,6 +1128,8 @@ int main(int argc, char* argv[])
     }
     double t=tinit;
     std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
+    
+    std::map<double, std::map<int, std::map<double, double> > > angle_correlations_time; //maps time --> {polymer --> {length -> angle correlation} }
     while (t<=tfinal) {
         //print time count
 		if (count%1000==0) {
@@ -1126,7 +1160,7 @@ int main(int argc, char* argv[])
             
 			
 		}
-        
+        angle_correlations_time[ t ] = net.get_all_angle_correlations();
         //myosins.reshape();
         myosins.motor_walk();
         //
