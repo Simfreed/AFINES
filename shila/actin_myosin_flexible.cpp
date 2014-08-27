@@ -348,9 +348,9 @@ public:
         rho=density;
         av_vel=0;
         visc=vis;
-        nmonomer_min = 10; //hard coded number of min/max monomers per filament
-        nmonomer_max = 100;
-        int nmonomer = (nmonomer_max - nmonomer_min)/2;
+        nmonomer_min = 100; //hard coded number of min/max monomers per filament
+        nmonomer_max = nmonomer_min;
+        int nmonomer = (nmonomer_max + nmonomer_min)/2;
         npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
         ld=len;//rng_n(len,1.0);
         link_ld = link_len;

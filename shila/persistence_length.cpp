@@ -25,13 +25,15 @@ int main(int argc, char* argv[]){
     
 
     // VARIABLES :
-    double npolymer = 2, nmonomer = 10;
-    double actin_length=1; //length of a monomer
+    double npolymer = 1, nmonomer = 100;
+    double actin_length=30/nmonomer; //length of a monomer
     
     // DERIVED QUANTITIES :
+    
     double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
     double link_length = actin_length/10; 
     double link_stiffness = motor_stiffness/2;
+    
     std::string link_color = "2"; //"blue";
     
     if (argc>1) {
@@ -89,7 +91,7 @@ int main(int argc, char* argv[]){
         net.quad_update();
         //print to file
 		angle_correlations_time[t] = net.get_all_angle_correlations();
-		if (count%print_dt==0) {
+		/*if (count%print_dt==0) {
 		
             sprintf (afile, "afile%d.txt", count/print_dt);
 			sprintf (mfile, "mfile%d.txt", count/print_dt);
@@ -106,7 +108,7 @@ int main(int argc, char* argv[]){
             file_t.close();
             
 		}
-        
+        */
         angle_correlations_time[ t ] = net.get_all_angle_correlations();
         for (it = angle_correlations_time[t].begin(); it != angle_correlations_time[t].end(); ++it){
             // it->first is the polymer index
