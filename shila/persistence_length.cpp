@@ -1,7 +1,7 @@
 #include "actin_myosin_flexible.cpp"
 #define tinit 0.0
-#define tfinal 10 
-//#define dt 0.001 -- defined previously
+#define tfinal 10.0 
+// #define dt 0.001 -- defined previously
 #define print_dt 100
 
 int main(int argc, char* argv[]){
@@ -13,9 +13,10 @@ int main(int argc, char* argv[]){
     std::string actin_output="actin_final.txt";
     std::string myosin_output="myosin_final.txt";
     std::string persistence_length_output = "angle_correlations.txt"; 
+    
     // CONTROLS :
     double motor_length=0.5;
-    double motor_density=0.5;
+    double motor_density=0;
     double motor_stiffness=50.0; //pN / um
     double vmotor=1.0;
     double m_kon=90.0;          
@@ -26,20 +27,19 @@ int main(int argc, char* argv[]){
 
     // VARIABLES :
     double npolymer = 1, nmonomer = 100;
-    double actin_length=30/nmonomer; //length of a monomer
-    
-    // DERIVED QUANTITIES :
-    
-    double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
-    double link_length = actin_length/10; 
     double link_stiffness = motor_stiffness/2;
     
-    std::string link_color = "2"; //"blue";
+    std::string link_color = "1"; //"blue";
     
     if (argc>1) {
         nmonomer = std::atof(argv[1]);
         link_stiffness = std::atof(argv[2]);
     }
+    
+    // DERIVED QUANTITIES :
+    double actin_length=10/nmonomer; //length of a monomer
+    double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
+    double link_length = actin_length/10; 
     
     
     std::ofstream a_final, m_final, p_final;
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
     
     
     std::cout<<"\nCreating actin network..";
-	actin_ensemble net=actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,link_length);
+	actin_ensemble net=actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
     std::cout<<"\nAdding motors..";
     motor_ensemble myosins=motor_ensemble(motor_density,xrange,yrange,motor_length,&net,vmotor,motor_stiffness,m_kon,m_koff,m_kend,actin_length,viscosity);
     std::cout<<"\nAdding links to connect actin filament monomers...";
@@ -78,9 +78,7 @@ int main(int argc, char* argv[]){
     std::map<int, std::map<double, double> >::iterator it;
     std::map<double, double>::iterator it1;
         
-
     while (t<=tfinal) {
-
         //print time count
 		if (count%1000==0) {
 			std::cout<<"\nTime counts: "<<count;
@@ -91,7 +89,7 @@ int main(int argc, char* argv[]){
         net.quad_update();
         //print to file
 		angle_correlations_time[t] = net.get_all_angle_correlations();
-		/*if (count%print_dt==0) {
+	    if (count%print_dt==0) {
 		
             sprintf (afile, "afile%d.txt", count/print_dt);
 			sprintf (mfile, "mfile%d.txt", count/print_dt);
@@ -108,7 +106,7 @@ int main(int argc, char* argv[]){
             file_t.close();
             
 		}
-        */
+        
         angle_correlations_time[ t ] = net.get_all_angle_correlations();
         for (it = angle_correlations_time[t].begin(); it != angle_correlations_time[t].end(); ++it){
             // it->first is the polymer index
@@ -133,13 +131,13 @@ int main(int argc, char* argv[]){
     // distance     correlation_polymer1        correlation polymer_2       correlation_polymer_3       ....
     
     std::vector<std::string> lines;
-    lines.push_back("header");
+    //lines.push_back("header");
     int line_count = 0, ntimesteps = (int)((tfinal - tinit)/dt);
 //    for (int i = 0; i < angle_correlations_sum.size(); i++){
     for (it = angle_correlations_sum.begin(); it != angle_correlations_sum.end(); ++it){
         // it->first is the polymer index
         // it->second is a map of length --> correlation
-        lines[0] += "\t" + std::to_string(it->first);
+      //  lines[0] += "\t" + std::to_string(it->first);
         for (it1 = it->second.begin(); it1 != it->second.end(); ++it1){
             lines.push_back(std::to_string(it1->first) + "\t" + std::to_string(it1->second/ntimesteps));
         }

@@ -12,9 +12,9 @@ for i in range(1,2,1):
         Mainpath = './'
         Output_Filename = "output"+str(i)+str(j)+".txt"
         Actin_length=1
-        Actin_density=npolymer * nmonomer/(dx*dy)
+        Actin_density=0.65 #npolymer * nmonomer/(dx*dy)
         Motor_length=0.5
-        Motor_density=nmotor /(dx*dy)#i*0.1
+        Motor_density=0.5 #nmotor /(dx*dy)#i*0.1
         Motor_stiffness=50.
         Motor_speed=1.0
         Motor_kon=90.

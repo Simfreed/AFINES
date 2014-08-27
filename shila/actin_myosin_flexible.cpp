@@ -338,7 +338,7 @@ private:
 class actin_ensemble
 {
 public:
-    actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, double link_len)
+    actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len)
     {
         view=0.9;
         fov[0]=fovx;
@@ -348,20 +348,21 @@ public:
         rho=density;
         av_vel=0;
         visc=vis;
-        nmonomer_min = 100; //hard coded number of min/max monomers per filament
-        nmonomer_max = nmonomer_min;
-        int nmonomer = (nmonomer_max + nmonomer_min)/2;
+//        nmonomer_min = 100; //hard coded number of min/max monomers per filament
+//        nmonomer_max = nmonomer_min;
+//        int nmonomer = (nmonomer_max + nmonomer_min)/2;
         npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
         ld=len;//rng_n(len,1.0);
         link_ld = link_len;
-        std::cout<<"\nDEBUG: Number of filament:"<<npolymer<<"\n";
-        
+        std::cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
+        std::cout<<"DEBUG: Number of monomers per filament:"<<nmonomer<<"\n"; 
+        std::cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
         std::vector<double> link_map_value; // xcm, ycm, angle
         double * rod_end_pts;
         double  xcm, ycm, theta;
         for (int i=0; i<npolymer; i++) {
             theta=rng(0,2*pi);
-            nmonomer = (int) rng(nmonomer_min, nmonomer_max);
+            //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
             //the start of the polymer: 
             network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
                         theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
@@ -571,7 +572,6 @@ public:
     std::map<int, std::map<double, double> > get_all_angle_correlations()
     {
         std::map<int, std::map<double, double> > corrs;
-        
         for(int i = 0; i < mono_map.size(); i++){
             corrs[i] = this->get_angle_correlation(i);
         }
@@ -957,7 +957,7 @@ public:
         std::cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
         a_network=network;
         alpha=0.8;
-        color = "1";//"green"; 
+        color = "0.5";//"green"; 
         for (int i=1; i<=nm; i++) {
             motorx=rng(-0.5*(fovx*alpha-mld),0.5*(fovx*alpha-mld));
             motory=rng(-0.5*(fovy*alpha-mld),0.5*(fovy*alpha-mld));
