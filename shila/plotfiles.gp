@@ -2,7 +2,7 @@ do for [i=0:9999] {
    str_num=sprintf('%d',i)  #Write integer to string
    str_num2=sprintf('%d',i)
    set palette maxcolors 3
-   set palette defined ( 0.5 "green", 1 "blue")
+   set palette defined ( 0.25 "yellow", 0.5 "green", 1 "blue")
    set term png enhanced 
    set arrow 1 from -500, -100, 0 to 500, -100, 0 head back filled linetype 1 linecolor rgb "dark-violet"  linewidth 2.000 size screen 0.025,30.000,45.000
    set arrow 2 from -500, -110, 0 to 500, -110, 0 head back nofilled linetype 3 linecolor rgb "#56b4e9"  linewidth 2.000 size screen 0.030,15.000,90.000

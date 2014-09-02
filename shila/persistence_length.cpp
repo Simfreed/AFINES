@@ -1,8 +1,15 @@
 #include "actin_myosin_flexible.cpp"
+
+
+#define xrange 25.0
+#define yrange 25.0
+#define xgrid 100.0
+#define ygrid 100.0
+
 #define tinit 0.0
-#define tfinal 10.0 
-// #define dt 0.001 -- defined previously
-#define print_dt 100
+#define tfinal 100 
+// #define dt 0.0001 -- defined previously
+#define print_dt 1000
 
 int main(int argc, char* argv[]){
     
@@ -23,17 +30,19 @@ int main(int argc, char* argv[]){
     double m_kend=5.0;
     double m_koff=1.0; 
     double viscosity=0.5;
+    double link_stiffness = motor_stiffness*10;
     
 
     // VARIABLES :
     double npolymer = 1, nmonomer = 100;
-    double link_stiffness = motor_stiffness/2;
+    double b_link_stiffness = motor_stiffness/10;
     
     std::string link_color = "1"; //"blue";
+    std::string b_link_color = "0.25"; //"yellow" (?) 
     
     if (argc>1) {
         nmonomer = std::atof(argv[1]);
-        link_stiffness = std::atof(argv[2]);
+        b_link_stiffness = std::atof(argv[2]);
     }
     
     // DERIVED QUANTITIES :
@@ -68,27 +77,27 @@ int main(int argc, char* argv[]){
     std::cout<<"\nAdding motors..";
     motor_ensemble myosins=motor_ensemble(motor_density,xrange,yrange,motor_length,&net,vmotor,motor_stiffness,m_kon,m_koff,m_kend,actin_length,viscosity);
     std::cout<<"\nAdding links to connect actin filament monomers...";
-    net.connect_polymers( &myosins, link_length, link_stiffness, link_color );
+    net.connect_polymers( &myosins, link_length, link_stiffness, link_color, b_link_stiffness, b_link_color );
 
     double t=tinit;
     std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     
-    std::map<double, std::map<int, std::map<double, double> > > angle_correlations_time; //maps time --> {polymer --> {length -> angle correlation} }
-    std::map<int, std::map<double, double> > angle_correlations_sum;
-    std::map<int, std::map<double, double> >::iterator it;
-    std::map<double, double>::iterator it1;
-        
+    std::vector<double> angle_correlations;
+    std::vector<double> angle_correlations_sum;
+
     while (t<=tfinal) {
         //print time count
 		if (count%1000==0) {
 			std::cout<<"\nTime counts: "<<count;
+   //         std::cout<<"Time: "<<t<<"\n";     
+   //         for (int i = 0; i < angle_correlations_sum.size(); i++)
+   //             std::cout<<"x = "<<(i+1)*actin_length<<"\t<cos(dphi)> = "<<angle_correlations_sum[i]/(t/dt)<<"\n";
 		}
         
         //update network
         net.update();
         net.quad_update();
         //print to file
-		angle_correlations_time[t] = net.get_all_angle_correlations();
 	    if (count%print_dt==0) {
 		
             sprintf (afile, "afile%d.txt", count/print_dt);
@@ -106,15 +115,9 @@ int main(int argc, char* argv[]){
             file_t.close();
             
 		}
-        
-        angle_correlations_time[ t ] = net.get_all_angle_correlations();
-        for (it = angle_correlations_time[t].begin(); it != angle_correlations_time[t].end(); ++it){
-            // it->first is the polymer index
-            // it->second is a map of length --> correlation
-            for (it1 = it->second.begin(); it1 != it->second.end(); ++it1){
-                angle_correlations_sum[it->first][it1->first] += it1->second;
-            }
-        }
+        angle_correlations = net.get_angle_correlation(0); //assume one polymer
+
+        angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
         
         //myosins.reshape();
         myosins.motor_walk();
@@ -130,22 +133,11 @@ int main(int argc, char* argv[]){
     
     // distance     correlation_polymer1        correlation polymer_2       correlation_polymer_3       ....
     
-    std::vector<std::string> lines;
-    //lines.push_back("header");
-    int line_count = 0, ntimesteps = (int)((tfinal - tinit)/dt);
-//    for (int i = 0; i < angle_correlations_sum.size(); i++){
-    for (it = angle_correlations_sum.begin(); it != angle_correlations_sum.end(); ++it){
-        // it->first is the polymer index
-        // it->second is a map of length --> correlation
-      //  lines[0] += "\t" + std::to_string(it->first);
-        for (it1 = it->second.begin(); it1 != it->second.end(); ++it1){
-            lines.push_back(std::to_string(it1->first) + "\t" + std::to_string(it1->second/ntimesteps));
-        }
+    double ntimesteps = (tfinal - tinit)/dt;
+    for (int i = 1; i < angle_correlations_sum.size(); i++){
+        p_final<< i * actin_length << "\t" << angle_correlations_sum[i]/ntimesteps<<"\n";
     }
     
-    for (int l = 0; l<lines.size(); l++){
-        p_final<<lines[l]<<"\n";
-    }
     a_final.close();
     m_final.close();
     p_final.close(); 
