@@ -131,6 +131,15 @@ double var(std::vector<double> vals)
     return sum / vals.size();
 }
 
+double mode_var(std::vector<double> vals, double m)
+{
+    double sum = 0;
+    for (int i = 0; i < vals.size(); i++){
+        sum += (vals[i] - m)*(vals[i] - m);
+    }
+    return sum / vals.size();
+}
+
 std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2)
 {
     std::vector<double> s;
