@@ -129,7 +129,7 @@ int main(int argc, char* argv[]){
     
     // write the fourier mode file 
     for (int n = 1; n<= n_modes; n++){
-        p_final<< ( 1/(n*n*pi*pi) )<<"\t"<<var(fm[n])<<"\n"; 
+        p_final<< ( 1/(n*n*pi*pi) )<<"\t"<<mode_var(fm[n],0)<<"\n"; 
     }
     
     a_final.close();

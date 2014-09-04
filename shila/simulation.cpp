@@ -1,20 +1,29 @@
 #include "actin_myosin_flexible.cpp"
+
+
+#define xrange 50.0
+#define yrange 50.0
+#define xgrid 100.0
+#define ygrid 100.0
+
 #define tinit 0.0
 #define tfinal 10 
-//#define dt 0.001 -- defined previously
-#define print_dt 100
-int main(int argc, char* argv[])
-{
+// #define dt 0.0001 -- defined previously
+#define print_dt 1000
+
+int main(int argc, char* argv[]){
+    
     int seed=time(NULL);
     srand(seed);
     
-    double npolymer_desired = 1, nmonomer_desired = 10;
     std::string mainpath="./";
     std::string output_file="output.txt";
     std::string actin_output="actin_final.txt";
     std::string myosin_output="myosin_final.txt";
-    double actin_length=3.0; //length of a monomer
-    double actin_density= npolymer_desired*nmonomer_desired/(xrange*yrange);//0.65;
+    
+    double npolymer = 1, nmonomer = 10;
+    double actin_length=10.0/nmonomer; //length of a monomer
+    double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
     double motor_length=0.5;
     double motor_density=0.5;
     double motor_stiffness=50.0;
@@ -23,25 +32,21 @@ int main(int argc, char* argv[])
     double m_kend=5.0;
     double m_koff=1.0; 
     double viscosity=0.5;
-   
-    if (argc>1) {
-        mainpath=argv[1];
-        output_file=argv[2];
-        actin_length=std::atof(argv[3]);
-        actin_density=std::atof(argv[4]);
-        motor_length=std::atof(argv[5]);
-        motor_density=std::atof(argv[6]);
-        motor_stiffness=std::atof(argv[7]);
-        vmotor=std::atof(argv[8]);
-        m_kon=std::atof(argv[9]);
-        m_kend=std::atof(argv[10]);
-        m_koff=std::atof(argv[11]);
-        actin_output=argv[12];
-        myosin_output=argv[13];
-        viscosity=std::atof(argv[14]);
-    }
+    
+    double link_stiffness = motor_stiffness*10;
     double link_length = actin_length/10; 
-    double link_stiffness = motor_stiffness/2;
+    
+
+    // VARIABLES :
+    double b_link_stiffness = 2; //this seemed to give a persistence length ~25 um
+    
+    std::string link_color = "1"; //"blue";
+    std::string b_link_color = "0.25"; //"yellow" (?) 
+    
+    if (argc>1) {
+        actin_density=std::atof(argv[1]);
+        motor_density=std::atof(argv[2]);
+    }
     
     std::ofstream a_final, m_final;
     a_final.open(actin_output.c_str());
@@ -65,36 +70,18 @@ int main(int argc, char* argv[])
     
     
     std::cout<<"\nCreating actin network..";
-	actin_ensemble net=actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,link_length);
+	actin_ensemble net=actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
     std::cout<<"\nAdding motors..";
     motor_ensemble myosins=motor_ensemble(motor_density,xrange,yrange,motor_length,&net,vmotor,motor_stiffness,m_kon,m_koff,m_kend,actin_length,viscosity);
-    std::cout<<"\nAdding links to connect motors...";
-    std::map<int, std::vector<double> > * link_map_ptr = net.get_link_map();
-    std::map<int, std::vector<int> > * mono_map_ptr = net.get_mono_map();
-    int monomer_index;
-    std::vector<double> motor_coords;
-    // loop through each actin polymer
-    std::string link_color = "2"; //"blue";
-    for (int i = 0; i < mono_map_ptr->size(); i++){
-//        std::cout<<"DEBUG: i:"<<i<<";\tmono_map_ptr->at(i).size(); "<<mono_map_ptr->at(i).size()<<"\n";        
-        for (int j = 0; j < mono_map_ptr->at(i).size(); j++){
-//            for(std::vector<int>::iterator it=mono_map_ptr->at(i).begin(); it<mono_map_ptr->at(i).end() - 1; it++)
-            monomer_index = mono_map_ptr->at(i).at(j);
-            motor_coords = link_map_ptr->at(monomer_index);
-//            std::cout<<"\nDEBUG: Adding a link to the "<<i<<"th polymer at the "<<monomer_index<<"th monomer\n";            
-//            std::cout<<"DEBUG: motor_coords[0] : "<<motor_coords[0]<<";motor_coords[1] : "<<motor_coords[1]<<";motor_coords[2] : "<<motor_coords[2]<<"\n";
-            myosins.add_motor( motor( motor_coords[0], motor_coords[1], motor_coords[2], 
-                       link_length, &net, 1, 1, monomer_index, monomer_index+1, xrange, yrange, 0, link_stiffness,
-                       0, 0, 0, actin_length, viscosity, link_color) );
-        }
-    }
+    std::cout<<"\nAdding links to connect actin filament monomers...";
+    net.connect_polymers( &myosins, link_length, link_stiffness, link_color, b_link_stiffness, b_link_color );
+    
     double t=tinit;
     std::cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     
-    std::map<double, std::map<int, std::map<double, double> > > angle_correlations_time; //maps time --> {polymer --> {length -> angle correlation} }
     while (t<=tfinal) {
         //print time count
-		if (count%1000==0) {
+		if (count%2000==0) {
 			std::cout<<"\nTime counts: "<<count;
 		}
         
@@ -122,7 +109,6 @@ int main(int argc, char* argv[])
             
 			
 		}
-        angle_correlations_time[ t ] = net.get_all_angle_correlations();
         //myosins.reshape();
         myosins.motor_walk();
         //

@@ -400,10 +400,10 @@ public:
             theta=rng(0,2*pi);
             //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
             //the start of the polymer: 
-            //network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
-               //         theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-            std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-            network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+            network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
+                        theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+//            std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
+//            network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
             //Add the quadrants of the first rod
             std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
             for (int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
@@ -1157,10 +1157,10 @@ void actin_ensemble::connect_polymers(motor_ensemble * mots,
             y2      = network[mono2].getposcm()[1];
             b_link_length1 = network[mono1].get_length()/2 + network[mono2].get_length()/2 + link_length;
             b_link_length2 = dis_points(x1,y1,x2,y2);
-            std::cout<<"DEBUG: b_link_length2-b_link_length1 : "<<b_link_length2-b_link_length1<<"\n";
+//            std::cout<<"DEBUG: b_link_length2-b_link_length1 : "<<b_link_length2-b_link_length1<<"\n";
 
             mots->add_motor( motor( (x2+x1)/2, (y2+y1)/2, motor_coords[2],//atan2(y2-y1,x2-x1), 
-                        b_link_length2, this, 1, 1, mono1, mono2, fov[0], fov[1], 0, b_link_stiffness,
+                        b_link_length1, this, 1, 1, mono1, mono2, fov[0], fov[1], 0, b_link_stiffness,
                         0, 0, 0, ld, visc, b_link_color) ); 
         
         }
