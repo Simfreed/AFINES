@@ -1,10 +1,10 @@
 #include "actin_myosin_flexible.cpp"
 
 
-#define xrange 25.0
-#define yrange 25.0
-#define xgrid 100.0
-#define ygrid 100.0
+#define xrange 250.0
+#define yrange 250.0
+#define xgrid 500.0
+#define ygrid 500.0
 
 #define tinit 0.0
 #define tfinal 100 
@@ -20,6 +20,7 @@ int main(int argc, char* argv[]){
     std::string actin_output="actin_final.txt";
     std::string myosin_output="myosin_final.txt";
     std::string persistence_length_output = "angle_correlations.txt"; 
+    std::string persistence_length_fourier_output = "fourier_modes.txt";
     
     // CONTROLS :
     double motor_length=0.5;
@@ -46,15 +47,20 @@ int main(int argc, char* argv[]){
     }
     
     // DERIVED QUANTITIES :
-    double actin_length=10/nmonomer; //length of a monomer
+    double actin_length=100/nmonomer; //length of a monomer
     double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
     double link_length = actin_length/10; 
     
+    int n_modes = 20;
+    std::map<int, std::vector<double> > fm;
     
-    std::ofstream a_final, m_final, p_final;
+    
+    std::ofstream a_final, m_final, p_final, p_final_fourier;
     a_final.open(actin_output.c_str());
     m_final.open(myosin_output.c_str());
     p_final.open(persistence_length_output.c_str());
+    p_final_fourier.open(persistence_length_fourier_output.c_str());
+    
     std::ofstream o_file;
     o_file.open(output_file.c_str());
     o_file << " FILE: " << output_file <<"\n"<< "Actin Density: " << actin_density  << ", Actin Mean Length: " << actin_length << "\n";
@@ -118,6 +124,11 @@ int main(int argc, char* argv[]){
         angle_correlations = net.get_angle_correlation(0); //assume one polymer
 
         angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
+        for (int n = 1; n <= n_modes; n++){
+            //assuming only one polymer
+            fm[n].push_back(net.get_fourier_mode(n, 0));
+        
+        }
         
         //myosins.reshape();
         myosins.motor_walk();
@@ -138,10 +149,15 @@ int main(int argc, char* argv[]){
         p_final<< i * actin_length << "\t" << angle_correlations_sum[i]/ntimesteps<<"\n";
     }
     
+    // write the fourier mode file 
+    for (int n = 1; n<= n_modes; n++){
+        p_final_fourier<< ( 1/(n*n*pi*pi) )<<"\t"<<mode_var(fm[n], 0)<<"\n"; 
+    }
+    
     a_final.close();
     m_final.close();
     p_final.close(); 
-
+    p_final_fourier.close();
     std::cout<<"\nTime counts: "<<count;
 	std::cout<<"\nExecuted";
 	std::cout<<"\n Done\n";
