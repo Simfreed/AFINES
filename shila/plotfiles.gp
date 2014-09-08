@@ -3,7 +3,7 @@ do for [i=0:9999] {
    str_num2=sprintf('%d',i)
    set palette maxcolors 3
    set palette defined ( 0.25 "yellow", 0.5 "green", 1 "blue")
-   set term png enhanced 
+   set term pngcairo enhanced 
    set arrow 1 from -500, -100, 0 to 500, -100, 0 head back filled linetype 1 linecolor rgb "dark-violet"  linewidth 2.000 size screen 0.025,30.000,45.000
    set arrow 2 from -500, -110, 0 to 500, -110, 0 head back nofilled linetype 3 linecolor rgb "#56b4e9"  linewidth 2.000 size screen 0.030,15.000,90.000
    set arrow 3 from -500, -120, 0 to 500, -120, 0 head back filled linetype 1 linecolor rgb "dark-violet"  linewidth 2.000 size screen 0.030,15.000,45.000
@@ -33,6 +33,5 @@ do for [i=0:9999] {
    set output 'time'.str_num2.'.png'
    stats 'mfile'.str_num.'.txt' using 5 nooutput
    set cbrange[STATS_min-0.001:STATS_max+0.001]
-   plot 'mfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10,\ 
-   'afile'.str_num.'.txt' u 1:2:3:4 with vectors filled head lw 2 linecolor rgb "red" notitle,\
+   plot 'mfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10, 'afile'.str_num.'.txt' u 1:2:3:4 with vectors filled head lw 2 linecolor rgb "red" notitle
 }
