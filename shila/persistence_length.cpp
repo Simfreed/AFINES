@@ -7,9 +7,9 @@
 #define ygrid 500.0
 
 #define tinit 0.0
-#define tfinal 100 
+#define tfinal 1
 // #define dt 0.0001 -- defined previously
-#define print_dt 1000
+#define print_dt 100
 
 int main(int argc, char* argv[]){
     
@@ -42,8 +42,8 @@ int main(int argc, char* argv[]){
     std::string b_link_color = "0.25"; //"yellow" (?) 
     
     if (argc>1) {
-        nmonomer = std::atof(argv[1]);
-        b_link_stiffness = std::atof(argv[2]);
+        nmonomer = atof(argv[1]);
+        b_link_stiffness = atof(argv[2]);
     }
     
     // DERIVED QUANTITIES :
