@@ -33,5 +33,7 @@ do for [i=0:9999] {
    set output 'time'.str_num2.'.png'
    stats 'mfile'.str_num.'.txt' using 5 nooutput
    set cbrange[STATS_min-0.001:STATS_max+0.001]
-   plot 'mfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10, 'afile'.str_num.'.txt' u 1:2:3:4 with vectors filled head lw 2 linecolor rgb "red" notitle
+   plot 'afile'.str_num.'.txt' u 1:2:3:4 with vectors filled head lw 2 linecolor rgb "red" notitle,\
+   'mfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10,\ 
+   'lfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10
 }
