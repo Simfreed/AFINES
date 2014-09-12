@@ -7,8 +7,8 @@
  *
  */
 
-#include "generic_functions.cpp"
 #include "Link.h"
+#include "globals.h"
 #include "actin_ensemble.h"
 
 Link::Link(double len, double stiffness, actin_ensemble* network, 
@@ -26,6 +26,7 @@ Link::Link(double len, double stiffness, actin_ensemble* network,
 
 }
 
+Link::~Link(){ };
 
 double* Link::get_heads()
 {

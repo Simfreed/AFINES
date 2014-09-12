@@ -80,7 +80,7 @@ class motor_ensemble
 
         motor_ensemble(double mdensity, double fovx, double fovy, double mlen, actin_ensemble* network, double v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis);
 
-        ~motor_ensemble(){};
+        ~motor_ensemble();
 
         void motor_walk();
 

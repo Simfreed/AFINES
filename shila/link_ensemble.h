@@ -25,8 +25,8 @@ class link_ensemble
 {
     public:
 
-        link_ensemble(){};
-        ~link_ensemble(){};
+        link_ensemble();
+        ~link_ensemble();
 
         void link_walk();
 

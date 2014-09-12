@@ -7,10 +7,13 @@
  *
  */
 
-#include "generic_functions.cpp"
 #include "link_ensemble.h"
+#include "globals.h"
 
 //link ensemble definitions 
+
+link_ensemble::link_ensemble(){};
+link_ensemble::~link_ensemble(){};
 
 void link_ensemble::link_walk()
 {

@@ -7,7 +7,7 @@
  *
  */
 
-#include "generic_functions.cpp"
+#include "globals.h"
 #include "actin_ensemble.h"
 #include "link_ensemble.h"
 //actin network class
@@ -99,6 +99,7 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
 }
 
+actin_ensemble::~actin_ensemble(){ };
 
 void actin_ensemble::quad_update()
 {

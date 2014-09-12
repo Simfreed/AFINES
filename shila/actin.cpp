@@ -8,7 +8,7 @@
  */
 
 #include "actin.h"
-#include "generic_functions.cpp"
+#include "globals.h"
 
 //actin filament class
 actin::actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis)
@@ -78,6 +78,7 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     quad.push_back(tmp);
 }
 
+actin::~actin(){ };
 //shortest(perpendicular) distance between an arbitray point and the filament
 double actin::get_distance(double xp, double yp)
 {

@@ -7,7 +7,7 @@
  *
  */
 
-#include "generic_functions.cpp"
+#include "globals.h"
 #include "motor.h"
 #include "actin_ensemble.h"
 #include "actin.h"
@@ -55,6 +55,8 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     color = col; 
 
 }
+
+motor::~motor(){ };
 
 //return motor state with a given head number
 int* motor::get_states() 
@@ -363,6 +365,8 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
         n_motors.push_back(motor(motorx,motory,mang,mld,a_network,0,0,-1,-1,fov[0],fov[1],v0,stiffness,ron,roff,rend,actin_len,vis,color));
     }
 }
+
+motor_ensemble::~motor_ensemble( ){ };
 
 void motor_ensemble::motor_walk()
 {

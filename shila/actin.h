@@ -25,7 +25,8 @@ class actin
 {
     public:
         actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis);
-        ~actin(){};
+        
+        ~actin();
     
         double get_distance(double xp, double yp);
 
