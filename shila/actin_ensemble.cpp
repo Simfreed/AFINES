@@ -170,6 +170,7 @@ double* actin_ensemble::get_ends(int index)
 
 void actin_ensemble::update()
 {
+    ///Maybe change 6 to 4 for 2d
     av_vel=0;
     for (int i=0; i<network.size(); i++) {
         vpar=(network[i].get_forces()[0])/network[i].get_friction()[0]  + sqrt(6*temperature/(dt*network[i].get_friction()[0]))*rng_n(0,1);

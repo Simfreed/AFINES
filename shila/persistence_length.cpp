@@ -1,5 +1,7 @@
-#include "actin_myosin_flexible.cpp"
-
+#include "actin_ensemble.h"
+#include "link_ensemble.h"
+#include "motor.h"
+#include "globals.h"
 
 #define xrange 250.0
 #define yrange 250.0
