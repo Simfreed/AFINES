@@ -31,11 +31,10 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
     std::cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     std::cout<<"DEBUG: Number of monomers per filament:"<<nmonomer<<"\n"; 
     std::cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
-    std::vector<double> link_map_value; // xcm, ycm, angle
-    double * rod_end_pts;
+    
     double  xcm, ycm, theta;
     for (int i=0; i<npolymer; i++) {
-        theta=0;//rng(0,2*pi);
+        theta=rng(0,2*pi);
         //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
         //the start of the polymer: 
         //            network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
@@ -55,15 +54,11 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
             // Calculate a link (represented as a dead motor) at the end of the rod
             ltheta = theta; //rng(0, 2*pi);
-            rod_end_pts = network.back().getendpts();
 
-            lx=rod_end_pts[2] + 0.5*link_ld*cos(ltheta);
-            ly=rod_end_pts[3] + 0.5*link_ld*sin(ltheta);
-
-            // Calculate the Next rod on the actin polymer--  continues from the static motor
+            // Calculate the Next rod on the actin polymer--  continues from the link
             //theta = rng(0,2*pi);
-            xcm = lx + link_ld*0.5*cos(ltheta) + ld*0.5*cos(theta);
-            ycm = ly + link_ld*0.5*sin(ltheta) + ld*0.5*sin(theta);
+            xcm = network.back().getendpts()[2] + link_ld*cos(ltheta) + ld*0.5*cos(theta);
+            ycm = network.back().getendpts()[3] + link_ld*sin(ltheta) + ld*0.5*sin(theta);
 
             // Check that this monomer is in the field of view, otherwise start a new polymer:
             if ( xcm > (0.5*(view*fovx - ld)) || xcm < (-0.5*(view*fovx - ld)) 
@@ -73,14 +68,8 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
                 break;
             }else{
 
-                // Load the link map: {monomer index} --> {link_xcm, link_ycm, link_angle} 
-                link_map_value.clear();
-                link_map_value.push_back(lx);
-                link_map_value.push_back(ly);
-                link_map_value.push_back(ltheta);
-                link_map[ network.size()-1 ] = link_map_value;
                 mono_map[ i ].push_back(network.size() -1);
-
+                
                 // Add the actin monomer
                 network.push_back( actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
 
