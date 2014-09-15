@@ -53,8 +53,8 @@ void Link::step()
     //            head 1 will be connected to the BARBED end of a filament
     hx[0]=actin_network->get_ends(aindex[0])[2];
     hy[0]=actin_network->get_ends(aindex[0])[3];
-    hx[1]=actin_network->get_ends(aindex[0])[0];
-    hy[1]=actin_network->get_ends(aindex[0])[1];
+    hx[1]=actin_network->get_ends(aindex[1])[0];
+    hy[1]=actin_network->get_ends(aindex[1])[1];
 
     phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
 
@@ -81,3 +81,16 @@ void Link::actin_update()
     actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
     actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
 }
+
+void BendingLink::step()
+{
+    
+    hx[0]=actin_network->get_position(aindex[0])[0];
+    hy[0]=actin_network->get_position(aindex[0])[1];
+    hx[1]=actin_network->get_position(aindex[1])[0];
+    hy[1]=actin_network->get_position(aindex[1])[1];
+
+    phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
+
+}
+

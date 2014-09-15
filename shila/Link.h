@@ -35,7 +35,7 @@ class Link
         void step();
         void actin_update();
 
-    private:
+    protected:
 
         double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], lk;
         
@@ -46,4 +46,11 @@ class Link
         actin_ensemble *actin_network;
 
 };
+
+class BendingLink : public Link
+{
+    public:
+        void step();
+};
+
 #endif
