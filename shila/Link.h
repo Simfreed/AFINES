@@ -47,10 +47,21 @@ class Link
 
 };
 
-class BendingLink : public Link
+class MidLink : public Link
 {
     public:
         void step();
 };
 
+class BendingLink : public Link
+{
+    public:
+        BendingLink(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
+
+        void actin_update();
+
+    protected:
+        double bk;
+
+};
 #endif
