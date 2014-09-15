@@ -1,6 +1,6 @@
 #include "actin_ensemble.h"
 #include "link_ensemble.h"
-#include "motor.h"
+#include "motor_ensemble.h"
 #include "globals.h"
 
 #define xrange 250.0
@@ -9,10 +9,10 @@
 #define ygrid 500.0
 
 #define tinit 0.0
-#define tfinal 0.001 
+#define tfinal 100
 // #define dt 0.0001 -- defined previously
-#define print_dt 1
-#define stdout_dt 1
+#define print_dt 1000
+#define stdout_dt 10000
 
 int main(int argc, char* argv[]){
     
@@ -55,8 +55,8 @@ int main(int argc, char* argv[]){
 
     // Time 
     int count=0;
-    int timesteps=ceil(tfinal/dt);
     double t=tinit;
+    double ntimesteps = (tfinal - tinit)/dt;
 
     // Output
     std::string dir, afile, mfile, lfile;
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]){
 		}
         //update network
         myosins.motor_walk();
-        
+        lks.link_walk(); 
         angle_correlations = net.get_angle_correlation(0); //assume one polymer
 
         angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
@@ -163,8 +163,7 @@ int main(int argc, char* argv[]){
     
     // distance     correlation_polymer1        correlation polymer_2       correlation_polymer_3       ....
     
-    double ntimesteps = (tfinal - tinit)/dt;
-    for (int i = 1; i < angle_correlations_sum.size(); i++){
+    for (unsigned int i = 1; i < angle_correlations_sum.size(); i++){
         pl<< i * actin_length << "\t" << angle_correlations_sum[i]/ntimesteps<<"\n";
     }
     
