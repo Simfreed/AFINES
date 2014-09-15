@@ -97,7 +97,7 @@ double dot(double x1, double y1, double x2, double y2)
 double mean(std::vector<double> vals)
 {
     double sum = 0;
-    for (int i = 0; i < vals.size(); i++){
+    for (unsigned int i = 0; i < vals.size(); i++){
         sum+= vals[i];
     }
     return sum / vals.size();
@@ -107,7 +107,7 @@ double mean(std::vector<double> vals)
 double var(std::vector<double> vals)
 {
     double m = mean(vals), sum = 0;
-    for (int i = 0; i < vals.size(); i++){
+    for (unsigned int i = 0; i < vals.size(); i++){
         sum += (vals[i] - m)*(vals[i] - m);
     }
     return sum / vals.size();
@@ -116,7 +116,7 @@ double var(std::vector<double> vals)
 double mode_var(std::vector<double> vals, double m)
 {
     double sum = 0;
-    for (int i = 0; i < vals.size(); i++){
+    for (unsigned int i = 0; i < vals.size(); i++){
         sum += (vals[i] - m)*(vals[i] - m);
     }
     return sum / vals.size();
@@ -132,7 +132,7 @@ std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2)
     else if (v1.size() != v2.size())
         return s;
     else{
-        for (int i = 0; i < v1.size(); i++){
+        for (unsigned int i = 0; i < v1.size(); i++){
             s.push_back(v1[i] + v2[i]);
         }
     }

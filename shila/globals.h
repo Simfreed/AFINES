@@ -27,12 +27,13 @@
 #include <stdlib.h>
 #include "vector"
 
-/* distances in microns, time in seconds, forces in pN */
+/* distances in microns, time in seconds, forces in pN * 
+ * --> Temp in pN-um                                   */
 
 #define pi            3.14159265358979323
 #define eps           0.001
 #define dt            0.0001   
-#define temperature   0
+#define temperature   0.004
 
 /*generic functions to be used below*/
 
