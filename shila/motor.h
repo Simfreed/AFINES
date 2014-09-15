@@ -18,7 +18,6 @@ class actin_ensemble;
 
 //=====================================
 //included dependences
-#include "vector"
 #include "map"
 #include "string"
 
@@ -65,40 +64,11 @@ class motor
         
         actin_ensemble *actin_network;
         
-        double /*pos_actin[2],*/ pos_a_end[2], fov[2];
+        double pos_a_end[2], fov[2];
 
         inline void move_end_detach(int hd, double speed, double pos);
 
         inline void reflect(double x1, double x2, double y1, double y2);
-};
-
-
-//motor ensemble class
-class motor_ensemble
-{
-    public:
-
-        motor_ensemble(double mdensity, double fovx, double fovy, double mlen, actin_ensemble* network, double v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis);
-
-        ~motor_ensemble();
-
-        void motor_walk();
-
-        void reshape();
-
-        void motor_write(std::ofstream& fout);
-
-        void motor_tension(std::ofstream& fout);
-
-        void add_motor(motor m);
-
-    private:
-
-        double fov[2], mrho, mld, mang, motorx, motory, mphi, mcor[3],alpha;
-        int nm, s[2],a[2];
-        actin_ensemble *a_network;
-        std::vector<motor> n_motors;  
-        std::string color;
 };
 
 #endif
