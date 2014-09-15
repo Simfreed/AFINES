@@ -17,8 +17,7 @@ link_ensemble::~link_ensemble(){};
 
 void link_ensemble::link_walk()
 {
-    for (int i=0; i<links.size(); i++) {
-
+    for (unsigned int i=0; i<links.size(); i++) {
         links[i].step();
         links[i].actin_update();
     }
@@ -26,7 +25,7 @@ void link_ensemble::link_walk()
 
 void link_ensemble::link_write(std::ofstream& fout)
 {
-    for (int i=0; i<links.size(); i++) {
+    for (unsigned int i=0; i<links.size(); i++) {
         fout<<links[i].get_heads()[0]<<"\t"<<links[i].get_heads()[1]<<"\t"
             <<links[i].get_heads()[2]-links[i].get_heads()[0]<<"\t"<<
             links[i].get_heads()[3]-links[i].get_heads()[1]<<"\t"<<
