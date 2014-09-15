@@ -35,7 +35,7 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
     double * rod_end_pts;
     double  xcm, ycm, theta;
     for (int i=0; i<npolymer; i++) {
-        theta=3*pi/2;//rng(0,2*pi);
+        theta=0;//rng(0,2*pi);
         //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
         //the start of the polymer: 
         //            network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
@@ -44,8 +44,8 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
         //Add the quadrants of the first rod
         std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
-        for (int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-            for (int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
+        for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
+            for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
                 quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
             }
         }
@@ -86,8 +86,8 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
                 // Add it's quadrants:
                 std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
-                for (int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-                    for (int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
+                for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
+                    for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
                         quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
                     }
                 }
@@ -104,10 +104,10 @@ actin_ensemble::~actin_ensemble(){ };
 void actin_ensemble::quad_update()
 {
     quad_fils.clear();
-    for (int i=0; i<network.size(); i++) {
+    for (unsigned int i=0; i<network.size(); i++) {
         std::vector<std::vector<int> > tmp_quads=network[i].get_quadrants();
-        for (int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-            for (int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
+        for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
+            for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
                 quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(i);
             }
         }
@@ -172,7 +172,7 @@ void actin_ensemble::update()
 {
     ///Maybe change 6 to 4 for 2d
     av_vel=0;
-    for (int i=0; i<network.size(); i++) {
+    for (unsigned int i=0; i<network.size(); i++) {
         vpar=(network[i].get_forces()[0])/network[i].get_friction()[0]  + sqrt(6*temperature/(dt*network[i].get_friction()[0]))*rng_n(0,1);
         vperp=(network[i].get_forces()[1])/network[i].get_friction()[1] + sqrt(6*temperature/(dt*network[i].get_friction()[1]))*rng_n(0,1);
         vx=vpar*cos(network[i].getpos()[2])-vperp*sin(network[i].getpos()[2]);
@@ -220,7 +220,7 @@ void actin_ensemble::update_forces(int index, double f1, double f2, double f3)
 
 void actin_ensemble::write(std::ofstream& fout)
 {
-    for (int i=0; i<network.size(); i++) {
+    for (unsigned int i=0; i<network.size(); i++) {
         fout<<network.at(i).getendpts()[0]<<"\t"<<network.at(i).getendpts()[1]<<"\t"<<network.at(i).getendpts()[2]-network.at(i).getendpts()[0]<<"\t"<<network.at(i).getendpts()[3]-network.at(i).getendpts()[1]<<"\n";
     } 
 }
@@ -237,7 +237,7 @@ std::vector<double> actin_ensemble::get_angle_correlation(int polymer_index)
     double sum = 0, phi1, phi2;
     std::vector<double> corr;
     std::vector<int> monos = mono_map[polymer_index]; 
-    for(int i = 0; i < monos.size() - 1; i++){
+    for(unsigned int i = 0; i < monos.size() - 1; i++){
 
         phi1 = network.at(monos[i]).getposcm()[2]; 
         phi2 = network.at(monos[i+1]).getposcm()[2]; 
@@ -255,7 +255,7 @@ std::map<int, std::vector<double> > actin_ensemble::get_all_angle_correlations()
 {
     std::map<int, std::vector<double> > corrs;
 
-    for(int i = 0; i < mono_map.size(); i++){
+    for(unsigned int i = 0; i < mono_map.size(); i++){
         corrs[i] = this->get_angle_correlation(i);
     }
 
@@ -291,8 +291,8 @@ void actin_ensemble::actin_ensemble::connect_polymers(link_ensemble * links, dou
         std::string link_color){
     int monomer_index;
     std::vector<double> motor_coords;
-    for (int i = 0; i < mono_map.size(); i++){
-        for (int j = 0; j < mono_map[i].size(); j++){
+    for (unsigned int i = 0; i < mono_map.size(); i++){
+        for (unsigned int j = 0; j < mono_map[i].size(); j++){
             monomer_index = mono_map[i][j];
             //            motor_coords = link_map[monomer_index];
             links->add_link( Link( link_length, link_stiffness, this, monomer_index, monomer_index + 1,  link_color) );
@@ -307,31 +307,14 @@ void actin_ensemble::actin_ensemble::connect_polymers(link_ensemble * links,
         double b_link_stiffness, std::string b_link_color){
 
     int mono1, mono2;
-    double x1, x2, y1, y2, ang, link_length2, b_link_length1, b_link_length2;
-    std::vector<double> motor_coords;
-    for (int i = 0; i < mono_map.size(); i++){
-        for (int j = 0; j < mono_map[i].size(); j++){
+    for (unsigned int i = 0; i < mono_map.size(); i++){
+        for (unsigned int j = 0; j < mono_map[i].size(); j++){
 
             // Join monomers within the polymer
             mono1 = mono_map[i][j];
             mono2 = mono1 + 1; //mono_map[i][j+1];
 
-            link_length2 = 10; //dis_points(x1, x2, y1, y2) + 100 * eps;
-            std::cout<<"DEBUG: motor angle = "<<ang<<"\n";
             links->add_link( Link( link_length, link_stiffness, this, mono1, mono2,  link_color) );
-
-            // Add bending energy links
-            x1      = network[mono1].getposcm()[0];
-            y1      = network[mono1].getposcm()[1];
-            x2      = network[mono2].getposcm()[0];
-            y2      = network[mono2].getposcm()[1];
-            b_link_length1 = network[mono1].get_length()/2 + network[mono2].get_length()/2 + link_length;
-            b_link_length2 = dis_points(x1,y1,x2,y2);
-            //            std::cout<<"DEBUG: b_link_length2-b_link_length1 : "<<b_link_length2-b_link_length1<<"\n";
-
-            //            mots->add_motor( motor( (x2+x1)/2, (y2+y1)/2, motor_coords[2],//atan2(y2-y1,x2-x1), 
-            //                        b_link_length1, this, 1, 1, mono1, mono2, fov[0], fov[1], 0, b_link_stiffness,
-            //                        0, 0, 0, ld, visc, b_link_color) ); 
 
         }
     }
