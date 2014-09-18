@@ -42,12 +42,10 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     if (state0){
         pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[0],actin_network->get_ends(aindex[0])[1]),
                 dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[2],actin_network->get_ends(aindex[0])[3]));
-        std::cout<<"DEBUG: distance of head 0 from pointy end of actin monomer "<<aindex[0]<<" : "<<pos_a_end[0]<<"\n";
     }
     if (state1){
         pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[0],actin_network->get_ends(aindex[1])[1]),
                 dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[2],actin_network->get_ends(aindex[1])[3]));
-        std::cout<<"DEBUG: distance of head 1 from pointy end of actin monomer "<<aindex[1]<<" : "<<pos_a_end[0]<<"\n";
     }
     //        pos_actin[1]=0;
     fov[0]=fovx;
@@ -178,7 +176,6 @@ void motor::step_onehead(int hd)
 void motor::step_twoheads()
 {
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-    std::cout<<"DEBUG: step_twoheads: color = "<< color<< "\tstretch = "<<stretch<<"\n";
     //fm = vec(Fm).(-vec(u)) 
     fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(aindex[0])[0] +
             (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(aindex[0])[1]); 
@@ -226,7 +223,7 @@ void motor::actin_update()
 {
     if (state[0]==1 && state[1]==1) {
         stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-        std::cout<<"DEBUG: actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
+//        std::cout<<"DEBUG: actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
         forcex[0]=-mk*(hx[0]-hx[1]+mld*cos(mphi));
         forcex[1]=-forcex[0];
         forcey[0]=-mk*(hy[0]-hy[1]+mld*sin(mphi));
@@ -282,10 +279,8 @@ void motor::update_shape()
 inline void motor::move_end_detach(int hd, double speed, double pos)
 {
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-    std::cout<<"DEBUG: move_end_detach, before, hd = "<<hd<<" : color = "<< color<< "\tstretch = "<<stretch<<"\n";
     if (pos>=actin_network->get_alength(aindex[hd])) { //not sure why only "greater than or equal"
         if (event(kend,dt)==1) {
-            std::cout<<"The new myosin position of head "<<hd<<" is OFF the actin filament AND detaching\n";
             state[hd]=0;
             aindex[hd]=-1;
             //                pos_actin[hd]=0;
@@ -294,7 +289,6 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
             hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
         }
         else {
-            std::cout<<"The new myosin position of head "<<hd<<" is OFF the actin filament BUT not detaching\n";
             hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
             hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
             mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
@@ -302,7 +296,6 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
         }
     }
     else {
-        std::cout<<"The new myosin position of head "<<hd<<" is "<<pos<<" away from the pointy end of the actin filament \n"; //still on the actin filament";
         pos_a_end[hd]=pos;
         hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
         hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
@@ -310,7 +303,6 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
         //            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
     }
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-    std::cout<<"DEBUG: move_end_detach, after, hd = "<<hd<<" : color = "<< color<< "\tstretch = "<<stretch<<"\n";
 
 }
 

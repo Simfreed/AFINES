@@ -3,11 +3,8 @@
 #include "motor_ensemble.h"
 #include "globals.h"
 
-#define xrange 250.0
-#define yrange 250.0
-#define xgrid 500.0
-#define ygrid 500.0
-
+#define xrange 100.0
+#define yrange 100.0
 #define tinit 0.0
 #define tfinal 100
 // #define dt 0.0001 -- defined previously
@@ -16,6 +13,9 @@
 
 int main(int argc, char* argv[]){
     
+    double xgrid=2*xrange;
+    double ygrid=2*yrange;
+
     int seed=time(NULL);
     srand(seed);
 
@@ -37,10 +37,9 @@ int main(int argc, char* argv[]){
     double npolymer = 1; 
 
     // Links 
-    double link_stiffness = motor_stiffness*10;
+    double link_stretching_stiffness = motor_stiffness;
     double link_length = actin_length/10; 
     std::string link_color = "1"; //"blue";
-    std::string b_link_color = "0.25"; //"yellow" (?) 
     
     // Environment
     double viscosity=0.5;
@@ -68,12 +67,13 @@ int main(int argc, char* argv[]){
      * VARIABLES           *
      **********************/
     double nmonomer = 100;
-    double b_link_stiffness = motor_stiffness/10;
+    double link_bending_stiffness = motor_stiffness/10;
     
     if (argc>1) {
-        nmonomer = atof(argv[1]);
-        b_link_stiffness = atof(argv[2]);
-        dir = argv[3];
+        nmonomer                    =   atof(argv[1]);
+        link_bending_stiffness      =   atof(argv[2]);
+        link_stretching_stiffness   =   atof(argv[3]);
+        dir                         =        argv[4] ;
     }
     
     // DERIVED QUANTITIES :
@@ -91,11 +91,13 @@ int main(int argc, char* argv[]){
     pl_fourier.open(persistence_length_fourier_output.c_str());
     o_file.open(output_file.c_str());
     
-    o_file << " FILE: " << output_file <<"\n"<< "Actin Density: " << actin_density  << ", Actin Mean Length: " << actin_length << "\n";
-    o_file << " Motor Density: " << motor_density << ", Motor Rest Length: " << motor_length << ", Motor Stiffness: " << motor_stiffness<<"\n";
-    o_file << ", Motor unloaded speed: " << vmotor << ", Motor binding rate: " << m_kon <<"\n"<<"Motor unbinding rate: " << m_koff << ", Motor end detachment rate: " << m_kend<<", Viscosity: "<<viscosity<<"\n";
-    o_file << " Link Rest Length: "<< link_length <<", Link Stiffness: " << link_stiffness <<"\n";
-    o_file << " Simulation time: " << tfinal - tinit << ", dt: " << dt <<", Number of time steps between output files: "<< print_dt<<"\n";
+    o_file << " FILE: "                 << output_file     <<"\n";
+    o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
+    o_file << " Motor Density: "        << motor_density   << ", Motor Rest Length: "          << motor_length              << ", Motor Stiffness: "       << motor_stiffness        <<"\n";
+    o_file << " Motor unloaded speed: " << vmotor          << ", Motor binding rate: "         << m_kon                     <<"\n";
+    o_file << " Motor unbinding rate: " << m_koff          << ", Motor end detachment rate: "  << m_kend                    <<", Viscosity: "              << viscosity              <<"\n";
+    o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
+    o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", Number of time steps between output files: "<< print_dt<<"\n";
     o_file.close();
     
     
@@ -104,7 +106,7 @@ int main(int argc, char* argv[]){
     std::cout<<"Creating link ensemble...\n";
     link_ensemble lks = link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
-    net.connect_polymers( &lks, link_length, link_stiffness, link_color, b_link_stiffness, b_link_color );
+    net.connect_polymers( &lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
     std::cout<<"Adding motors..\n";
     motor_ensemble myosins=motor_ensemble(motor_density,xrange,yrange,motor_length,&net,vmotor,motor_stiffness,m_kon,m_koff,m_kend,actin_length,viscosity);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
@@ -116,7 +118,6 @@ int main(int argc, char* argv[]){
 		}
         net.update();
         net.quad_update();
-        
         //print to file
 	    if (count%print_dt==0) {
 	        
@@ -130,9 +131,9 @@ int main(int argc, char* argv[]){
 			file_a.open(afile.c_str());
 			file_m.open(mfile.c_str());
             file_l.open(lfile.c_str());
-			
+		    
             net.write(file_a);
-			myosins.motor_write(file_m);
+            myosins.motor_write(file_m);
             lks.link_write(file_l);
 			file_a.close();
 			file_m.close();
@@ -140,11 +141,11 @@ int main(int argc, char* argv[]){
             
 		}
         //update network
-        myosins.motor_walk();
+        //myosins.motor_walk();
         lks.link_walk(); 
         angle_correlations = net.get_angle_correlation(0); //assume one polymer
-
         angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
+        
         for (int n = 1; n <= n_modes; n++){
             //assuming only one polymer
             fm[n].push_back(net.get_fourier_mode(n, 0));
@@ -172,6 +173,7 @@ int main(int argc, char* argv[]){
         pl_fourier<< ( 1/(n*n*pi*pi) )<<"\t"<<mode_var(fm[n], 0)<<"\n"; 
     }
     
+    lks.delete_all();
     a_final.close();
     m_final.close();
     pl.close(); 
