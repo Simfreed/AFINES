@@ -32,9 +32,21 @@ class link_ensemble
 
         void link_write(std::ofstream& fout);
 
-        void add_link(Link l);
+        void add_link(Link * l);
+        
+        void delete_all();
 
-    private:
-        std::vector<Link> links;
+    protected:
+        std::vector<Link *> links;
 };
+/*
+class bending_link_ensemble : public link_ensemble
+{
+    public:
+        void add_link(BendingLink l);
+
+    protected:
+        std::vector<BendingLink> links;
+};
+*/        
 #endif

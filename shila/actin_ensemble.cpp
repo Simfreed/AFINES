@@ -10,6 +10,7 @@
 #include "globals.h"
 #include "actin_ensemble.h"
 #include "link_ensemble.h"
+#include "Link.h"
 //actin network class
 
 actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len)
@@ -37,10 +38,10 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         theta=rng(0,2*pi);
         //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
         //the start of the polymer: 
-        //            network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
-        //                        theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-        std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-        network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+                    network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
+                                theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+        //std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
+        //network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
         //Add the quadrants of the first rod
         std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
         for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
@@ -274,37 +275,92 @@ double actin_ensemble::get_fourier_mode(int n, int polymer_index){
 
 }
 
-// Adds dead motors between monomers of an actin polymer to act as springs.
-// Needs a motor_ensemble object to work, first 
-void actin_ensemble::actin_ensemble::connect_polymers(link_ensemble * links, double link_length, double link_stiffness, 
-        std::string link_color){
+// Adds Links between monomers
+void actin_ensemble::actin_ensemble::connect_polymers(link_ensemble * links, double link_length, double stretching_stiffness, 
+        double bending_stiffness, std::string link_color){
+    
     int monomer_index;
-    std::vector<double> motor_coords;
     for (unsigned int i = 0; i < mono_map.size(); i++){
         for (unsigned int j = 0; j < mono_map[i].size(); j++){
             monomer_index = mono_map[i][j];
-            //            motor_coords = link_map[monomer_index];
-            links->add_link( Link( link_length, link_stiffness, this, monomer_index, monomer_index + 1,  link_color) );
+            Link * l = new Link( link_length, stretching_stiffness, bending_stiffness, this, monomer_index, monomer_index + 1,  link_color); 
+            links->add_link( l );
+            actin_link_map[monomer_index][monomer_index + 1] = l;
+
         }
     }
 }
-// Adds dead motors between monomers of an actin polymer to act as springs.
-// Add additional dead motors between center of masses of monomers to account for bending energy
-// Needs a motor_ensemble object to work, first 
-void actin_ensemble::actin_ensemble::connect_polymers(link_ensemble * links, 
-        double link_length, double link_stiffness, std::string link_color,
-        double b_link_stiffness, std::string b_link_color){
 
-    int mono1, mono2;
+// Update bending forces between monomers
+void actin_ensemble::bending_update(link_ensemble * links){
+   
+    Link * lft_lnk, ctr_lnk, rt_lnk;
+    double forcex, forcey, force_par, force_perp, left_torque, right_torque;
+    std::vector<std::vector<double> > forces_x, forces_y;
+    
+
+    //initialize all forces to be 0
     for (unsigned int i = 0; i < mono_map.size(); i++){
         for (unsigned int j = 0; j < mono_map[i].size(); j++){
+            force_x[i][j] = 0;
+            force_y[i][j] = 0;
+        }
+    }
+    
+    //Calculate the force at each Link position as outlined by Nedelec, Foethke (2007)
+    //Keep the forces at the ends of each filament 0
+    for (unsigned int i = 0; i < mono_map.size(); i++){
+        
+        for (unsigned int j = 1; j < mono_map[i].size() - 1; j++){
+            
+             
+            lft_lnk = actin_link_map[mono_map[i][j-1]][mono_map[i][j  ]];
+            ctr_lnk = actin_link_map[mono_map[i][j  ]][mono_map[i][j+1]];
+            rt_lnk  = actin_link_map[mono_map[i][j+1]][mono_map[i][j+2]];
+            
+            forcex = lft_link->get_kb * lft_lnk->get_posx - 2 * ctr_lnk->get_kb * ctr_lnk->get_posx + rt_lnk->get_kb * rt_lnk->get_posx;
+            forcey = lft_link->get_kb * lft_lnk->get_posy - 2 * ctr_lnk->get_kb * ctr_lnk->get_posy + rt_lnk->get_kb * rt_lnk->get_posy;
 
-            // Join monomers within the polymer
-            mono1 = mono_map[i][j];
-            mono2 = mono1 + 1; //mono_map[i][j+1];
+            forces_x[i][j-1] += -1 * force_x;
+            forces_x[i][j]   +=  2 * force_x;
+            forces_x[i][j+1] += -1 * force_x;
 
-            links->add_link( Link( link_length, link_stiffness, this, mono1, mono2,  link_color) );
+            forces_y[i][j-1] += -1 * force_y;
+            forces_y[i][j]   +=  2 * force_y;
+            forces_y[i][j+1] += -1 * force_y;
+           
+            lft_lnk = ctr_lnk;
+            ctr_lnk = rt_lnk;
+        }
+    }
+
+    //Calculate the forces at each center of mass of the monomers
+    //Update the monomer
+    for (unsigned int i = 0; i < actin_network->mono_map.size(); i++){
+        for (unsigned int j = 0; j < actin_network->mono_map[i].size(); j++){
+            
+            forcex = (forces_x[i][j] + forces_x[i][j+1]) / 2;
+            forcey = (forces_y[i][j] + forces_y[i][j+1]) / 2;
+            
+            force_par   =    forcex*this->get_direction(mono_map[i][j])[0] + forcey*this->get_direction(mono_map[i][j])[1];
+            force_perp  =   -forcex*this->get_direction(mono_map[i][j])[1] + forcey*this->get_direction(mono_map[i][j])[0];
+            
+            if (j == 0)
+                left_torque = 0;
+            else
+                left_torque = cross(left_linkx-this->get_position(mono_map[i][j])[0], left_linky-this->get_position(mono_map[i][j])[1], forcex, forcey);
+            
+            if (j == mono_map[i])
+                right_torque = 0;
+            else
+                right_torque = cross(right_linkx-this->get_position(mono_map[i][j])[0], right_linky-this->get_position(mono_map[i][j])[1], forcex, forcey);
+
+            actin_network->update_forces(mono_map[i][j], force_par, force_perp, left_torque + right_torque);
+            
 
         }
     }
+
 }
+
+

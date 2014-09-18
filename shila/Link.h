@@ -19,25 +19,30 @@ class actin_ensemble;
 //=====================================
 //included dependences
 #include "string"
+#include "vector"
 
 //=====================================
 //Link class
 class Link
 {
     public:
-        Link(double len, double stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
+        Link(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
         ~Link();
 
         double* get_heads();
-
+        double get_kb();
+        double get_posx();
+        double get_posy();
         std::string get_color();
 
         void step();
         void actin_update();
-
+    
     protected:
 
-        double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], lk;
+        double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], lk, bk, xcm, ycm;
+        
+        std::vector<std::vector<double> > bending_forces;        
         
         int aindex[2];
         
@@ -51,17 +56,5 @@ class MidLink : public Link
 {
     public:
         void step();
-};
-
-class BendingLink : public Link
-{
-    public:
-        BendingLink(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
-
-        void actin_update();
-
-    protected:
-        double bk;
-
 };
 #endif

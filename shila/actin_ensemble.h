@@ -14,6 +14,7 @@
 
 //=====================================
 // forward declared dependencies
+class Link;
 class link_ensemble;
 
 //=====================================
@@ -63,12 +64,10 @@ class actin_ensemble
 
         double get_fourier_mode(int n, int polymer_index);
 
-        void connect_polymers(link_ensemble * links, double link_length, double link_stiffness, std::string link_color);
-        
-        void connect_polymers(link_ensemble * links, 
-                double link_length, double link_stiffness, std::string link_color,
-                double b_link_stiffness, std::string b_link_color);
-    
+        void connect_polymers(link_ensemble * links, double link_length, double link_stiffness, double bending_stiffness, std::string link_color);
+
+        void update_bending(link_ensemble * links);
+
     private:
         double fov[2], rho, ld, xnew, ynew, phinew, vpar, omega, vperp, vx, vy, alength, view, a_ends[4], av_vel, visc;
         
@@ -80,7 +79,7 @@ class actin_ensemble
         
         std::vector<int> empty_vector;
         
-        std::map<int, std::vector<double> > link_map; //Maps {monomer} --> {link_xcm, link_ycm, link_angle} 
+        std::map<int, std::map<std::vector<Link *> > actin_link_map; //Maps {aindex0, aindex1} --> *Link
         
         std::map<int, std::vector<int> > mono_map; //Maps {filament index} --> {list of monomer indices}        
         
