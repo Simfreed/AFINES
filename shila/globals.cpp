@@ -39,16 +39,10 @@ double rng_exp(double mean)
 double rng_n(double mean, double var)
 {
     double U, V, Z;
-    int phase = 0;
     
-    if(phase == 0) {
-        U = (rand() + 1.) / (RAND_MAX + 2.);
-        V = rand() / (RAND_MAX + 1.);
-        Z = sqrt(-2 * log(U)) * sin(2 * pi * V);
-    } else
-        Z = sqrt(-2 * log(U)) * cos(2 * pi * V);
-
-    phase = 1 - phase;
+    U = (rand() + 1.) / (RAND_MAX + 2.);
+    V = rand() / (RAND_MAX + 1.);
+    Z = sqrt(-2 * log(U)) * sin(2 * pi * V);
 
     return mean+var*Z;
 }
