@@ -14,8 +14,8 @@
 Link::Link(double len, double stretching_stiffness, double bending_stiffness, 
         actin_ensemble* network, int aindex0, int aindex1, std::string col)
 {
-    lk              =   stretching_stiffness;
-    bk              =   bending_stiffness;
+    kl              =   stretching_stiffness;
+    kb              =   bending_stiffness;
     ld              =   len;
     aindex[0]       =   aindex0;
     aindex[1]       =   aindex1;
@@ -51,10 +51,23 @@ void Link::step()
 {
     //CONVENTION: head 0 will be connected to the POINTY end of a filament
     //            head 1 will be connected to the BARBED end of a filament
-    hx[0]=actin_network->get_ends(aindex[0])[2];
-    hy[0]=actin_network->get_ends(aindex[0])[3];
-    hx[1]=actin_network->get_ends(aindex[1])[0];
-    hy[1]=actin_network->get_ends(aindex[1])[1];
+    
+    if (aindex[0]==-1){ //leftmost end of the polymer
+        hx[1] = actin_network->get_ends(aindex[1])[0];
+        hy[1] = actin_network->get_ends(aindex[1])[1];
+        hx[0] = hx[1] - ld*cos( actin_network->get_position(aindex[1])[2] );
+        hy[0] = hy[1] - ld*sin( actin_network->get_position(aindex[1])[2] );
+    }else if(aindex[1] == -1){ //rightmost end of the polymer
+        hx[0] = actin_network->get_ends(aindex[0])[2];
+        hy[0] = actin_network->get_ends(aindex[0])[3];
+        hx[1] = hx[0] + ld*cos( actin_network->get_position(aindex[0])[2] );
+        hy[1] = hy[0] + ld*sin( actin_network->get_position(aindex[0])[2] );
+    }else{
+        hx[0] = actin_network->get_ends(aindex[0])[2];
+        hy[0] = actin_network->get_ends(aindex[0])[3];
+        hx[1] = actin_network->get_ends(aindex[1])[0];
+        hy[1] = actin_network->get_ends(aindex[1])[1];
+    }
 
     phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
 
@@ -63,18 +76,18 @@ void Link::step()
 void Link::actin_update()
 {
 
-    double force_bend, force_stretch;
+    double force_stretch;
     stretch         =   dis_points(hx[0],hy[0],hx[1],hy[1])-ld;
     
 //    std::cout<<"DEBUG: BendingLink::actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
 //    std::cout<<"DEBUG: BendingLink::actin_update: color = "<< color<< "\tbend = "<<phi<<"\n";
     
     //Bending Force: 
-    force_stretch   =   lk * stretch;
+    force_stretch   =   kl * stretch;
 
-    forcex[0]       =   force_stretch * cos(phi) - force_bend * sin(phi); //-lk*(hx[0]-hx[1]+ld*cos(phi)); <-- old formula, probably equivalent
+    forcex[0]       =   force_stretch * cos(phi); //-kl*(hx[0]-hx[1]+ld*cos(phi)); <-- old formula, probably equivalent
     forcex[1]       =   -forcex[0];
-    forcey[0]       =   force_stretch * sin(phi) + force_bend * cos(phi); //-lk*(hy[0]-hy[1]+ld*sin(phi)); <-- old formula, probably equivalent
+    forcey[0]       =   force_stretch * sin(phi); //-kl*(hy[0]-hy[1]+ld*sin(phi)); <-- old formula, probably equivalent
     forcey[1]       =   -forcey[0];
 
     force_par[0]    =   forcex[0]*actin_network->get_direction(aindex[0])[0] + forcey[0]*actin_network->get_direction(aindex[0])[1];

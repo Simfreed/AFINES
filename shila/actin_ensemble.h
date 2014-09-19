@@ -66,20 +66,20 @@ class actin_ensemble
 
         void connect_polymers(link_ensemble * links, double link_length, double link_stiffness, double bending_stiffness, std::string link_color);
 
-        void update_bending(link_ensemble * links);
+        void update_bending();
 
     private:
         double fov[2], rho, ld, xnew, ynew, phinew, vpar, omega, vperp, vx, vy, alength, view, a_ends[4], av_vel, visc;
         
-        double link_ld, lx, ly, ltheta;
+        double link_ld, ltheta;
         
-        int npolymer, nmonomer_max, nmonomer_min, nq[2], xn, yn, qxcm, qycm;
+        int npolymer, nq[2];//, xn, yn, qxcm, qycm;
         
         std::vector<actin> network;
         
         std::vector<int> empty_vector;
         
-        std::map<int, std::map<std::vector<Link *> > actin_link_map; //Maps {aindex0, aindex1} --> *Link
+        std::map<int, std::map<int, Link * > > actin_link_map; //Maps {aindex0, aindex1} --> *Link
         
         std::map<int, std::vector<int> > mono_map; //Maps {filament index} --> {list of monomer indices}        
         

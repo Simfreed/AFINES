@@ -40,7 +40,7 @@ class Link
     
     protected:
 
-        double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], lk, bk, xcm, ycm;
+        double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], kl, kb, xcm, ycm;
         
         std::vector<std::vector<double> > bending_forces;        
         

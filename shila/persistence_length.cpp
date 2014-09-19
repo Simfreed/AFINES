@@ -6,10 +6,10 @@
 #define xrange 100.0
 #define yrange 100.0
 #define tinit 0.0
-#define tfinal 100
+#define tfinal 1
 // #define dt 0.0001 -- defined previously
-#define print_dt 1000
-#define stdout_dt 10000
+#define print_dt 100
+#define stdout_dt 1000
 
 int main(int argc, char* argv[]){
     
@@ -39,6 +39,8 @@ int main(int argc, char* argv[]){
     // Links 
     double link_stretching_stiffness = motor_stiffness;
     double link_length = actin_length/10; 
+    double polymer_bending_modulus = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
+    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
     std::string link_color = "1"; //"blue";
     
     // Environment
@@ -67,13 +69,13 @@ int main(int argc, char* argv[]){
      * VARIABLES           *
      **********************/
     double nmonomer = 100;
-    double link_bending_stiffness = motor_stiffness/10;
+//  double link_bending_stiffness = motor_stiffness/10;
     
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
-        link_bending_stiffness      =   atof(argv[2]);
-        link_stretching_stiffness   =   atof(argv[3]);
-        dir                         =        argv[4] ;
+//        link_bending_stiffness      =   atof(argv[2]);
+        link_stretching_stiffness   =   atof(argv[2]);
+        dir                         =        argv[3] ;
     }
     
     // DERIVED QUANTITIES :
@@ -116,8 +118,11 @@ int main(int argc, char* argv[]){
 		if (count%stdout_dt==0) {
 			std::cout<<"Time counts: "<<count<<"\n";
 		}
+        net.update_bending();
         net.update();
+        
         net.quad_update();
+
         //print to file
 	    if (count%print_dt==0) {
 	        
