@@ -3,6 +3,7 @@
  *  
  *
  *  Created by Shiladitya Banerjee on 9/3/13.
+ *  Modified by Simon Freedman 9/2014
  *  Copyright 2013 University of Chicago. All rights reserved.
  *
  */
@@ -38,10 +39,10 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         theta=rng(0,2*pi);
         //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
         //the start of the polymer: 
-                    network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
-                                theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-        //std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-        //network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+        //network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
+        //            theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+        std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
+        network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
         //Add the quadrants of the first rod
         std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
         for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
@@ -51,9 +52,10 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         }
         // add monomers to the polymer
         mono_map[i] = empty_vector; 
+        mono_map[i].push_back(network.size()-1);
         for (int j=0; j<nmonomer-1; j++) {
 
-            // Calculate a link (represented as a dead motor) at the end of the rod
+            // Calculate a link at the end of the rod
             ltheta = theta; //rng(0, 2*pi);
 
             // Calculate the Next rod on the actin polymer--  continues from the link
@@ -69,10 +71,10 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
                 break;
             }else{
 
-                mono_map[ i ].push_back(network.size() -1);
                 
                 // Add the actin monomer
                 network.push_back( actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+                mono_map[ i ].push_back(network.size()-1);
 
                 // Add it's quadrants:
                 std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
@@ -226,11 +228,11 @@ std::vector<double> actin_ensemble::get_angle_correlation(int polymer_index)
 {
     double sum = 0, phi1, phi2;
     std::vector<double> corr;
-    std::vector<int> monos = mono_map[polymer_index]; 
-    for(unsigned int i = 0; i < monos.size() - 1; i++){
+    std::vector<int> * monos = &mono_map[polymer_index]; 
+    for(unsigned int i = 0; i < monos->size() - 1; i++){
 
-        phi1 = network.at(monos[i]).getposcm()[2]; 
-        phi2 = network.at(monos[i+1]).getposcm()[2]; 
+        phi1 = network.at(monos->at(i)).getposcm()[2]; 
+        phi2 = network.at(monos->at(i+1)).getposcm()[2]; 
 
         sum += cos(phi2 - phi1);
 
@@ -276,135 +278,129 @@ double actin_ensemble::get_fourier_mode(int n, int polymer_index){
 }
 
 // Adds Links between monomers
-void actin_ensemble::actin_ensemble::connect_polymers(link_ensemble * links, double link_length, double stretching_stiffness, 
-        double bending_stiffness, std::string link_color){
-    
-    int monomer_index;
+void actin_ensemble::connect_polymers(link_ensemble * links, double link_length, double
+        stretching_stiffness, double bending_stiffness, std::string link_color)
+{
+    int mono1, mono2;
     Link * l;
     for (unsigned int i = 0; i < mono_map.size(); i++){
         
-        l = new Link( link_length, stretching_stiffness, bending_stiffness, this, -1, mono_map[i][0],  link_color); 
+        mono1 = mono_map[i][0];
+        l = new Link( link_length, stretching_stiffness, bending_stiffness, this, -1, mono1,  link_color); 
         links->add_link( l );
-        actin_link_map[-1][mono_map[i][0]] = l;
-        
-        for (unsigned int j = 0; j < mono_map[i].size(); j++){
-            monomer_index = mono_map[i][j];
-            l = new Link( link_length, stretching_stiffness, bending_stiffness, this, monomer_index,
-                    monomer_index + 1,  link_color); 
+        actin_link_map[-1][mono1] = l;
+    
+        for (unsigned int j = 1; j < mono_map[i].size(); j++){
+            mono2 = mono_map[i][j];
+            l = new Link( link_length, stretching_stiffness, bending_stiffness, this, mono1, mono2, link_color); 
             links->add_link( l );
-            actin_link_map[monomer_index][monomer_index + 1] = l;
-
+            actin_link_map[mono1][mono2] = l;
+        //    std::cout<<"DEBUG: created "<<j<<"th link between monomers "<<mono1<<" and "<<mono2<<"\n";
+        //    std::cout<<"DEBUG: "<<l->to_string();
+            mono1 = mono2;
         }
         
-        l = new Link( link_length, stretching_stiffness, bending_stiffness, this, mono_map[i][mono_map[i].size()], -1,
-                link_color); 
+        l = new Link( link_length, stretching_stiffness, bending_stiffness, this, mono1, -1, link_color); 
         links->add_link( l );
-        actin_link_map[mono_map[i][mono_map[i].size()]][-1] = l;
+        actin_link_map[mono1][-1] = l;
 
+    }
+}
+
+void actin_ensemble::update_polymer_bending(int polymer_index)
+{
+
+    Link * lft_lnk, * ctr_lnk, * rt_lnk;
+    double forcex, forcey, force_par, force_perp, lft_trq, rt_trq;
+    int mono1, mono2, mono3;
+    std::vector<double> node_forces_x, node_forces_y;
+    std::vector<int> * monomers = &mono_map[polymer_index];
+    
+    if (monomers->size() < 2){ //no bending energy!
+        return;
+    }
+    
+    //initialize all NODE forces to be 0
+    for (unsigned int j = 0; j <= monomers->size(); j++){
+        node_forces_x.push_back(0);
+        node_forces_y.push_back(0);
+    }
+    
+    //Calculate the force at each Link position as outlined by Nedelec, Foethke (2007)
+    //Keep the forces at the ends of each filament 0
+    
+    mono1 = monomers->at(0);
+    mono2 = monomers->at(1);
+    lft_lnk = actin_link_map[-1][mono1];
+    ctr_lnk = actin_link_map[mono1][mono2];
+    
+    for (unsigned int j = 2; j <= monomers->size(); j++){
+
+        if( j == monomers->size() )
+            rt_lnk = actin_link_map[mono2][-1];
+        else{ 
+            mono3 = monomers->at(j);
+            rt_lnk = actin_link_map[mono2][mono3];
+        }
+        forcex =    lft_lnk->get_kb() * lft_lnk->get_posx() 
+              - 2 * ctr_lnk->get_kb() * ctr_lnk->get_posx() 
+              +     rt_lnk->get_kb()  * rt_lnk->get_posx(); 
+        
+        forcey =    lft_lnk->get_kb() * lft_lnk->get_posy() 
+              - 2 * ctr_lnk->get_kb() * ctr_lnk->get_posy() 
+              +     rt_lnk->get_kb()  * rt_lnk->get_posy();
+
+        node_forces_x[j-2] += -1 * forcex;
+        node_forces_x[j-1] +=  2 * forcex;
+        node_forces_x[j  ] += -1 * forcex;
+
+        node_forces_y[j-2] += -1 * forcey;
+        node_forces_y[j-1] +=  2 * forcey;
+        node_forces_y[j  ] += -1 * forcey;
+
+        lft_lnk = ctr_lnk;
+        ctr_lnk = rt_lnk;
+        mono2 = mono3;
+    }
+    //Calculate the forces at each center of mass of the monomers
+    //Update the monomer
+
+    lft_lnk = actin_link_map[-1][monomers->at(0)];
+
+    for (unsigned int j = 0; j < monomers->size(); j++){
+    
+        forcex = (node_forces_x[j] + node_forces_x[j+1]) / 2;
+        forcey = (node_forces_y[j] + node_forces_y[j+1]) / 2;
+
+        force_par   =  forcex*this->get_direction(monomers->at(j))[0] + forcey*this->get_direction(monomers->at(j))[1];
+        force_perp  = -forcex*this->get_direction(monomers->at(j))[1] + forcey*this->get_direction(monomers->at(j))[0];
+        
+        if (j == 0)
+            lft_trq = 0;
+        else
+            lft_trq = cross(lft_lnk->get_posx() - this->get_position(monomers->at(j))[0],
+                            lft_lnk->get_posy() - this->get_position(monomers->at(j))[1], forcex, forcey);
+
+        if (j == monomers->size()-1)
+            rt_trq = 0;
+        else{
+            rt_lnk = actin_link_map[monomers->at(j)][monomers->at(j+1)];
+            rt_trq = cross(rt_lnk->get_posx() - this->get_position(monomers->at(j))[0],
+                           rt_lnk->get_posy() - this->get_position(monomers->at(j))[1], forcex, forcey);
+        }
+        
+        this->update_forces(monomers->at(j), force_par, force_perp, lft_trq/2 + rt_trq/2);
+
+        lft_lnk = rt_lnk;
     }
 }
 
 // Update bending forces between monomers
 void actin_ensemble::update_bending(){
     
-    std::cout<<"DEBUG update_bending: made it in.\n";  
-   
-    Link * lft_lnk, * ctr_lnk, * rt_lnk;
-    double forcex, forcey, force_par, force_perp, lft_trq, rt_trq;
-    std::vector<std::vector<double> > forces_x, forces_y;
-    std::cout<<"DEBUG update_bending: declared some variables.\n";  
-
-    //initialize all forces to be 0
-    for (unsigned int i = 0; i < mono_map.size(); i++){
-        
-        forces_x.push_back(new std::vector<double>());
-        forces_y.push_back(new std::vector<double>());
-        
-        for (unsigned int j = 0; j < mono_map[i].size(); j++){
-            forces_x[i].push_back(0);
-            forces_y[i].push_back(0);
-        }
-    }
-    std::cout<<"DEBUG update_bending: made it through the first loop.\n";  
-    //Calculate the force at each Link position as outlined by Nedelec, Foethke (2007)
-    //Keep the forces at the ends of each filament 0
-    for (unsigned int i = 0; i < mono_map.size(); i++){
-        
-        lft_lnk = actin_link_map[-1][mono_map[i][0]];
-        ctr_lnk = actin_link_map[mono_map[i][0]][mono_map[i][1]];
-        
-        for (unsigned int j = 0; j < mono_map[i].size() - 1; j++){
-            
-            if( j + 2 == mono_map[i].size())
-                rt_lnk = actin_link_map[mono_map[i][j+1]][-1];
-            else 
-                rt_lnk = actin_link_map[mono_map[i][j+1]][mono_map[i][j+2]];
-            
-            forcex =       lft_lnk->get_kb() * lft_lnk->get_posx() 
-                     - 2 * ctr_lnk->get_kb()  * ctr_lnk->get_posx() 
-                     +     rt_lnk->get_kb()   * rt_lnk->get_posx(); 
-            
-            forcey =       lft_lnk->get_kb() * lft_lnk->get_posy() 
-                     - 2 * ctr_lnk->get_kb()  * ctr_lnk->get_posy() 
-                     +     rt_lnk->get_kb()   * rt_lnk->get_posy();
-
-            forces_x[i][j-1] += -1 * forcex;
-            forces_x[i][j]   +=  2 * forcex;
-            forces_x[i][j+1] += -1 * forcex;
-
-            forces_y[i][j-1] += -1 * forcey;
-            forces_y[i][j]   +=  2 * forcey;
-            forces_y[i][j+1] += -1 * forcey;
-           
-            lft_lnk = ctr_lnk;
-            ctr_lnk = rt_lnk;
-        }
-            
-    }
-    std::cout<<"DEBUG update_bending: made it through the second loop.\n"; 
-
-    //Calculate the forces at each center of mass of the monomers
-    //Update the monomer
-    for (unsigned int i = 0; i < mono_map.size(); i++){
-
-        lft_lnk = actin_link_map[mono_map[i][-1]][mono_map[i][0]];
-
-        for (unsigned int j = 0; j < mono_map[i].size(); j++){
-            
-            forcex = (forces_x[i][j] + forces_x[i][j+1]) / 2;
-            forcey = (forces_y[i][j] + forces_y[i][j+1]) / 2;
-            
-            force_par   =    forcex*this->get_direction(mono_map[i][j])[0] + forcey*this->get_direction(mono_map[i][j])[1];
-            force_perp  =   -forcex*this->get_direction(mono_map[i][j])[1] + forcey*this->get_direction(mono_map[i][j])[0];
-            
-            if (j == 0)
-                lft_trq = 0;
-            else
-                lft_trq = cross(lft_lnk->get_posx() - this->get_position(mono_map[i][j])[0],
-                                lft_lnk->get_posy() - this->get_position(mono_map[i][j])[1], forcex, forcey);
-            
-            if (j == mono_map[i].size()-1)
-                rt_trq = 0;
-            else
-                rt_lnk = actin_link_map[mono_map[i][j]][mono_map[i][j+1]];
-                rt_trq = cross(rt_lnk->get_posx() - this->get_position(mono_map[i][j])[0],
-                               rt_lnk->get_posy() - this->get_position(mono_map[i][j])[1], forcex, forcey);
-
-            this->update_forces(mono_map[i][j], force_par, force_perp, lft_trq + rt_trq);
-            
-            lft_lnk = rt_lnk;
-
-        }
-
-    }
-    
-    //delete contents of force vectors
-    for (unsigned int i = 0; i < mono_map.size(); i++){
-        for (unsigned int j = 0; j < mono_map[i].size(); j++){
-            delete forces_x[i][j];
-            delete forces_y[i][j];
-
-        }
+    for (unsigned int p = 0; p < mono_map.size(); p++)
+    {
+        this->update_polymer_bending(p);
     }
 }
 

@@ -66,6 +66,8 @@ class actin_ensemble
 
         void connect_polymers(link_ensemble * links, double link_length, double link_stiffness, double bending_stiffness, std::string link_color);
 
+        void update_polymer_bending(int polymer_index);
+
         void update_bending();
 
     private:

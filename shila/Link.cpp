@@ -22,6 +22,7 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
     actin_network   =   network;
 
     // Set the coordinates of the heads:
+
     this->step();
     color           =   col; 
 
@@ -69,6 +70,8 @@ void Link::step()
         hy[1] = actin_network->get_ends(aindex[1])[1];
     }
 
+    xcm = (hx[0]+hx[1])/2.0;
+    ycm = (hy[0]+hy[1])/2.0;
     phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
 
 }
@@ -115,6 +118,10 @@ double Link::get_posy(){
     return ycm;
 }
 
+std::string Link::to_string(){
+    return std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
+        + std::to_string(hy[1]-hy[0]) + "\t" + color + "\n";
+}
 void MidLink::step()
 {
     
@@ -125,7 +132,7 @@ void MidLink::step()
 
     phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
     
-    xcm = (hx[0]+hx[1])/2;
-    ycm = (hy[0]+hy[1])/2;
+    xcm = (hx[0]+hx[1])/2.0;
+    ycm = (hy[0]+hy[1])/2.0;
 
 }

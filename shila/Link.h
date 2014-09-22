@@ -34,7 +34,7 @@ class Link
         double get_posx();
         double get_posy();
         std::string get_color();
-
+        std::string to_string();
         void step();
         void actin_update();
     
@@ -47,7 +47,7 @@ class Link
         int aindex[2];
         
         std::string color;
-        
+                
         actin_ensemble *actin_network;
 
 };

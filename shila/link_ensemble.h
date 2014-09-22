@@ -35,18 +35,9 @@ class link_ensemble
         void add_link(Link * l);
         
         void delete_all();
-
+        
+        int size();
     protected:
         std::vector<Link *> links;
 };
-/*
-class bending_link_ensemble : public link_ensemble
-{
-    public:
-        void add_link(BendingLink l);
-
-    protected:
-        std::vector<BendingLink> links;
-};
-*/        
 #endif
