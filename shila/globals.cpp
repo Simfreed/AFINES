@@ -31,7 +31,7 @@ int pr(int num)
 double rng_exp(double mean)
 {
     double u;
-    u=rand() / (RAND_MAX + 1.);;
+    u=rand() / (RAND_MAX + 1.);
     return  -mean*log(u);
 }
 
