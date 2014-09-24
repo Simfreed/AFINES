@@ -150,9 +150,7 @@ double actin::get_length()
 
 double* actin::get_forces()
 {
-    double *fpr;
-    fpr=forces;
-    return fpr;
+    return forces;
 }
 
 void actin::update_force(double f1, double f2, double f3)
@@ -186,27 +184,12 @@ double actin::get_angle()
     return phi;
 }
 
-double* actin::getposcm()
-{
-    double poscm[3];
-    double *ptrs;
-    poscm[0]=x;
-    poscm[1]=y;
-    poscm[2]=phi;
-    ptrs=poscm;
-    return ptrs;
+double * actin::get_start(){
+    return start;
 }
 
-double* actin::getendpts()
-{
-    double endpts[4];
-    double *pts;
-    endpts[0]=start[0];
-    endpts[1]=start[1];
-    endpts[2]=end[0];
-    endpts[3]=end[1];
-    pts=endpts;
-    return pts;
+double * actin::get_end(){
+    return end;
 }
 
 std::vector<std::vector<int> > actin::get_quadrants()

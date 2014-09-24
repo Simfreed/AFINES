@@ -50,9 +50,9 @@ class actin
 
         double* get_friction();
         
-        double* getposcm();
-
-        double* getendpts();
+        double * get_start();
+        
+        double * get_end();
 
         std::vector<std::vector<int> > get_quadrants();
     

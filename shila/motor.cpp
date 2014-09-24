@@ -40,12 +40,12 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     pos_a_end[1]=0;
 
     if (state0){
-        pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[0],actin_network->get_ends(aindex[0])[1]),
-                dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[2],actin_network->get_ends(aindex[0])[3]));
+        pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_start(aindex[0])[0],actin_network->get_start(aindex[0])[1]),
+                dis_points(hx[0],hy[0],actin_network->get_end(aindex[0])[0],actin_network->get_end(aindex[0])[1]));
     }
     if (state1){
-        pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[0],actin_network->get_ends(aindex[1])[1]),
-                dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[2],actin_network->get_ends(aindex[1])[3]));
+        pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_start(aindex[1])[0],actin_network->get_start(aindex[1])[1]),
+                dis_points(hx[1],hy[1],actin_network->get_end(aindex[1])[0],actin_network->get_end(aindex[1])[1]));
     }
     //        pos_actin[1]=0;
     fov[0]=fovx;
@@ -114,7 +114,7 @@ void motor::attach(int hd)
                     }
 
                     //                        pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
-                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],actin_network->get_ends(aindex[hd])[2],actin_network->get_ends(aindex[hd])[3]);
+                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],actin_network->get_end(aindex[hd])[0],actin_network->get_end(aindex[hd])[1]);
                     break;
                 }
             }
@@ -246,25 +246,25 @@ void motor::actin_update()
 void motor::update_shape()
 {
     if (state[0]==1 && state[1]==1) {
-        hx[0]=actin_network->get_ends(aindex[0])[2]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
-        hy[0]=actin_network->get_ends(aindex[0])[3]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
+        hx[0]=actin_network->get_end(aindex[0])[0]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
+        hy[0]=actin_network->get_end(aindex[0])[1]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
         //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_xcm(aindex[0]),actin_network->get_ycm(aindex[0]));
-        hx[1]=actin_network->get_ends(aindex[1])[2]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
-        hy[1]=actin_network->get_ends(aindex[1])[3]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
+        hx[1]=actin_network->get_end(aindex[1])[0]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
+        hy[1]=actin_network->get_end(aindex[1])[1]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
         //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_xcm(aindex[1]),actin_network->get_ycm(aindex[1]));
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==1 && state[1]==0)
     {
-        hx[0]=actin_network->get_ends(aindex[0])[2]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
-        hy[0]=actin_network->get_ends(aindex[0])[3]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
+        hx[0]=actin_network->get_end(aindex[0])[0]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
+        hy[0]=actin_network->get_end(aindex[0])[1]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
         //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_xcm(aindex[0]),actin_network->get_ycm(aindex[0]));
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==0 && state[1]==1)
     {
-        hx[1]=actin_network->get_ends(aindex[1])[2]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
-        hy[1]=actin_network->get_ends(aindex[1])[3]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
+        hx[1]=actin_network->get_end(aindex[1])[0]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
+        hy[1]=actin_network->get_end(aindex[1])[1]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
         //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_xcm(aindex[1]),actin_network->get_ycm(aindex[1]));
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
@@ -289,16 +289,16 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
             hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
         }
         else {
-            hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-            hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+            hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
+            hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
             mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
             //                pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
         }
     }
     else {
         pos_a_end[hd]=pos;
-        hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-        hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+        hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
+        hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
         //            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
     }

@@ -59,8 +59,8 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
             // Calculate the Next rod on the actin polymer--  continues from the link
             //theta = rng(0,2*pi);
-            xcm = network.back().getendpts()[2] + link_ld*cos(ltheta) + ld*0.5*cos(theta);
-            ycm = network.back().getendpts()[3] + link_ld*sin(ltheta) + ld*0.5*sin(theta);
+            xcm = network.back().get_end()[0] + link_ld*cos(ltheta) + ld*0.5*cos(theta);
+            ycm = network.back().get_end()[1] + link_ld*sin(ltheta) + ld*0.5*sin(theta);
 
             // Check that this monomer is in the field of view, otherwise start a new polymer:
             if ( xcm > (0.5*(view*fovx - ld)) || xcm < (-0.5*(view*fovx - ld)) 
@@ -167,9 +167,14 @@ double actin_ensemble::get_alength(int index)
     return network[index].get_length();
 }
 
-double* actin_ensemble::get_ends(int index)
+double * actin_ensemble::get_start(int index)
 {
-    return network[index].getendpts();
+    return network[index].get_start();
+}
+
+double * actin_ensemble::get_end(int index)
+{
+    return network[index].get_end();
 }
 
 void actin_ensemble::update()
@@ -242,7 +247,9 @@ void actin_ensemble::update_forces(int index, double f1, double f2, double f3)
 void actin_ensemble::write(std::ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network.at(i).getendpts()[0]<<"\t"<<network.at(i).getendpts()[1]<<"\t"<<network.at(i).getendpts()[2]-network.at(i).getendpts()[0]<<"\t"<<network.at(i).getendpts()[3]-network.at(i).getendpts()[1]<<"\n";
+        fout<<network.at(i).get_start()[0]<<"\t"<<network.at(i).get_start()[1]<<"\t"
+            <<network.at(i).get_end()[0]-network.at(i).get_start()[0]<<"\t"
+            <<network.at(i).get_end()[1]-network.at(i).get_start()[1]<<"\n";
     } 
 }
 /*

@@ -60,20 +60,20 @@ void Link::step()
     //            head 1 will be connected to the BARBED end of a filament
     
     if (aindex[0]==-1){ //leftmost end of the polymer
-        hx[1] = actin_network->get_ends(aindex[1])[0];
-        hy[1] = actin_network->get_ends(aindex[1])[1];
+        hx[1] = actin_network->get_start(aindex[1])[0];
+        hy[1] = actin_network->get_start(aindex[1])[1];
         hx[0] = hx[1] - ld*cos( actin_network->get_angle(aindex[1]) );
         hy[0] = hy[1] - ld*sin( actin_network->get_angle(aindex[1]) );
     }else if(aindex[1] == -1){ //rightmost end of the polymer
-        hx[0] = actin_network->get_ends(aindex[0])[2];
-        hy[0] = actin_network->get_ends(aindex[0])[3];
+        hx[0] = actin_network->get_end(aindex[0])[0];
+        hy[0] = actin_network->get_end(aindex[0])[1];
         hx[1] = hx[0] + ld*cos( actin_network->get_angle(aindex[0]) );
         hy[1] = hy[0] + ld*sin( actin_network->get_angle(aindex[0]) );
     }else{
-        hx[0] = actin_network->get_ends(aindex[0])[2];
-        hy[0] = actin_network->get_ends(aindex[0])[3];
-        hx[1] = actin_network->get_ends(aindex[1])[0];
-        hy[1] = actin_network->get_ends(aindex[1])[1];
+        hx[0] = actin_network->get_end(aindex[0])[0];
+        hy[0] = actin_network->get_end(aindex[0])[1];
+        hx[1] = actin_network->get_start(aindex[1])[0];
+        hy[1] = actin_network->get_start(aindex[1])[1];
     }
 
     xcm = (hx[0]+hx[1])/2.0;
