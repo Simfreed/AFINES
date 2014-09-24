@@ -33,7 +33,9 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
     }
 }
 
-motor_ensemble::~motor_ensemble( ){ };
+motor_ensemble::~motor_ensemble( ){ 
+    std::cout<<"DELETING MOTOR ENSEMBLE\n";
+};
 
 void motor_ensemble::motor_walk()
 {
@@ -80,13 +82,13 @@ void motor_ensemble::reshape()
 void motor_ensemble::motor_write(std::ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
-        //double stretch=dis_points(n_motors[i].get_heads()[0],n_motors[i].get_heads()[1],n_motors[i].get_heads()[2],n_motors[i].get_heads()[3])-mld;
+        //double stretch=dis_points(n_motors[i].get_hx()[0],n_motors[i].get_hy()[0],n_motors[i].get_hx()[1],n_motors[i].get_hy()[1])-mld;
         /*   if (stretch>3*0.25) {
              continue;
              }
              else{
              */   
-        fout<<n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_heads()[2]-n_motors[i].get_heads()[0]<<"\t"<<n_motors[i].get_heads()[3]-n_motors[i].get_heads()[1]<<"\t"<<n_motors[i].get_color()<<"\n";
+        fout<<n_motors[i].get_hx()[0]<<"\t"<<n_motors[i].get_hy()[0]<<"\t"<<n_motors[i].get_hx()[1]-n_motors[i].get_hx()[0]<<"\t"<<n_motors[i].get_hy()[1]-n_motors[i].get_hy()[0]<<"\t"<<n_motors[i].get_color()<<"\n";
         //}
     } 
 }

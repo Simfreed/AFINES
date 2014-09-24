@@ -79,6 +79,7 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
 }
 
 actin::~actin(){ };
+
 //shortest(perpendicular) distance between an arbitray point and the filament
 double actin::get_distance(double xp, double yp)
 {
@@ -102,9 +103,8 @@ double actin::get_distance(double xp, double yp)
 
 double* actin::get_intpoint(double xp, double yp)
 {
-    double* points;
-    double coordinates[2];
-    double l2=pow(dis_points(start[0],start[1],end[0],end[1]),2);
+    double* coordinates = new double[2];
+    double l2 = pow(dis_points(start[0], start[1], end[0], end[1]) , 2);
     if (l2==0) {
         coordinates[0]=start[0];
         coordinates[1]=start[1];
@@ -122,8 +122,7 @@ double* actin::get_intpoint(double xp, double yp)
         coordinates[0]=start[0]+tp*(end[0]-start[0]);
         coordinates[1]=start[1]+tp*(end[1]-start[1]);
     }
-    points=coordinates;
-    return points;
+    return coordinates;
 }
 
 double actin::get_int_angle(double xp, double yp)

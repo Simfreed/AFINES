@@ -36,16 +36,12 @@ Link::~Link(){
     std::cout<<"DELETING LINK\n";
 };
 
-double* Link::get_heads()
-{
-    double h[4];
-    double *gh;
-    h[0]=hx[0];
-    h[1]=hy[0];
-    h[2]=hx[1];
-    h[3]=hy[1];
-    gh=h;
-    return gh;
+double* Link::get_hx(){
+    return hx;
+}
+
+double* Link::get_hy(){
+    return hy;
 }
 
 std::string Link::get_color()

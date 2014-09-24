@@ -29,7 +29,8 @@ class Link
         Link(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
         ~Link();
 
-        double* get_heads();
+        double* get_hx();
+        double* get_hy();
         double get_kb();
         double get_posx();
         double get_posy();

@@ -34,6 +34,10 @@ class motor
 
         double* get_heads();
 
+        double* get_hx();
+
+        double* get_hy();
+
         std::string get_color();
 
         double tension();

@@ -34,7 +34,7 @@ class link_ensemble
 
         void add_link(Link * l);
         
-        void delete_all();
+        void clear();
         
         int size();
     protected:

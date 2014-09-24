@@ -34,7 +34,7 @@ class actin
 
         double get_int_angle(double xp, double yp);
 
-        double*  get_direction();
+        double* get_direction();
 
         double get_length();
 

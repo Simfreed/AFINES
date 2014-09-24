@@ -13,7 +13,10 @@
 //link ensemble definitions 
 
 link_ensemble::link_ensemble(){};
-link_ensemble::~link_ensemble(){};
+link_ensemble::~link_ensemble(){
+    std::cout<<"DELETING LINK ENSEMBLE\n";
+    links.clear();
+};
 
 void link_ensemble::link_walk()
 {
@@ -40,9 +43,7 @@ int link_ensemble::size()
     return links.size();
 }
 
-void link_ensemble::delete_all()
+void link_ensemble::clear()
 {
-    for (unsigned int i=0; i<links.size(); i++){
-        delete links[i];
-    }
+    links.clear();
 }

@@ -59,11 +59,22 @@ motor::~motor(){ };
 //return motor state with a given head number
 int* motor::get_states() 
 {
-    int* sptr;
+/*    int* sptr;
     sptr=state;
     return sptr;
+*/
+    return state;
 }
 
+double* motor::get_hx()
+{
+    return hx;
+}
+
+double* motor::get_hy()
+{
+    return hy;
+}
 
 double* motor::get_heads()
 {
@@ -103,8 +114,12 @@ void motor::attach(int hd)
                     state[hd]=1;
                     aindex[hd]=it->first;
                     //update head position
-                    hx[hd]=actin_network->get_intpoints(it->first,hx[hd],hy[hd])[0];
-                    hy[hd]=actin_network->get_intpoints(it->first,hx[hd],hy[hd])[1];
+                    
+                    double * intpoint = actin_network->get_intpoints(it->first,hx[hd],hy[hd]);
+                    hx[hd] = intpoint[0];
+                    hy[hd] = intpoint[1];
+                    delete intpoint;
+
                     if (state[pr(hd)]==0) {
                         hx[pr(hd)]=hx[hd]+pow(-1,hd)*mld*cos(mphi);
                         hy[pr(hd)]=hy[hd]+pow(-1,hd)*mld*sin(mphi);

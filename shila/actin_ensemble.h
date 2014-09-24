@@ -29,6 +29,8 @@ class link_ensemble;
 class actin_ensemble
 {
     public:
+        actin_ensemble();
+
         actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer,
                 double link_len);
         
@@ -76,7 +78,10 @@ class actin_ensemble
 
         void update_bending();
         
+        void add_monomer(actin a);
+
         void clear_actin_link_map();
+    
     private:
         double fov[2], rho, ld, view, visc;
         
