@@ -46,7 +46,11 @@ class actin_ensemble
 
         double get_int_direction(int index, double xp, double yp);
 
-        double* get_position(int index);
+        double get_xcm(int index);
+        
+        double get_ycm(int index);
+
+        double get_angle(int index);
 
         double get_alength(int index);
 
@@ -69,9 +73,10 @@ class actin_ensemble
         void update_polymer_bending(int polymer_index);
 
         void update_bending();
-
+        
+        void clear_actin_link_map();
     private:
-        double fov[2], rho, ld, xnew, ynew, phinew, vpar, omega, vperp, vx, vy, alength, view, a_ends[4], av_vel, visc;
+        double fov[2], rho, ld, view, visc;
         
         double link_ld, ltheta;
         

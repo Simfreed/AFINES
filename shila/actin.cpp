@@ -164,24 +164,26 @@ void actin::update_force(double f1, double f2, double f3)
 
 double* actin::get_friction()
 {
-    double fric[3];
-    double *fcr;
+    double* fric = new double[3];
     fric[0]=2*pi*a_vis*ld/log(ld/diameter);
     fric[1]=2*fric[0];
     fric[2]=fric[0]*pow(ld,2)/6;
-    fcr=fric;
-    return fcr;
+    return fric;
 }
 
-double* actin::getpos()
+double actin::get_xcm()
 {
-    double pos[3];
-    double *ptr;
-    pos[0]=x*e[0]+y*e[1];
-    pos[1]=x*n[0]+y*n[1];
-    pos[2]=phi;
-    ptr=pos;
-    return ptr;
+    return x;
+}
+
+double actin::get_ycm()
+{
+    return y;
+}
+
+double actin::get_angle()
+{
+    return phi;
 }
 
 double* actin::getposcm()

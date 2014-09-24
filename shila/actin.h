@@ -38,14 +38,18 @@ class actin
 
         double get_length();
 
+        double get_xcm();
+        
+        double get_ycm();
+        
+        double get_angle();
+        
         double* get_forces();
 
         void update_force(double f1, double f2, double f3);
 
         double* get_friction();
-
-        double* getpos();
-
+        
         double* getposcm();
 
         double* getendpts();

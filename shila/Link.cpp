@@ -22,13 +22,19 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
     actin_network   =   network;
 
     // Set the coordinates of the heads:
+    hx[0] = 0;
+    hx[1] = 0;
+    hy[0] = 0;
+    hy[1] = 0;
 
     this->step();
     color           =   col; 
 
 }
 
-Link::~Link(){ };
+Link::~Link(){ 
+    std::cout<<"DELETING LINK\n";
+};
 
 double* Link::get_heads()
 {
@@ -56,13 +62,13 @@ void Link::step()
     if (aindex[0]==-1){ //leftmost end of the polymer
         hx[1] = actin_network->get_ends(aindex[1])[0];
         hy[1] = actin_network->get_ends(aindex[1])[1];
-        hx[0] = hx[1] - ld*cos( actin_network->get_position(aindex[1])[2] );
-        hy[0] = hy[1] - ld*sin( actin_network->get_position(aindex[1])[2] );
+        hx[0] = hx[1] - ld*cos( actin_network->get_angle(aindex[1]) );
+        hy[0] = hy[1] - ld*sin( actin_network->get_angle(aindex[1]) );
     }else if(aindex[1] == -1){ //rightmost end of the polymer
         hx[0] = actin_network->get_ends(aindex[0])[2];
         hy[0] = actin_network->get_ends(aindex[0])[3];
-        hx[1] = hx[0] + ld*cos( actin_network->get_position(aindex[0])[2] );
-        hy[1] = hy[0] + ld*sin( actin_network->get_position(aindex[0])[2] );
+        hx[1] = hx[0] + ld*cos( actin_network->get_angle(aindex[0]) );
+        hy[1] = hy[0] + ld*sin( actin_network->get_angle(aindex[0]) );
     }else{
         hx[0] = actin_network->get_ends(aindex[0])[2];
         hy[0] = actin_network->get_ends(aindex[0])[3];
@@ -98,8 +104,8 @@ void Link::actin_update()
     force_par[1]    =   forcex[1]*actin_network->get_direction(aindex[1])[0] + forcey[1]*actin_network->get_direction(aindex[1])[1];
     force_perp[1]   =   -forcex[1]*actin_network->get_direction(aindex[1])[1] + forcey[1]*actin_network->get_direction(aindex[1])[0];
 
-    torque[0]       =   cross(hx[0]-actin_network->get_position(aindex[0])[0],hy[0]-actin_network->get_position(aindex[0])[1],forcex[0],forcey[0]);
-    torque[1]       =   cross(hx[1]-actin_network->get_position(aindex[1])[0],hy[1]-actin_network->get_position(aindex[1])[1],forcex[1],forcey[1]);
+    torque[0]       =   cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
+    torque[1]       =   cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
 
     actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
     actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
@@ -125,10 +131,10 @@ std::string Link::to_string(){
 void MidLink::step()
 {
     
-    hx[0]=actin_network->get_position(aindex[0])[0];
-    hy[0]=actin_network->get_position(aindex[0])[1];
-    hx[1]=actin_network->get_position(aindex[1])[0];
-    hy[1]=actin_network->get_position(aindex[1])[1];
+    hx[0]=actin_network->get_xcm(aindex[0]);
+    hy[0]=actin_network->get_ycm(aindex[0]);
+    hx[1]=actin_network->get_xcm(aindex[1]);
+    hy[1]=actin_network->get_ycm(aindex[1]);
 
     phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
     
