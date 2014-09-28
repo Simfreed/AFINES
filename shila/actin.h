@@ -59,7 +59,7 @@ class actin
     private:
         double x,y,phi,ld, start[2], end[2], e[2], n[2], forces[3];
         
-        double xperp, xpar, friction_perp, friction_par, diameter, a_vis;
+        double diameter, a_vis;
         
         std::vector<std::vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
         
