@@ -78,7 +78,7 @@ class actin_ensemble
 
         void update_bending();
         
-        void add_monomer(actin a);
+        void add_monomer(actin a, int n);
 
         void clear_actin_link_map();
     
