@@ -32,8 +32,6 @@ class motor
 
         int* get_states();
 
-        double* get_heads();
-
         double* get_hx();
 
         double* get_hy();

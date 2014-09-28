@@ -6,8 +6,7 @@
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
     actin_ensemble ae = actin_ensemble();
-    motor m(1, 1, 3.1415926535897/2, 1, &ae, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
-
+    motor m = motor(1, 1, 3.1415926535897/2, 1, &ae, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
     double tol = 0.001;
 
     BOOST_CHECK_CLOSE( m.get_hx()[0],  1, tol);                   // 1 //
@@ -16,11 +15,17 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_CLOSE( m.get_hy()[1], 1.5, tol);               
     BOOST_CHECK_EQUAL( m.get_color(), "blue");
     BOOST_CHECK_EQUAL( m.get_states()[0], 0);
-//    BOOST_CHECK_EQUAL( m.get_states()[1], 0);
-
-    motor m2(1, 1, 0, 1, &ae, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
+    BOOST_CHECK_EQUAL( m.get_states()[1], 0);
+    
+    actin a(0, 0, 0, 1, 0, 0, 0, 0, 0);
+    ae.add_monomer(a);
+    motor m2 = motor(1, 1, 0, 1, &ae, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
     BOOST_CHECK_EQUAL( m2.get_states()[0], 1);
     BOOST_CHECK_EQUAL( m2.get_states()[1], 0);
+    
+    motor m3 = motor(1, 1, 0, 1, &ae, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
+    BOOST_CHECK_EQUAL( m3.get_states()[0], 0);
+    BOOST_CHECK_EQUAL( m3.get_states()[1], 1);
     
 } 
 

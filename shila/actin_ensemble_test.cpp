@@ -1,4 +1,6 @@
 #include "actin_ensemble.h"
+#include "link_ensemble.h"
+#include "Link.h"
 #define BOOST_TEST_MODULE actin_test
 #include <boost/test/included/unit_test.hpp>
 
@@ -54,4 +56,25 @@ BOOST_AUTO_TEST_CASE( get_intpoint_test)
     BOOST_CHECK_CLOSE( ipy, 0, tol);
 
 }
+
+BOOST_AUTO_TEST_CASE( connect_polymers_test )
+{
+    actin a1(-1, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin a2(1, 0, 0, 1, 0, 0, 0, 0, 0);
+    double lnk_len = 1;
+    double kl = 100;
+    double kb = 2;
+    
+    link_ensemble * lks = new link_ensemble();
+    actin_ensemble ae = actin_ensemble();
+    ae.add_monomer(a1);
+    ae.add_monomer(a2);
+    ae.connect_polymers(lks, lnk_len, kl, kb, "yellow");
+    
+    
+    //Check that a link exists:
+    
+
+}
+
 // EOF

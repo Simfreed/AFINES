@@ -323,7 +323,7 @@ double actin_ensemble::get_fourier_mode(int n, int polymer_index){
 void actin_ensemble::connect_polymers(link_ensemble * links, double link_length, double
         stretching_stiffness, double bending_stiffness, std::string link_color)
 {
-/*    int mono1, mono2;
+    int mono1, mono2;
     Link * l;
     for (unsigned int i = 0; i < mono_map.size(); i++){
         
@@ -351,7 +351,7 @@ void actin_ensemble::connect_polymers(link_ensemble * links, double link_length,
 //    std::cout<<"WARNING: DELETING ALL LINKS\n";
 //      links->clear();   
 //      this->clear_actin_link_map();
-*/
+
 }
 
 void actin_ensemble::update_polymer_bending(int polymer_index)
@@ -453,10 +453,6 @@ void actin_ensemble::update_bending(){
 
 void actin_ensemble::clear_actin_link_map(){
     
-/*    for (std::map<int, std::map<int, Link * > >::iterator it = actin_link_map.begin(); it != actin_link_map.end(); ++it){
-        it->second.clear();
-    }
-*/
     actin_link_map.clear();
 
 }

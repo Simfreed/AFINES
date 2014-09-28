@@ -47,22 +47,20 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
         pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_start(aindex[1])[0],actin_network->get_start(aindex[1])[1]),
                 dis_points(hx[1],hy[1],actin_network->get_end(aindex[1])[0],actin_network->get_end(aindex[1])[1]));
     }
-    //        pos_actin[1]=0;
+    
     fov[0]=fovx;
     fov[1]=fovy;
     color = col; 
 
 }
 
-motor::~motor(){ };
+motor::~motor(){ 
+    std::cout<<"DELETING MOTOR\n";
+};
 
 //return motor state with a given head number
 int* motor::get_states() 
 {
-/*    int* sptr;
-    sptr=state;
-    return sptr;
-*/
     return state;
 }
 
@@ -74,18 +72,6 @@ double* motor::get_hx()
 double* motor::get_hy()
 {
     return hy;
-}
-
-double* motor::get_heads()
-{
-    double h[4];
-    double *gh;
-    h[0]=hx[0];
-    h[1]=hy[0];
-    h[2]=hx[1];
-    h[3]=hy[1];
-    gh=h;
-    return gh;
 }
 
 std::string motor::get_color()

@@ -6,7 +6,7 @@
 #define xrange 100.0
 #define yrange 100.0
 #define tinit 0.0
-#define tfinal 0.001
+#define tfinal .001 
 // #define dt 0.0001 -- defined previously
 #define print_dt 1
 #define stdout_dt 1
@@ -46,14 +46,6 @@ int main(int argc, char* argv[]){
     // Environment
     double viscosity=0.5;
 
-    // Fourier Modes
-    int n_modes = 20;
-    std::map<int, std::vector<double> > fm;
-   
-    // Angle corrleations
-    std::vector<double> angle_correlations;
-    std::vector<double> angle_correlations_sum;
-
     // Time 
     int count=0;
     double t=tinit;
@@ -85,6 +77,16 @@ int main(int argc, char* argv[]){
     std::string persistence_length_output           =   dir + "/data/angle_correlations.txt"; 
     std::string persistence_length_fourier_output   =   dir + "/data/fourier_modes.txt";
     
+    // Fourier Modes
+    int n_modes = nmonomer - 1;
+    std::map<int, std::vector<double> > fm;
+/*    for(int i = 0; i < n_modes; i ++){
+        fm[i] = std::vector<double>();
+    }
+*/    // Angle corrleations
+    std::vector<double> angle_correlations;
+    std::vector<double> angle_correlations_sum;
+
     
     a_final.open(actin_output.c_str());
     m_final.open(myosin_output.c_str());
@@ -110,7 +112,7 @@ int main(int argc, char* argv[]){
     net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
     std::cout<<"Adding motors...\n";
     motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
-                                             net, vmotor, motor_stiffness, m_kon, m_koff, 
+                                             net, vmotor, motor_stiffness, m_kon, m_koff,
                                              m_kend, actin_length, viscosity);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
@@ -130,19 +132,19 @@ int main(int argc, char* argv[]){
             sprintf(numstr, "%d", count/print_dt);
             
             afile = dir + "/txt_stack/afile" + numstr + ".txt";
-            //mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
+            mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
             lfile = dir + "/txt_stack/lfile" + numstr + ".txt";
 			
             std::ofstream file_a, file_m, file_l;
 			file_a.open(afile.c_str());
-			//file_m.open(mfile.c_str());
+			file_m.open(mfile.c_str());
             file_l.open(lfile.c_str());
 		    
             net->write(file_a);
             myosins->motor_write(file_m);
             lks->link_write(file_l);
 			file_a.close();
-			//file_m.close();
+			file_m.close();
             file_l.close();
             
 		}
@@ -157,7 +159,6 @@ int main(int argc, char* argv[]){
         for (int n = 1; n <= n_modes; n++){
             //assuming only one polymer
             fm[n].push_back(net->get_fourier_mode(n, 0));
-        
         }
         
         t+=dt;
@@ -181,7 +182,8 @@ int main(int argc, char* argv[]){
     }
    
     //Delete all objects created
-    lks->delete_all();
+    std::cout<<"Here's where I think I delete things\n";
+    
     delete lks;
     delete myosins;
     delete net;
@@ -195,4 +197,3 @@ int main(int argc, char* argv[]){
 	std::cout<<"\n Done\n";
     return 0;
 }
-
