@@ -9,9 +9,9 @@
  */
 
 #include "globals.h"
-#include "actin_ensemble.h"
 #include "link_ensemble.h"
 #include "Link.h"
+#include "actin_ensemble.h"
 //actin network class
 
 actin_ensemble::actin_ensemble(){}
@@ -97,8 +97,9 @@ actin_ensemble::~actin_ensemble(){
     actin_link_map.clear();
 };
 
-void actin_ensemble::add_monomer(actin a){
+void actin_ensemble::add_monomer(actin a, int polymer){
     network.push_back(a);
+    mono_map[polymer].push_back(network.size() - 1);
 }
 
 void actin_ensemble::quad_update()
@@ -342,7 +343,6 @@ void actin_ensemble::connect_polymers(link_ensemble * links, double link_length,
             mono1 = mono2;
             delete l;
         }
-        delete l;
         l = new Link( link_length, stretching_stiffness, bending_stiffness, this, mono1, -1, link_color); 
         links->add_link( l );
         actin_link_map[mono1][-1] = l;
