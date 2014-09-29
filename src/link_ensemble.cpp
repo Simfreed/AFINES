@@ -15,7 +15,7 @@
 link_ensemble::link_ensemble(){};
 link_ensemble::~link_ensemble(){
     std::cout<<"DELETING LINK ENSEMBLE\n";
-    links.clear();
+    this->clear(); 
 };
 
 void link_ensemble::link_walk()
@@ -45,5 +45,14 @@ int link_ensemble::size()
 
 void link_ensemble::clear()
 {
+    int s = this->size();
+    for (int i=0; i<s; i++){
+        delete links[i];
+    }
     links.clear();
+}
+
+Link * link_ensemble::at(int index)
+{
+    return links.at(index);
 }

@@ -37,6 +37,8 @@ class link_ensemble
         void clear();
         
         int size();
+
+        Link * at(int index);
     protected:
         std::vector<Link *> links;
 };

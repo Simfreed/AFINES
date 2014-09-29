@@ -33,7 +33,7 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
 }
 
 Link::~Link(){ 
-    std::cout<<"DELETING LINK\n";
+    //std::cout<<"DELETING LINK\n";
 };
 
 double* Link::get_hx(){
@@ -54,22 +54,27 @@ void Link::step()
 {
     //CONVENTION: head 0 will be connected to the POINTY end of a filament
     //            head 1 will be connected to the BARBED end of a filament
-    
     if (aindex[0]==-1){ //leftmost end of the polymer
-        hx[1] = actin_network->get_start(aindex[1])[0];
-        hy[1] = actin_network->get_start(aindex[1])[1];
+        double * start1 = actin_network->get_start(aindex[1]);
+        hx[1] = start1[0];
+        hy[1] = start1[1];
         hx[0] = hx[1] - ld*cos( actin_network->get_angle(aindex[1]) );
         hy[0] = hy[1] - ld*sin( actin_network->get_angle(aindex[1]) );
     }else if(aindex[1] == -1){ //rightmost end of the polymer
-        hx[0] = actin_network->get_end(aindex[0])[0];
-        hy[0] = actin_network->get_end(aindex[0])[1];
+        double * end0 = actin_network->get_end(aindex[0]);
+        
+        hx[0] = end0[0];
+        hy[0] = end0[1];
         hx[1] = hx[0] + ld*cos( actin_network->get_angle(aindex[0]) );
         hy[1] = hy[0] + ld*sin( actin_network->get_angle(aindex[0]) );
     }else{
-        hx[0] = actin_network->get_end(aindex[0])[0];
-        hy[0] = actin_network->get_end(aindex[0])[1];
-        hx[1] = actin_network->get_start(aindex[1])[0];
-        hy[1] = actin_network->get_start(aindex[1])[1];
+        double * end0 = actin_network->get_end(aindex[0]);
+        double * start1 = actin_network->get_start(aindex[1]);
+         
+        hx[0] = end0[0];
+        hy[0] = end0[1];
+        hx[1] = start1[0]; 
+        hy[1] = start1[1];
     }
 
     xcm = (hx[0]+hx[1])/2.0;
@@ -83,7 +88,9 @@ void Link::actin_update()
 
     double force_stretch;
     stretch         =   dis_points(hx[0],hy[0],hx[1],hy[1])-ld;
-    
+    double * e0, * e1;
+    e0 = actin_network->get_direction(aindex[0]);
+    e1 = actin_network->get_direction(aindex[1]);
 //    std::cout<<"DEBUG: BendingLink::actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
 //    std::cout<<"DEBUG: BendingLink::actin_update: color = "<< color<< "\tbend = "<<phi<<"\n";
     
@@ -95,10 +102,10 @@ void Link::actin_update()
     forcey[0]       =   force_stretch * sin(phi); //-kl*(hy[0]-hy[1]+ld*sin(phi)); <-- old formula, probably equivalent
     forcey[1]       =   -forcey[0];
 
-    force_par[0]    =   forcex[0]*actin_network->get_direction(aindex[0])[0] + forcey[0]*actin_network->get_direction(aindex[0])[1];
-    force_perp[0]   =   -forcex[0]*actin_network->get_direction(aindex[0])[1] + forcey[0]*actin_network->get_direction(aindex[0])[0];
-    force_par[1]    =   forcex[1]*actin_network->get_direction(aindex[1])[0] + forcey[1]*actin_network->get_direction(aindex[1])[1];
-    force_perp[1]   =   -forcex[1]*actin_network->get_direction(aindex[1])[1] + forcey[1]*actin_network->get_direction(aindex[1])[0];
+    force_par[0]    =    forcex[0]*e0[0] + forcey[0]*e0[1];
+    force_perp[0]   =   -forcex[0]*e0[1] + forcey[0]*e0[0];
+    force_par[1]    =    forcex[1]*e1[0] + forcey[1]*e1[1];
+    force_perp[1]   =   -forcex[1]*e1[1] + forcey[1]*e1[0];
 
     torque[0]       =   cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
     torque[1]       =   cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
@@ -123,6 +130,13 @@ double Link::get_posy(){
 std::string Link::to_string(){
     return std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
         + std::to_string(hy[1]-hy[0]) + "\t" + color + "\n";
+}
+
+bool Link::operator==(const Link& that) 
+{
+    return (this->aindex[0] == that.aindex[0] && this->aindex[1] == that.aindex[1] &&
+            this->kl == that.kl && this->kb == that.kb &&
+            this->ld == that.ld && this->actin_network == that.actin_network);
 }
 void MidLink::step()
 {
