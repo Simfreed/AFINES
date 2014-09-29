@@ -184,6 +184,11 @@ double * actin_ensemble::get_end(int index)
     return network[index].get_end();
 }
 
+double * actin_ensemble::get_forces(int index)
+{
+    return network[index].get_forces();
+}
+
 void actin_ensemble::update()
 {
     ///Maybe change 6 to 4 for 2d
@@ -332,7 +337,6 @@ void actin_ensemble::connect_polymers(link_ensemble * links, double link_length,
         l = new Link( link_length, stretching_stiffness, bending_stiffness, this, -1, mono1,  link_color); 
         links->add_link( l );
         actin_link_map[-1][mono1] = l;
-        delete l;
         for (unsigned int j = 1; j < mono_map[i].size(); j++){
             mono2 = mono_map[i][j];
             l = new Link( link_length, stretching_stiffness, bending_stiffness, this, mono1, mono2, link_color); 
@@ -341,16 +345,11 @@ void actin_ensemble::connect_polymers(link_ensemble * links, double link_length,
         //    std::cout<<"DEBUG: created "<<j<<"th link between monomers "<<mono1<<" and "<<mono2<<"\n";
         //    std::cout<<"DEBUG: "<<l->to_string();
             mono1 = mono2;
-            delete l;
         }
         l = new Link( link_length, stretching_stiffness, bending_stiffness, this, mono1, -1, link_color); 
         links->add_link( l );
         actin_link_map[mono1][-1] = l;
     }
-    delete l;
-//    std::cout<<"WARNING: DELETING ALL LINKS\n";
-//      links->clear();   
-//      this->clear_actin_link_map();
 
 }
 

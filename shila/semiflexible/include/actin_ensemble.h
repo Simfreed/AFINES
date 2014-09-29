@@ -59,6 +59,8 @@ class actin_ensemble
         double* get_start(int index);
         
         double* get_end(int index);
+        
+        double* get_forces(int index);
 
         void update();
 

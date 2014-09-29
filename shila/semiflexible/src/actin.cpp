@@ -78,7 +78,9 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     quad.push_back(tmp);
 }
 
-actin::~actin(){ };
+actin::~actin(){ 
+//    std::cout<<"DELETING ACTIN\n";
+};
 
 //shortest(perpendicular) distance between an arbitray point and the filament
 double actin::get_distance(double xp, double yp)
