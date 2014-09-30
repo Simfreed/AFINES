@@ -38,7 +38,7 @@ class actin_ensemble
 
         void quad_update();
 
-        std::vector<actin>* get_network();
+        std::vector<actin *> * get_network();
 
         std::map<int,double> get_dist(double x, double y);
 
@@ -80,7 +80,7 @@ class actin_ensemble
 
         void update_bending();
         
-        void add_monomer(actin a, int n);
+        void add_monomer(actin * a, int n);
 
         void clear_actin_link_map();
     
@@ -91,7 +91,7 @@ class actin_ensemble
         
         int npolymer, nq[2];//, xn, yn, qxcm, qycm;
         
-        std::vector<actin> network;
+        std::vector<actin *> network;
         
         std::vector<int> empty_vector;
         

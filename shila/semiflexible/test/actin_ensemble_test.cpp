@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( force_test)
 
 BOOST_AUTO_TEST_CASE( direction_test)
 {
-    actin a(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
+    actin * a = new actin(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
     actin_ensemble ae = actin_ensemble();
     ae.add_monomer(a, 0);
     double tol = 0.001; //% 
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE( direction_test)
 
 BOOST_AUTO_TEST_CASE( start_end_test)
 {
-    actin a(0, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a = new actin(0, 0, 0, 1, 0, 0, 0, 0, 0);
     actin_ensemble ae = actin_ensemble();
     ae.add_monomer(a, 0);
     double tol = 0.001; //% 
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( start_end_test)
 
 BOOST_AUTO_TEST_CASE( get_intpoint_test)
 {
-    actin a(0, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a = new actin(0, 0, 0, 1, 0, 0, 0, 0, 0);
     actin_ensemble ae = actin_ensemble();
     ae.add_monomer(a, 0);
     double x = 0.1, y = 1;
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( connect_polymers_test )
     /**************************
      * Case 1: 1 monomer      *
      * ***********************/
-    actin a0(-1, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a0 = new actin(-1, 0, 0, 1, 0, 0, 0, 0, 0);
     link_ensemble * lks = new link_ensemble();
     actin_ensemble * ae = new actin_ensemble();
     ae->add_monomer(a0, 0);
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE( connect_polymers_test )
     /**************************
      * Case 2: 2 monomers     *
      * ***********************/
-    actin a1(-1, 0, 0, 1, 0, 0, 0, 0, 0);
-    actin a2(1, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a1 = new actin(-1, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a2 = new actin(1, 0, 0, 1, 0, 0, 0, 0, 0);
     lks = new link_ensemble();
     ae = new actin_ensemble();
     
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( connect_polymers_test )
     ae = new actin_ensemble();
 
     for (int i = 0; i < nmonomer; i++){
-        actin a( i*2*nmonomer, 0, 0, 1, 0, 0, 0, 0, 0);
+        actin * a = new actin( i*2*nmonomer, 0, 0, 1, 0, 0, 0, 0, 0);
         ae->add_monomer(a, 0);
     }
     
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( update_bending_test )
     /**************************
      * Case 1: 1 monomer      *
      * ***********************/
-    actin a0(-1, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a0 = new actin(-1, 0, 0, 1, 0, 0, 0, 0, 0);
     link_ensemble * lks = new link_ensemble();
     actin_ensemble * ae = new actin_ensemble();
     ae->add_monomer(a0, 0);
@@ -172,8 +172,8 @@ BOOST_AUTO_TEST_CASE( update_bending_test )
     /**************************
      * Case 2: 2 monomers     *
      * ***********************/
-    actin a1(-0.5, 0, 0, 1, 0, 0, 0, 0, 0);
-    actin a2(3.0/(2.0*sqrt(2.0)), 3.0/(2.0*sqrt(2.0)), pi/4, 1, 0, 0, 0, 0, 0);
+    actin * a1 = new actin(-0.5, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a2 = new actin(3.0/(2.0*sqrt(2.0)), 3.0/(2.0*sqrt(2.0)), pi/4, 1, 0, 0, 0, 0, 0);
     lks = new link_ensemble();
     ae = new actin_ensemble();
     

@@ -193,6 +193,21 @@ double * actin::get_end(){
     return end;
 }
 
+void actin::set_xcm(double xcm)
+{
+    x = xcm;
+}
+
+void actin::set_ycm(double ycm)
+{
+    y = ycm;
+}
+
+void actin::set_phi(double theta)
+{
+    phi = theta;
+}
+
 std::vector<std::vector<int> > actin::get_quadrants()
 { 
     return quad; 

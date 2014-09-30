@@ -6,8 +6,8 @@
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
-    actin a1(-1, 2, 0, 1, 0, 0, 0, 0, 0);
-    actin a2( 1, 2, 0, 1, 0, 0, 0, 0, 0);
+    actin * a1 = new actin(-1, 2, 0, 1, 0, 0, 0, 0, 0);
+    actin * a2 = new actin( 1, 2, 0, 1, 0, 0, 0, 0, 0);
     actin_ensemble ae = actin_ensemble();
     ae.add_monomer(a1, 0);
     ae.add_monomer(a2, 0);

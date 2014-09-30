@@ -40,12 +40,12 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         theta=rng(0,2*pi);
         //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
         //the start of the polymer: 
-        //network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
+        //network.push_back(new actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
         //            theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
         std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-        network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+        network.push_back(new actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
         //Add the quadrants of the first rod
-        std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
+        std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
         for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
             for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
                 quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
@@ -61,8 +61,8 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
             // Calculate the Next rod on the actin polymer--  continues from the link
             //theta = rng(0,2*pi);
-            xcm = network.back().get_end()[0] + link_ld*cos(ltheta) + ld*0.5*cos(theta);
-            ycm = network.back().get_end()[1] + link_ld*sin(ltheta) + ld*0.5*sin(theta);
+            xcm = network.back()->get_end()[0] + link_ld*cos(ltheta) + ld*0.5*cos(theta);
+            ycm = network.back()->get_end()[1] + link_ld*sin(ltheta) + ld*0.5*sin(theta);
 
             // Check that this monomer is in the field of view, otherwise start a new polymer:
             if ( xcm > (0.5*(view*fovx - ld)) || xcm < (-0.5*(view*fovx - ld)) 
@@ -74,11 +74,11 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
                 
                 // Add the actin monomer
-                network.push_back( actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+                network.push_back( new actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
                 mono_map[ i ].push_back(network.size()-1);
 
                 // Add it's quadrants:
-                std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
+                std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
                 for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
                     for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
                         quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
@@ -94,10 +94,17 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
 
 actin_ensemble::~actin_ensemble(){ 
     std::cout<<"DELETING ACTIN_ENSEMBLE\n";
+    
+    int s = network.size();
+    for (int i = 0; i < s; i++){
+        delete network[i];
+    }
+    
+    network.clear();
     actin_link_map.clear();
 };
 
-void actin_ensemble::add_monomer(actin a, int polymer){
+void actin_ensemble::add_monomer(actin * a, int polymer){
     network.push_back(a);
     mono_map[polymer].push_back(network.size() - 1);
 }
@@ -106,7 +113,7 @@ void actin_ensemble::quad_update()
 {
     quad_fils.clear();
     for (unsigned int i=0; i<network.size(); i++) {
-        std::vector<std::vector<int> > tmp_quads=network[i].get_quadrants();
+        std::vector<std::vector<int> > tmp_quads=network[i]->get_quadrants();
         for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
             for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
                 quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(i);
@@ -117,7 +124,7 @@ void actin_ensemble::quad_update()
 
 }
 
-std::vector<actin>* actin_ensemble::get_network()
+std::vector<actin *>* actin_ensemble::get_network()
 {
     return &network;
 }
@@ -132,7 +139,7 @@ std::map<int,double> actin_ensemble::get_dist(double x, double y)
     {
         for(std::vector<int>::iterator it=quad_fils[nxx][nyy].begin(); it<quad_fils[nxx][nyy].end(); it++)
         {   
-            t_map[*it] = network[*it].get_distance(x,y);
+            t_map[*it] = network[*it]->get_distance(x,y);
         }
     }
     return t_map;
@@ -140,53 +147,53 @@ std::map<int,double> actin_ensemble::get_dist(double x, double y)
 
 double* actin_ensemble::get_direction(int index)
 {
-    return network[index].get_direction();
+    return network[index]->get_direction();
 }
 
 
 double* actin_ensemble::get_intpoints(int index, double xp, double yp)
 {
-    return network[index].get_intpoint(xp,yp);
+    return network[index]->get_intpoint(xp,yp);
 }
 
 double actin_ensemble::get_int_direction(int index, double xp, double yp)
 {
-    return network[index].get_int_angle(xp,yp);
+    return network[index]->get_int_angle(xp,yp);
 }
 
 double actin_ensemble::get_xcm(int index)
 {
-    return network[index].get_xcm();
+    return network[index]->get_xcm();
 }
 
 double actin_ensemble::get_ycm(int index)
 {
-    return network[index].get_ycm();
+    return network[index]->get_ycm();
 }
 
 double actin_ensemble::get_angle(int index)
 {
-    return network[index].get_angle();
+    return network[index]->get_angle();
 }
 
 double actin_ensemble::get_alength(int index)
 {
-    return network[index].get_length();
+    return network[index]->get_length();
 }
 
 double * actin_ensemble::get_start(int index)
 {
-    return network[index].get_start();
+    return network[index]->get_start();
 }
 
 double * actin_ensemble::get_end(int index)
 {
-    return network[index].get_end();
+    return network[index]->get_end();
 }
 
 double * actin_ensemble::get_forces(int index)
 {
-    return network[index].get_forces();
+    return network[index]->get_forces();
 }
 
 void actin_ensemble::update()
@@ -209,19 +216,19 @@ void actin_ensemble::update()
     
     for (unsigned int i=0; i<network.size(); i++) {
         
-        double * fric = network[i].get_friction();
-        vpar=(network[i].get_forces()[0])/fric[0]  + sqrt(6*temperature/(dt*fric[0]))*rng_n(0,1);
-        vperp=(network[i].get_forces()[1])/fric[1] + sqrt(6*temperature/(dt*fric[1]))*rng_n(0,1);
-        vx=vpar*cos(network[i].get_angle())-vperp*sin(network[i].get_angle());
-        vy=vpar*sin(network[i].get_angle())+vperp*cos(network[i].get_angle());
-        omega=network[i].get_forces()[2]/fric[2] + sqrt(6*temperature/(dt*fric[2]))*rng_n(0,1);
+        double * fric = network[i]->get_friction();
+        vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(6*temperature/(dt*fric[0]))*rng_n(0,1);
+        vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(6*temperature/(dt*fric[1]))*rng_n(0,1);
+        vx=vpar*cos(network[i]->get_angle())-vperp*sin(network[i]->get_angle());
+        vy=vpar*sin(network[i]->get_angle())+vperp*cos(network[i]->get_angle());
+        omega=network[i]->get_forces()[2]/fric[2] + sqrt(6*temperature/(dt*fric[2]))*rng_n(0,1);
         delete[] fric;
 
-        alength=network[i].get_length();
+        alength=network[i]->get_length();
 
-        xnew=network[i].get_xcm()+dt*vx;
-        ynew=network[i].get_ycm()+dt*vy;
-        phinew=network[i].get_angle()+dt*omega;
+        xnew=network[i]->get_xcm()+dt*vx;
+        ynew=network[i]->get_ycm()+dt*vy;
+        phinew=network[i]->get_angle()+dt*omega;
 
 
         a_ends[0]=xnew-alength*0.5*cos(phinew);
@@ -231,20 +238,22 @@ void actin_ensemble::update()
 
         if (a_ends[0]<=-fov[0]*0.5 || a_ends[0]>=fov[0]*0.5 || a_ends[2]<=-fov[0]*0.5 || a_ends[2]>=fov[0]*0.5)
         {
-            vx=-vx;//xnew=network[i].get_xcm()-dt*vx;//  
-            omega=-omega;//phinew=network[i].get_angle()-dt*omega;//omega=-omega;
+            vx=-vx;//xnew=network[i]->get_xcm()-dt*vx;//  
+            omega=-omega;//phinew=network[i]->get_angle()-dt*omega;//omega=-omega;
 
         }
         if (a_ends[1]<=-fov[1]*0.5 || a_ends[1]>=fov[1]*0.5 || a_ends[3]<=-fov[1]*0.5 || a_ends[3]>=fov[1]*0.5)
         {
-            vy=-vy;//ynew=network[i].get_ycm()-dt*vy;
-            omega=-omega;//phinew=network[i].get_angle()-dt*omega;
+            vy=-vy;//ynew=network[i]->get_ycm()-dt*vy;
+            omega=-omega;//phinew=network[i]->get_angle()-dt*omega;
         }
 
-        xnew=network[i].get_xcm()+dt*vx;
-        ynew=network[i].get_ycm()+dt*vy;
-        phinew=network[i].get_angle()+dt*omega;
-        network.at(i)=actin(xnew,ynew,phinew,alength,fov[0],fov[1],nq[0],nq[1],visc);
+        xnew=network[i]->get_xcm()+dt*vx;
+        ynew=network[i]->get_ycm()+dt*vy;
+        phinew=network[i]->get_angle()+dt*omega;
+        network.at(i)->set_xcm(xnew);
+        network.at(i)->set_ycm(ynew);
+        network.at(i)->set_phi(phinew);
     }
 
 
@@ -252,16 +261,16 @@ void actin_ensemble::update()
 
 void actin_ensemble::update_forces(int index, double f1, double f2, double f3)
 {
-    network[index].update_force(f1,f2,f3);
+    network[index]->update_force(f1,f2,f3);
 }
 
 
 void actin_ensemble::write(std::ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network.at(i).get_start()[0]<<"\t"<<network.at(i).get_start()[1]<<"\t"
-            <<network.at(i).get_end()[0]-network.at(i).get_start()[0]<<"\t"
-            <<network.at(i).get_end()[1]-network.at(i).get_start()[1]<<"\n";
+        fout<<network.at(i)->get_start()[0]<<"\t"<<network.at(i)->get_start()[1]<<"\t"
+            <<network.at(i)->get_end()[0]-network.at(i)->get_start()[0]<<"\t"
+            <<network.at(i)->get_end()[1]-network.at(i)->get_start()[1]<<"\n";
     } 
 }
 /*
@@ -279,8 +288,8 @@ std::vector<double> actin_ensemble::get_angle_correlation(int polymer_index)
     std::vector<int> * monos = &mono_map[polymer_index]; 
     for(unsigned int i = 0; i < monos->size() - 1; i++){
 
-        phi1 = network.at(monos->at(i)).get_angle(); 
-        phi2 = network.at(monos->at(i+1)).get_angle(); 
+        phi1 = network.at(monos->at(i))->get_angle(); 
+        phi2 = network.at(monos->at(i+1))->get_angle(); 
 
         sum += cos(phi2 - phi1);
 
@@ -315,7 +324,7 @@ double actin_ensemble::get_fourier_mode(int n, int polymer_index){
 
     for (int i = 0; i < s; i++){
 
-        phi = network[ mons[ i ] ].get_angle();
+        phi = network[ mons[ i ] ]->get_angle();
         sk = i * ld + ld/2;
         sum += phi * ld * cos( n * pi * sk / L);
 
