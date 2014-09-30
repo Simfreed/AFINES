@@ -40,10 +40,10 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         theta=rng(0,2*pi);
         //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
         //the start of the polymer: 
-        //network.push_back(new actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
-        //            theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-        std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-        network.push_back(new actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+        network.push_back(new actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
+                    theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+        //std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
+        //network.push_back(new actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
         //Add the quadrants of the first rod
         std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
         for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
@@ -200,28 +200,15 @@ void actin_ensemble::update()
 {
     ///Maybe change 6 to 4 for 2d
     double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, a_ends[4]; 
-    vpar = 0;
-    vperp = 0;
-    vx = 0;
-    vy = 0;
-    omega = 0;
-    alength = 0;
-    xnew = 0;
-    ynew = 0;
-    phinew = 0;
-    a_ends[0] = 0;
-    a_ends[1] = 0;
-    a_ends[2] = 0;
-    a_ends[3] = 0;
     
     for (unsigned int i=0; i<network.size(); i++) {
         
         double * fric = network[i]->get_friction();
-        vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(6*temperature/(dt*fric[0]))*rng_n(0,1);
-        vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(6*temperature/(dt*fric[1]))*rng_n(0,1);
+        vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(4*temperature/(dt*fric[0]))*rng_n(0,1);
+        vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(4*temperature/(dt*fric[1]))*rng_n(0,1);
         vx=vpar*cos(network[i]->get_angle())-vperp*sin(network[i]->get_angle());
         vy=vpar*sin(network[i]->get_angle())+vperp*cos(network[i]->get_angle());
-        omega=network[i]->get_forces()[2]/fric[2] + sqrt(6*temperature/(dt*fric[2]))*rng_n(0,1);
+        omega=network[i]->get_forces()[2]/fric[2] + sqrt(4*temperature/(dt*fric[2]))*rng_n(0,1);
         delete[] fric;
 
         alength=network[i]->get_length();
@@ -251,9 +238,10 @@ void actin_ensemble::update()
         xnew=network[i]->get_xcm()+dt*vx;
         ynew=network[i]->get_ycm()+dt*vy;
         phinew=network[i]->get_angle()+dt*omega;
-        network.at(i)->set_xcm(xnew);
-        network.at(i)->set_ycm(ynew);
-        network.at(i)->set_phi(phinew);
+        network[i]->set_xcm(xnew);
+        network[i]->set_ycm(ynew);
+        network[i]->set_phi(phinew);
+        network[i]->update();
     }
 
 

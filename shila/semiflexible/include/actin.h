@@ -28,6 +28,8 @@ class actin
         
         ~actin();
     
+        void update();
+
         double get_distance(double xp, double yp);
 
         double* get_intpoint(double xp, double yp);
@@ -63,7 +65,7 @@ class actin
         std::vector<std::vector<int> > get_quadrants();
     
     private:
-        double x,y,phi,ld, start[2], end[2], e[2], n[2], forces[3];
+        double x,y,phi,ld, fov[2], nq[2], start[2], end[2], e[2], n[2], forces[3];
         
         double diameter, a_vis;
         
