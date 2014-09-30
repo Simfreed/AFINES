@@ -6,10 +6,10 @@
 #define xrange 100.0
 #define yrange 100.0
 #define tinit 0.0
-#define tfinal .001 
+#define tfinal 10 
 // #define dt 0.0001 -- defined previously
-#define print_dt 1
-#define stdout_dt 1
+#define print_dt 100
+#define stdout_dt 1000
 
 int main(int argc, char* argv[]){
     
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]){
     }
     
     // DERIVED QUANTITIES :
-    double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
+    double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
     std::string output_file                         =   dir + "/data/output.txt";
     std::string actin_output                        =   dir + "/data/actin_final.txt";
     std::string myosin_output                       =   dir + "/data/myosin_final.txt";
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]){
 		if (count%stdout_dt==0) {
 			std::cout<<"Time counts: "<<count<<"\n";
 		}
-        
+
         net->update_bending();
         net->update();
         net->quad_update();
@@ -150,10 +150,9 @@ int main(int argc, char* argv[]){
 		}
         //update network
         myosins->motor_walk();
-        
         lks->link_walk(); 
+        
         angle_correlations = net->get_angle_correlation(0); //assume one polymer
-
         angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
         
         for (int n = 1; n <= n_modes; n++){

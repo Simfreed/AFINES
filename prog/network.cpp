@@ -39,6 +39,8 @@ int main(int argc, char* argv[]){
     // Links 
     double link_stretching_stiffness = motor_stiffness;
     double link_length = actin_length/10; 
+    double polymer_bending_modulus = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
+    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
     std::string link_color = "1"; //"blue";
     
     // Environment
@@ -58,13 +60,12 @@ int main(int argc, char* argv[]){
      * VARIABLES           *
      **********************/
     double nmonomer = 100;
-    double link_bending_stiffness = motor_stiffness/10;
+//  double link_bending_stiffness = motor_stiffness/10;
     
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
-        link_bending_stiffness      =   atof(argv[2]);
-        link_stretching_stiffness   =   atof(argv[3]);
-        dir                         =        argv[4] ;
+        link_stretching_stiffness   =   atof(argv[2]);
+        dir                         =        argv[3] ;
     }
     
     // DERIVED QUANTITIES :
@@ -88,13 +89,15 @@ int main(int argc, char* argv[]){
     
     
     std::cout<<"Creating actin network..\n";
-	actin_ensemble net=actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
+	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
     std::cout<<"Creating link ensemble...\n";
-    link_ensemble lks = link_ensemble();
+    link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
-    net.connect_polymers( &lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
-    std::cout<<"Adding motors..\n";
-    motor_ensemble myosins=motor_ensemble(motor_density,xrange,yrange,motor_length,&net,vmotor,motor_stiffness,m_kon,m_koff,m_kend,actin_length,viscosity);
+    net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
+    std::cout<<"Adding motors...\n";
+    motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
+                                             net, vmotor, motor_stiffness, m_kon, m_koff,
+                                             m_kend, actin_length, viscosity);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
     while (t<=tfinal) {
@@ -102,8 +105,11 @@ int main(int argc, char* argv[]){
 		if (count%stdout_dt==0) {
 			std::cout<<"Time counts: "<<count<<"\n";
 		}
-        net.update();
-        net.quad_update();
+
+        net->update_bending();
+        net->update();
+        net->quad_update();
+
         //print to file
 	    if (count%print_dt==0) {
 	        
@@ -118,25 +124,31 @@ int main(int argc, char* argv[]){
 			file_m.open(mfile.c_str());
             file_l.open(lfile.c_str());
 		    
-            net.write(file_a);
-            myosins.motor_write(file_m);
-            lks.link_write(file_l);
+            net->write(file_a);
+            myosins->motor_write(file_m);
+            lks->link_write(file_l);
 			file_a.close();
 			file_m.close();
             file_l.close();
             
 		}
         //update network
-        myosins.motor_walk();
-        lks.link_walk(); 
+        myosins->motor_walk();
+        lks->link_walk(); 
         
         t+=dt;
 		count++;
     }
-    net.write(a_final);
-    myosins.motor_write(m_final);
+    net->write(a_final);
+    myosins->motor_write(m_final);
     
-    lks.delete_all();
+    //Delete all objects created
+    std::cout<<"Here's where I think I delete things\n";
+    
+    delete lks;
+    delete myosins;
+    delete net;
+
     a_final.close();
     m_final.close();
     
@@ -145,4 +157,3 @@ int main(int argc, char* argv[]){
 	std::cout<<"\n Done\n";
     return 0;
 }
-

@@ -88,30 +88,29 @@ void Link::actin_update()
 
     double force_stretch;
     stretch         =   dis_points(hx[0],hy[0],hx[1],hy[1])-ld;
-    double * e0, * e1;
-    e0 = actin_network->get_direction(aindex[0]);
-    e1 = actin_network->get_direction(aindex[1]);
-//    std::cout<<"DEBUG: BendingLink::actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
-//    std::cout<<"DEBUG: BendingLink::actin_update: color = "<< color<< "\tbend = "<<phi<<"\n";
-    
-    //Bending Force: 
     force_stretch   =   kl * stretch;
+    
 
-    forcex[0]       =   force_stretch * cos(phi); //-kl*(hx[0]-hx[1]+ld*cos(phi)); <-- old formula, probably equivalent
-    forcex[1]       =   -forcex[0];
-    forcey[0]       =   force_stretch * sin(phi); //-kl*(hy[0]-hy[1]+ld*sin(phi)); <-- old formula, probably equivalent
-    forcey[1]       =   -forcey[0];
+    double * e0, * e1;
+    if (aindex[0] != -1){
+        e0 = actin_network->get_direction(aindex[0]);
+        forcex[0]       =   force_stretch * cos(phi); 
+        forcey[0]       =   force_stretch * sin(phi); 
+        force_par[0]    =   forcex[0]*e0[0] + forcey[0]*e0[1];
+        force_perp[0]   =  -forcex[0]*e0[1] + forcey[0]*e0[0];
+        torque[0]       =   cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
+        actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
+    }
 
-    force_par[0]    =    forcex[0]*e0[0] + forcey[0]*e0[1];
-    force_perp[0]   =   -forcex[0]*e0[1] + forcey[0]*e0[0];
-    force_par[1]    =    forcex[1]*e1[0] + forcey[1]*e1[1];
-    force_perp[1]   =   -forcex[1]*e1[1] + forcey[1]*e1[0];
-
-    torque[0]       =   cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
-    torque[1]       =   cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
-
-    actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
-    actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
+    if (aindex[1] != -1){
+        e1 = actin_network->get_direction(aindex[1]);
+        forcex[1]       =   -force_stretch * cos(phi);
+        forcey[1]       =   -force_stretch * sin(phi);
+        force_par[1]    =    forcex[1]*e1[0] + forcey[1]*e1[1];
+        force_perp[1]   =   -forcex[1]*e1[1] + forcey[1]*e1[0];
+        torque[1]       =   cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
+        actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
+    }
 
 }
 
