@@ -4,11 +4,12 @@
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
-    actin a(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2); 
-    BOOST_CHECK_EQUAL( a.get_xcm(), 0.25);                  // 1 //
-    BOOST_CHECK_EQUAL( a.get_ycm(), 0.5);                   // 1 //
-    BOOST_CHECK_EQUAL( a.get_angle(), 0.75);                // 1 //
-    BOOST_CHECK_EQUAL( a.get_length(), 1);               
+    actin * a = new actin(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2); 
+    BOOST_CHECK_EQUAL( a->get_xcm(), 0.25);                  // 1 //
+    BOOST_CHECK_EQUAL( a->get_ycm(), 0.5);                   // 1 //
+    BOOST_CHECK_EQUAL( a->get_angle(), 0.75);                // 1 //
+    BOOST_CHECK_EQUAL( a->get_length(), 1);               
+    delete a;
 } 
 
 BOOST_AUTO_TEST_CASE( friction_test )

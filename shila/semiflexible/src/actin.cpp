@@ -24,6 +24,7 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     end[1]=y+ld*0.5*sin(phi);
     a_vis=vis;
     //unit vector
+    e = new double[2];
     e[0]=cos(phi);
     e[1]=sin(phi);
     //unit normal
@@ -79,7 +80,8 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
 }
 
 actin::~actin(){ 
-//    std::cout<<"DELETING ACTIN\n";
+    std::cout<<"DELETING ACTIN\n";
+    delete[] e; 
 };
 
 //shortest(perpendicular) distance between an arbitray point and the filament
