@@ -54,6 +54,12 @@ class actin
         
         double * get_end();
 
+        void set_xcm(double xcm);
+
+        void set_ycm(double ycm);
+
+        void set_phi(double theta);
+
         std::vector<std::vector<int> > get_quadrants();
     
     private:

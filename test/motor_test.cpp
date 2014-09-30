@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_EQUAL( m.get_states()[0], 0);
     BOOST_CHECK_EQUAL( m.get_states()[1], 0);
     
-    actin a(0, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin * a = new actin(0, 0, 0, 1, 0, 0, 0, 0, 0);
     ae.add_monomer(a, 0);
 
     motor m2 = motor(1, 1, 0, 1, &ae, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
