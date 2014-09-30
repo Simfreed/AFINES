@@ -63,7 +63,7 @@ class actin
         std::vector<std::vector<int> > get_quadrants();
     
     private:
-        double x,y,phi,ld, start[2], end[2], e[2], n[2], forces[3];
+        double x,y,phi,ld, start[2], end[2], *e, n[2], forces[3];
         
         double diameter, a_vis;
         
