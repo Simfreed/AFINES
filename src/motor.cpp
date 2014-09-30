@@ -128,18 +128,18 @@ void motor::brownian()
 {
     if (state[0]==0 && state[1]==0) {
 
-        xm[0]=hx[0]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
-        xm[1]=hx[1]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
-        ym[0]=hy[0]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
-        ym[1]=hy[1]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+        xm[0]=hx[0]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
+        xm[1]=hx[1]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
+        ym[0]=hy[0]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+        ym[1]=hy[1]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
         reflect(xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if (state[0]==0 || state[1]==0) {
         int hd=state[0];
 
-        xm[hd]=hx[hd]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi));
-        ym[hd]=hy[hd]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
+        xm[hd]=hx[hd]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi));
+        ym[hd]=hy[hd]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
         xm[pr(hd)]=hx[pr(hd)];
         ym[pr(hd)]=hy[pr(hd)];
         reflect(xm[0],xm[1],ym[0],ym[1]);

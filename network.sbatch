@@ -7,7 +7,7 @@ module load ffmpeg
 # set the number of nodes to 2
 #SBATCH --ntasks=1
 #SBATCH --job-name=actomyosin_sim
-#SBATCH --output=actomyosin_sim.out
+#SBATCH --output=log/network.out
 #SBATCH --time=10:00:00
 #SBATCH --nodes=1
 #SBATCH --account=pi-dinner

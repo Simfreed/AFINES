@@ -18,11 +18,28 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     phi=angle;
     ld=len;
     diameter=ld/40;
+    a_vis=vis;
+    
+    fov[0] = fovx;
+    fov[1] = fovy;
+    nq[0]  = nx;
+    nq[1]  = ny;
+
+    this->update();
+}
+
+actin::~actin(){ 
+    //std::cout<<"DELETING ACTIN\n";
+};
+
+// Updates all derived quantities of a monomer
+void actin::update(){
+    
     start[0]=x-ld*0.5*cos(phi);
     start[1]=y-ld*0.5*sin(phi);
     end[0]=x+ld*0.5*cos(phi);
     end[1]=y+ld*0.5*sin(phi);
-    a_vis=vis;
+    
     //unit vector
     e[0]=cos(phi);
     e[1]=sin(phi);
@@ -40,19 +57,19 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     int lower_limit, upper_limit, index;
     if(start[0] <= end[0])
     {
-        lower_limit = int(floor(start[0]/fovx*nx));
+        lower_limit = int(floor(start[0]/fov[0]*nq[0]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(end[0]/fovx*nx));
-        if(upper_limit < nx-1){upper_limit++;};
+        upper_limit = int(ceil(end[0]/fov[0]*nq[0]));
+        if(upper_limit < nq[0]-1){upper_limit++;};
 
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);};
     }
     else
     {
-        lower_limit = int(floor(end[0]/fovx*nx));
+        lower_limit = int(floor(end[0]/fov[0]*nq[0]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(start[0]/fovx*nx));
-        if(upper_limit < nx-1){upper_limit++;};
+        upper_limit = int(ceil(start[0]/fov[0]*nq[0]));
+        if(upper_limit < nq[0]-1){upper_limit++;};
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);};
     };
     quad.push_back(tmp);
@@ -61,27 +78,23 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     tmp.clear();
     if(start[1] <= end[1])
     {
-        lower_limit = int(floor(start[1]/fovy*ny));
+        lower_limit = int(floor(start[1]/fov[1]*nq[1]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(end[1]/fovy*ny));
-        if(upper_limit < ny-1){upper_limit++;};
+        upper_limit = int(ceil(end[1]/fov[1]*nq[1]));
+        if(upper_limit < nq[1]-1){upper_limit++;};
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);}
     }
     else
     {
-        lower_limit = int(floor(end[1]/fovy*ny));
+        lower_limit = int(floor(end[1]/fov[1]*nq[1]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(start[1]/fovy*ny));
-        if(upper_limit < ny-1){upper_limit++;};
+        upper_limit = int(ceil(start[1]/fov[1]*nq[1]));
+        if(upper_limit < nq[1]-1){upper_limit++;};
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);}
     };
     quad.push_back(tmp);
+
 }
-
-actin::~actin(){ 
-    //std::cout<<"DELETING ACTIN\n";
-};
-
 //shortest(perpendicular) distance between an arbitray point and the filament
 double actin::get_distance(double xp, double yp)
 {
@@ -166,7 +179,7 @@ double* actin::get_friction()
     double* fric = new double[3];
     fric[0]=2*pi*a_vis*ld/log(ld/diameter);
     fric[1]=2*fric[0];
-    fric[2]=fric[0]*pow(ld,2)/6;
+    fric[2]=fric[0]*pow(ld,2)/4;
     return fric;
 }
 

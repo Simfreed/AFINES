@@ -66,4 +66,9 @@ BOOST_AUTO_TEST_CASE( get_intpoint_test)
     BOOST_CHECK_CLOSE( intpoint[1], 0, tol);
     delete[] intpoint;
 }
+
+BOOST_AUTO_TEST_CASE( set_get_xcm )
+{
+    actin a(1, 0, 0, 1, 0, 0, 0, 0, 0);
+}
 // EOF

@@ -7,7 +7,7 @@ module load ffmpeg
 # set the number of nodes to 2
 #SBATCH --ntasks=1
 #SBATCH --job-name=persistence_length
-#SBATCH --output=persistence_length.out
+#SBATCH --output=log/pl.out
 #SBATCH --time=03:00:00
 #SBATCH --nodes=1
 #SBATCH --account=pi-dinner

@@ -6,10 +6,10 @@
 #define xrange 100.0
 #define yrange 100.0
 #define tinit 0.0
-#define tfinal 10 
-// #define dt 0.0001 -- defined previously
-#define print_dt 100
-#define stdout_dt 1000
+#define tfinal 10
+// #define dt 0.00001 -- defined previously
+#define print_dt 1000
+#define stdout_dt 10000
 
 int main(int argc, char* argv[]){
     
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
  ***********************/
  
     // Motors
-    double motor_length=0.5;
+    double motor_length = 0.5;
     double motor_density=0;
     double motor_stiffness=50.0; //pN / um
     double vmotor=1.0;
