@@ -29,17 +29,11 @@
 
 /* distances in microns, time in seconds, forces in pN * 
  * --> Temp in pN-um                                   */
-/*
-#define pi            3.14159265358979323
-#define eps           0.001
-#define dt            0.0001   
-#define temperature   0.004
-*/
 //const double pi, eps, dt, temperature;
 const double pi = 3.14159265358979323;
 const double eps = 0.001;
 const double dt = 0.0001;
-const double temperature = 0.004;
+const double temperature = 4; //0.004;
 /*generic functions to be used below*/
 
 double rng(double start, double end);

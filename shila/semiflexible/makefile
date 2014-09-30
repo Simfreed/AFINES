@@ -29,6 +29,8 @@ clean:
 # Programs
 persistence_length: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/persistence_length.cpp $(INC) $(LIB) -o bin/pl
+network: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt
 
 # Tests
 actin_tester: $(OBJECTS)

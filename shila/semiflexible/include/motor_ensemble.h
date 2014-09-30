@@ -38,14 +38,14 @@ class motor_ensemble
 
         void motor_tension(std::ofstream& fout);
 
-        void add_motor(motor m);
+        void add_motor(motor * m);
 
     private:
 
         double fov[2], mrho, mld, mang, motorx, motory, alpha;
         int nm, s[2];
         actin_ensemble *a_network;
-        std::vector<motor> n_motors;  
+        std::vector<motor *> n_motors;  
         std::string color;
 };
 
