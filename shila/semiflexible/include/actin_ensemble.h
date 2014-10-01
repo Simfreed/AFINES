@@ -32,10 +32,11 @@ class actin_ensemble
         actin_ensemble();
 
         actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer,
-                double link_len);
+                double link_len, std::vector<double *> pos_sets);
         
         ~actin_ensemble();
-
+        
+        void add_polymer(double startx, double starty, double theta, int index, int nmonomers);
         void quad_update();
 
         std::vector<actin *> * get_network();
@@ -85,7 +86,7 @@ class actin_ensemble
         void clear_actin_link_map();
     
     private:
-        double fov[2], rho, ld, view, visc;
+        double fov[2], view[2], rho, ld, visc;
         
         double link_ld, ltheta;
         

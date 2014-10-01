@@ -16,80 +16,32 @@
 
 actin_ensemble::actin_ensemble(){}
 
-actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len)
+actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len, std::vector<double *> pos_sets)
 {
-    view=0.9;
+    view[0] = (fovx - 2*nmonomer*len)/fovx;
+    view[1] = (fovy - 2*nmonomer*len)/fovy;
     fov[0]=fovx;
     fov[1]=fovy;
     nq[0]=nx;
     nq[1]=ny;
     rho=density;
     visc=vis;
-    //        nmonomer_min = 100; //hard coded number of min/max monomers per filament
-    //        nmonomer_max = nmonomer_min;
-    //        int nmonomer = (nmonomer_max + nmonomer_min)/2;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
     ld=len;//rng_n(len,1.0);
     link_ld = link_len;
+    npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
+    
     std::cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     std::cout<<"DEBUG: Number of monomers per filament:"<<nmonomer<<"\n"; 
     std::cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
     
-    double  xcm, ycm, theta;
     for (int i=0; i<npolymer; i++) {
-        theta=rng(0,2*pi);
-        //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
-        //the start of the polymer: 
-        network.push_back(new actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
-                    theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-        //std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-        //network.push_back(new actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-        //Add the quadrants of the first rod
-        std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
-        for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-            for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-                quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
-            }
-        }
-        // add monomers to the polymer
-        mono_map[i] = empty_vector; 
-        mono_map[i].push_back(network.size()-1);
-        for (int j=0; j<nmonomer-1; j++) {
-
-            // Calculate a link at the end of the rod
-            ltheta = theta; //rng(0, 2*pi);
-
-            // Calculate the Next rod on the actin polymer--  continues from the link
-            //theta = rng(0,2*pi);
-            xcm = network.back()->get_end()[0] + link_ld*cos(ltheta) + ld*0.5*cos(theta);
-            ycm = network.back()->get_end()[1] + link_ld*sin(ltheta) + ld*0.5*sin(theta);
-
-            // Check that this monomer is in the field of view, otherwise start a new polymer:
-            if ( xcm > (0.5*(view*fovx - ld)) || xcm < (-0.5*(view*fovx - ld)) 
-                    || ycm > (0.5*(view*fovy - ld)) || ycm < (-0.5*(view*fovy - ld)) )
-            {
-                std::cout<<"\nDEBUG:"<<j+1<<"th monomer of "<<i<<"th polymer outside field of view; stopped building polymer\n";
-                break;
-            }else{
-
-                
-                // Add the actin monomer
-                network.push_back( new actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
-                mono_map[ i ].push_back(network.size()-1);
-
-                // Add it's quadrants:
-                std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
-                for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-                    for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-                        quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
-                    }
-                }
-            } 
-
+        int s = pos_sets.size();
+        if ( i < s){
+            this->add_polymer(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], i, nmonomer);
+        }else{
+            this->add_polymer(rng(-0.5*(view[0]*fov[0]-ld),0.5*(view[0]*fov[0]-ld)), rng(-0.5*(view[1]*fov[1]-ld),0.5*(view[1]*fov[1]-ld)), rng(0, 2*pi), i, nmonomer);
         }
     }
-
-
 }
 
 actin_ensemble::~actin_ensemble(){ 
@@ -103,6 +55,55 @@ actin_ensemble::~actin_ensemble(){
     network.clear();
     actin_link_map.clear();
 };
+
+
+void actin_ensemble::add_polymer(double startx, double starty, double theta, int pol_index, int nmon)
+{
+    //the start of the polymer: 
+    network.push_back( new actin(startx, starty, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+    
+    //Add the quadrants of the first rod
+    std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
+    for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
+        for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
+            quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
+        }
+    }
+    
+    // add monomers to the polymer
+    mono_map[pol_index] = empty_vector; 
+    mono_map[pol_index].push_back(network.size()-1);
+    
+    double  xcm, ycm;
+    for (int j=1; j < nmon; j++) {
+
+        // Calculate the Next rod on the actin polymer--  continues from the link
+        xcm = network.back()->get_end()[0] + link_ld*cos(theta) + ld*0.5*cos(theta);
+        ycm = network.back()->get_end()[1] + link_ld*sin(theta) + ld*0.5*sin(theta);
+
+        // Check that this monomer is in the field of view, otherwise start a new polymer:
+        if ( xcm > (0.5*(view[0]*fov[0] - ld)) || xcm < (-0.5*(view[0]*fov[0] - ld)) 
+                || ycm > (0.5*(view[1]*fov[1] - ld)) || ycm < (-0.5*(view[1]*fov[1] - ld)) )
+        {
+            std::cout<<"DEBUG:"<<j+1<<"th monomer of "<<pol_index<<"th polymer outside field of view; stopped building polymer\n";
+            break;
+        }else{
+
+            // Add the actin monomer
+            network.push_back( new actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+            mono_map[ pol_index ].push_back(network.size()-1);
+
+            // Add its quadrants:
+            std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
+            for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
+                for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
+                    quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
+                }
+            }
+        } 
+
+    }
+}
 
 void actin_ensemble::add_monomer(actin * a, int polymer){
     network.push_back(a);
