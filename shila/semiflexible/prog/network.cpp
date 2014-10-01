@@ -3,19 +3,10 @@
 #include "motor_ensemble.h"
 #include "globals.h"
 
-#define xrange 50.0
-#define yrange 50.0
-#define tinit 0.0
-#define tfinal 100
 // #define dt 0.0001 -- defined in globals.h
-#define print_dt 1000
-#define stdout_dt 10000
 
 int main(int argc, char* argv[]){
     
-    double xgrid=2*xrange;
-    double ygrid=2*yrange;
-
     int seed=time(NULL);
     srand(seed);
 
@@ -23,6 +14,30 @@ int main(int argc, char* argv[]){
  *      CONTROLS        *
  ***********************/
  
+    // Space
+    double xrange = 50.0;
+    double yrange = 50.0;
+
+    // Time 
+    int count           = 0;
+    double tinit        = 0.0;
+    double tfinal       = 200;
+    int print_dt     = 1000;  // # of timesteps to print to file
+    int stdout_dt    = 10000; // # of timesteps to print to stdout
+    double t            = tinit;
+    
+    // Environment
+    double viscosity    = 0.5; //units?
+
+    // Actin 
+    double actin_length = 1; //(um) length of a monomer
+    double npolymer     = 100; 
+
+    // Links 
+    double link_stretching_stiffness = 50.0; //pn / um
+    double polymer_bending_modulus   = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
+    std::string link_color           = "1"; //"blue";
+    
     // Motors
     double motor_length=0.5;
     double motor_density=0.1;
@@ -32,23 +47,6 @@ int main(int argc, char* argv[]){
     double m_kend=5.0;
     double m_koff=1.0; 
    
-    // Actin 
-    double actin_length=1; //(um) length of a monomer
-    double npolymer = 100; 
-
-    // Links 
-    double link_stretching_stiffness = motor_stiffness;
-    double link_length = actin_length/10; 
-    double polymer_bending_modulus = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
-    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
-    std::string link_color = "1"; //"blue";
-    
-    // Environment
-    double viscosity=0.5;
-
-    // Time 
-    int count=0;
-    double t=tinit;
 
     // Output
     std::string dir, afile, mfile, lfile;
@@ -59,17 +57,28 @@ int main(int argc, char* argv[]){
     /***********************
      * VARIABLES           *
      **********************/
-    double nmonomer = 100;
+    double nmonomer = 10;
 //  double link_bending_stiffness = motor_stiffness/10;
     
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
-        link_stretching_stiffness   =   atof(argv[2]);
-        dir                         =        argv[3] ;
+        npolymer                    =   atof(argv[2]);
+        actin_length                =   atof(argv[3]);
+        motor_density               =   atof(argv[4]);
+        tfinal                      =   atof(argv[5]);
+        link_stretching_stiffness   =   atof(argv[6]);
+        xrange                      =   atof(argv[7]);
+        yrange                      =   atof(argv[8]);
+        dir                         =        argv[9] ;
     }
     
     // DERIVED QUANTITIES :
-    double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
+    double xgrid  = 2*xrange;
+    double ygrid  = 2*yrange;
+    double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
+    double link_length               = actin_length/10; 
+    double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/actin_length,3);
+    
     std::string output_file                         =   dir + "/data/output.txt";
     std::string actin_output                        =   dir + "/data/actin_final.txt";
     std::string myosin_output                       =   dir + "/data/myosin_final.txt";
