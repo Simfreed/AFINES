@@ -36,6 +36,10 @@ int main(int argc, char* argv[]){
     double actin_length=1; //(um) length of a monomer
     double npolymer = 1; 
 
+    std::vector<double *> pol_positions;
+    double pos[3] = {0, 0, rng(0,2*pi)};
+    pol_positions.push_back(pos);
+
     // Links 
     double link_stretching_stiffness = motor_stiffness;
     double link_length = actin_length/10; 
@@ -80,10 +84,8 @@ int main(int argc, char* argv[]){
     // Fourier Modes
     int n_modes = nmonomer - 1;
     std::map<int, std::vector<double> > fm;
-/*    for(int i = 0; i < n_modes; i ++){
-        fm[i] = std::vector<double>();
-    }
-*/    // Angle corrleations
+
+    // Angle corrleations
     std::vector<double> angle_correlations;
     std::vector<double> angle_correlations_sum;
 
@@ -105,7 +107,7 @@ int main(int argc, char* argv[]){
     
     
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
+	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pol_positions);
     std::cout<<"Creating link ensemble...\n";
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
