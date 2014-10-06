@@ -11,7 +11,7 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS := -g -Wall -std=c++11
-LIB := -L lib
+LIB := -L lib -lboost_program_options
 INC := -I include
 
 $(TARGET): $(OBJECTS)
@@ -31,6 +31,8 @@ persistence_length: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/persistence_length.cpp $(INC) $(LIB) -o bin/pl
 network: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt
+2fil: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/2fil.cpp $(INC) $(LIB) -o bin/2f
 
 # Tests
 actin_tester: $(OBJECTS)

@@ -3,7 +3,20 @@
 #include "motor_ensemble.h"
 #include "globals.h"
 
+#include <iostream>
+#include <fstream> 
+#include <iterator>
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 // #define dt 0.0001 -- defined in globals.h
+
+template<class T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
+{
+    std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
+    return os;
+}
 
 int main(int argc, char* argv[]){
     
@@ -47,6 +60,10 @@ int main(int argc, char* argv[]){
     double m_kend=5.0;
     double m_koff=1.0; 
    
+    std::vector<double *> actin_positions, motor_positions;
+    
+    // Input
+    std::string config_file;
 
     // Output
     std::string dir, afile, mfile, lfile;
@@ -59,6 +76,64 @@ int main(int argc, char* argv[]){
      **********************/
     double nmonomer = 10;
 //  double link_bending_stiffness = motor_stiffness/10;
+    
+    //Options allowed only on command line
+    po::options_description generic("Generic options");
+    generic.add_options()
+        ("version, v", "print version std::string")
+        ("help", "produce help message")
+        ("config,c", po::value<std::string>(&config_file)->default_value("config/network.cgf"), "name of a configuration file")
+        ;
+
+    //Options allowed in a config file
+    po::options_description config("Configuration");
+    config.add_options()
+        ("nmonomer", po::value<double>(&nmonomer)->default_value(10), "number of monomers per filament")
+        ("npolymer", po::value<double>(&npolymer)->default_value(100), "number of polymers in the network")
+        ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
+        ("motor_density", po::value<double>(&motor_density)->default_value(0), "number of motors / area")
+        ("tfinal", po::value<double>(&tfinal)->default_value(100), "time in seconds of the simulation")
+        ("link_stretching_stiffness", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
+        ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
+        ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
+        ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
+        ("actin_positions", po::value<std::vector<double *> >(&actin_positions), "Starting positions of actin polymers")
+        ("motor_positions", po::value<std::vector<double *> >(&motor_positions), "Starting positions of motors")
+        ;
+    
+    //Hidden options, will be allowed both on command line and 
+    //in config file, but will not be shown to user
+    po::options_description hidden("Hidden options");
+    hidden.add_options()
+        ("input-file", po::value< std::vector<std::string> >(), "input file")
+        ;
+
+    po::options_description cmdline_options;
+    cmdline_options.add(generic).add(config).add(hidden);
+
+    po::options_description config_file_options;
+    config_file_options.add(config).add(hidden);
+
+    po::options_description visible("Allowed options");
+    visible.add(generic).add(config);
+    
+    po::positional_options_description p;
+    p.add("input-file", -1); ///wha in the world is this doing
+
+    po::variables_map vm;
+    store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
+    notify(vm);
+
+    std::ifstream ifs(config_file.c_str());
+    if (!ifs){
+        std::cout<<"can not open config file: "<<config_file<<"\n";
+        return 0;
+    }
+    else
+    {
+        store(parse_config_file(ifs, config_file_options), vm);
+        notify(vm);
+    }
     
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
@@ -98,7 +173,7 @@ int main(int argc, char* argv[]){
     
     
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
+	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, actin_positions, seed);
     std::cout<<"Creating link ensemble...\n";
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
@@ -106,7 +181,7 @@ int main(int argc, char* argv[]){
     std::cout<<"Adding motors...\n";
     motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
                                              net, vmotor, motor_stiffness, m_kon, m_koff,
-                                             m_kend, actin_length, viscosity);
+                                             m_kend, actin_length, viscosity, motor_positions);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
     while (t<=tfinal) {

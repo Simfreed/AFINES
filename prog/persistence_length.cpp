@@ -67,8 +67,8 @@ int main(int argc, char* argv[]){
     
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
-        link_stretching_stiffness   =   atof(argv[2]);
-        actin_length                =   atof(argv[3]);
+        actin_length                =   atof(argv[2]);
+        viscosity                   =   atof(argv[3]);
         dir                         =        argv[4] ;
     }
     
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]){
     
     
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pol_positions);
+	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pol_positions, seed);
     std::cout<<"Creating link ensemble...\n";
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";

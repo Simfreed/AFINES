@@ -16,7 +16,7 @@
 
 actin_ensemble::actin_ensemble(){}
 
-actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len, std::vector<double *> pos_sets)
+actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len, std::vector<double *> pos_sets, double seed)
 {
     view[0] = (fovx - 2*nmonomer*len)/fovx;
     view[1] = (fovy - 2*nmonomer*len)/fovy;
@@ -29,7 +29,13 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
     ld=len;//rng_n(len,1.0);
     link_ld = link_len;
     npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
-    
+   
+    if (seed == -1){
+        straight_filaments = true;
+    }else{
+        srand(seed);
+    }
+
     std::cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     std::cout<<"DEBUG: Number of monomers per filament:"<<nmonomer<<"\n"; 
     std::cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
@@ -57,10 +63,10 @@ actin_ensemble::~actin_ensemble(){
 };
 
 
-void actin_ensemble::add_polymer(double startx, double starty, double theta, int pol_index, int nmon)
+void actin_ensemble::add_polymer(double startx, double starty, double phi0, int pol_index, int nmon)
 {
     //the start of the polymer: 
-    network.push_back( new actin(startx, starty, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+    network.push_back( new actin(startx, starty, phi0, ld, fov[0], fov[1], nq[0], nq[1], visc) );
     
     //Add the quadrants of the first rod
     std::vector<std::vector<int> > tmp_quads = network.back()->get_quadrants();
@@ -74,12 +80,21 @@ void actin_ensemble::add_polymer(double startx, double starty, double theta, int
     mono_map[pol_index] = empty_vector; 
     mono_map[pol_index].push_back(network.size()-1);
     
-    double  xcm, ycm;
+    double  xcm, ycm, phi, lphi;
     for (int j = 1; j < nmon; j++) {
 
         // Calculate the Next rod on the actin polymer--  continues from the link
-        xcm = network.back()->get_end()[0] + link_ld*cos(theta) + ld*0.5*cos(theta);
-        ycm = network.back()->get_end()[1] + link_ld*sin(theta) + ld*0.5*sin(theta);
+        if (straight_filaments){
+            phi = phi0;
+        }else{ //constrain phi to be <= 90 degrees in either direction
+            phi = rng(0,pi/2);
+            if(round(rng(0,1))){
+                phi = 2*pi - phi;
+            }
+        }
+        lphi = (phi + network.back()->get_angle())/2;
+        xcm = network.back()->get_end()[0] + link_ld*cos(lphi) + ld*0.5*cos(phi);
+        ycm = network.back()->get_end()[1] + link_ld*sin(lphi) + ld*0.5*sin(phi);
 
         // Check that this monomer is in the field of view, otherwise start a new polymer:
         if ( xcm > (0.5*(fov[0] - ld)) || xcm < (-0.5*(fov[0] - ld)) 
@@ -90,7 +105,7 @@ void actin_ensemble::add_polymer(double startx, double starty, double theta, int
         }else{
 
             // Add the actin monomer
-            network.push_back( new actin(xcm, ycm, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+            network.push_back( new actin(xcm, ycm, phi, ld, fov[0], fov[1], nq[0], nq[1], visc) );
             mono_map[ pol_index ].push_back(network.size()-1);
 
             // Add its quadrants:
@@ -195,6 +210,11 @@ double * actin_ensemble::get_end(int index)
 double * actin_ensemble::get_forces(int index)
 {
     return network[index]->get_forces();
+}
+
+void actin_ensemble::set_straight_filaments(bool is_straight)
+{
+    straight_filaments = is_straight;
 }
 
 void actin_ensemble::update()

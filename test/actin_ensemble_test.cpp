@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     pos_set.push_back(pos1);
     double pos2[3] = {-1,0,3*pi/2};
     pos_set.push_back(pos2);
-	actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pos_set);
+    actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pos_set, -1);
     
     //Expect to have actin monomers at (0, 0), (2, 0), (4, 0), ..., (18, 0)
    for (int i = 0; i < nmonomer; i++){
@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE( connect_polymers_test )
     actin * a0 = new actin(-1, 0, 0, 1, 0, 0, 0, 0, 0);
     link_ensemble * lks = new link_ensemble();
     actin_ensemble * ae = new actin_ensemble();
+    ae->set_straight_filaments(true);
     ae->add_monomer(a0, 0);
     ae->connect_polymers(lks, lnk_len, kl, kb, col);
     
@@ -153,6 +154,7 @@ BOOST_AUTO_TEST_CASE( connect_polymers_test )
     int nmonomer = 10;
     lks = new link_ensemble();
     ae = new actin_ensemble();
+    ae->set_straight_filaments(true);
 
     for (int i = 0; i < nmonomer; i++){
         actin * a = new actin( i*2*nmonomer, 0, 0, 1, 0, 0, 0, 0, 0);
@@ -189,6 +191,7 @@ BOOST_AUTO_TEST_CASE( update_bending_test )
     actin * a0 = new actin(-1, 0, 0, 1, 0, 0, 0, 0, 0);
     link_ensemble * lks = new link_ensemble();
     actin_ensemble * ae = new actin_ensemble();
+    ae->set_straight_filaments(true);
     ae->add_monomer(a0, 0);
     ae->connect_polymers(lks, lnk_len, kl, kb, col);
     ae->update_polymer_bending(0);
@@ -208,6 +211,7 @@ BOOST_AUTO_TEST_CASE( update_bending_test )
     actin * a2 = new actin(3.0/(2.0*sqrt(2.0)), 3.0/(2.0*sqrt(2.0)), pi/4, 1, 0, 0, 0, 0, 0);
     lks = new link_ensemble();
     ae = new actin_ensemble();
+    ae->set_straight_filaments(true);
     
     ae->add_monomer(a1, 0);
     ae->add_monomer(a2, 0);
