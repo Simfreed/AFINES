@@ -32,7 +32,7 @@ class actin_ensemble
         actin_ensemble();
 
         actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer,
-                double link_len, std::vector<double *> pos_sets);
+                double link_len, std::vector<double *> pos_sets, double seed);
         
         ~actin_ensemble();
         
@@ -84,14 +84,18 @@ class actin_ensemble
         void add_monomer(actin * a, int n);
 
         void clear_actin_link_map();
+        
+        void set_straight_filaments(bool is_straight);
     
     private:
         double fov[2], view[2], rho, ld, visc;
         
-        double link_ld, ltheta;
+        double link_ld;
         
-        int npolymer, nq[2];//, xn, yn, qxcm, qycm;
-        
+        int npolymer, nq[2];
+       
+        bool straight_filaments = false;
+
         std::vector<actin *> network;
         
         std::vector<int> empty_vector;
