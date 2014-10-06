@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( friction_test )
     double tol = 0.001; //%
     BOOST_CHECK_CLOSE( fric[0] , 0.340655, tol);
     BOOST_CHECK_CLOSE( fric[1] , 0.681311, tol);
-    BOOST_CHECK_CLOSE( fric[2] , 0.0567759, tol);
+    BOOST_CHECK_CLOSE( fric[2] , 0.085164, tol);
     delete[] fric;
 }
 

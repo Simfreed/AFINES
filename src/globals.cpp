@@ -132,3 +132,13 @@ std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2)
     }
     return s;
 }
+
+bool close(double actual, double expected, double err)
+{
+    if (expected == 0){
+        return fabs(expected-actual) < err;
+    }
+    else{
+        return fabs(expected-actual)/expected < err;
+    }
+}

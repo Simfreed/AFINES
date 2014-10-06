@@ -26,7 +26,9 @@ class motor
 {
     public:
 
-        motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int aindex0, int aindex1, double fovx, double fovy, double v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis, std::string col);
+        motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int
+                aindex0, int aindex1, double fovx, double fovy, double v0, double stiffness, double ron, double roff,
+                double rend, double actin_len, double vis, std::string col);
 
         ~motor();
 

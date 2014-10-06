@@ -63,7 +63,7 @@ void actin_ensemble::add_polymer(double startx, double starty, double theta, int
     network.push_back( new actin(startx, starty, theta, ld, fov[0], fov[1], nq[0], nq[1], visc) );
     
     //Add the quadrants of the first rod
-    std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
+    std::vector<std::vector<int> > tmp_quads = network.back()->get_quadrants();
     for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
         for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
             quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
@@ -75,15 +75,15 @@ void actin_ensemble::add_polymer(double startx, double starty, double theta, int
     mono_map[pol_index].push_back(network.size()-1);
     
     double  xcm, ycm;
-    for (int j=1; j < nmon; j++) {
+    for (int j = 1; j < nmon; j++) {
 
         // Calculate the Next rod on the actin polymer--  continues from the link
         xcm = network.back()->get_end()[0] + link_ld*cos(theta) + ld*0.5*cos(theta);
         ycm = network.back()->get_end()[1] + link_ld*sin(theta) + ld*0.5*sin(theta);
 
         // Check that this monomer is in the field of view, otherwise start a new polymer:
-        if ( xcm > (0.5*(view[0]*fov[0] - ld)) || xcm < (-0.5*(view[0]*fov[0] - ld)) 
-                || ycm > (0.5*(view[1]*fov[1] - ld)) || ycm < (-0.5*(view[1]*fov[1] - ld)) )
+        if ( xcm > (0.5*(fov[0] - ld)) || xcm < (-0.5*(fov[0] - ld)) 
+                || ycm > (0.5*(fov[1] - ld)) || ycm < (-0.5*(fov[1] - ld)) )
         {
             std::cout<<"DEBUG:"<<j+1<<"th monomer of "<<pol_index<<"th polymer outside field of view; stopped building polymer\n";
             break;
@@ -257,9 +257,7 @@ void actin_ensemble::update_forces(int index, double f1, double f2, double f3)
 void actin_ensemble::write(std::ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network.at(i)->get_start()[0]<<"\t"<<network.at(i)->get_start()[1]<<"\t"
-            <<network.at(i)->get_end()[0]-network.at(i)->get_start()[0]<<"\t"
-            <<network.at(i)->get_end()[1]-network.at(i)->get_start()[1]<<"\n";
+        fout<<network.at(i)->write();
     } 
 }
 /*
@@ -422,18 +420,18 @@ void actin_ensemble::update_polymer_bending(int polymer_index)
         if (j == 0)
             lft_trq = 0;
         else
-            lft_trq = cross(lft_lnk->get_posx() - this->get_xcm(monomers->at(j)),
-                            lft_lnk->get_posy() - this->get_ycm(monomers->at(j)), forcex, forcey);
+            lft_trq = cross(this->get_xcm(monomers->at(j)) - lft_lnk->get_posx(),
+                            this->get_ycm(monomers->at(j)) - lft_lnk->get_posy(), forcex, forcey);
 
         if (j == monomers->size()-1)
             rt_trq = 0;
         else{
             rt_lnk = actin_link_map[monomers->at(j)][monomers->at(j+1)];
-            rt_trq = cross(rt_lnk->get_posx() - this->get_xcm(monomers->at(j)),
-                           rt_lnk->get_posy() - this->get_ycm(monomers->at(j)), forcex, forcey);
+            rt_trq = cross(this->get_xcm(monomers->at(j)) - rt_lnk->get_posx(),
+                           this->get_ycm(monomers->at(j)) - rt_lnk->get_posy(), forcex, forcey);
         }
         
-        this->update_forces(monomers->at(j), force_par, force_perp, lft_trq/2 + rt_trq/2);
+        this->update_forces(monomers->at(j), force_par, force_perp, lft_trq + rt_trq);
 
         lft_lnk = rt_lnk;
     }
