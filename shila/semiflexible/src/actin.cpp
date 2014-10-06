@@ -225,3 +225,30 @@ std::vector<std::vector<int> > actin::get_quadrants()
 { 
     return quad; 
 }
+
+bool actin::operator==(const actin& that) 
+{
+    double err = eps; 
+    return (close(x , that.x , err) && close(y , that.y , err) &&
+            close(phi , that.phi , err) && close(ld , that.ld , err) &&
+            close(a_vis , that.a_vis , err) && close(forces[0] , that.forces[0] , err) &&
+            close(forces[1] , that.forces[1] , err) && close(forces[2] , that.forces[2], err) 
+           );
+}
+
+std::string actin::write()
+{
+    return std::to_string(start[0]) + "\t" + std::to_string(start[1]) + "\t" + 
+           std::to_string(end[0]-start[0]) + "\t" + std::to_string(end[1]-start[1]) + "\n";
+ 
+}
+
+std::string actin::to_string()
+{
+    return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) + "\tphi : " + 
+           std::to_string(phi) + "\tld : " + std::to_string(ld) + "\ta_vis : " +
+           std::to_string(a_vis) + "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : " +
+           std::to_string(forces[1]) + "\tforces[2] : " + std::to_string(forces[2]) + "\n";
+ 
+}
+

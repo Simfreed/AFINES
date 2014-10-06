@@ -17,6 +17,7 @@
 
 //=====================================
 //included dependences
+#include "string"
 #include "vector"
 
 //=====================================
@@ -63,7 +64,14 @@ class actin
         void set_phi(double theta);
 
         std::vector<std::vector<int> > get_quadrants();
+        
+        std::string write();
+        
+        std::string to_string();
+        
+        bool operator==(const actin& that);    
     
+
     private:
         double x,y,phi,ld, fov[2], nq[2], start[2], end[2], e[2], n[2], forces[3];
         

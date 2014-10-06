@@ -14,8 +14,8 @@
 
 //motor_ensemble class
 
-motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double mlen, actin_ensemble* network, double v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis)
-{
+motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double mlen, actin_ensemble* network, double
+        v0, double stiffness, double ron, double roff, double rend, double actin_len, double vis, std::vector<double *> positions) {
     fov[0]=fovx;
     fov[1]=fovy;
     mrho=mdensity;
@@ -25,10 +25,18 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
     a_network=network;
     alpha=0.8;
     color = "0.5";//"green"; 
-    for (int i=1; i<=nm; i++) {
-        motorx=rng(-0.5*(fovx*alpha-mld),0.5*(fovx*alpha-mld));
-        motory=rng(-0.5*(fovy*alpha-mld),0.5*(fovy*alpha-mld));
-        mang=rng(0,2*pi);
+    for (int i=0; i< nm; i++) {
+        
+        if ((unsigned int)i < positions.size()){
+            motorx = positions[i][0];
+            motory = positions[i][1];
+            mang   = positions[i][2];
+        }else{
+            motorx = rng(-0.5*(fovx*alpha-mld),0.5*(fovx*alpha-mld));
+            motory = rng(-0.5*(fovy*alpha-mld),0.5*(fovy*alpha-mld));
+            mang   = rng(0,2*pi);
+        }
+
         n_motors.push_back(new motor(motorx,motory,mang,mld,a_network,0,0,-1,-1,fov[0],fov[1],v0,stiffness,ron,roff,rend,actin_len,vis,color));
     }
 }

@@ -6,7 +6,7 @@
 #define xrange 100.0
 #define yrange 100.0
 #define tinit 0.0
-#define tfinal 10
+#define tfinal 100 
 // #define dt 0.00001 -- defined previously
 #define print_dt 1000
 #define stdout_dt 10000
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]){
     // Motors
     double motor_length = 0.5;
     double motor_density=0;
-    double motor_stiffness=50.0; //pN / um
+    double motor_stiffness=5.0; //pN / um
     double vmotor=1.0;
     double m_kon=90.0;          
     double m_kend=5.0;
@@ -42,9 +42,7 @@ int main(int argc, char* argv[]){
 
     // Links 
     double link_stretching_stiffness = motor_stiffness;
-    double link_length = actin_length/10; 
     double polymer_bending_modulus = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
-    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
     std::string link_color = "1"; //"blue";
     
     // Environment
@@ -70,7 +68,8 @@ int main(int argc, char* argv[]){
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
         link_stretching_stiffness   =   atof(argv[2]);
-        dir                         =        argv[3] ;
+        actin_length                =   atof(argv[3]);
+        dir                         =        argv[4] ;
     }
     
     // DERIVED QUANTITIES :
@@ -80,6 +79,8 @@ int main(int argc, char* argv[]){
     std::string myosin_output                       =   dir + "/data/myosin_final.txt";
     std::string persistence_length_output           =   dir + "/data/angle_correlations.txt"; 
     std::string persistence_length_fourier_output   =   dir + "/data/fourier_modes.txt";
+    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
+    double link_length = actin_length/10; 
     
     // Fourier Modes
     int n_modes = nmonomer - 1;
@@ -115,7 +116,7 @@ int main(int argc, char* argv[]){
     std::cout<<"Adding motors...\n";
     motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
                                              net, vmotor, motor_stiffness, m_kon, m_koff,
-                                             m_kend, actin_length, viscosity);
+                                             m_kend, actin_length, viscosity, pol_positions);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
     while (t<=tfinal) {

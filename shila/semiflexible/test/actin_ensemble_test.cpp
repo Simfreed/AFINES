@@ -7,6 +7,34 @@
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
+    int nmonomer = 10;
+    int npolymer = 2;
+    double xrange = 50;
+    double yrange = 50;
+    double xgrid = 2*xrange;
+    double ygrid = 2*yrange;
+    double actin_length = 1;
+    double link_length = 1;
+    double viscosity = 0.5;
+
+    double actin_density = nmonomer * npolymer / (xrange * yrange);
+    std::vector<double *> pos_set;
+    double pos1[3] = {0,0,0};
+    pos_set.push_back(pos1);
+    double pos2[3] = {-1,0,3*pi/2};
+    pos_set.push_back(pos2);
+	actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pos_set);
+    
+    //Expect to have actin monomers at (0, 0), (2, 0), (4, 0), ..., (18, 0)
+   for (int i = 0; i < nmonomer; i++){
+       actin a( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+       BOOST_CHECK_MESSAGE( a == *(ae.get_network()->at(i)), "\n" + ae.get_network()->at(i)->to_string() + "does not equal\n" + a.to_string() );
+   }
+    //Expect to have actin monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
+   for (int i = 0; i < nmonomer; i++){
+       actin a( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+       BOOST_CHECK_MESSAGE( a == *(ae.get_network()->at(i + nmonomer)), "\n" + ae.get_network()->at(i + nmonomer)->to_string() + "does not equal\n" + a.to_string() );
+   }
 } 
 
 BOOST_AUTO_TEST_CASE( friction_test )
@@ -17,6 +45,10 @@ BOOST_AUTO_TEST_CASE( force_test)
 {
 }
 
+BOOST_AUTO_TEST_CASE( add_polymer_test )
+{
+
+}
 BOOST_AUTO_TEST_CASE( direction_test)
 {
     actin * a = new actin(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
@@ -190,12 +222,12 @@ BOOST_AUTO_TEST_CASE( update_bending_test )
     frcs = ae->get_forces(0);
     BOOST_CHECK_CLOSE(frcs[0] , fx/2.0 , tol );
     BOOST_CHECK_CLOSE(frcs[1] , fy/2.0 , tol );
-    BOOST_CHECK_CLOSE(frcs[2] , 0.125*(fy*(1.0/sqrt(2.0) + 1) - fx/sqrt(2.0)) , tol );
+    BOOST_CHECK_CLOSE(frcs[2] , -0.25*(fy*(1.0/sqrt(2.0) + 1) - fx/sqrt(2.0)) , tol );
 
     frcs = ae->get_forces(1); 
     BOOST_CHECK_CLOSE(frcs[0] , sqrt(2.0)/4.0*(fx + fy) , tol );
     BOOST_CHECK_CLOSE(frcs[1] , sqrt(2.0)/4.0*(fy - fx) , tol );
-    BOOST_CHECK_CLOSE(frcs[2] , -1.0/(4.0*sqrt(2.0))*(fy - fx) , tol );
+    BOOST_CHECK_CLOSE(frcs[2] , 1.0/(2.0*sqrt(2.0))*(fy - fx) , tol );
     
     delete lks;
     delete ae;
