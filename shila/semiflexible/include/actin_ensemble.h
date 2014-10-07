@@ -29,14 +29,20 @@ class link_ensemble;
 class actin_ensemble
 {
     public:
+        actin_ensemble();
+
         actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer,
-                double link_len);
+                double link_len, std::vector<double *> pos_sets, double seed);
         
         ~actin_ensemble();
+        
+        void add_polymer(double startx, double starty, double theta, int index, int nmonomers);
 
+        void quad_update_monomer(int i);
+        
         void quad_update();
 
-        std::vector<actin>* get_network();
+        std::vector<actin *> * get_network();
 
         std::map<int,double> get_dist(double x, double y);
 
@@ -46,11 +52,19 @@ class actin_ensemble
 
         double get_int_direction(int index, double xp, double yp);
 
-        double* get_position(int index);
+        double get_xcm(int index);
+        
+        double get_ycm(int index);
+
+        double get_angle(int index);
 
         double get_alength(int index);
 
-        double* get_ends(int index);
+        double* get_start(int index);
+        
+        double* get_end(int index);
+        
+        double* get_forces(int index);
 
         void update();
 
@@ -69,15 +83,23 @@ class actin_ensemble
         void update_polymer_bending(int polymer_index);
 
         void update_bending();
+        
+        void add_monomer(actin * a, int n);
 
+        void clear_actin_link_map();
+        
+        void set_straight_filaments(bool is_straight);
+    
     private:
-        double fov[2], rho, ld, xnew, ynew, phinew, vpar, omega, vperp, vx, vy, alength, view, a_ends[4], av_vel, visc;
+        double fov[2], view[2], rho, ld, visc;
         
-        double link_ld, ltheta;
+        double link_ld;
         
-        int npolymer, nq[2];//, xn, yn, qxcm, qycm;
-        
-        std::vector<actin> network;
+        int npolymer, nq[2];
+       
+        bool straight_filaments = false;
+
+        std::vector<actin *> network;
         
         std::vector<int> empty_vector;
         

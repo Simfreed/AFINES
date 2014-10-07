@@ -31,7 +31,7 @@ int pr(int num)
 double rng_exp(double mean)
 {
     double u;
-    u=rand() / (RAND_MAX + 1.);;
+    u=rand() / (RAND_MAX + 1.);
     return  -mean*log(u);
 }
 
@@ -131,4 +131,14 @@ std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2)
         }
     }
     return s;
+}
+
+bool close(double actual, double expected, double err)
+{
+    if (expected == 0){
+        return fabs(expected-actual) < err;
+    }
+    else{
+        return fabs(expected-actual)/expected < err;
+    }
 }

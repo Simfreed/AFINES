@@ -12,9 +12,7 @@ do for [i=0:9999] {
    set xrange[-25:25]
    set yrange[-25:25]
    set output 'time'.str_num.'.png'
-#   stats 'mfile'.str_num.'.txt' using 5 nooutput
    set cbrange[0.99:1.01]
    plot 'afile'.str_num.'.txt' u 1:2:3:4 with vectors filled head lw 2 linecolor rgb "red" notitle,\
-   'lfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10 # ,\
-#   'mfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10
+   'lfile'.str_num.'.txt' u 1:2:3:4:5 notitle with vectors arrowstyle 10
 }

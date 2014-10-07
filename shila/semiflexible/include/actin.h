@@ -17,6 +17,7 @@
 
 //=====================================
 //included dependences
+#include "string"
 #include "vector"
 
 //=====================================
@@ -28,34 +29,53 @@ class actin
         
         ~actin();
     
+        void update();
+
         double get_distance(double xp, double yp);
 
         double* get_intpoint(double xp, double yp);
 
         double get_int_angle(double xp, double yp);
 
-        double*  get_direction();
+        double* get_direction();
 
         double get_length();
 
+        double get_xcm();
+        
+        double get_ycm();
+        
+        double get_angle();
+        
         double* get_forces();
 
         void update_force(double f1, double f2, double f3);
 
         double* get_friction();
+        
+        double * get_start();
+        
+        double * get_end();
 
-        double* getpos();
+        void set_xcm(double xcm);
 
-        double* getposcm();
+        void set_ycm(double ycm);
 
-        double* getendpts();
+        void set_phi(double theta);
 
         std::vector<std::vector<int> > get_quadrants();
-    
-    private:
-        double x,y,phi,ld, start[2], end[2], e[2], n[2], forces[3];
         
-        double xperp, xpar, friction_perp, friction_par, diameter, a_vis;
+        std::string write();
+        
+        std::string to_string();
+        
+        bool operator==(const actin& that);    
+    
+
+    private:
+        double x,y,phi,ld, fov[2], nq[2], start[2], end[2], e[2], n[2], forces[3];
+        
+        double diameter, a_vis;
         
         std::vector<std::vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
         

@@ -1,27 +1,15 @@
 #!/bin/bash
 # Shell options
 shopt -s extglob
-module load gnuplot
-module load ffmpeg
-
-# set the number of nodes to 2
-#SBATCH --ntasks=1
-#SBATCH --job-name=persistence_length
-#SBATCH --output=persistence_length.out
-#SBATCH --time=01:00:00
-#SBATCH --nodes=1
-#SBATCH --account=pi-dinner
-#SBATCH --cpus-per-task=1
 
 ###########################
 # Begin work section      #
 ###########################
 
-make 
-kl=1 # pn/um
-kb=100 # pn
-nm=50
-main_dr="persistence_length/kl${kl}_kb${kb}_nm$nm"
+make
+kl=100 # pn/um
+nm=10
+main_dr="persistence_length/kl${kl}_nm$nm"
 
 png_dr="$main_dr/png_stack"
 txt_dr="$main_dr/txt_stack"
@@ -34,7 +22,8 @@ mkdir "$png_dr"
 mkdir "$txt_dr"
 mkdir "$data_dr"
 
-./per $nm $kl $kb $main_dr
+echo "./per $nm $kl $main_dr"
+./per $nm $kl $main_dr
 
 pushd $txt_dr
 echo "gnuplotting"

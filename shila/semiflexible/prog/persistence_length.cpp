@@ -6,10 +6,11 @@
 #define xrange 100.0
 #define yrange 100.0
 #define tinit 0.0
-#define tfinal 0.001
-// #define dt 0.0001 -- defined previously
-#define print_dt 1
-#define stdout_dt 1
+#define tfinal 100 
+#define delay 50
+// #define dt 0.00001 -- defined previously
+#define print_dt 1000
+#define stdout_dt 10000
 
 int main(int argc, char* argv[]){
     
@@ -24,9 +25,9 @@ int main(int argc, char* argv[]){
  ***********************/
  
     // Motors
-    double motor_length=0.5;
+    double motor_length = 0.5;
     double motor_density=0;
-    double motor_stiffness=50.0; //pN / um
+    double motor_stiffness=5.0; //pN / um
     double vmotor=1.0;
     double m_kon=90.0;          
     double m_kend=5.0;
@@ -36,23 +37,17 @@ int main(int argc, char* argv[]){
     double actin_length=1; //(um) length of a monomer
     double npolymer = 1; 
 
+    std::vector<double *> pol_positions;
+    double pos[3] = {0, 0, rng(0,2*pi)};
+    pol_positions.push_back(pos);
+
     // Links 
     double link_stretching_stiffness = motor_stiffness;
-    double link_length = actin_length/10; 
     double polymer_bending_modulus = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
-    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
     std::string link_color = "1"; //"blue";
     
     // Environment
     double viscosity=0.5;
-
-    // Fourier Modes
-    int n_modes = 20;
-    std::map<int, std::vector<double> > fm;
-   
-    // Angle corrleations
-    std::vector<double> angle_correlations;
-    std::vector<double> angle_correlations_sum;
 
     // Time 
     int count=0;
@@ -73,18 +68,29 @@ int main(int argc, char* argv[]){
     
     if (argc>1) {
         nmonomer                    =   atof(argv[1]);
-        link_stretching_stiffness   =   atof(argv[2]);
-        dir                         =        argv[3] ;
+        actin_length                =   atof(argv[2]);
+        viscosity                   =   atof(argv[3]);
+        dir                         =        argv[4] ;
     }
     
     // DERIVED QUANTITIES :
-    double actin_density= npolymer*nmonomer/(xrange*yrange);//0.65;
+    double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
     std::string output_file                         =   dir + "/data/output.txt";
     std::string actin_output                        =   dir + "/data/actin_final.txt";
     std::string myosin_output                       =   dir + "/data/myosin_final.txt";
     std::string persistence_length_output           =   dir + "/data/angle_correlations.txt"; 
     std::string persistence_length_fourier_output   =   dir + "/data/fourier_modes.txt";
+    double link_bending_stiffness = polymer_bending_modulus * pow(1.0/actin_length,3);
+    double link_length = actin_length/10; 
     
+    // Fourier Modes
+    int n_modes = nmonomer - 1;
+    std::map<int, std::vector<double> > fm;
+
+    // Angle corrleations
+    std::vector<double> angle_correlations;
+    std::vector<double> angle_correlations_sum;
+
     
     a_final.open(actin_output.c_str());
     m_final.open(myosin_output.c_str());
@@ -103,15 +109,15 @@ int main(int argc, char* argv[]){
     
     
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length);
+	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pol_positions, seed);
     std::cout<<"Creating link ensemble...\n";
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
     net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
     std::cout<<"Adding motors...\n";
     motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
-                                             net, vmotor, motor_stiffness, m_kon, m_koff, 
-                                             m_kend, actin_length, viscosity);
+                                             net, vmotor, motor_stiffness, m_kon, m_koff,
+                                             m_kend, actin_length, viscosity, pol_positions);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
     while (t<=tfinal) {
@@ -119,7 +125,7 @@ int main(int argc, char* argv[]){
 		if (count%stdout_dt==0) {
 			std::cout<<"Time counts: "<<count<<"\n";
 		}
-        
+
         net->update_bending();
         net->update();
         net->quad_update();
@@ -130,36 +136,36 @@ int main(int argc, char* argv[]){
             sprintf(numstr, "%d", count/print_dt);
             
             afile = dir + "/txt_stack/afile" + numstr + ".txt";
-            //mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
+            mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
             lfile = dir + "/txt_stack/lfile" + numstr + ".txt";
 			
             std::ofstream file_a, file_m, file_l;
 			file_a.open(afile.c_str());
-			//file_m.open(mfile.c_str());
+			file_m.open(mfile.c_str());
             file_l.open(lfile.c_str());
 		    
             net->write(file_a);
             myosins->motor_write(file_m);
             lks->link_write(file_l);
 			file_a.close();
-			//file_m.close();
+			file_m.close();
             file_l.close();
             
 		}
         //update network
         myosins->motor_walk();
-        
         lks->link_walk(); 
-        angle_correlations = net->get_angle_correlation(0); //assume one polymer
+        
+        if (t > delay){
+            angle_correlations = net->get_angle_correlation(0); //assume one polymer
+            angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
 
-        angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
-        
-        for (int n = 1; n <= n_modes; n++){
-            //assuming only one polymer
-            fm[n].push_back(net->get_fourier_mode(n, 0));
-        
+            for (int n = 1; n <= n_modes; n++){
+                //assuming only one polymer
+                fm[n].push_back(net->get_fourier_mode(n, 0));
+            }
         }
-        
+
         t+=dt;
 		count++;
     }
@@ -181,7 +187,8 @@ int main(int argc, char* argv[]){
     }
    
     //Delete all objects created
-    lks->delete_all();
+    std::cout<<"Here's where I think I delete things\n";
+    
     delete lks;
     delete myosins;
     delete net;
@@ -195,4 +202,3 @@ int main(int argc, char* argv[]){
 	std::cout<<"\n Done\n";
     return 0;
 }
-

@@ -18,11 +18,28 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     phi=angle;
     ld=len;
     diameter=ld/40;
+    a_vis=vis;
+    
+    fov[0] = fovx;
+    fov[1] = fovy;
+    nq[0]  = nx;
+    nq[1]  = ny;
+
+    this->update();
+}
+
+actin::~actin(){ 
+    //std::cout<<"DELETING ACTIN\n";
+};
+
+// Updates all derived quantities of a monomer
+void actin::update(){
+    
     start[0]=x-ld*0.5*cos(phi);
     start[1]=y-ld*0.5*sin(phi);
     end[0]=x+ld*0.5*cos(phi);
     end[1]=y+ld*0.5*sin(phi);
-    a_vis=vis;
+    
     //unit vector
     e[0]=cos(phi);
     e[1]=sin(phi);
@@ -40,19 +57,19 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     int lower_limit, upper_limit, index;
     if(start[0] <= end[0])
     {
-        lower_limit = int(floor(start[0]/fovx*nx));
+        lower_limit = int(floor(start[0]/fov[0]*nq[0]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(end[0]/fovx*nx));
-        if(upper_limit < nx-1){upper_limit++;};
+        upper_limit = int(ceil(end[0]/fov[0]*nq[0]));
+        if(upper_limit < nq[0]-1){upper_limit++;};
 
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);};
     }
     else
     {
-        lower_limit = int(floor(end[0]/fovx*nx));
+        lower_limit = int(floor(end[0]/fov[0]*nq[0]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(start[0]/fovx*nx));
-        if(upper_limit < nx-1){upper_limit++;};
+        upper_limit = int(ceil(start[0]/fov[0]*nq[0]));
+        if(upper_limit < nq[0]-1){upper_limit++;};
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);};
     };
     quad.push_back(tmp);
@@ -61,24 +78,23 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     tmp.clear();
     if(start[1] <= end[1])
     {
-        lower_limit = int(floor(start[1]/fovy*ny));
+        lower_limit = int(floor(start[1]/fov[1]*nq[1]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(end[1]/fovy*ny));
-        if(upper_limit < ny-1){upper_limit++;};
+        upper_limit = int(ceil(end[1]/fov[1]*nq[1]));
+        if(upper_limit < nq[1]-1){upper_limit++;};
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);}
     }
     else
     {
-        lower_limit = int(floor(end[1]/fovy*ny));
+        lower_limit = int(floor(end[1]/fov[1]*nq[1]));
         if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(start[1]/fovy*ny));
-        if(upper_limit < ny-1){upper_limit++;};
+        upper_limit = int(ceil(start[1]/fov[1]*nq[1]));
+        if(upper_limit < nq[1]-1){upper_limit++;};
         for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);}
     };
     quad.push_back(tmp);
-}
 
-actin::~actin(){ };
+}
 //shortest(perpendicular) distance between an arbitray point and the filament
 double actin::get_distance(double xp, double yp)
 {
@@ -102,9 +118,8 @@ double actin::get_distance(double xp, double yp)
 
 double* actin::get_intpoint(double xp, double yp)
 {
-    double* points;
-    double coordinates[2];
-    double l2=pow(dis_points(start[0],start[1],end[0],end[1]),2);
+    double* coordinates = new double[2];
+    double l2 = pow(dis_points(start[0], start[1], end[0], end[1]) , 2);
     if (l2==0) {
         coordinates[0]=start[0];
         coordinates[1]=start[1];
@@ -122,8 +137,7 @@ double* actin::get_intpoint(double xp, double yp)
         coordinates[0]=start[0]+tp*(end[0]-start[0]);
         coordinates[1]=start[1]+tp*(end[1]-start[1]);
     }
-    points=coordinates;
-    return points;
+    return coordinates;
 }
 
 double actin::get_int_angle(double xp, double yp)
@@ -150,9 +164,7 @@ double actin::get_length()
 
 double* actin::get_forces()
 {
-    double *fpr;
-    fpr=forces;
-    return fpr;
+    return forces;
 }
 
 void actin::update_force(double f1, double f2, double f3)
@@ -164,50 +176,79 @@ void actin::update_force(double f1, double f2, double f3)
 
 double* actin::get_friction()
 {
-    double fric[3];
-    double *fcr;
+    double* fric = new double[3];
     fric[0]=2*pi*a_vis*ld/log(ld/diameter);
     fric[1]=2*fric[0];
-    fric[2]=fric[0]*pow(ld,2)/6;
-    fcr=fric;
-    return fcr;
+    fric[2]=fric[0]*pow(ld,2)/4;
+    return fric;
 }
 
-double* actin::getpos()
+double actin::get_xcm()
 {
-    double pos[3];
-    double *ptr;
-    pos[0]=x*e[0]+y*e[1];
-    pos[1]=x*n[0]+y*n[1];
-    pos[2]=phi;
-    ptr=pos;
-    return ptr;
+    return x;
 }
 
-double* actin::getposcm()
+double actin::get_ycm()
 {
-    double poscm[3];
-    double *ptrs;
-    poscm[0]=x;
-    poscm[1]=y;
-    poscm[2]=phi;
-    ptrs=poscm;
-    return ptrs;
+    return y;
 }
 
-double* actin::getendpts()
+double actin::get_angle()
 {
-    double endpts[4];
-    double *pts;
-    endpts[0]=start[0];
-    endpts[1]=start[1];
-    endpts[2]=end[0];
-    endpts[3]=end[1];
-    pts=endpts;
-    return pts;
+    return phi;
+}
+
+double * actin::get_start(){
+    return start;
+}
+
+double * actin::get_end(){
+    return end;
+}
+
+void actin::set_xcm(double xcm)
+{
+    x = xcm;
+}
+
+void actin::set_ycm(double ycm)
+{
+    y = ycm;
+}
+
+void actin::set_phi(double theta)
+{
+    phi = theta;
 }
 
 std::vector<std::vector<int> > actin::get_quadrants()
 { 
     return quad; 
 }
+
+bool actin::operator==(const actin& that) 
+{
+    double err = eps; 
+    return (close(x , that.x , err) && close(y , that.y , err) &&
+            close(phi , that.phi , err) && close(ld , that.ld , err) &&
+            close(a_vis , that.a_vis , err) && close(forces[0] , that.forces[0] , err) &&
+            close(forces[1] , that.forces[1] , err) && close(forces[2] , that.forces[2], err) 
+           );
+}
+
+std::string actin::write()
+{
+    return std::to_string(start[0]) + "\t" + std::to_string(start[1]) + "\t" + 
+           std::to_string(end[0]-start[0]) + "\t" + std::to_string(end[1]-start[1]) + "\n";
+ 
+}
+
+std::string actin::to_string()
+{
+    return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) + "\tphi : " + 
+           std::to_string(phi) + "\tld : " + std::to_string(ld) + "\ta_vis : " +
+           std::to_string(a_vis) + "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : " +
+           std::to_string(forces[1]) + "\tforces[2] : " + std::to_string(forces[2]) + "\n";
+ 
+}
+

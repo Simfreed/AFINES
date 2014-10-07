@@ -18,7 +18,7 @@
 
 //=====================================
 //included dependences
-#include "iostream"
+#include <iostream>
 //#include "iomanip"
 #include <math.h>
 #include "fstream"
@@ -29,12 +29,11 @@
 
 /* distances in microns, time in seconds, forces in pN * 
  * --> Temp in pN-um                                   */
-
-#define pi            3.14159265358979323
-#define eps           0.001
-#define dt            0.0001   
-#define temperature   0.004
-
+//const double pi, eps, dt, temperature;
+const double pi = 3.14159265358979323;
+const double eps = 0.001;
+const double dt = 0.0001;
+const double temperature = 0.004;
 /*generic functions to be used below*/
 
 double rng(double start, double end);
@@ -49,6 +48,7 @@ double dot(double x1, double y1, double x2, double y2);
 double mean(std::vector<double> vals);
 double var(std::vector<double> vals);
 double mode_var(std::vector<double> vals, double m);
+bool close(double e, double a, double r);
 std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2);
 
 #endif

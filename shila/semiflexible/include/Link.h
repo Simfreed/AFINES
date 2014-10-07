@@ -29,7 +29,8 @@ class Link
         Link(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
         ~Link();
 
-        double* get_heads();
+        double* get_hx();
+        double* get_hy();
         double get_kb();
         double get_posx();
         double get_posy();
@@ -37,7 +38,8 @@ class Link
         std::string to_string();
         void step();
         void actin_update();
-    
+        bool operator==(const Link& that);    
+
     protected:
 
         double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], kl, kb, xcm, ycm;

@@ -40,41 +40,38 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     pos_a_end[1]=0;
 
     if (state0){
-        pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[0],actin_network->get_ends(aindex[0])[1]),
-                dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[2],actin_network->get_ends(aindex[0])[3]));
+        pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_start(aindex[0])[0],actin_network->get_start(aindex[0])[1]),
+                dis_points(hx[0],hy[0],actin_network->get_end(aindex[0])[0],actin_network->get_end(aindex[0])[1]));
     }
     if (state1){
-        pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[0],actin_network->get_ends(aindex[1])[1]),
-                dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[2],actin_network->get_ends(aindex[1])[3]));
+        pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_start(aindex[1])[0],actin_network->get_start(aindex[1])[1]),
+                dis_points(hx[1],hy[1],actin_network->get_end(aindex[1])[0],actin_network->get_end(aindex[1])[1]));
     }
-    //        pos_actin[1]=0;
+    
     fov[0]=fovx;
     fov[1]=fovy;
     color = col; 
 
 }
 
-motor::~motor(){ };
+motor::~motor(){ 
+    std::cout<<"DELETING MOTOR\n";
+};
 
 //return motor state with a given head number
 int* motor::get_states() 
 {
-    int* sptr;
-    sptr=state;
-    return sptr;
+    return state;
 }
 
-
-double* motor::get_heads()
+double* motor::get_hx()
 {
-    double h[4];
-    double *gh;
-    h[0]=hx[0];
-    h[1]=hy[0];
-    h[2]=hx[1];
-    h[3]=hy[1];
-    gh=h;
-    return gh;
+    return hx;
+}
+
+double* motor::get_hy()
+{
+    return hy;
 }
 
 std::string motor::get_color()
@@ -103,8 +100,12 @@ void motor::attach(int hd)
                     state[hd]=1;
                     aindex[hd]=it->first;
                     //update head position
-                    hx[hd]=actin_network->get_intpoints(it->first,hx[hd],hy[hd])[0];
-                    hy[hd]=actin_network->get_intpoints(it->first,hx[hd],hy[hd])[1];
+                    
+                    double * intpoint = actin_network->get_intpoints(it->first,hx[hd],hy[hd]);
+                    hx[hd] = intpoint[0];
+                    hy[hd] = intpoint[1];
+                    delete intpoint;
+
                     if (state[pr(hd)]==0) {
                         hx[pr(hd)]=hx[hd]+pow(-1,hd)*mld*cos(mphi);
                         hy[pr(hd)]=hy[hd]+pow(-1,hd)*mld*sin(mphi);
@@ -113,8 +114,8 @@ void motor::attach(int hd)
                         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
                     }
 
-                    //                        pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
-                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],actin_network->get_ends(aindex[hd])[2],actin_network->get_ends(aindex[hd])[3]);
+                    //                        pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
+                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],actin_network->get_end(aindex[hd])[0],actin_network->get_end(aindex[hd])[1]);
                     break;
                 }
             }
@@ -127,18 +128,18 @@ void motor::brownian()
 {
     if (state[0]==0 && state[1]==0) {
 
-        xm[0]=hx[0]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
-        xm[1]=hx[1]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
-        ym[0]=hy[0]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
-        ym[1]=hy[1]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+        xm[0]=hx[0]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
+        xm[1]=hx[1]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
+        ym[0]=hy[0]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+        ym[1]=hy[1]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
         reflect(xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if (state[0]==0 || state[1]==0) {
         int hd=state[0];
 
-        xm[hd]=hx[hd]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi));
-        ym[hd]=hy[hd]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
+        xm[hd]=hx[hd]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi));
+        ym[hd]=hy[hd]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
         xm[pr(hd)]=hx[pr(hd)];
         ym[pr(hd)]=hy[pr(hd)];
         reflect(xm[0],xm[1],ym[0],ym[1]);
@@ -233,8 +234,8 @@ void motor::actin_update()
         force_par[1]=forcex[1]*actin_network->get_direction(aindex[1])[0] + forcey[1]*actin_network->get_direction(aindex[1])[1];
         force_perp[1]=-forcex[1]*actin_network->get_direction(aindex[1])[1] + forcey[1]*actin_network->get_direction(aindex[1])[0];
 
-        torque[0]=cross(hx[0]-actin_network->get_position(aindex[0])[0],hy[0]-actin_network->get_position(aindex[0])[1],forcex[0],forcey[0]);
-        torque[1]=cross(hx[1]-actin_network->get_position(aindex[1])[0],hy[1]-actin_network->get_position(aindex[1])[1],forcex[1],forcey[1]);
+        torque[0]=cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
+        torque[1]=cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
         actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
         actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
     }
@@ -246,26 +247,26 @@ void motor::actin_update()
 void motor::update_shape()
 {
     if (state[0]==1 && state[1]==1) {
-        hx[0]=actin_network->get_ends(aindex[0])[2]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
-        hy[0]=actin_network->get_ends(aindex[0])[3]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
-        //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_position(aindex[0])[0],actin_network->get_position(aindex[0])[1]);
-        hx[1]=actin_network->get_ends(aindex[1])[2]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
-        hy[1]=actin_network->get_ends(aindex[1])[3]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
-        //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_position(aindex[1])[0],actin_network->get_position(aindex[1])[1]);
+        hx[0]=actin_network->get_end(aindex[0])[0]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
+        hy[0]=actin_network->get_end(aindex[0])[1]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
+        //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_xcm(aindex[0]),actin_network->get_ycm(aindex[0]));
+        hx[1]=actin_network->get_end(aindex[1])[0]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
+        hy[1]=actin_network->get_end(aindex[1])[1]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
+        //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_xcm(aindex[1]),actin_network->get_ycm(aindex[1]));
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==1 && state[1]==0)
     {
-        hx[0]=actin_network->get_ends(aindex[0])[2]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
-        hy[0]=actin_network->get_ends(aindex[0])[3]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
-        //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_position(aindex[0])[0],actin_network->get_position(aindex[0])[1]);
+        hx[0]=actin_network->get_end(aindex[0])[0]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
+        hy[0]=actin_network->get_end(aindex[0])[1]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
+        //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_xcm(aindex[0]),actin_network->get_ycm(aindex[0]));
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==0 && state[1]==1)
     {
-        hx[1]=actin_network->get_ends(aindex[1])[2]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
-        hy[1]=actin_network->get_ends(aindex[1])[3]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
-        //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_position(aindex[1])[0],actin_network->get_position(aindex[1])[1]);
+        hx[1]=actin_network->get_end(aindex[1])[0]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
+        hy[1]=actin_network->get_end(aindex[1])[1]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
+        //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_xcm(aindex[1]),actin_network->get_ycm(aindex[1]));
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else
@@ -289,18 +290,18 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
             hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
         }
         else {
-            hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-            hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+            hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
+            hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
             mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
-            //                pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
+            //                pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
         }
     }
     else {
         pos_a_end[hd]=pos;
-        hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-        hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+        hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
+        hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
-        //            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
+        //            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
     }
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
 
