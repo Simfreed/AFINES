@@ -37,6 +37,37 @@ BOOST_AUTO_TEST_CASE( constructors_test )
    }
 } 
 
+BOOST_AUTO_TEST_CASE( angle_correlations )
+{
+    int nmonomer = 10;
+    int npolymer = 2;
+    double xrange = 50;
+    double yrange = 50;
+    
+    double xgrid = 2*xrange;
+    double ygrid = 2*yrange;
+    double actin_length = 1;
+    double link_length = 1;
+    double viscosity = 0.5;
+
+    double actin_density = nmonomer * npolymer / (xrange * yrange);
+    std::vector<double *> pos_set;
+    double pos1[3] = {0,0,0};
+    pos_set.push_back(pos1);
+    double pos2[3] = {-1,0,3*pi/2};
+    pos_set.push_back(pos2);
+    
+    actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pos_set, -1);
+    std::vector<double> ac0 = ae.get_angle_correlation(0);
+    std::vector<double> ac1 = ae.get_angle_correlation(1);
+    
+    for (int i = 0; i < nmonomer; i++){
+        BOOST_CHECK_MESSAGE(ac0[i]==1, "Polymer 0: ac["+std::to_string(i)+"] = "+std::to_string(ac0[i]) + " != 1");
+        BOOST_CHECK_MESSAGE(ac1[i]==1, "Polymer 1: ac["+std::to_string(i)+"] = "+std::to_string(ac0[i]) + " != 1");
+    }
+    
+    
+} 
 BOOST_AUTO_TEST_CASE( friction_test )
 {
 }

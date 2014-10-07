@@ -66,32 +66,18 @@ actin_ensemble::~actin_ensemble(){
 void actin_ensemble::add_polymer(double startx, double starty, double phi0, int pol_index, int nmon)
 {
     //the start of the polymer: 
-    network.push_back( new actin(startx, starty, phi0, ld, fov[0], fov[1], nq[0], nq[1], visc) );
+    actin * a = new actin(startx, starty, phi0, ld, fov[0], fov[1], nq[0], nq[1], visc);
+    add_monomer(a, pol_index);
     
-    //Add the quadrants of the first rod
-    std::vector<std::vector<int> > tmp_quads = network.back()->get_quadrants();
-    for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-        for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-            quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
-        }
-    }
-    
-    // add monomers to the polymer
-    mono_map[pol_index] = empty_vector; 
-    mono_map[pol_index].push_back(network.size()-1);
-    
-    double  xcm, ycm, phi, lphi;
+    double  xcm, ycm, lphi, phi;
+    phi = phi0;
     for (int j = 1; j < nmon; j++) {
 
         // Calculate the Next rod on the actin polymer--  continues from the link
-        if (straight_filaments){
-            phi = phi0;
-        }else{ //constrain phi to be <= 90 degrees in either direction
-            phi = rng(0,pi/2);
-            if(round(rng(0,1))){
-                phi = 2*pi - phi;
-            }
+        if (!straight_filaments){ //constrain phi to be <= 90 degree difference in either direction
+            phi += rng(-pi/2,pi/2);
         }
+            
         lphi = (phi + network.back()->get_angle())/2;
         xcm = network.back()->get_end()[0] + link_ld*cos(lphi) + ld*0.5*cos(phi);
         ycm = network.back()->get_end()[1] + link_ld*sin(lphi) + ld*0.5*sin(phi);
@@ -103,18 +89,9 @@ void actin_ensemble::add_polymer(double startx, double starty, double phi0, int 
             std::cout<<"DEBUG:"<<j+1<<"th monomer of "<<pol_index<<"th polymer outside field of view; stopped building polymer\n";
             break;
         }else{
-
             // Add the actin monomer
-            network.push_back( new actin(xcm, ycm, phi, ld, fov[0], fov[1], nq[0], nq[1], visc) );
-            mono_map[ pol_index ].push_back(network.size()-1);
-
-            // Add its quadrants:
-            std::vector<std::vector<int> > tmp_quads=network.back()->get_quadrants();
-            for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-                for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-                    quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(network.size()-1);
-                }
-            }
+            a = new actin(xcm, ycm, phi, ld, fov[0], fov[1], nq[0], nq[1], visc) ;
+            add_monomer(a, pol_index); 
         } 
 
     }
@@ -123,21 +100,25 @@ void actin_ensemble::add_polymer(double startx, double starty, double phi0, int 
 void actin_ensemble::add_monomer(actin * a, int polymer){
     network.push_back(a);
     mono_map[polymer].push_back(network.size() - 1);
+    quad_update_monomer(network.size() - 1);
 }
 
+void actin_ensemble::quad_update_monomer(int i){
+    
+    std::vector<std::vector<int> > tmp_quads=network[i]->get_quadrants();
+    for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
+        for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
+            quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(i);
+        }
+    }
+
+}
 void actin_ensemble::quad_update()
 {
     quad_fils.clear();
     for (unsigned int i=0; i<network.size(); i++) {
-        std::vector<std::vector<int> > tmp_quads=network[i]->get_quadrants();
-        for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-            for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-                quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(i);
-            }
-        }
+        quad_update_monomer(i);
     }
-
-
 }
 
 std::vector<actin *>* actin_ensemble::get_network()
@@ -290,15 +271,16 @@ void actin_ensemble::write(std::ofstream& fout)
    */ 
 std::vector<double> actin_ensemble::get_angle_correlation(int polymer_index)
 {
-    double sum = 0, phi1, phi2;
+    double sum = 0, phi0, phi1;//, phi2;
     std::vector<double> corr;
     std::vector<int> * monos = &mono_map[polymer_index]; 
-    for(unsigned int i = 0; i < monos->size() - 1; i++){
+    phi0 = network.at(monos->at(0))->get_angle();
+    for(unsigned int i = 0; i < monos->size(); i++){
 
         phi1 = network.at(monos->at(i))->get_angle(); 
-        phi2 = network.at(monos->at(i+1))->get_angle(); 
+        //phi2 = network.at(monos->at(i+1))->get_angle(); 
 
-        sum += cos(phi2 - phi1);
+        sum += cos(phi1 - phi0);
 
         corr.push_back(sum/(i+1));
 
