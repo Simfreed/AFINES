@@ -7,6 +7,7 @@
 #define yrange 100.0
 #define tinit 0.0
 #define tfinal 100 
+#define delay 50
 // #define dt 0.00001 -- defined previously
 #define print_dt 1000
 #define stdout_dt 10000
@@ -155,14 +156,16 @@ int main(int argc, char* argv[]){
         myosins->motor_walk();
         lks->link_walk(); 
         
-        angle_correlations = net->get_angle_correlation(0); //assume one polymer
-        angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
-        
-        for (int n = 1; n <= n_modes; n++){
-            //assuming only one polymer
-            fm[n].push_back(net->get_fourier_mode(n, 0));
+        if (t > delay){
+            angle_correlations = net->get_angle_correlation(0); //assume one polymer
+            angle_correlations_sum = sum_vecs(angle_correlations_sum, angle_correlations);
+
+            for (int n = 1; n <= n_modes; n++){
+                //assuming only one polymer
+                fm[n].push_back(net->get_fourier_mode(n, 0));
+            }
         }
-        
+
         t+=dt;
 		count++;
     }

@@ -37,6 +37,9 @@ class actin_ensemble
         ~actin_ensemble();
         
         void add_polymer(double startx, double starty, double theta, int index, int nmonomers);
+
+        void quad_update_monomer(int i);
+        
         void quad_update();
 
         std::vector<actin *> * get_network();
