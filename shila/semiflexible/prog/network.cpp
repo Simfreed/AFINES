@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream> 
 #include <iterator>
+#include <array>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
@@ -16,6 +17,30 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {
     std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
     return os;
+}
+
+/* Takes a vector formatted 
+ * [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+ * And converts it to a vector formatted
+ * [{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}] if dim = 4 
+ * Or
+ * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] if dim = 3
+ */
+
+std::vector<double *> get_ptr_vec(std::vector<double> v, int dim)
+{
+    std::vector<double *> out;
+    double * pos;
+    for (unsigned int i = 0; i < v.size(); i+=dim)
+    {
+        pos = new double[dim];
+        for (int j = 0; j < dim; j++)
+        {
+            pos[j] = v[i+j];
+        }
+        out.push_back(pos);
+    }
+    return out;
 }
 
 int main(int argc, char* argv[]){
@@ -60,7 +85,7 @@ int main(int argc, char* argv[]){
     double m_kend=5.0;
     double m_koff=1.0; 
    
-    std::vector<double *> actin_positions, motor_positions;
+    std::vector<double>  actin_positions, motor_positions;
     
     // Input
     std::string config_file;
@@ -97,8 +122,8 @@ int main(int argc, char* argv[]){
         ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
         ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
-        ("actin_positions", po::value<std::vector<double *> >(&actin_positions), "Starting positions of actin polymers")
-        ("motor_positions", po::value<std::vector<double *> >(&motor_positions), "Starting positions of motors")
+        ("actin_positions", po::value<std::vector<double> >(&actin_positions), "Starting positions of actin polymers")
+        ("motor_positions", po::value<std::vector<double> >(&motor_positions), "Starting positions of motors")
         ;
     
     //Hidden options, will be allowed both on command line and 
@@ -172,8 +197,13 @@ int main(int argc, char* argv[]){
     o_file.close();
     
     
+    std::vector<double *> actin_position_ptrs = get_ptr_vec(actin_positions, 3);
+    std::vector<double *> motor_position_ptrs = get_ptr_vec(motor_positions, 3);
+
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, actin_positions, seed);
+	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, 
+                                        actin_length, viscosity, nmonomer, link_length, 
+                                        actin_position_ptrs, seed);
     std::cout<<"Creating link ensemble...\n";
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
@@ -181,7 +211,7 @@ int main(int argc, char* argv[]){
     std::cout<<"Adding motors...\n";
     motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
                                              net, vmotor, motor_stiffness, m_kon, m_koff,
-                                             m_kend, actin_length, viscosity, motor_positions);
+                                             m_kend, actin_length, viscosity, motor_position_ptrs);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
     while (t<=tfinal) {
@@ -232,6 +262,10 @@ int main(int argc, char* argv[]){
     delete lks;
     delete myosins;
     delete net;
+    
+    int as = actin_position_ptrs.size(), ms = motor_position_ptrs.size();
+    for (unsigned int i = 0; i < as; i++) delete [] actin_position_ptrs[i];
+    for (unsigned int i = 0; i < ms; i++) delete [] motor_position_ptrs[i];
 
     a_final.close();
     m_final.close();
