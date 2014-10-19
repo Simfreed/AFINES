@@ -2,7 +2,7 @@
 #include "motor_ensemble.h"
 #include "actin_ensemble.h"
 #define BOOST_TEST_MODULE motor_ensemble_test
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {

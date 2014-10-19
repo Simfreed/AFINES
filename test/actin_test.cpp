@@ -1,6 +1,7 @@
-#include "actin.h"
 #define BOOST_TEST_MODULE actin_test
-#include <boost/test/included/unit_test.hpp>
+
+#include "actin.h"
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {

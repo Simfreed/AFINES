@@ -1,8 +1,9 @@
+#define BOOST_TEST_MODULE link_ensemble_test
+
 #include "Link.h"
 #include "actin_ensemble.h"
 #include "link_ensemble.h"
-#define BOOST_TEST_MODULE link_ensemble_test
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
