@@ -19,30 +19,8 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
     return os;
 }
 
-/* Takes a vector formatted 
- * [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
- * And converts it to a vector formatted
- * [{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}] if dim = 4 
- * Or
- * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] if dim = 3
- */
 
-std::vector<double *> get_ptr_vec(std::vector<double> v, int dim)
-{
-    std::vector<double *> out;
-    double * pos;
-    for (unsigned int i = 0; i < v.size(); i+=dim)
-    {
-        pos = new double[dim];
-        for (int j = 0; j < dim; j++)
-        {
-            pos[j] = v[i+j];
-        }
-        out.push_back(pos);
-    }
-    return out;
-}
-
+//main method
 int main(int argc, char* argv[]){
     
     int seed=time(NULL);
@@ -70,6 +48,7 @@ int main(int argc, char* argv[]){
     // Actin 
     double actin_length = 1; //(um) length of a monomer
     double npolymer     = 100; 
+    double nmonomer = 10;
 
     // Links 
     double link_stretching_stiffness = 50.0; //pn / um
@@ -85,8 +64,8 @@ int main(int argc, char* argv[]){
     double m_kend=5.0;
     double m_koff=1.0; 
    
-    std::vector<double>  actin_positions, motor_positions;
-    
+    std::string actin_pos_str, motor_pos_str;
+
     // Input
     std::string config_file;
 
@@ -95,12 +74,9 @@ int main(int argc, char* argv[]){
     std::ofstream a_final, m_final, o_file;
 	char numstr[21];
    
-    
     /***********************
      * VARIABLES           *
      **********************/
-    double nmonomer = 10;
-//  double link_bending_stiffness = motor_stiffness/10;
     
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -122,9 +98,9 @@ int main(int argc, char* argv[]){
         ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
         ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
-        ("actin_positions", po::value<std::vector<double> >(&actin_positions), "Starting positions of actin polymers")
-        ("motor_positions", po::value<std::vector<double> >(&motor_positions), "Starting positions of motors")
-        ;
+        ("actin_pos_str", po::value<std::string> (&actin_pos_str), "Starting positions of actin polymers, commas delimit coordinates; spaces delimit positions")
+        ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
+        ; 
     
     //Hidden options, will be allowed both on command line and 
     //in config file, but will not be shown to user
@@ -160,18 +136,6 @@ int main(int argc, char* argv[]){
         notify(vm);
     }
     
-    if (argc>1) {
-        nmonomer                    =   atof(argv[1]);
-        npolymer                    =   atof(argv[2]);
-        actin_length                =   atof(argv[3]);
-        motor_density               =   atof(argv[4]);
-        tfinal                      =   atof(argv[5]);
-        link_stretching_stiffness   =   atof(argv[6]);
-        xrange                      =   atof(argv[7]);
-        yrange                      =   atof(argv[8]);
-        dir                         =        argv[9] ;
-    }
-    
     // DERIVED QUANTITIES :
     double xgrid  = 2*xrange;
     double ygrid  = 2*yrange;
@@ -197,8 +161,8 @@ int main(int argc, char* argv[]){
     o_file.close();
     
     
-    std::vector<double *> actin_position_ptrs = get_ptr_vec(actin_positions, 3);
-    std::vector<double *> motor_position_ptrs = get_ptr_vec(motor_positions, 3);
+    std::vector<double *> actin_position_ptrs = str2ptrvec(actin_pos_str, ";", ",");
+    std::vector<double *> motor_position_ptrs = str2ptrvec(motor_pos_str, ";", ",");
 
     std::cout<<"Creating actin network..\n";
 	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, 
@@ -264,8 +228,8 @@ int main(int argc, char* argv[]){
     delete net;
     
     int as = actin_position_ptrs.size(), ms = motor_position_ptrs.size();
-    for (unsigned int i = 0; i < as; i++) delete [] actin_position_ptrs[i];
-    for (unsigned int i = 0; i < ms; i++) delete [] motor_position_ptrs[i];
+    for (int i = 0; i < as; i++) delete [] actin_position_ptrs[i];
+    for (int i = 0; i < ms; i++) delete [] motor_position_ptrs[i];
 
     a_final.close();
     m_final.close();

@@ -19,6 +19,7 @@
 //=====================================
 //included dependences
 #include <iostream>
+#include <boost/algorithm/string.hpp>
 //#include "iomanip"
 #include <math.h>
 #include "fstream"
@@ -50,5 +51,7 @@ double var(std::vector<double> vals);
 double mode_var(std::vector<double> vals, double m);
 bool close(double e, double a, double r);
 std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2);
+std::vector<double *> vec2ptrvec(std::vector<double>, int dim);
+std::vector<double *> str2ptrvec(std::string, std::string, std::string);
 
 #endif

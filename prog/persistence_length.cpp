@@ -8,7 +8,7 @@
 #define tinit 0.0
 #define tfinal 100 
 #define delay 50
-// #define dt 0.00001 -- defined previously
+// #define dt 0.0001 -- defined previously
 #define print_dt 1000
 #define stdout_dt 10000
 
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]){
 
     
     a_final.open(actin_output.c_str());
-    m_final.open(myosin_output.c_str());
+    //m_final.open(myosin_output.c_str());
     pl.open(persistence_length_output.c_str());
     pl_fourier.open(persistence_length_fourier_output.c_str());
     o_file.open(output_file.c_str());
@@ -136,24 +136,24 @@ int main(int argc, char* argv[]){
             sprintf(numstr, "%d", count/print_dt);
             
             afile = dir + "/txt_stack/afile" + numstr + ".txt";
-            mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
+            //mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
             lfile = dir + "/txt_stack/lfile" + numstr + ".txt";
 			
             std::ofstream file_a, file_m, file_l;
 			file_a.open(afile.c_str());
-			file_m.open(mfile.c_str());
+			//file_m.open(mfile.c_str());
             file_l.open(lfile.c_str());
 		    
             net->write(file_a);
             myosins->motor_write(file_m);
             lks->link_write(file_l);
 			file_a.close();
-			file_m.close();
+			//file_m.close();
             file_l.close();
             
 		}
         //update network
-        myosins->motor_walk();
+        //myosins->motor_walk();
         lks->link_walk(); 
         
         if (t > delay){
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]){
 		count++;
     }
     net->write(a_final);
-    myosins->motor_write(m_final);
+    //myosins->motor_write(m_final);
     
     //write the correlation file:
     //format of correlation file (assuming all polymers have the same monomer length, basically)
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]){
     delete net;
 
     a_final.close();
-    m_final.close();
+    //m_final.close();
     pl.close(); 
     pl_fourier.close();
     std::cout<<"\nTime counts: "<<count;
