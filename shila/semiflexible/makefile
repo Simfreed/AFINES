@@ -11,8 +11,8 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CFLAGS := -g -Wall -std=c++11 -DBOOST_TEST_DYN_LINK
-LIB :=  -L lib -lboost_unit_test_framework -lboost_program_options
-INC := -I include -I /usr/local/include/
+LIB :=  -L /software/boost-1.50-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options
+INC := -I include  -I /usr/include/ -I /usr/local/include/
 
 $(TARGET): $(OBJECTS)
 	  @echo " Linking..."

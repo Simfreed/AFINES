@@ -142,3 +142,55 @@ bool close(double actual, double expected, double err)
         return fabs(expected-actual)/expected < err;
     }
 }
+
+/* Takes a vector formatted 
+ * [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+ * And converts it to a vector formatted
+ * [{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}] if dim = 4 
+ * Or
+ * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] if dim = 3
+ */
+
+std::vector<double *> vec2ptrvec(std::vector<double> v, int dim)
+{
+    std::vector<double *> out;
+    double * pos;
+    for (unsigned int i = 0; i < v.size(); i+=dim)
+    {
+        pos = new double[dim];
+        for (int j = 0; j < dim; j++)
+        {
+           pos[j] = v[i+j];
+        }
+        out.push_back(pos);
+    }
+    return out;
+}
+
+/* Takes a string formatted
+ * 1,2,3;4,5,6;7,8,9;10,11,12
+ * and converts it into a vector of pointers:
+ * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] 
+ */
+
+std::vector<double *> str2ptrvec(std::string pos_str, std::string pos_dlm, std::string coord_dlm)
+{
+    std::vector<std::string> posn, posns, coords;           
+    std::vector<double *> out;
+    double * pos;
+
+    boost::split(posns, pos_str, boost::is_any_of(pos_dlm));
+
+    for(unsigned int i=0; i < posns.size(); i++){
+        
+        boost::split(coords, posns[i], boost::is_any_of(coord_dlm));
+        pos = new double[coords.size()];
+        
+        for(unsigned int j=0; j < coords.size(); j++){
+            pos[j] = (double) atof(coords[j].data());
+        }
+        out.push_back(pos);
+    }
+
+    return out;
+}
