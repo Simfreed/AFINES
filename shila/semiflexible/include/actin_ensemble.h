@@ -31,7 +31,7 @@ class actin_ensemble
     public:
         actin_ensemble();
 
-        actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer,
+        actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double len, double vis, int nmonomer,
                 double link_len, std::vector<double *> pos_sets, double seed);
         
         ~actin_ensemble();
@@ -91,7 +91,7 @@ class actin_ensemble
         void set_straight_filaments(bool is_straight);
     
     private:
-        double fov[2], view[2], rho, ld, visc;
+        double dt, fov[2], view[2], rho, ld, visc;
         
         double link_ld;
         

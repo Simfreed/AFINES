@@ -15,6 +15,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double xgrid = 2*xrange;
     double ygrid = 2*yrange;
     double actin_length = 1;
+    double dt = 1e-3;
     double link_length = 1;
     double viscosity = 0.5;
 
@@ -24,7 +25,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     pos_set.push_back(pos1);
     double pos2[3] = {-1,0,3*pi/2};
     pos_set.push_back(pos2);
-    actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pos_set, -1);
+    actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,dt,actin_length,viscosity,nmonomer,link_length, pos_set, -1);
     
     //Expect to have actin monomers at (0, 0), (2, 0), (4, 0), ..., (18, 0)
    for (int i = 0; i < nmonomer; i++){
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE( angle_correlations )
     int npolymer = 2;
     double xrange = 50;
     double yrange = 50;
-    
+    double dt = 1e-3; 
     double xgrid = 2*xrange;
     double ygrid = 2*yrange;
     double actin_length = 1;
@@ -58,7 +59,7 @@ BOOST_AUTO_TEST_CASE( angle_correlations )
     double pos2[3] = {-1,0,3*pi/2};
     pos_set.push_back(pos2);
     
-    actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,actin_length,viscosity,nmonomer,link_length, pos_set, -1);
+    actin_ensemble ae(actin_density,xrange,yrange,xgrid,ygrid,dt,actin_length,viscosity,nmonomer,link_length, pos_set, -1);
     std::vector<double> ac0 = ae.get_angle_correlation(0);
     std::vector<double> ac1 = ae.get_angle_correlation(1);
     

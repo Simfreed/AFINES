@@ -14,7 +14,7 @@
 
 //motor class
 motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int
-        aindex0, int aindex1, double fovx, double fovy, double v0, double stiffness, double ron, double roff, double
+        aindex0, int aindex1, double fovx, double fovy, double delta_t, double v0, double stiffness, double ron, double roff, double
         rend, double actin_len, double vis, std::string col) {
     vs=v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
     dm=0.25;//actin_len/10;
@@ -25,6 +25,7 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     koff=roff;
     kend=rend;
     mphi=mang;
+    dt = delta_t;
     hx[0]=mx-0.5*mld*cos(mphi);
     hy[0]=my-0.5*mld*sin(mphi);
     hx[1]=hx[0]+mld*cos(mphi);
