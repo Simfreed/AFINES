@@ -17,7 +17,7 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     y=ycm;
     phi=angle;
     ld=len;
-    diameter=ld/40;
+    diameter= 0.006; //source: Google //ld/40;
     a_vis=vis;
     
     fov[0] = fovx;
