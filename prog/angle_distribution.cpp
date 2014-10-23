@@ -38,9 +38,8 @@ int main(int argc, char* argv[]){
     int count           = 0;
     double tinit        = 0.0;
     double tfinal       = 200;
-    double dt;
-    int print_dt        = 1000;  // # of timesteps to print to file
-    int stdout_dt       = 10000; // # of timesteps to print to stdout
+    int print_dt     = 1000;  // # of timesteps to print to file
+    int stdout_dt    = 10000; // # of timesteps to print to stdout
     double t            = tinit;
     
     // Environment
@@ -90,25 +89,17 @@ int main(int argc, char* argv[]){
     //Options allowed in a config file
     po::options_description config("Configuration");
     config.add_options()
-        
-        ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
-        ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
-        
-        ("dt", po::value<double>(&dt)->default_value(0.0001), "length of individual timestep in seconds")
-        ("tfinal", po::value<double>(&tfinal)->default_value(100), "length of simulation in seconds")
-        ("print_dt", po::value<int>(&print_dt)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
-        ("stdout_dt", po::value<int>(&stdout_dt)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
-        
         ("nmonomer", po::value<double>(&nmonomer)->default_value(10), "number of monomers per filament")
         ("npolymer", po::value<double>(&npolymer)->default_value(100), "number of polymers in the network")
         ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
-        ("actin_pos_str", po::value<std::string> (&actin_pos_str), "Starting positions of actin polymers, commas delimit coordinates; spaces delimit positions")
-        
         ("motor_density", po::value<double>(&motor_density)->default_value(0), "number of motors / area")
-        ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
-        
+        ("tfinal", po::value<double>(&tfinal)->default_value(100), "time in seconds of the simulation")
         ("link_stretching_stiffness", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
+        ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
+        ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
+        ("actin_pos_str", po::value<std::string> (&actin_pos_str), "Starting positions of actin polymers, commas delimit coordinates; spaces delimit positions")
+        ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -174,7 +165,7 @@ int main(int argc, char* argv[]){
     std::vector<double *> motor_position_ptrs = str2ptrvec(motor_pos_str, ";", ",");
 
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
+	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, 
                                         actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, seed);
     std::cout<<"Creating link ensemble...\n";
@@ -182,7 +173,7 @@ int main(int argc, char* argv[]){
     std::cout<<"Adding links to connect actin filament monomers...\n";
     net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
     std::cout<<"Adding motors...\n";
-    motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, dt, motor_length, 
+    motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, motor_length, 
                                              net, vmotor, motor_stiffness, m_kon, m_koff,
                                              m_kend, actin_length, viscosity, motor_position_ptrs);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";

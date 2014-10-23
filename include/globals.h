@@ -33,7 +33,6 @@
 //const double pi, eps, dt, temperature;
 const double pi = 3.14159265358979323;
 const double eps = 0.001;
-const double dt = 0.0001;
 const double temperature = 0.004;
 /*generic functions to be used below*/
 

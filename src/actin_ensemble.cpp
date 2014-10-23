@@ -16,7 +16,7 @@
 
 actin_ensemble::actin_ensemble(){}
 
-actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double len, double vis, int nmonomer, double link_len, std::vector<double *> pos_sets, double seed)
+actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double len, double vis, int nmonomer, double link_len, std::vector<double *> pos_sets, double seed)
 {
     view[0] = (fovx - 2*nmonomer*len)/fovx;
     view[1] = (fovy - 2*nmonomer*len)/fovy;
@@ -29,6 +29,7 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
     ld=len;//rng_n(len,1.0);
     link_ld = link_len;
     npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
+    dt = delta_t;
    
     if (seed == -1){
         straight_filaments = true;
