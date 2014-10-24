@@ -26,7 +26,7 @@ class motor_ensemble
 {
     public:
 
-        motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double mlen, actin_ensemble* network, double v0,
+        motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, double mlen, actin_ensemble* network, double v0,
                 double stiffness, double ron, double roff, double rend, double actin_len, double vis, std::vector<double *> positions);
 
         ~motor_ensemble();
