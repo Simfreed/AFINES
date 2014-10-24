@@ -27,7 +27,7 @@ class motor
     public:
 
         motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int
-                aindex0, int aindex1, double fovx, double fovy, double delta_t, double v0, double stiffness, double ron, double roff,
+                aindex0, int aindex1, double fovx, double fovy, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
                 double rend, double actin_len, double vis, std::string col);
 
         ~motor();
@@ -60,7 +60,7 @@ class motor
 
         int state[2], aindex[2];
         
-        double dm,fmax,mk, kon, koff, kend, dt;
+        double dm,fmax,mk, kon, koff, kend, dt, temperature;
         
         std::map<int, double> dist;
         

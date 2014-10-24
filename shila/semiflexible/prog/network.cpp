@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
     // Space
     double xrange = 50.0;
     double yrange = 50.0;
-
+    
     // Time 
     int count           = 0;
     double tinit        = 0.0;
@@ -44,17 +44,18 @@ int main(int argc, char* argv[]){
     double t            = tinit;
     
     // Environment
-    double viscosity    = 0.5; //units?
-
+    double viscosity           = 0.5; //um^2/s
+    double temperature         = 0.004; //pN-um
+    
     // Actin 
-    double actin_length = 1; //(um) length of a monomer
+    double actin_length = 1; //(um) length of a ROD
     double npolymer     = 100; 
     double nmonomer = 10;
 
     // Links 
     double link_stretching_stiffness = 50.0; //pn / um
-    double polymer_bending_modulus   = temperature * 10; //using kT * Lp for bending modulus, with Lp = 10 um
     std::string link_color           = "1"; //"blue";
+    double polymer_bending_modulus   = 0.04; //using kT * Lp for bending modulus, assuming Lp = 10 um and kT = 0.004 um-pN
     
     // Motors
     double motor_length=0.5;
@@ -99,6 +100,8 @@ int main(int argc, char* argv[]){
         ("print_dt", po::value<int>(&print_dt)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
         ("stdout_dt", po::value<int>(&stdout_dt)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
         
+        ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT that effects magnituded of Brownian component of simulation")
+        
         ("nmonomer", po::value<double>(&nmonomer)->default_value(10), "number of monomers per filament")
         ("npolymer", po::value<double>(&npolymer)->default_value(100), "number of polymers in the network")
         ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
@@ -107,7 +110,8 @@ int main(int argc, char* argv[]){
         ("motor_density", po::value<double>(&motor_density)->default_value(0), "number of motors / area")
         ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
         
-        ("link_stretching_stiffness", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
+        ("polymer_bending_modulus,kapb", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
         ; 
     
@@ -175,15 +179,15 @@ int main(int argc, char* argv[]){
 
     std::cout<<"Creating actin network..\n";
 	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
-                                        actin_length, viscosity, nmonomer, link_length, 
+                                        temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, seed);
     std::cout<<"Creating link ensemble...\n";
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
     net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
     std::cout<<"Adding motors...\n";
-    motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, dt, motor_length, 
-                                             net, vmotor, motor_stiffness, m_kon, m_koff,
+    motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, dt, temperature, 
+                                             motor_length, net, vmotor, motor_stiffness, m_kon, m_koff,
                                              m_kend, actin_length, viscosity, motor_position_ptrs);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
     
