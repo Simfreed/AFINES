@@ -110,7 +110,7 @@ int main(int argc, char* argv[]){
         ("motor_density", po::value<double>(&motor_density)->default_value(0), "number of motors / area")
         ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
         
-        ("polymer_bending_modulus,kapb", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
+        ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
         ; 
