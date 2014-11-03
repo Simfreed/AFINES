@@ -32,7 +32,8 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
     npolymer=int(ceil(density*fov[0]*fov[1]) / nmonomer);
     dt = delta_t;
     temperature = temp;
-   
+    nmon = nmonomer;
+
     if (seed == -1){
         straight_filaments = true;
     }else{
@@ -77,8 +78,12 @@ void actin_ensemble::add_polymer(double startx, double starty, double phi0, int 
     for (int j = 1; j < nmon; j++) {
 
         // Calculate the Next rod on the actin polymer--  continues from the link
-        if (!straight_filaments){ //constrain phi to be <= 90 degree difference in either direction
-            phi += rng(-pi/2,pi/2);
+        if (!straight_filaments){ 
+
+            //constrain angle between consecutive segments to be small because that's where
+            //Nedelec/ Foethke claim their bending energy regime matters
+            
+            phi += rng(-1*maxSmallAngle , maxSmallAngle);
         }
             
         lphi = (phi + network.back()->get_angle())/2;
@@ -243,10 +248,14 @@ void actin_ensemble::update()
         xnew=network[i]->get_xcm()+dt*vx;
         ynew=network[i]->get_ycm()+dt*vy;
         phinew=network[i]->get_angle()+dt*omega;
+        /*if (nmon > 1){
+        // Keep consecutive angles small 
+         
+        }*/
         network[i]->set_xcm(xnew);
         network[i]->set_ycm(ynew);
         network[i]->set_phi(phinew);
-        network[i]->update();
+        network[i]->update(); //updates all derived quantities (e.g., endpoints, forces = 0, etc.)
     }
 
 

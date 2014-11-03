@@ -96,7 +96,7 @@ class actin_ensemble
         
         double link_ld;
         
-        int npolymer, nq[2];
+        int npolymer, nmon, nq[2];
        
         bool straight_filaments = false;
 
