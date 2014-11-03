@@ -26,67 +26,43 @@ int main(int argc, char* argv[]){
     int seed=time(NULL);
     srand(seed);
 
-/************************
- *      CONTROLS        *
- ***********************/
- 
-    // Space
-    double xrange = 50.0;
-    double yrange = 50.0;
-    
-    // Time 
-    int count           = 0;
-    double tinit        = 0.0;
-    double tfinal       = 200;
-    double dt;
-    int print_dt        = 1000;  // # of timesteps to print to file
-    int stdout_dt       = 10000; // # of timesteps to print to stdout
-    double t            = tinit;
-    
-    // Environment
-    double viscosity           = 0.5; //um^2/s
-    double temperature         = 0.004; //pN-um
-    
-    // Actin 
-    double actin_length = 1; //(um) length of a ROD
-    double npolymer     = 100; 
-    double nmonomer = 10;
-
-    // Links 
-    double link_stretching_stiffness = 50.0; //pn / um
-    std::string link_color           = "1"; //"blue";
-    double polymer_bending_modulus   = 0.04; //using kT * Lp for bending modulus, assuming Lp = 10 um and kT = 0.004 um-pN
-    double link_length               = actin_length/10; 
-    
-    // Motors
-    double motor_length=0.5;
-    double motor_density=0.1;
-    double motor_stiffness=50.0; //pN / um
-    double vmotor=1.0;
-    double m_kon=90.0;          
-    double m_kend=5.0;
-    double m_koff=1.0; 
-   
-    std::string actin_pos_str, motor_pos_str;
-
-    // Input
-    std::string config_file;
-
-    // Output
-    std::string dir, afile, mfile, lfile;
-    std::ofstream a_final, m_final, o_file;
-	char numstr[21];
-   
     /***********************
      * VARIABLES           *
      **********************/
     
+    double xrange, yrange;                                                  //Space
+    
+    int    count = 0, print_dt, stdout_dt;                                  //Time 
+    double tinit = 0.0, t = tinit, tfinal, dt;
+    
+    double viscosity, temperature;                                          //Environment
+    
+    double actin_length, npolymer, nmonomer;                                // Actin 
+    std::string actin_pos_str;
+    
+    double link_length, polymer_bending_modulus, link_stretching_stiffness; // Links
+    std::string link_color = "1"; //"blue"
+    
+    double a_motor_length=0.5, a_motor_density=0.1, a_motor_stiffness=50.0, // Active Motors (i.e., "myosin")
+           a_motor_v=1.0, a_m_kon=90.0, a_m_kend=5.0, a_m_koff=1.0; 
+    std::string a_motor_pos_str; 
+    
+    double p_motor_length=0.5, p_motor_density=0.1, p_motor_stiffness=50.0, // Passive Mtors (i.e., cross_linkers)
+            p_motor_v=0, p_m_kon=90.0, p_m_kend=5.0, p_m_koff=1.0; 
+    std::string p_motor_pos_str;
+    
+    std::string config_file;                                                // Input configuration
+    
+    std::string   dir,    afile,  amfile,  pmfile,  lfile;                  // Output
+    std::ofstream o_file, file_a, file_am, file_pm, file_l;
+	char numstr[21];
+   
     //Options allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
         ("version, v", "print version std::string")
         ("help", "produce help message")
-        ("config,c", po::value<std::string>(&config_file)->default_value("config/network.cgf"), "name of a configuration file")
+        ("config,c", po::value<std::string>(&config_file)->default_value("config/network.cfg"), "name of a configuration file")
         ;
 
     //Options allowed in a config file
@@ -97,19 +73,21 @@ int main(int argc, char* argv[]){
         ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
         
         ("dt", po::value<double>(&dt)->default_value(0.0001), "length of individual timestep in seconds")
-        ("tfinal", po::value<double>(&tfinal)->default_value(100), "length of simulation in seconds")
-        ("print_dt", po::value<int>(&print_dt)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
-        ("stdout_dt", po::value<int>(&stdout_dt)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
-        
-        ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT that effects magnituded of Brownian component of simulation")
+        ("tfinal", po::value<double>(&tfinal)->default_value(1), "length of simulation in seconds")
+        ("print_dt", po::value<int>(&print_dt)->default_value(10), "number of timesteps between printing actin/link/motor positions to file")
+        ("stdout_dt", po::value<int>(&stdout_dt)->default_value(100), "number of timesteps between printing simulation progress to stdout")
+       
+        ("viscosity", po::value<double>(&viscosity)->default_value(0.5), "Implicity viscosity to determine friction [um^2 / s]")
+        ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
         
         ("nmonomer", po::value<double>(&nmonomer)->default_value(10), "number of monomers per filament")
-        ("npolymer", po::value<double>(&npolymer)->default_value(100), "number of polymers in the network")
+        ("npolymer", po::value<double>(&npolymer)->default_value(3), "number of polymers in the network")
         ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
         ("actin_pos_str", po::value<std::string> (&actin_pos_str), "Starting positions of actin polymers, commas delimit coordinates; spaces delimit positions")
         
-        ("motor_density", po::value<double>(&motor_density)->default_value(0), "number of motors / area")
-        ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
+        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0), "number of active motors / area")
+        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0), "number of passive motors / area")
+        ("a_motor_pos_str", po::value<std::string> (&a_motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
         
         ("link_length", po::value<double>(&link_length)->default_value(actin_length/10), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
@@ -158,27 +136,10 @@ int main(int argc, char* argv[]){
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
     double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/actin_length,3);
     
-    std::string output_file                         =   dir + "/data/output.txt";
-    std::string actin_output                        =   dir + "/data/actin_final.txt";
-    std::string myosin_output                       =   dir + "/data/myosin_final.txt";
-    
-    a_final.open(actin_output.c_str());
-    m_final.open(myosin_output.c_str());
-    o_file.open(output_file.c_str());
-    
-    o_file << " FILE: "                 << output_file     <<"\n";
-    o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
-    o_file << " Motor Density: "        << motor_density   << ", Motor Rest Length: "          << motor_length              << ", Motor Stiffness: "       << motor_stiffness        <<"\n";
-    o_file << " Motor unloaded speed: " << vmotor          << ", Motor binding rate: "         << m_kon                     <<"\n";
-    o_file << " Motor unbinding rate: " << m_koff          << ", Motor end detachment rate: "  << m_kend                    <<", Viscosity: "              << viscosity              <<"\n";
-    o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
-    o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", Number of time steps between output files: "<< print_dt<<"\n";
-    o_file.close();
-    
-    
     std::vector<double *> actin_position_ptrs = str2ptrvec(actin_pos_str, ";", ",");
-    std::vector<double *> motor_position_ptrs = str2ptrvec(motor_pos_str, ";", ",");
+    std::vector<double *> a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ";", ",");
 
+    // Create Network Objects
     std::cout<<"Creating actin network..\n";
 	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
@@ -187,12 +148,17 @@ int main(int argc, char* argv[]){
     link_ensemble * lks = new link_ensemble();
     std::cout<<"Adding links to connect actin filament monomers...\n";
     net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
-    std::cout<<"Adding motors...\n";
-    motor_ensemble * myosins = new motor_ensemble( motor_density, xrange, yrange, dt, temperature, 
-                                             motor_length, net, vmotor, motor_stiffness, m_kon, m_koff,
-                                             m_kend, actin_length, viscosity, motor_position_ptrs);
+    std::cout<<"Adding active motors...\n";
+    motor_ensemble * myosins = new motor_ensemble( a_motor_density, xrange, yrange, dt, temperature, 
+                                             a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
+                                             a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
+    std::cout<<"Adding passive motors (crosslinkers) ...\n";
+    motor_ensemble * crosslks = new motor_ensemble( p_motor_density, xrange, yrange, dt, temperature, 
+                                             p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
+                                             p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
-    
+   
+    //Run the simulation
     while (t<=tfinal) {
         //print time count
 		if (count%stdout_dt==0) {
@@ -208,32 +174,35 @@ int main(int argc, char* argv[]){
 	        
             sprintf(numstr, "%d", count/print_dt);
             
-            afile = dir + "/txt_stack/afile" + numstr + ".txt";
-            mfile = dir + "/txt_stack/mfile" + numstr + ".txt";
-            lfile = dir + "/txt_stack/lfile" + numstr + ".txt";
+            afile  = dir + "/txt_stack/afile"  + numstr + ".txt";
+            lfile  = dir + "/txt_stack/lfile"  + numstr + ".txt";
+            amfile = dir + "/txt_stack/amfile" + numstr + ".txt";
+            pmfile = dir + "/txt_stack/pmfile" + numstr + ".txt";
 			
-            std::ofstream file_a, file_m, file_l;
 			file_a.open(afile.c_str());
-			file_m.open(mfile.c_str());
             file_l.open(lfile.c_str());
+			file_am.open(amfile.c_str());
+			file_pm.open(pmfile.c_str());
 		    
             net->write(file_a);
-            myosins->motor_write(file_m);
             lks->link_write(file_l);
-			file_a.close();
-			file_m.close();
+            myosins->motor_write(file_am);
+            crosslks->motor_write(file_pm);
+			
+            file_a.close();
             file_l.close();
+			file_am.close();
+			file_pm.close();
             
 		}
         //update network
-        myosins->motor_walk();
         lks->link_walk(); 
+        crosslks->motor_walk();
+        myosins->motor_walk();
         
         t+=dt;
 		count++;
     }
-    net->write(a_final);
-    myosins->motor_write(m_final);
     
     //Delete all objects created
     std::cout<<"Here's where I think I delete things\n";
@@ -242,15 +211,29 @@ int main(int argc, char* argv[]){
     delete myosins;
     delete net;
     
-    int as = actin_position_ptrs.size(), ms = motor_position_ptrs.size();
+    int as = actin_position_ptrs.size(), ms = a_motor_position_ptrs.size();
     for (int i = 0; i < as; i++) delete [] actin_position_ptrs[i];
-    for (int i = 0; i < ms; i++) delete [] motor_position_ptrs[i];
-
-    a_final.close();
-    m_final.close();
+    for (int i = 0; i < ms; i++) delete [] a_motor_position_ptrs[i];
+    
+    // Write the output configuration file
+    std::string output_file                         =   dir + "/data/output.txt";
+    o_file.open(output_file.c_str());
+    o_file << " FILE: "                 << output_file     <<"\n";
+    o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
+    o_file << " Active Motor Density: "        << a_motor_density   << ", Active Motor Rest Length: "          << a_motor_length              << ", Active Motor Stiffness: "       << a_motor_stiffness        <<"\n";
+    o_file << " Active Motor unloaded speed: " << a_motor_v          << ", Active Motor binding rate: "         << a_m_kon                     <<"\n";
+    o_file << " Active Motor unbinding rate: " << a_m_koff          << ", Active Motor end detachment rate: "  << a_m_kend                    <<"\n";
+    o_file << " Passive Motor Density: "        << p_motor_density   << ", Passive Motor Rest Length: "          << p_motor_length              << ", Passive Motor Stiffness: "       << p_motor_stiffness        <<"\n";
+    o_file << " Passive Motor unloaded speed: " << p_motor_v          << ", Passive Motor binding rate: "         << p_m_kon                     <<"\n";
+    o_file << " Passive Motor unbinding rate: " << p_m_koff          << ", Passive Motor end detachment rate: "  << p_m_kend                    <<"\n";
+    o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
+    o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", Number of time steps between output files: "<< print_dt<<", Viscosity: " << viscosity              <<"\n";
+    o_file.close();
+    
     
     std::cout<<"\nTime counts: "<<count;
 	std::cout<<"\nExecuted";
 	std::cout<<"\n Done\n";
+    
     return 0;
 }
