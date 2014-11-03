@@ -56,6 +56,7 @@ int main(int argc, char* argv[]){
     double link_stretching_stiffness = 50.0; //pn / um
     std::string link_color           = "1"; //"blue";
     double polymer_bending_modulus   = 0.04; //using kT * Lp for bending modulus, assuming Lp = 10 um and kT = 0.004 um-pN
+    double link_length               = actin_length/10; 
     
     // Motors
     double motor_length=0.5;
@@ -110,8 +111,10 @@ int main(int argc, char* argv[]){
         ("motor_density", po::value<double>(&motor_density)->default_value(0), "number of motors / area")
         ("motor_pos_str", po::value<std::string> (&motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
         
+        ("link_length", po::value<double>(&link_length)->default_value(actin_length/10), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
+
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
         ; 
     
@@ -153,7 +156,6 @@ int main(int argc, char* argv[]){
     double xgrid  = 2*xrange;
     double ygrid  = 2*yrange;
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
-    double link_length               = actin_length/10; 
     double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/actin_length,3);
     
     std::string output_file                         =   dir + "/data/output.txt";
