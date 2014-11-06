@@ -1,0 +1,111 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      3161,        102]
+NotebookOptionsPosition[      2874,         87]
+NotebookOutlinePosition[      3227,        103]
+CellTagsIndexPosition[      3184,        100]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+  "dir", ":=", " ", 
+   "\"\</Volumes/homes/Code/cytomod/shila/semiflexible/out/network/clnks_\
+amRho.05/\>\""}], ";"}]], "Input",
+ CellChangeTimes->{
+  3.624131074236849*^9, {3.6241311287815733`*^9, 3.624131134160096*^9}, 
+   3.6241311965829782`*^9, {3.624131507872044*^9, 3.624131511604341*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"afile", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/rods.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"amfile", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/amotors.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"pmfile", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/pmotors.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"lks", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/links.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"rods", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"afile", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"amotors", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"amfile", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"pmotors", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"pmfile", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"links", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"lks", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.624110358240563*^9, 3.6241103662473717`*^9}, {
+  3.624131051481453*^9, 3.624131059714551*^9}, {3.624131168663027*^9, 
+  3.624131293064707*^9}, {3.6241313788743258`*^9, 3.6241313837426357`*^9}, {
+  3.624131430555992*^9, 3.624131485764697*^9}}]
+},
+WindowSize->{808, 755},
+WindowMargins->{{Automatic, 85}, {Automatic, 9}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 332, 8, 28, "Input"],
+Cell[893, 30, 1977, 55, 148, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
