@@ -26,7 +26,13 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
     std::cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
     a_network=network;
     alpha=0.8;
-    color = "0.5";//"green"; 
+    
+    if (v0 == 0){
+        color = "0.1"; //purple
+    }
+    else
+        color = "0.5";//"green"; 
+    
     for (int i=0; i< nm; i++) {
         
         if ((unsigned int)i < positions.size()){

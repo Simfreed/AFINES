@@ -55,7 +55,6 @@ int main(int argc, char* argv[]){
     
     std::string   dir,    afile,  amfile,  pmfile,  lfile;                  // Output
     std::ofstream o_file, file_a, file_am, file_pm, file_l;
-	char numstr[21];
    
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -85,8 +84,8 @@ int main(int argc, char* argv[]){
         ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
         ("actin_pos_str", po::value<std::string> (&actin_pos_str), "Starting positions of actin polymers, commas delimit coordinates; spaces delimit positions")
         
-        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0), "number of active motors / area")
-        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0), "number of passive motors / area")
+        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / area")
+        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.001), "number of passive motors / area")
         ("a_motor_pos_str", po::value<std::string> (&a_motor_pos_str), "Starting positions of motors, commas delimit coordinates; spaces delimit positions")
         
         ("link_length", po::value<double>(&link_length)->default_value(actin_length/10), "Length of links connecting monomers")
@@ -138,6 +137,17 @@ int main(int argc, char* argv[]){
     
     std::vector<double *> actin_position_ptrs = str2ptrvec(actin_pos_str, ";", ",");
     std::vector<double *> a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ";", ",");
+            
+    
+    afile  = dir + "/txt_stack/rods.txt";
+    lfile  = dir + "/txt_stack/links.txt";
+    amfile = dir + "/txt_stack/amotors.txt";
+    pmfile = dir + "/txt_stack/pmotors.txt";
+    file_a.open(afile.c_str());
+    file_l.open(lfile.c_str());
+    file_am.open(amfile.c_str());
+    file_pm.open(pmfile.c_str());
+		    
 
     // Create Network Objects
     std::cout<<"Creating actin network..\n";
@@ -157,6 +167,16 @@ int main(int argc, char* argv[]){
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
+            
+    std::string time_str = "t = 0\n";
+    file_a << time_str;
+    net->write(file_a);
+    file_l << time_str;
+    lks->link_write(file_l);
+    file_am << time_str;
+    myosins->motor_write(file_am);
+    file_pm << time_str;
+    crosslks->motor_write(file_pm);
    
     //Run the simulation
     while (t<=tfinal) {
@@ -168,33 +188,7 @@ int main(int argc, char* argv[]){
         net->update_bending();
         net->update();
         net->quad_update();
-
-        //print to file
-	    if (count%print_dt==0) {
-	        
-            sprintf(numstr, "%d", count/print_dt);
-            
-            afile  = dir + "/txt_stack/afile"  + numstr + ".txt";
-            lfile  = dir + "/txt_stack/lfile"  + numstr + ".txt";
-            amfile = dir + "/txt_stack/amfile" + numstr + ".txt";
-            pmfile = dir + "/txt_stack/pmfile" + numstr + ".txt";
-			
-			file_a.open(afile.c_str());
-            file_l.open(lfile.c_str());
-			file_am.open(amfile.c_str());
-			file_pm.open(pmfile.c_str());
-		    
-            net->write(file_a);
-            lks->link_write(file_l);
-            myosins->motor_write(file_am);
-            crosslks->motor_write(file_pm);
-			
-            file_a.close();
-            file_l.close();
-			file_am.close();
-			file_pm.close();
-            
-		}
+        
         //update network
         lks->link_walk(); 
         crosslks->motor_walk();
@@ -202,7 +196,28 @@ int main(int argc, char* argv[]){
         
         t+=dt;
 		count++;
+
+        //print to file
+	    if (count%print_dt==0) {
+	        
+            time_str = "t = "+std::to_string(t)+"\n";
+            file_a << time_str;
+            net->write(file_a);
+            file_l << time_str;
+            lks->link_write(file_l);
+            file_am << time_str;
+            myosins->motor_write(file_am);
+            file_pm << time_str;
+            crosslks->motor_write(file_pm);
+            
+		}
+        
     }
+    
+    file_a.close();
+    file_l.close();
+    file_am.close();
+    file_pm.close();
     
     //Delete all objects created
     std::cout<<"Here's where I think I delete things\n";
