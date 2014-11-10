@@ -21,6 +21,7 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
     
     view[0] = (fovx - 2*nmonomer*len)/fovx;
     view[1] = (fovy - 2*nmonomer*len)/fovy;
+
     fov[0]=fovx;
     fov[1]=fovy;
     nq[0]=nx;
@@ -49,7 +50,7 @@ actin_ensemble::actin_ensemble(double density, double fovx, double fovy, int nx,
         if ( i < s){
             this->add_polymer(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], i, nmonomer);
         }else{
-            this->add_polymer(rng(-0.5*(view[0]*fov[0]-ld),0.5*(view[0]*fov[0]-ld)), rng(-0.5*(view[1]*fov[1]-ld),0.5*(view[1]*fov[1]-ld)), rng(0, 2*pi), i, nmonomer);
+            this->add_polymer(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi), i, nmonomer);
         }
     }
 }
@@ -209,55 +210,77 @@ void actin_ensemble::set_straight_filaments(bool is_straight)
 void actin_ensemble::update()
 {
     ///Maybe change 6 to 4 for 2d
-    double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, a_ends[4]; 
+    double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, phiprev, a_ends[4]; 
     
-    for (unsigned int i=0; i<network.size(); i++) {
+    int i;
+    
+    for (unsigned int p = 0; p < mono_map.size(); p++)
+    {
         
-        double * fric = network[i]->get_friction();
-        vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(4*temperature/(dt*fric[0]))*rng_n(0,1);
-        vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(4*temperature/(dt*fric[1]))*rng_n(0,1);
-        vx=vpar*cos(network[i]->get_angle())-vperp*sin(network[i]->get_angle());
-        vy=vpar*sin(network[i]->get_angle())+vperp*cos(network[i]->get_angle());
-        omega=network[i]->get_forces()[2]/fric[2] + sqrt(4*temperature/(dt*fric[2]))*rng_n(0,1);
-        delete[] fric;
+        std::vector<int> * monomers = &mono_map[p];
 
-        alength=network[i]->get_length();
+        for (unsigned int j = 0; j < monomers->size(); j++){
 
-        xnew=network[i]->get_xcm()+dt*vx;
-        ynew=network[i]->get_ycm()+dt*vy;
-        phinew=network[i]->get_angle()+dt*omega;
+            i = monomers->at(j);
+            double * fric = network[i]->get_friction();
+            vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(4*temperature/(dt*fric[0]))*rng_n(0,1);
+            vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(4*temperature/(dt*fric[1]))*rng_n(0,1);
+            vx=vpar*cos(network[i]->get_angle())-vperp*sin(network[i]->get_angle());
+            vy=vpar*sin(network[i]->get_angle())+vperp*cos(network[i]->get_angle());
+            omega=network[i]->get_forces()[2]/fric[2] + sqrt(4*temperature/(dt*fric[2]))*rng_n(0,1);
+            delete[] fric;
+
+            alength=network[i]->get_length();
+
+            xnew=network[i]->get_xcm()+dt*vx;
+            ynew=network[i]->get_ycm()+dt*vy;
+            phinew=network[i]->get_angle()+dt*omega;
 
 
-        a_ends[0]=xnew-alength*0.5*cos(phinew);
-        a_ends[1]=ynew-alength*0.5*sin(phinew);
-        a_ends[2]=xnew+alength*0.5*cos(phinew);
-        a_ends[3]=ynew+alength*0.5*sin(phinew);
+            a_ends[0]=xnew-alength*0.5*cos(phinew);
+            a_ends[1]=ynew-alength*0.5*sin(phinew);
+            a_ends[2]=xnew+alength*0.5*cos(phinew);
+            a_ends[3]=ynew+alength*0.5*sin(phinew);
 
-        if (a_ends[0]<=-fov[0]*0.5 || a_ends[0]>=fov[0]*0.5 || a_ends[2]<=-fov[0]*0.5 || a_ends[2]>=fov[0]*0.5)
-        {
-            vx=-vx;//xnew=network[i]->get_xcm()-dt*vx;//  
-            omega=-omega;//phinew=network[i]->get_angle()-dt*omega;//omega=-omega;
+            if (a_ends[0]<=-fov[0]*0.5 || a_ends[0]>=fov[0]*0.5 || a_ends[2]<=-fov[0]*0.5 || a_ends[2]>=fov[0]*0.5)
+            {
+                vx=-vx;//xnew=network[i]->get_xcm()-dt*vx;//  
+                omega=-omega;//phinew=network[i]->get_angle()-dt*omega;//omega=-omega;
 
+            }
+            if (a_ends[1]<=-fov[1]*0.5 || a_ends[1]>=fov[1]*0.5 || a_ends[3]<=-fov[1]*0.5 || a_ends[3]>=fov[1]*0.5)
+            {
+                vy=-vy;//ynew=network[i]->get_ycm()-dt*vy;
+                omega=-omega;//phinew=network[i]->get_angle()-dt*omega;
+            }
+
+            xnew=network[i]->get_xcm()+dt*vx;
+            ynew=network[i]->get_ycm()+dt*vy;
+            phinew=network[i]->get_angle()+dt*omega;
+                
+            // Keep consecutive angles small 
+        
+            if (j > 1){
+                phiprev = network[monomers->at(j-1)]->get_angle();
+
+                if( phinew - phiprev > maxSmallAngle )
+                {
+                    phinew = phiprev + maxSmallAngle;
+                }
+                if( phinew - phiprev < -1 * maxSmallAngle)
+                {
+                    phinew = phiprev - maxSmallAngle;
+                }
+
+            }
+            network[i]->set_xcm(xnew);
+            network[i]->set_ycm(ynew);
+            network[i]->set_phi(phinew);
+            network[i]->update(); //updates all derived quantities (e.g., endpoints, forces = 0, etc.)
+    
         }
-        if (a_ends[1]<=-fov[1]*0.5 || a_ends[1]>=fov[1]*0.5 || a_ends[3]<=-fov[1]*0.5 || a_ends[3]>=fov[1]*0.5)
-        {
-            vy=-vy;//ynew=network[i]->get_ycm()-dt*vy;
-            omega=-omega;//phinew=network[i]->get_angle()-dt*omega;
-        }
 
-        xnew=network[i]->get_xcm()+dt*vx;
-        ynew=network[i]->get_ycm()+dt*vy;
-        phinew=network[i]->get_angle()+dt*omega;
-        /*if (nmon > 1){
-        // Keep consecutive angles small 
-         
-        }*/
-        network[i]->set_xcm(xnew);
-        network[i]->set_ycm(ynew);
-        network[i]->set_phi(phinew);
-        network[i]->update(); //updates all derived quantities (e.g., endpoints, forces = 0, etc.)
     }
-
 
 }
 
