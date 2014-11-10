@@ -1,0 +1,923 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     36824,        914]
+NotebookOptionsPosition[     34739,        847]
+NotebookOutlinePosition[     35095,        863]
+CellTagsIndexPosition[     35052,        860]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "dir", ":=", " ", 
+   "\"\</Volumes/homes/Code/cytomod/shila/semiflexible/out/test/\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nT", " ", "=", " ", "100"}], ";"}]}], "Input",
+ CellChangeTimes->{
+  3.624131074236849*^9, {3.6241311287815733`*^9, 3.624131134160096*^9}, 
+   3.6241311965829782`*^9, {3.624131507872044*^9, 3.624131546334078*^9}, {
+   3.624299159097762*^9, 3.624299159367045*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"afile", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/rods.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"amfile", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/amotors.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"pmfile", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/pmotors.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"lks", "[", "dir_", "]"}], ":=", 
+   RowBox[{"dir", "<>", "\"\<txt_stack/links.txt\>\""}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"rods", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"afile", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}], ",", 
+     RowBox[{"RecordSeparators", "\[Rule]", 
+      RowBox[{"RegularExpression", "[", "\"\<t = [0-9]+\\n\>\"", "]"}]}]}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"amotors", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"amfile", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"pmotors", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"pmfile", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"links", "[", "dir_", "]"}], ":=", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{
+     RowBox[{"lks", "[", "dir", "]"}], ",", "Number", ",", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.624110358240563*^9, 3.6241103662473717`*^9}, {
+  3.624131051481453*^9, 3.624131059714551*^9}, {3.624131168663027*^9, 
+  3.624131293064707*^9}, {3.6241313788743258`*^9, 3.6241313837426357`*^9}, {
+  3.624131430555992*^9, 3.624131485764697*^9}, {3.624283875086484*^9, 
+  3.624283895393381*^9}, {3.624299254567708*^9, 3.624299255684906*^9}, {
+  3.624299405514131*^9, 3.6242994451616917`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Line Types", "Section",
+ CellChangeTimes->{{3.624131636593875*^9, 3.62413164803996*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"actin", "[", "l_", "]"}], ":=", 
+   RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"Blue", ",", "\[IndentingNewLine]", 
+      RowBox[{"Arrow", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"l", "[", 
+            RowBox[{"[", "1", "]"}], "]"}], ",", 
+           RowBox[{"l", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"l", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "+", 
+            RowBox[{"l", "[", 
+             RowBox[{"[", "3", "]"}], "]"}]}], ",", 
+           RowBox[{
+            RowBox[{"l", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], "+", 
+            RowBox[{"l", "[", 
+             RowBox[{"[", "4", "]"}], "]"}]}]}], "}"}]}], "}"}], "]"}]}], 
+     "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"amotor", "[", "l_", "]"}], ":=", 
+   RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"Black", ",", "\[IndentingNewLine]", 
+      RowBox[{"Line", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"l", "[", 
+            RowBox[{"[", "1", "]"}], "]"}], ",", 
+           RowBox[{"l", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"l", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "+", 
+            RowBox[{"l", "[", 
+             RowBox[{"[", "3", "]"}], "]"}]}], ",", 
+           RowBox[{
+            RowBox[{"l", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], "+", 
+            RowBox[{"l", "[", 
+             RowBox[{"[", "4", "]"}], "]"}]}]}], "}"}]}], "}"}], "]"}]}], 
+     "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"pmotor", "[", "l_", "]"}], ":=", 
+   RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"Green", ",", "\[IndentingNewLine]", 
+      RowBox[{"Line", "[", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"l", "[", 
+            RowBox[{"[", "1", "]"}], "]"}], ",", 
+           RowBox[{"l", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"l", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "+", 
+            RowBox[{"l", "[", 
+             RowBox[{"[", "3", "]"}], "]"}]}], ",", 
+           RowBox[{
+            RowBox[{"l", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], "+", 
+            RowBox[{"l", "[", 
+             RowBox[{"[", "4", "]"}], "]"}]}]}], "}"}]}], "}"}], "]"}]}], 
+     "\[IndentingNewLine]", "}"}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.624131774237872*^9, 3.624131844553257*^9}, {
+  3.62413215929475*^9, 3.6241321908275623`*^9}, {3.624132267689577*^9, 
+  3.624132268179859*^9}, {3.624132314991426*^9, 3.6241323300099792`*^9}, {
+  3.624203253297883*^9, 3.624203253982871*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"rs", "=", 
+   RowBox[{"rods", "[", "dir", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ls", "=", 
+   RowBox[{"links", "[", "dir", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"ams", "=", 
+   RowBox[{"amotors", "[", "dir", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"pms", "=", 
+   RowBox[{"pmotors", "[", "dir", "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.6241315281404963`*^9, 3.624131621256*^9}, {
+  3.624132487120778*^9, 3.6241325120039053`*^9}, {3.624132570159906*^9, 
+  3.6241326127249823`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ReadList", "::", "readn"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Invalid real number found when reading from \
+\[NoBreak]\\!\\(\\\"/Volumes/homes/Code/cytomod/shila/semiflexible/out/test/\
+txt_stack/rods.txt\\\"\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/ReadList/readn\\\", \
+ButtonNote -> \\\"ReadList::readn\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299237142667*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ReadList", "::", "readn"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Invalid real number found when reading from \
+\[NoBreak]\\!\\(\\\"/Volumes/homes/Code/cytomod/shila/semiflexible/out/test/\
+txt_stack/links.txt\\\"\\)\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\
+\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ReadList/readn\\\", ButtonNote -> \
+\\\"ReadList::readn\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299237208951*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ReadList", "::", "readn"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Invalid real number found when reading from \
+\[NoBreak]\\!\\(\\\"/Volumes/homes/Code/cytomod/shila/semiflexible/out/test/\
+txt_stack/amotors.txt\\\"\\)\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ReadList/readn\\\", ButtonNote -> \
+\\\"ReadList::readn\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299237259038*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ReadList", "::", "readn"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Invalid real number found when reading from \
+\[NoBreak]\\!\\(\\\"/Volumes/homes/Code/cytomod/shila/semiflexible/out/test/\
+txt_stack/pmotors.txt\\\"\\)\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/ReadList/readn\\\", ButtonNote -> \
+\\\"ReadList::readn\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6242992373095818`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"rods", "[", "dir", "]"}]], "Input",
+ CellChangeTimes->{{3.62429924435882*^9, 3.6242992459892187`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"ReadList", "::", "opstl"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Value of option \[NoBreak]\\!\\(RecordSeparators\\)\
+\[NoBreak] -> \[NoBreak]\\!\\(RegularExpression[\\\"t = [0-9]+\\\\n\\\"]\\)\
+\[NoBreak] should be a string or a list of strings. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/opstl\\\", ButtonNote -> \
+\\\"ReadList::opstl\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{{3.624299246611163*^9, 3.62429926114398*^9}, 
+   3.624299457886642*^9}],
+
+Cell[BoxData[
+ RowBox[{"ReadList", "[", 
+  RowBox[{"\<\"/Volumes/homes/Code/cytomod/shila/semiflexible/out/test/txt_\
+stack/rods.txt\"\>", ",", "Number", ",", 
+   RowBox[{"RecordLists", "\[Rule]", "True"}], ",", 
+   RowBox[{"RecordSeparators", "\[Rule]", 
+    RowBox[{"RegularExpression", "[", "\<\"t = [0-9]+\\n\"\>", "]"}]}]}], 
+  "]"}]], "Output",
+ CellChangeTimes->{{3.624299246614438*^9, 3.624299261148767*^9}, 
+   3.624299457892582*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Length", "[", 
+   RowBox[{"ams", "[", 
+    RowBox[{"[", 
+     RowBox[{"2", ";;"}], "]"}], "]"}], "]"}], "/", "100"}]], "Input",
+ CellChangeTimes->{{3.624187729899495*^9, 3.624187759235002*^9}}],
+
+Cell[BoxData["12624"], "Output",
+ CellChangeTimes->{3.6241877502661867`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Round", "[", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"Length", "[", "pms", "]"}], ")"}], "/", "nT"}], "]"}]], "Input",
+ CellChangeTimes->{{3.6241329840452557`*^9, 3.624133017902553*^9}, {
+  3.624187772003292*^9, 3.6241877758124723`*^9}, {3.624187832379033*^9, 
+  3.624187879048347*^9}}],
+
+Cell[BoxData["126"], "Output",
+ CellChangeTimes->{{3.6241329870355597`*^9, 3.624133018300542*^9}, {
+  3.624187772560534*^9, 3.6241877763510847`*^9}, {3.62418784364642*^9, 
+  3.6241878795253277`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Length", "[", "rs", "]"}], "/", "nT"}]], "Input",
+ CellChangeTimes->{{3.624187885354541*^9, 3.6241878894694643`*^9}}],
+
+Cell[BoxData["101"], "Output",
+ CellChangeTimes->{3.624187889790399*^9}]
+}, Open  ]],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"rt", "=", 
+   RowBox[{"Partition", "[", 
+    RowBox[{"rs", ",", 
+     RowBox[{
+      RowBox[{"Length", "[", "rs", "]"}], "/", "nT"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"lt", "=", 
+   RowBox[{"Partition", "[", 
+    RowBox[{"ls", ",", 
+     RowBox[{
+      RowBox[{"Length", "[", "ls", "]"}], "/", "nT"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"amt", "=", 
+   RowBox[{"Partition", "[", 
+    RowBox[{"ams", ",", 
+     RowBox[{"Round", "[", 
+      RowBox[{
+       RowBox[{"Length", "[", "ams", "]"}], "/", "nT"}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"pmt", "=", 
+   RowBox[{"Partition", "[", 
+    RowBox[{"pms", ",", 
+     RowBox[{"Round", "[", 
+      RowBox[{
+       RowBox[{"Length", "[", "pms", "]"}], "/", "nT"}], "]"}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.6241315281404963`*^9, 3.624131621256*^9}, {
+  3.624132487120778*^9, 3.6241325120039053`*^9}, {3.624132623232724*^9, 
+  3.624132669159437*^9}, {3.624132954251357*^9, 3.6241329704397593`*^9}, {
+  3.624187625123446*^9, 3.624187629612389*^9}, {3.6241879014481792`*^9, 
+  3.62418790804112*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Manipulate", "[", "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"Show", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"Table", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"actin", "[", 
+        RowBox[{"rt", "[", 
+         RowBox[{"[", 
+          RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{"i", ",", "1", ",", 
+         RowBox[{"Length", "[", 
+          RowBox[{"rt", "[", 
+           RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
+      "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Table", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"amotor", "[", 
+        RowBox[{"amt", "[", 
+         RowBox[{"[", 
+          RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{"i", ",", "1", ",", 
+         RowBox[{"Length", "[", 
+          RowBox[{"amt", "[", 
+           RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
+      "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"Table", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"pmotor", "[", 
+        RowBox[{"pmt", "[", 
+         RowBox[{"[", 
+          RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{"i", ",", "1", ",", 
+         RowBox[{"Length", "[", 
+          RowBox[{"pmt", "[", 
+           RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
+      "\[IndentingNewLine]", "]"}], ",", 
+     RowBox[{"Frame", "\[Rule]", "True"}], ",", 
+     RowBox[{"Background", "\[Rule]", "Green"}], ",", 
+     RowBox[{"Range", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "25"}], ",", "25"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "25"}], ",", "25"}], "}"}]}], "}"}]}]}], 
+    "\[IndentingNewLine]", "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"t", ",", "1", ",", 
+     RowBox[{"Length", "[", "pmt", "]"}], ",", "1"}], "}"}]}], 
+  "\[IndentingNewLine]", "]"}]], "Input",
+ CellChangeTimes->{{3.624132129184273*^9, 3.624132131991283*^9}, {
+  3.624132218020269*^9, 3.6241322570895967`*^9}, {3.6241323470322237`*^9, 
+  3.6241323683111067`*^9}, {3.624203293537614*^9, 3.624203304131562*^9}, {
+  3.624203338403471*^9, 3.624203348848831*^9}}],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`t$$ = 1, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`t$$], 1, 100, 1}}, Typeset`size$$ = {
+    360., {174., 178.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True, $CellContext`t$169995$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, "Variables" :> {$CellContext`t$$ = 1}, 
+      "ControllerVariables" :> {
+        Hold[$CellContext`t$$, $CellContext`t$169995$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> Show[
+        Table[
+         $CellContext`actin[
+          
+          Part[$CellContext`rt, $CellContext`t$$, $CellContext`i]], \
+{$CellContext`i, 1, 
+          Length[
+           Part[$CellContext`rt, $CellContext`t$$]]}], 
+        Table[
+         $CellContext`amotor[
+          
+          Part[$CellContext`amt, $CellContext`t$$, $CellContext`i]], \
+{$CellContext`i, 1, 
+          Length[
+           Part[$CellContext`amt, $CellContext`t$$]]}], 
+        Table[
+         $CellContext`pmotor[
+          
+          Part[$CellContext`pmt, $CellContext`t$$, $CellContext`i]], \
+{$CellContext`i, 1, 
+          Length[
+           Part[$CellContext`pmt, $CellContext`t$$]]}], Frame -> True, 
+        Background -> Green, Range -> {{-25, 25}, {-25, 25}}], 
+      "Specifications" :> {{$CellContext`t$$, 1, 100, 1}}, "Options" :> {}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{405., {218., 223.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{3.624131854009794*^9, 3.624132132410116*^9, 
+  3.624132258163216*^9, 3.624132375176499*^9, 3.624187941268547*^9, 
+  3.624203304897346*^9, 3.624203350836981*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+1 \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of object. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/partd\\\", \
+ButtonNote -> \\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624280065459934*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of \
+object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6242800655385723`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 2\\)\\) \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of \
+object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624280065541725*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
+partd\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
+calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624280065610458*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Show", "::", "gcomb"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Could not combine the graphics objects in \
+\[NoBreak]\\!\\(Show[\\(\\(\\(\\({\\(\\(actin[\\(\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\\(actin[\\(\\(rt \
+\[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\({\\(\\(amotor[\\(\\(amt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\
+\\(amotor[\\(\\(amt \[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\({\\(\\(pmotor[\\(\\(pmt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\
+\\(pmotor[\\(\\(pmt \[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\(Frame \[Rule] True\\)\\), \
+\\(\\(Background \[Rule] \
+\\*InterpretationBox[ButtonBox[TooltipBox[\\(\\*GraphicsBox[List[List[\
+GrayLevel[0], RectangleBox[List[0, 0]]], List[GrayLevel[0], \
+RectangleBox[List[1, -1]]], List[RGBColor[0, 1, 0], RectangleBox[List[0, -1], \
+List[2, 1]]]], Rule[AspectRatio, 1], Rule[Frame, True], Rule[FrameStyle, \
+RGBColor[0.`, 0.6666666666666666`, 0.`]], Rule[FrameTicks, None], \
+Rule[PlotRangePadding, None], Rule[ImageSize, Dynamic[List[Automatic, \
+Times[1.35`, CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]] \[InvisibleSpace]\\), \
+\\\"RGBColor[0, 1, 0]\\\"], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[BaselinePosition, Baseline], Rule[DefaultBaseStyle, List[]], \
+RuleDelayed[ButtonFunction, With[List[Set[Typeset`box$, EvaluationBox[]]], \
+If[Not[AbsoluteCurrentValue[\\\"Deployed\\\"]], \
+CompoundExpression[SelectionMove[Typeset`box$, All, Expression], \
+Set[FrontEnd`Private`$ColorSelectorInitialAlpha, 1], \
+Set[FrontEnd`Private`$ColorSelectorInitialColor, RGBColor[0, 1, 0]], \
+Set[FrontEnd`Private`$ColorSelectorUseMakeBoxes, True], \
+MathLink`CallFrontEnd[FrontEnd`AttachCell[Typeset`box$, \
+FrontEndResource[\\\"RGBColorValueSelector\\\"], List[0, List[Left, Bottom]], \
+List[Left, Top], Rule[\\\"ClosingActions\\\", \
+List[\\\"SelectionDeparture\\\", \\\"ParentChanged\\\", \
+\\\"EvaluatorQuit\\\"]]]]]]]], Rule[BaseStyle, Inherited], Rule[Evaluator, \
+Automatic], Rule[Method, \\\"Preemptive\\\"]], RGBColor[0, 1, 0], \
+Rule[Editable, False], Rule[Selectable, False]]\\)\\), \\(\\(Range \[Rule] \
+\\(\\({\\(\\({\\(\\(-25\\)\\), 25}\\)\\), \\(\\({\\(\\(-25\\)\\), \
+25}\\)\\)}\\)\\)\\)\\)\\)\\)]\\)\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/Show/gcomb\\\", ButtonNote -> \
+\\\"Show::gcomb\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624280065939736*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Show", "::", "gcomb"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Could not combine the graphics objects in \
+\[NoBreak]\\!\\(Show[\\(\\(\\(\\({\\(\\(actin[\\(\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\\(actin[\\(\\(rt \
+\[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\({\\(\\(amotor[\\(\\(amt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\
+\\(amotor[\\(\\(amt \[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\({\\(\\(pmotor[\\(\\(pmt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\
+\\(pmotor[\\(\\(pmt \[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\(Frame \[Rule] True\\)\\), \
+\\(\\(Background \[Rule] \
+\\*InterpretationBox[ButtonBox[TooltipBox[\\(\\*GraphicsBox[List[List[\
+GrayLevel[0], RectangleBox[List[0, 0]]], List[GrayLevel[0], \
+RectangleBox[List[1, -1]]], List[RGBColor[0, 1, 0], RectangleBox[List[0, -1], \
+List[2, 1]]]], Rule[AspectRatio, 1], Rule[Frame, True], Rule[FrameStyle, \
+RGBColor[0.`, 0.6666666666666666`, 0.`]], Rule[FrameTicks, None], \
+Rule[PlotRangePadding, None], Rule[ImageSize, Dynamic[List[Automatic, \
+Times[1.35`, CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]] \[InvisibleSpace]\\), \
+\\\"RGBColor[0, 1, 0]\\\"], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[BaselinePosition, Baseline], Rule[DefaultBaseStyle, List[]], \
+RuleDelayed[ButtonFunction, With[List[Set[Typeset`box$, EvaluationBox[]]], \
+If[Not[AbsoluteCurrentValue[\\\"Deployed\\\"]], \
+CompoundExpression[SelectionMove[Typeset`box$, All, Expression], \
+Set[FrontEnd`Private`$ColorSelectorInitialAlpha, 1], \
+Set[FrontEnd`Private`$ColorSelectorInitialColor, RGBColor[0, 1, 0]], \
+Set[FrontEnd`Private`$ColorSelectorUseMakeBoxes, True], \
+MathLink`CallFrontEnd[FrontEnd`AttachCell[Typeset`box$, \
+FrontEndResource[\\\"RGBColorValueSelector\\\"], List[0, List[Left, Bottom]], \
+List[Left, Top], Rule[\\\"ClosingActions\\\", \
+List[\\\"SelectionDeparture\\\", \\\"ParentChanged\\\", \
+\\\"EvaluatorQuit\\\"]]]]]]]], Rule[BaseStyle, Inherited], Rule[Evaluator, \
+Automatic], Rule[Method, \\\"Preemptive\\\"]], RGBColor[0, 1, 0], \
+Rule[Editable, False], Rule[Selectable, False]]\\)\\), \\(\\(Range \[Rule] \
+\\(\\({\\(\\({\\(\\(-25\\)\\), 25}\\)\\), \\(\\({\\(\\(-25\\)\\), \
+25}\\)\\)}\\)\\)\\)\\)\\)\\)]\\)\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/Show/gcomb\\\", ButtonNote -> \
+\\\"Show::gcomb\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624280065981971*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+1 \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of object. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/partd\\\", \
+ButtonNote -> \\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624284453412622*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of \
+object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624284453455771*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 2\\)\\) \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of \
+object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624284453488253*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
+partd\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
+calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624284453529789*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Show", "::", "gcomb"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Could not combine the graphics objects in \
+\[NoBreak]\\!\\(Show[\\(\\(\\(\\({\\(\\(actin[\\(\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\\(actin[\\(\\(rt \
+\[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\({\\(\\(amotor[\\(\\(amt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\
+\\(amotor[\\(\\(amt \[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\({\\(\\(pmotor[\\(\\(pmt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)]\\)\\), \\(\
+\\(pmotor[\\(\\(pmt \[LeftDoubleBracket] \\(\\(1, 2\\)\\) \
+\[RightDoubleBracket]\\)\\)]\\)\\)}\\)\\), \\(\\(Frame \[Rule] True\\)\\), \
+\\(\\(Background \[Rule] \
+\\*InterpretationBox[ButtonBox[TooltipBox[\\(\\*GraphicsBox[List[List[\
+GrayLevel[0], RectangleBox[List[0, 0]]], List[GrayLevel[0], \
+RectangleBox[List[1, -1]]], List[RGBColor[0, 1, 0], RectangleBox[List[0, -1], \
+List[2, 1]]]], Rule[AspectRatio, 1], Rule[Frame, True], Rule[FrameStyle, \
+RGBColor[0.`, 0.6666666666666666`, 0.`]], Rule[FrameTicks, None], \
+Rule[PlotRangePadding, None], Rule[ImageSize, Dynamic[List[Automatic, \
+Times[1.35`, CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]] \[InvisibleSpace]\\), \
+\\\"RGBColor[0, 1, 0]\\\"], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[BaselinePosition, Baseline], Rule[DefaultBaseStyle, List[]], \
+RuleDelayed[ButtonFunction, With[List[Set[Typeset`box$, EvaluationBox[]]], \
+If[Not[AbsoluteCurrentValue[\\\"Deployed\\\"]], \
+CompoundExpression[SelectionMove[Typeset`box$, All, Expression], \
+Set[FrontEnd`Private`$ColorSelectorInitialAlpha, 1], \
+Set[FrontEnd`Private`$ColorSelectorInitialColor, RGBColor[0, 1, 0]], \
+Set[FrontEnd`Private`$ColorSelectorUseMakeBoxes, True], \
+MathLink`CallFrontEnd[FrontEnd`AttachCell[Typeset`box$, \
+FrontEndResource[\\\"RGBColorValueSelector\\\"], List[0, List[Left, Bottom]], \
+List[Left, Top], Rule[\\\"ClosingActions\\\", \
+List[\\\"SelectionDeparture\\\", \\\"ParentChanged\\\", \
+\\\"EvaluatorQuit\\\"]]]]]]]], Rule[BaseStyle, Inherited], Rule[Evaluator, \
+Automatic], Rule[Method, \\\"Preemptive\\\"]], RGBColor[0, 1, 0], \
+Rule[Editable, False], Rule[Selectable, False]]\\)\\), \\(\\(Range \[Rule] \
+\\(\\({\\(\\({\\(\\(-25\\)\\), 25}\\)\\), \\(\\({\\(\\(-25\\)\\), \
+25}\\)\\)}\\)\\)\\)\\)\\)\\)]\\)\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/Show/gcomb\\\", ButtonNote -> \
+\\\"Show::gcomb\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624284453531692*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+1 \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of object. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/partd\\\", \
+ButtonNote -> \\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299234868791*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of \
+object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6242992349096317`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partw"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part \[NoBreak]\\!\\(4\\)\[NoBreak] of \[NoBreak]\\!\\(rt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\[NoBreak] does \
+not exist. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\
+\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
+\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299234982017*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(rt \[LeftDoubleBracket] \
+\\(\\(1, 2\\)\\) \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of \
+object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299235031608*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
+partd\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
+calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299235042171*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partw"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part \[NoBreak]\\!\\(4\\)\[NoBreak] of \[NoBreak]\\!\\(rt \
+\[LeftDoubleBracket] \\(\\(1, 2\\)\\) \[RightDoubleBracket]\\)\[NoBreak] does \
+not exist. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\
+\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
+\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299235082478*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partw"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part \[NoBreak]\\!\\(4\\)\[NoBreak] of \[NoBreak]\\!\\(amt \
+\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\[NoBreak] does \
+not exist. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\
+\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
+\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.624299235124239*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
+partw\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
+calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.6242992351448107`*^9}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{808, 755},
+WindowMargins->{{661, Automatic}, {257, Automatic}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 448, 11, 46, "Input"],
+Cell[1009, 33, 2250, 59, 165, "Input"],
+Cell[CellGroupData[{
+Cell[3284, 96, 94, 1, 64, "Section"],
+Cell[3381, 99, 3291, 91, 284, "Input"],
+Cell[CellGroupData[{
+Cell[6697, 194, 589, 15, 80, "Input"],
+Cell[7289, 211, 546, 11, 41, "Message"],
+Cell[7838, 224, 547, 11, 41, "Message"],
+Cell[8388, 237, 549, 11, 41, "Message"],
+Cell[8940, 250, 551, 11, 41, "Message"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9528, 266, 126, 2, 28, "Input"],
+Cell[9657, 270, 615, 12, 42, "Message"],
+Cell[10275, 284, 442, 9, 63, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[10754, 298, 228, 6, 28, "Input"],
+Cell[10985, 306, 76, 1, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[11098, 312, 311, 7, 28, "Input"],
+Cell[11412, 321, 199, 3, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[11648, 329, 152, 3, 28, "Input"],
+Cell[11803, 334, 72, 1, 28, "Output"]
+}, Open  ]],
+Cell[11890, 338, 1193, 35, 80, "Input"],
+Cell[CellGroupData[{
+Cell[13108, 377, 2421, 63, 284, "Input"],
+Cell[15532, 442, 2357, 55, 458, "Output"],
+Cell[17892, 499, 506, 10, 24, "Message"],
+Cell[18401, 511, 525, 11, 24, "Message"],
+Cell[18929, 524, 523, 11, 24, "Message"],
+Cell[19455, 537, 528, 11, 24, "Message"],
+Cell[19986, 550, 2803, 45, 61, "Message"],
+Cell[22792, 597, 2803, 45, 61, "Message"],
+Cell[25598, 644, 506, 10, 24, "Message"],
+Cell[26107, 656, 523, 11, 24, "Message"],
+Cell[26633, 669, 523, 11, 24, "Message"],
+Cell[27159, 682, 528, 11, 24, "Message"],
+Cell[27690, 695, 2803, 45, 61, "Message"],
+Cell[30496, 742, 506, 10, 24, "Message"],
+Cell[31005, 754, 525, 11, 24, "Message"],
+Cell[31533, 767, 527, 11, 24, "Message"],
+Cell[32063, 780, 523, 11, 24, "Message"],
+Cell[32589, 793, 528, 11, 24, "Message"],
+Cell[33120, 806, 527, 11, 24, "Message"],
+Cell[33650, 819, 528, 11, 24, "Message"],
+Cell[34181, 832, 530, 11, 24, "Message"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
