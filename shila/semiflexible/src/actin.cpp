@@ -24,7 +24,7 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     fov[1] = fovy;
     nq[0]  = nx;
     nq[1]  = ny;
-
+    
     this->update();
 }
 
@@ -252,3 +252,61 @@ std::string actin::to_string()
  
 }
 
+// EXCLUDED VOLUME STUFF
+//
+
+void actin::set_gay_berne(double s0, double e0, double epsS, double epsE, double m, double n)
+{
+    sigma0 = s0;
+    eps0 = e0;
+    mu = m;
+    nu = n;
+    
+    chi      = (ld * ld - diameter * diameter)  / (ld * ld + diameter * diameter);
+    chiPrime = (pow(epsS, 1.0/mu)-pow(epsE, 1.0/mu))/(pow(epsS, 1.0/mu) + pow(epsE, 1.0/mu));
+
+}
+
+double actin::get_sigma0()
+{
+    return sigma0;
+}
+
+double actin::get_eps0()
+{
+    return eps0;
+}
+
+double actin::get_chi()
+{
+    return chi;
+}
+
+double actin::get_chiPrime()
+{
+    return chiPrime;
+}
+
+//Calculates the Gay Berne forces and torques between two actin rods
+
+double * actin::calc_gay_berne(actin * a)
+{
+    double u1u2, ru1, ru2, rx, ry, R, sigma, eps, epsPrime, epsUnPrime;
+    double * u1, * u2;
+    double * forces = new double[3]; 
+    u1 = e;
+    u2 = a->get_direction();
+    rx = x - a->get_xcm();
+    ry = y - a->get_ycm();
+    R = rx*rx + ry*ry;
+    
+    u1u2 = dot(u1[0], u1[1], u2[0], u2[1]);
+    ru1 = dot(rx, ry, u1[0], u1[1]);
+    ru2 = dot(rx, ry, u1[0], u1[1]);
+    
+    epsUnPrime = eps0 * pow((1.0-pow(chi,2)*u1u2*u1u2),-0.5);
+    epsPrime   = 1 - chiPrime / 2.0 * ( pow(ru1 + ru2, 2)/(1+chiPrime*u1u2) + pow(ru1 - ru2, 2)/(1-chiPrime*u1u2) );
+
+    return forces;
+
+}

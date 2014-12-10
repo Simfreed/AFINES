@@ -482,7 +482,17 @@ void actin_ensemble::update_bending(){
         this->update_polymer_bending(p);
     }
 }
+void actin_ensemble::update_polymer_excluded_volume(int polymer_index){
 
+}
+void actin_ensemble::update_excluded_volume(){
+    
+    for (unsigned int p = 0; p < mono_map.size(); p++)
+    {
+        this->update_polymer_excluded_volume(p);
+    }
+
+}
 void actin_ensemble::clear_actin_link_map(){
     
     actin_link_map.clear();

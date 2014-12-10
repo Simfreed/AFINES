@@ -85,12 +85,17 @@ class actin_ensemble
 
         void update_bending();
         
+        void update_polymer_excluded_volume(int polymer_index);
+
+        void update_excluded_volume();
+        
         void add_monomer(actin * a, int n);
 
         void clear_actin_link_map();
         
         void set_straight_filaments(bool is_straight);
-    
+
+
     private:
         double dt, temperature, fov[2], view[2], rho, ld, visc;
         
