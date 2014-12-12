@@ -207,11 +207,10 @@ void actin_ensemble::set_straight_filaments(bool is_straight)
     straight_filaments = is_straight;
 }
 
-void actin_ensemble::update()
+void actin_ensemble::update(double t)
 {
-    ///Maybe change 6 to 4 for 2d
     double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, phiprev, a_ends[4]; 
-    
+    double xleft, xright;
     int i;
     
     for (unsigned int p = 0; p < mono_map.size(); p++)
@@ -223,11 +222,11 @@ void actin_ensemble::update()
 
             i = monomers->at(j);
             double * fric = network[i]->get_friction();
-            vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(4*temperature/(dt*fric[0]))*rng_n(0,1);
-            vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(4*temperature/(dt*fric[1]))*rng_n(0,1);
+            vpar=(network[i]->get_forces()[0])/fric[0]  + sqrt(2*temperature/(dt*fric[0]))*rng_n(0,1);
+            vperp=(network[i]->get_forces()[1])/fric[1] + sqrt(2*temperature/(dt*fric[1]))*rng_n(0,1);
             vx=vpar*cos(network[i]->get_angle())-vperp*sin(network[i]->get_angle());
             vy=vpar*sin(network[i]->get_angle())+vperp*cos(network[i]->get_angle());
-            omega=network[i]->get_forces()[2]/fric[2] + sqrt(4*temperature/(dt*fric[2]))*rng_n(0,1);
+            omega=network[i]->get_forces()[2]/fric[2] + sqrt(2*temperature/(dt*fric[2]))*rng_n(0,1);
             delete[] fric;
 
             alength=network[i]->get_length();
@@ -242,7 +241,11 @@ void actin_ensemble::update()
             a_ends[2]=xnew+alength*0.5*cos(phinew);
             a_ends[3]=ynew+alength*0.5*sin(phinew);
 
-            if (a_ends[0]<=-fov[0]*0.5 || a_ends[0]>=fov[0]*0.5 || a_ends[2]<=-fov[0]*0.5 || a_ends[2]>=fov[0]*0.5)
+            //Calculate the sheared simulation bounds (at this height)
+            xleft  = std::max(-fov[0] * 0.5 + gamma * a_ends[1] * t, -fov[0] * 0.5 + gamma * a_ends[3] * t);
+            xright = std::min( fov[0] * 0.5 + gamma * a_ends[1] * t,  fov[0] * 0.5 + gamma * a_ends[3] * t);
+
+            if (a_ends[0]<=xleft || a_ends[0]>=xright || a_ends[2]<=xleft || a_ends[2]>=xright)
             {
                 vx=-vx;//xnew=network[i]->get_xcm()-dt*vx;//  
                 omega=-omega;//phinew=network[i]->get_angle()-dt*omega;//omega=-omega;
@@ -284,11 +287,28 @@ void actin_ensemble::update()
 
 }
 
+/*
+ * Updates the forces an individual actin filament
+ * f1 is the force parallel to the filament
+ * f2 is the force perpendicular to the filament
+ * f3 is the torque on the filament
+ */
 void actin_ensemble::update_forces(int index, double f1, double f2, double f3)
 {
     network[index]->update_force(f1,f2,f3);
 }
 
+/*
+ * Updates the forces an individual actin filament
+ * f1 is the force in the x direction 
+ * f2 is the force in the y direction
+ * f3 is the torque
+ 
+void actin_ensemble::update_forces_xyz(int index, double fx, double fy)
+{
+    network[index]->update_force(f1,f2,f3);
+}
+*/
 
 void actin_ensemble::write(std::ofstream& fout)
 {
@@ -497,4 +517,49 @@ void actin_ensemble::clear_actin_link_map(){
     
     actin_link_map.clear();
 
+}
+
+void actin_ensemble::set_shear_rate(double g)
+{
+    gamma = g;
+}
+
+void actin_ensemble::update_polymer_shear(int polymer_index){
+    
+    std::vector<int> * monomers = &mono_map[polymer_index];
+    double ycm, forcex, force_par, force_perp, lft_trq, rt_trq;
+    Link * rt_lnk, * lft_lnk = actin_link_map[-1][monomers->at(0)];
+    
+    for (unsigned int j = 0; j < monomers->size(); j++){
+        
+        ycm = this->get_ycm(monomers->at(j));
+        forcex = gamma * ycm;
+        
+        if (j == 0)
+            lft_trq = 0;
+        else
+            lft_trq = -1 * forcex * (ycm - lft_lnk->get_posy()); //cross product with fy = 0
+
+        if (j == monomers->size()-1)
+            rt_trq = 0;
+        else{
+            rt_lnk = actin_link_map[monomers->at(j)][monomers->at(j+1)];
+            rt_trq = -1 * forcex * (ycm - rt_lnk->get_posy());
+        }
+        
+        force_par   =  forcex*this->get_direction(monomers->at(j))[0];
+        force_perp  = -forcex*this->get_direction(monomers->at(j))[1];
+        
+        this->update_forces(monomers->at(j), force_par, force_perp, lft_trq + rt_trq);
+        lft_lnk = rt_lnk;
+    }
+
+
+}
+
+void actin_ensemble::update_shear(){
+    for (unsigned int p = 0; p < mono_map.size(); p++)
+    {
+        this->update_polymer_shear(p);
+    }
 }

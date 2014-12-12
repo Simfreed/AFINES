@@ -201,13 +201,13 @@ int main(int argc, char* argv[]){
 		}
 
         net->update_bending();
-        net->update();
+        net->update(t);
         net->quad_update();
         
         //update network
         lks->link_walk(); 
-        crosslks->motor_walk();
-        myosins->motor_walk();
+        crosslks->motor_walk(t);
+        myosins->motor_walk(t);
         
         t+=dt;
 		count++;

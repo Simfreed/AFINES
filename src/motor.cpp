@@ -125,26 +125,27 @@ void motor::attach(int hd)
     }	
 } 
 
-//perform brownian motion if head unattached
-void motor::brownian()
+//perform brownian motion and shear if head unattached
+void motor::brownian(double t, double gamma)
 {
     if (state[0]==0 && state[1]==0) {
 
-        xm[0]=hx[0]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
-        xm[1]=hx[1]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi));
-        ym[0]=hy[0]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
-        ym[1]=hy[1]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
-        reflect(xm[0],xm[1],ym[0],ym[1]);
+        xm[0]=hx[0]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[0];
+        xm[1]=hx[1]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[1];
+        ym[0]=hy[0]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+        ym[1]=hy[1]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+        reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if (state[0]==0 || state[1]==0) {
-        int hd=state[0];
+        int hd=state[0];//magically equivalent to 
+                        //int hd = (hd for which state[hd] = 0)
 
-        xm[hd]=hx[hd]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi));
-        ym[hd]=hy[hd]+sqrt(dt*mobility*4*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
+        xm[hd]=hx[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*dt*hy[hd];
+        ym[hd]=hy[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
         xm[pr(hd)]=hx[pr(hd)];
         ym[pr(hd)]=hy[pr(hd)];
-        reflect(xm[0],xm[1],ym[0],ym[1]);
+        reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else {
@@ -309,10 +310,14 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
 
 }
 
-inline void motor::reflect(double x1, double x2, double y1, double y2)
+inline void motor::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
 {
-    if (-fov[0]*0.5 < x1 && x1 <fov[0]*0.5 
-            && -fov[0]*0.5 < x2 && x2 < fov[0]*0.5 
+    //Calculate the sheared simulation bounds (at this height)
+    double xleft, xright;
+    xleft  = std::max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
+    xright = std::min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
+    if (xleft < x1 && x1 < xright
+            && xleft < x2 && x2 < xright
             && -fov[1]*0.5 < y1 && y1 < fov[1]*0.5 
             && -fov[1]*0.5 < y2 && y2 < fov[1]*0.5) {
         hx[0]=x1;
@@ -320,13 +325,13 @@ inline void motor::reflect(double x1, double x2, double y1, double y2)
         hy[0]=y1;
         hy[1]=y2;
     }
-    else if (x1>=fov[0]*0.5 || x1<=-fov[0]*0.5)
+    else if (x1>=xright || x1<=xleft)
     {
         hx[1]=x2;
         hy[0]=y1;
         hy[1]=y2;   
     }
-    else if (x2>=fov[0]*0.5 || x2<=-fov[0]*0.5)
+    else if (x2>=xright || x2<=xleft)
     {
         hx[0]=x1;
         hy[0]=y1;
