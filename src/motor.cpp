@@ -58,7 +58,6 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
 }
 
 motor::~motor(){ 
-    std::cout<<"DELETING MOTOR\n";
 };
 
 //return motor state with a given head number
