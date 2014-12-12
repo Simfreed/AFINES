@@ -31,7 +31,7 @@ class motor_ensemble
 
         ~motor_ensemble();
 
-        void motor_walk();
+        void motor_walk(double t);
 
         void reshape();
 
@@ -41,9 +41,11 @@ class motor_ensemble
 
         void add_motor(motor * m);
 
+        void set_shear(double g);
+
     private:
 
-        double fov[2], mrho, mld, mang, motorx, motory, alpha;
+        double fov[2], mrho, mld, mang, motorx, motory, alpha, gamma;
         int nm, s[2];
         actin_ensemble *a_network;
         std::vector<motor *> n_motors;  

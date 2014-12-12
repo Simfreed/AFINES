@@ -26,7 +26,8 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
     std::cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
     a_network=network;
     alpha=0.8;
-    
+    gamma = 0;
+
     if (v0 == 0){
         color = "0.1"; //purple
     }
@@ -59,7 +60,7 @@ motor_ensemble::~motor_ensemble( ){
     n_motors.clear();
 };
 
-void motor_ensemble::motor_walk()
+void motor_ensemble::motor_walk(double t)
 {
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
@@ -71,16 +72,16 @@ void motor_ensemble::motor_walk()
         if (s[0]==0 && s[1]==0) {
             n_motors[i]->attach(0);
             n_motors[i]->attach(1);
-            n_motors[i]->brownian();
+            n_motors[i]->brownian(t, gamma);
         }
         else if (s[0]==0 && s[1]==1) {
             n_motors[i]->attach(0);
-            n_motors[i]->brownian();
+            n_motors[i]->brownian(t, gamma);
             n_motors[i]->step_onehead(1);
         }
         else if (s[0]==1 && s[1]==0) {
             n_motors[i]->attach(1);
-            n_motors[i]->brownian();
+            n_motors[i]->brownian(t, gamma);
             n_motors[i]->step_onehead(0);
         }
         else {
@@ -125,4 +126,9 @@ void motor_ensemble::motor_tension(std::ofstream& fout)
 void motor_ensemble::add_motor(motor * m)
 {
     n_motors.push_back(m);
+}
+
+void motor_ensemble::set_shear(double g)
+{
+    gamma = g;
 }

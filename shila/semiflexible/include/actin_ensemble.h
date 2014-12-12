@@ -67,7 +67,7 @@ class actin_ensemble
         
         double* get_forces(int index);
 
-        void update();
+        void update(double t);
 
         void update_forces(int index, double f1, double f2, double f3);
 
@@ -95,9 +95,14 @@ class actin_ensemble
         
         void set_straight_filaments(bool is_straight);
 
+        void set_shear_rate(double);
+
+        void update_polymer_shear(int polymer_index);
+
+        void update_shear();
 
     private:
-        double dt, temperature, fov[2], view[2], rho, ld, visc;
+        double dt, temperature, fov[2], view[2], rho, ld, visc, gamma;
         
         double link_ld;
         

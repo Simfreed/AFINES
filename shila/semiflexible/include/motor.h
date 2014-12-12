@@ -44,7 +44,7 @@ class motor
 
         void attach(int hd);
 
-        void brownian();
+        void brownian(double t, double gamma);
 
         void step_onehead(int hd);
 
@@ -72,7 +72,7 @@ class motor
 
         inline void move_end_detach(int hd, double speed, double pos);
 
-        inline void reflect(double x1, double x2, double y1, double y2);
+        inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
 };
 
 #endif
