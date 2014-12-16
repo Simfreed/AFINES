@@ -567,3 +567,22 @@ void actin_ensemble::update_shear(){
 bool actin_ensemble::is_polymer_start(int i){
     return actin_link_map[-1][i];
 }
+
+void actin_ensemble::set_ld(double length){
+    ld = length;
+}
+
+void actin_ensemble::set_fov(double fovx, double fovy){
+    fov[0] = fovx;
+    fov[1] = fovy;
+}
+
+void actin_ensemble::set_nq(double nqx, double nqy){
+    nq[0] = nqx;
+    nq[1] = nqy;
+}
+
+void actin_ensemble::set_visc(double nu){
+    visc = nu;
+}
+
