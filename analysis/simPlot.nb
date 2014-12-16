@@ -10,20 +10,28 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     34724,        869]
-NotebookOptionsPosition[     32635,        807]
-NotebookOutlinePosition[     32990,        823]
-CellTagsIndexPosition[     32947,        820]
+NotebookDataLength[     15868,        414]
+NotebookOptionsPosition[     15215,        387]
+NotebookOutlinePosition[     15552,        402]
+CellTagsIndexPosition[     15509,        399]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-Cell[BoxData[
+Cell[BoxData[{
  RowBox[{
   RowBox[{
   "mdwout", " ", "=", " ", 
    "\"\</Volumes/homes/Code/cytomod/shila/semiflexible/out/network/\>\""}], 
-  ";"}]], "Input"],
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+  "mdwlcl", "=", 
+   "\"\</home/simonfreedman/scratch-midway/cytomod/out/network/\>\""}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.627385105358482*^9, 3.627385147573698*^9}, {
+  3.627737551226329*^9, 3.627737577414873*^9}, {3.627737635087924*^9, 
+  3.627737651990177*^9}}],
 
 Cell[CellGroupData[{
 
@@ -194,49 +202,55 @@ Cell["Simulator", "Section",
 Cell[BoxData[
  RowBox[{
   RowBox[{
-   RowBox[{"sim", "=", "\[IndentingNewLine]", 
-    RowBox[{"TemplateExpression", "[", "\[IndentingNewLine]", 
-     RowBox[{"(*", 
-      RowBox[{"Load", " ", "Data"}], "*)"}], "\n", "        ", 
+   RowBox[{
+    RowBox[{"sim", "[", "d_", "]"}], ":=", "\[IndentingNewLine]", 
+    RowBox[{"Module", "[", "\[IndentingNewLine]", 
      RowBox[{
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"nrods", ",", "dt", ",", "rt"}], "}"}], "=", 
-       RowBox[{"ParticleTimeSeries", "[", 
-        RowBox[{
-         RowBox[{"TemplateSlot", "[", "\"\<dir\>\"", "]"}], ",", 
-         "\"\<rods\>\""}], "]"}]}], ";", " ", "\[IndentingNewLine]", "   ", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"npms", ",", "dt", ",", "pmt"}], "}"}], "=", 
-       RowBox[{"ParticleTimeSeries", "[", 
-        RowBox[{
-         RowBox[{"TemplateSlot", "[", "\"\<dir\>\"", "]"}], ",", 
-         "\"\<amotors\>\""}], "]"}]}], ";", " ", "\[IndentingNewLine]", "   ", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"nams", ",", "dt", ",", "amt"}], "}"}], "=", 
-       RowBox[{"ParticleTimeSeries", "[", 
-        RowBox[{
-         RowBox[{"TemplateSlot", "[", "\"\<dir\>\"", "]"}], ",", 
-         "\"\<pmotors\>\""}], "]"}]}], ";", " ", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"dir", "=", "d"}], "}"}], ",", "\[IndentingNewLine]", 
       RowBox[{"(*", 
+       RowBox[{"Load", " ", "Data"}], "*)"}], "\n", "        ", 
+      RowBox[{
        RowBox[{
-        RowBox[{"Generate", " ", "Image", " ", "Time", " ", "Series"}], ",", 
-        " ", 
-        RowBox[{"make", " ", "into", " ", "movie"}]}], "*)"}], 
-      "\[IndentingNewLine]", 
-      RowBox[{"Export", "[", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"nrods", ",", "dt", ",", "rt"}], "}"}], "=", 
+        RowBox[{"ParticleTimeSeries", "[", 
+         RowBox[{"dir", ",", "\"\<rods\>\""}], "]"}]}], ";", " ", 
+       "\[IndentingNewLine]", "   ", 
        RowBox[{
-        RowBox[{
-         RowBox[{"TemplateSlot", "[", "\"\<dir\>\"", "]"}], "<>", 
-         "\"\</data/movie.avi\>\""}], ",", "\[IndentingNewLine]", 
-        RowBox[{"Table", "\[IndentingNewLine]", "[", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"npms", ",", "dt", ",", "pmt"}], "}"}], "=", 
+        RowBox[{"ParticleTimeSeries", "[", 
+         RowBox[{"dir", ",", "\"\<amotors\>\""}], "]"}]}], ";", " ", 
+       "\[IndentingNewLine]", "   ", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"nams", ",", "dt", ",", "amt"}], "}"}], "=", 
+        RowBox[{"ParticleTimeSeries", "[", 
+         RowBox[{"dir", ",", "\"\<pmotors\>\""}], "]"}]}], ";", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{"maxFrame", "=", 
+        RowBox[{"Min", "[", 
          RowBox[{
-          RowBox[{"Show", "[", "\[IndentingNewLine]", 
-           RowBox[{
-            RowBox[{"Catenate", "[", "\[IndentingNewLine]", 
-             RowBox[{"{", "\[IndentingNewLine]", 
+          RowBox[{"Length", "[", "amt", "]"}], ",", 
+          RowBox[{"Length", "[", "pmt", "]"}], ",", 
+          RowBox[{"Length", "[", "rt", "]"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"(*", 
+        RowBox[{
+         RowBox[{"Generate", " ", "Image", " ", "Time", " ", "Series"}], ",", 
+         " ", 
+         RowBox[{"make", " ", "into", " ", "movie"}]}], "*)"}], 
+       "\[IndentingNewLine]", 
+       RowBox[{"Export", "[", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"dir", "<>", "\"\</data/movie.avi\>\""}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Table", "\[IndentingNewLine]", "[", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"Show", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"Join", "[", "\[IndentingNewLine]", 
               RowBox[{
                RowBox[{"Table", "[", "\[IndentingNewLine]", 
                 RowBox[{
@@ -276,24 +290,23 @@ Cell[BoxData[
                    RowBox[{"Length", "[", 
                     RowBox[{"pmt", "[", 
                     RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
-                "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "}"}], 
-             "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", ",", 
-            RowBox[{"Frame", "\[Rule]", "True"}], ",", 
-            RowBox[{"Background", "\[Rule]", "LightGray"}], ",", 
-            RowBox[{"PlotRange", "\[Rule]", 
-             RowBox[{"{", 
-              RowBox[{
-               RowBox[{"{", 
-                RowBox[{
-                 RowBox[{"-", "25"}], ",", "25"}], "}"}], ",", 
-               RowBox[{"{", 
-                RowBox[{
-                 RowBox[{"-", "25"}], ",", "25"}], "}"}]}], "}"}]}]}], 
-           "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", ",", 
-          RowBox[{"{", 
-           RowBox[{"t", ",", "1", ",", 
-            RowBox[{"Length", "[", "rt", "]"}], ",", "5"}], "}"}]}], 
-         "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+                "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}], 
+             "\[IndentingNewLine]", ",", 
+             RowBox[{"Frame", "\[Rule]", "True"}], ",", 
+             RowBox[{"Background", "\[Rule]", "LightGray"}], ",", 
+             RowBox[{"PlotRange", "\[Rule]", 
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{
+                  RowBox[{"-", "25"}], ",", "25"}], "}"}], ",", 
+                RowBox[{"{", 
+                 RowBox[{
+                  RowBox[{"-", "25"}], ",", "25"}], "}"}]}], "}"}]}]}], 
+            "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", ",", 
+           RowBox[{"{", 
+            RowBox[{"t", ",", "1", ",", "maxFrame", ",", "25"}], "}"}]}], 
+          "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}]}], 
      "\[IndentingNewLine]", "]"}]}], ";"}], "\[IndentingNewLine]"}]], "Input",\
 
  CellChangeTimes->{{3.6247212771647987`*^9, 3.624721388199992*^9}, {
@@ -312,7 +325,10 @@ Cell[BoxData[
    3.624885030416862*^9}, {3.624886256750903*^9, 3.6248862961063843`*^9}, 
    3.62488687387072*^9, {3.624894286844056*^9, 3.6248942960031767`*^9}, {
    3.6270568666871433`*^9, 3.62705698380877*^9}, {3.6270570723107224`*^9, 
-   3.6270570964712*^9}}],
+   3.6270570964712*^9}, {3.6273852244411383`*^9, 3.627385289355863*^9}, {
+   3.6273854255031548`*^9, 3.627385426560813*^9}, {3.6273854636708107`*^9, 
+   3.6273854746136417`*^9}, {3.627386602719943*^9, 3.6273866060795*^9}, {
+   3.627386773271379*^9, 3.6273868137800083`*^9}, 3.627749599537079*^9}],
 
 Cell[BoxData[{
  RowBox[{
@@ -324,7 +340,7 @@ Cell[BoxData[{
      "\"\<.56\>\"", ",", "\"\<.64\>\"", ",", "\"\<.72\>\"", ",", 
      "\"\<.80\>\""}], "}"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
-  RowBox[{"basedir", "=", "\"\<clnk_nm12_np500_amRho.05_pmRho\>\""}], 
+  RowBox[{"basedir", "=", "\"\<clnk_nm12_np500_tf1000_amRho.05_pmRho\>\""}], 
   ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"dirs", "=", 
@@ -335,7 +351,7 @@ Cell[BoxData[{
       RowBox[{"\[Rho]", ",", "\[Rho]s"}], "}"}]}], "]"}]}], ";"}]}], "Input",
  CellChangeTimes->{{3.627057061958253*^9, 3.6270570825655117`*^9}, {
   3.627057337104884*^9, 3.6270573453677807`*^9}, {3.627231138397395*^9, 
-  3.6272311465618773`*^9}}],
+  3.6272311465618773`*^9}, {3.62738558605621*^9, 3.627385587533423*^9}}],
 
 Cell[CellGroupData[{
 
@@ -343,12 +359,8 @@ Cell[BoxData[
  RowBox[{"Do", "[", "\[IndentingNewLine]", 
   RowBox[{
    RowBox[{
-    RowBox[{"TemplateApply", "[", 
-     RowBox[{"sim", ",", 
-      RowBox[{"<|", 
-       RowBox[{"\"\<dir\>\"", "\[Rule]", 
-        RowBox[{"mdwout", "<>", "dr"}]}], "|>"}]}], "]"}], ";", 
-    "\[IndentingNewLine]", 
+    RowBox[{"sim", "[", 
+     RowBox[{"mdwlcl", "<>", "dr"}], "]"}], ";", "\[IndentingNewLine]", 
     RowBox[{"Print", "[", 
      RowBox[{"\"\<Completed movie for dir \>\"", "<>", "dr"}], "]"}]}], ",", 
    "\[IndentingNewLine]", 
@@ -356,459 +368,26 @@ Cell[BoxData[
     RowBox[{"dr", ",", 
      RowBox[{"dirs", "[", 
       RowBox[{"[", 
-       RowBox[{"1", ";;", "3"}], "]"}], "]"}]}], "}"}]}], 
+       RowBox[{"6", ";;", "6"}], "]"}], "]"}]}], "}"}]}], 
   "\[IndentingNewLine]", "]"}]], "Input",
  CellChangeTimes->{{3.624799635340404*^9, 3.6247996405584717`*^9}, {
   3.624799708678527*^9, 3.624799816664987*^9}, {3.62481092250633*^9, 
   3.6248109430742617`*^9}, {3.627057139669621*^9, 3.6270571540691223`*^9}, {
-  3.62723115477763*^9, 3.627231160057384*^9}}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"StringJoin", "::", "string"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"String expected at position \[NoBreak]\\!\\(1\\)\[NoBreak] \
-in \[NoBreak]\\!\\(mdwout <> \\\"clnk_nm12_np500_amRho.05_pmRho0\\\"\\)\
-\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/StringJoin\\\", ButtonNote -> \
-\\\"StringJoin::string\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167074346*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"StringJoin", "::", "string"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"String expected at position \[NoBreak]\\!\\(1\\)\[NoBreak] \
-in \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho0/txt_stack/rods.txt\\\"\\)\[NoBreak]. \
-\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
-ButtonFrame->None, ButtonData:>\\\"paclet:ref/StringJoin\\\", ButtonNote -> \
-\\\"StringJoin::string\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311671011667`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"StringJoin", "::", "string"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"String expected at position \[NoBreak]\\!\\(1\\)\[NoBreak] \
-in \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho0/txt_stack/rods.txt\\\"\\)\[NoBreak]. \
-\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
-ButtonFrame->None, ButtonData:>\\\"paclet:ref/StringJoin\\\", ButtonNote -> \
-\\\"StringJoin::string\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167143024*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \
-\[NoBreak]\\!\\(\\*StyleBox[\\(StringJoin :: string\\), \
-\\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this calculation. \
-\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
-ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/stop\\\", \
-ButtonNote -> \\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167238667*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Import", "::", "chtype"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"First argument \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho0/txt_stack/rods.txt\\\"\\)\[NoBreak] is \
-not a valid file, directory, or URL specification. \\!\\(\\*ButtonBox[\\\"\
-\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Import/chtype\\\", ButtonNote -> \
-\\\"Import::chtype\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311675803022`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "partw"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part \[NoBreak]\\!\\(1\\)\[NoBreak] of \
-\[NoBreak]\\!\\({}\\)\[NoBreak] does not exist. \\!\\(\\*ButtonBox[\\\"\
-\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
-\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167630069*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "pkspec1"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"The expression \[NoBreak]\\!\\(1 + \\(\\(\\(\\({}\\)\\) \
-\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
-\[RightDoubleBracket]\\)\\)\\)\[NoBreak] cannot be used as a part \
-specification. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, ButtonData:>\\\"paclet:ref/Part\
-\\\", ButtonNote -> \\\"Part::pkspec1\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167739847*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "partw"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part \[NoBreak]\\!\\(1\\)\[NoBreak] of \
-\[NoBreak]\\!\\({}\\)\[NoBreak] does not exist. \\!\\(\\*ButtonBox[\\\"\
-\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
-\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167787189*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "pkspec1"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"The expression \[NoBreak]\\!\\(1 + \\(\\(\\(\\({}\\)\\) \
-\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
-\[RightDoubleBracket]\\)\\)\\)\[NoBreak] cannot be used as a part \
-specification. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, ButtonData:>\\\"paclet:ref/Part\
-\\\", ButtonNote -> \\\"Part::pkspec1\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311678355513`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "take"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Cannot take positions \[NoBreak]\\!\\(2\\)\[NoBreak] \
-through \[NoBreak]\\!\\(-1\\)\[NoBreak] in \[NoBreak]\\!\\($Failed\\)\
-\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Part/take\\\", ButtonNote -> \
-\\\"Part::take\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311678636312`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Partition", "::", "ilsmn"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Single or list of non-negative machine-sized integers \
-expected at position \[NoBreak]\\!\\(2\\)\[NoBreak] of \
-\[NoBreak]\\!\\(Partition[\\(\\(\\(\\($Failed \[LeftDoubleBracket] \\(\\(2 ;; \
-All\\)\\) \[RightDoubleBracket]\\)\\), \\(\\(\\(\\(-1\\)\\) + \
-\\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
-\[RightDoubleBracket]\\)\\)\\)\\), \\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \
-\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)\\)\\)]\\)\[NoBreak]. \
-\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
-ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/ilsmn\\\", \
-ButtonNote -> \\\"Partition::ilsmn\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167914814*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Import", "::", "chtype"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"First argument \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho0/txt_stack/amotors.txt\\\"\\)\[NoBreak] is \
-not a valid file, directory, or URL specification. \\!\\(\\*ButtonBox[\\\"\
-\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Import/chtype\\\", ButtonNote -> \
-\\\"Import::chtype\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231167940764*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "partw"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part \[NoBreak]\\!\\(1\\)\[NoBreak] of \
-\[NoBreak]\\!\\({}\\)\[NoBreak] does not exist. \\!\\(\\*ButtonBox[\\\"\
-\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
-\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311679437933`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
-partw\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311680156727`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "pkspec1"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"The expression \[NoBreak]\\!\\(1 + \\(\\(\\(\\({}\\)\\) \
-\[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
-\[RightDoubleBracket]\\)\\)\\)\[NoBreak] cannot be used as a part \
-specification. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, ButtonData:>\\\"paclet:ref/Part\
-\\\", ButtonNote -> \\\"Part::pkspec1\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311680231123`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
-pkspec1\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168029675*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "take"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Cannot take positions \[NoBreak]\\!\\(2\\)\[NoBreak] \
-through \[NoBreak]\\!\\(-1\\)\[NoBreak] in \[NoBreak]\\!\\($Failed\\)\
-\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Part/take\\\", ButtonNote -> \
-\\\"Part::take\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311680494204`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Partition", "::", "ilsmn"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Single or list of non-negative machine-sized integers \
-expected at position \[NoBreak]\\!\\(2\\)\[NoBreak] of \
-\[NoBreak]\\!\\(Partition[\\(\\(\\(\\($Failed \[LeftDoubleBracket] \\(\\(2 ;; \
-All\\)\\) \[RightDoubleBracket]\\)\\), \\(\\(\\(\\(-1\\)\\) + \
-\\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
-\[RightDoubleBracket]\\)\\)\\)\\), \\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \
-\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)\\)\\)]\\)\[NoBreak]. \
-\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
-ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/ilsmn\\\", \
-ButtonNote -> \\\"Partition::ilsmn\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311680878696`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Import", "::", "chtype"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"First argument \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho0/txt_stack/pmotors.txt\\\"\\)\[NoBreak] is \
-not a valid file, directory, or URL specification. \\!\\(\\*ButtonBox[\\\"\
-\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Import/chtype\\\", ButtonNote -> \
-\\\"Import::chtype\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168102585*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Import :: \
-chtype\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168120696*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "take"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Cannot take positions \[NoBreak]\\!\\(2\\)\[NoBreak] \
-through \[NoBreak]\\!\\(-1\\)\[NoBreak] in \[NoBreak]\\!\\($Failed\\)\
-\[NoBreak]. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Part/take\\\", ButtonNote -> \
-\\\"Part::take\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168188352*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
-take\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311682528667`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Partition", "::", "ilsmn"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Single or list of non-negative machine-sized integers \
-expected at position \[NoBreak]\\!\\(2\\)\[NoBreak] of \
-\[NoBreak]\\!\\(Partition[\\(\\(\\(\\($Failed \[LeftDoubleBracket] \\(\\(2 ;; \
-All\\)\\) \[RightDoubleBracket]\\)\\), \\(\\(\\(\\(-1\\)\\) + \
-\\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
-\[RightDoubleBracket]\\)\\)\\)\\), \\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \
-\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)\\)\\)]\\)\[NoBreak]. \
-\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
-ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/ilsmn\\\", \
-ButtonNote -> \\\"Partition::ilsmn\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311683733*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Partition \
-:: ilsmn\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168437492*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "partd"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\($Failed \
-\[LeftDoubleBracket] 1 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
-depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
-\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
-\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168499509*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "partd"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\($Failed \
-\[LeftDoubleBracket] 2 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
-depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
-\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
-\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168532021*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Part", "::", "partd"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\($Failed \
-\[LeftDoubleBracket] 1 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
-depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
-\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
-\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168627821*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
-partd\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311686910753`*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Export", "::", "chtype"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"First argument \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho0/data/movie.avi\\\"\\)\[NoBreak] is not a \
-valid file specification. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Export/chtype\\\", ButtonNote -> \
-\\\"Export::chtype\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168727058*^9}],
+  3.62723115477763*^9, 3.627231160057384*^9}, {3.627385609825636*^9, 
+  3.627385633851941*^9}, {3.6277497736205263`*^9, 3.627749794498727*^9}, {
+  3.6277515478836613`*^9, 3.627751554698406*^9}, {3.627753319520054*^9, 
+  3.6277533292641563`*^9}}],
 
 Cell[BoxData["\<\"Completed movie for dir \
-clnk_nm12_np500_amRho.05_pmRho0\"\>"], "Print",
- CellChangeTimes->{3.624894390894402*^9, 3.624894693885869*^9, 
-  3.62489518655791*^9, 3.627231168746231*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Export", "::", "chtype"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"First argument \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho.08/data/movie.avi\\\"\\)\[NoBreak] is not \
-a valid file specification. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Export/chtype\\\", ButtonNote -> \
-\\\"Export::chtype\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168777547*^9}],
-
-Cell[BoxData["\<\"Completed movie for dir clnk_nm12_np500_amRho.05_pmRho.08\"\
-\>"], "Print",
- CellChangeTimes->{3.624894390894402*^9, 3.624894693885869*^9, 
-  3.62489518655791*^9, 3.627231168784327*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"Export", "::", "chtype"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"First argument \[NoBreak]\\!\\(mdwout <> \
-\\\"clnk_nm12_np500_amRho.05_pmRho.16/data/movie.avi\\\"\\)\[NoBreak] is not \
-a valid file specification. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/Export/chtype\\\", ButtonNote -> \
-\\\"Export::chtype\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.627231168789693*^9}],
-
-Cell[BoxData[
- RowBox[{
-  StyleBox[
-   RowBox[{"General", "::", "stop"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Export :: \
-chtype\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
-calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
-ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
-\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.6272311687958927`*^9}],
-
-Cell[BoxData["\<\"Completed movie for dir clnk_nm12_np500_amRho.05_pmRho.16\"\
-\>"], "Print",
- CellChangeTimes->{3.624894390894402*^9, 3.624894693885869*^9, 
-  3.62489518655791*^9, 3.627231168801613*^9}]
+clnk_nm12_np500_tf1000_amRho.05_pmRho.40\"\>"], "Print",
+ CellChangeTimes->{3.62738872574932*^9, 3.627747923838641*^9, 
+  3.627751222718114*^9, 3.627752646250321*^9, 3.62775460590016*^9}]
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{808, 755},
-WindowMargins->{{Automatic, 847}, {Automatic, 65}},
-FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
-2014)",
+WindowSize->{1008, 855},
+WindowMargins->{{Automatic, 64}, {70, Automatic}},
+FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -822,53 +401,19 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 158, 5, 28, "Input"],
+Cell[558, 20, 469, 13, 50, "Input"],
 Cell[CellGroupData[{
-Cell[741, 29, 95, 1, 64, "Section"],
-Cell[839, 32, 3829, 105, 352, "Input"],
-Cell[4671, 139, 1717, 46, 182, "Input"]
+Cell[1052, 37, 95, 1, 79, "Section"],
+Cell[1150, 40, 3829, 105, 392, "Input"],
+Cell[4982, 147, 1717, 46, 202, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[6425, 190, 98, 1, 64, "Section"],
-Cell[6526, 193, 5832, 121, 607, "Input"],
-Cell[12361, 316, 860, 21, 63, "Input"],
+Cell[6736, 198, 98, 1, 79, "Section"],
+Cell[6837, 201, 6215, 129, 677, "Input"],
+Cell[13055, 332, 912, 21, 69, "Input"],
 Cell[CellGroupData[{
-Cell[13246, 341, 881, 22, 97, "Input"],
-Cell[14130, 365, 525, 11, 24, "Message"],
-Cell[14658, 378, 546, 11, 24, "Message"],
-Cell[15207, 391, 544, 11, 24, "Message"],
-Cell[15754, 404, 535, 11, 24, "Message"],
-Cell[16292, 417, 555, 11, 42, "Message"],
-Cell[16850, 430, 465, 10, 24, "Message"],
-Cell[17318, 442, 542, 11, 24, "Message"],
-Cell[17863, 455, 465, 10, 24, "Message"],
-Cell[18331, 467, 544, 11, 24, "Message"],
-Cell[18878, 480, 510, 11, 24, "Message"],
-Cell[19391, 493, 849, 15, 41, "Message"],
-Cell[20243, 510, 556, 11, 42, "Message"],
-Cell[20802, 523, 467, 10, 24, "Message"],
-Cell[21272, 535, 530, 11, 24, "Message"],
-Cell[21805, 548, 544, 11, 24, "Message"],
-Cell[22352, 561, 530, 11, 24, "Message"],
-Cell[22885, 574, 510, 11, 24, "Message"],
-Cell[23398, 587, 851, 15, 41, "Message"],
-Cell[24252, 604, 556, 11, 42, "Message"],
-Cell[24811, 617, 531, 11, 24, "Message"],
-Cell[25345, 630, 508, 11, 24, "Message"],
-Cell[25856, 643, 529, 11, 24, "Message"],
-Cell[26388, 656, 847, 15, 41, "Message"],
-Cell[27238, 673, 533, 11, 24, "Message"],
-Cell[27774, 686, 513, 11, 24, "Message"],
-Cell[28290, 699, 513, 11, 24, "Message"],
-Cell[28806, 712, 513, 11, 24, "Message"],
-Cell[29322, 725, 530, 11, 24, "Message"],
-Cell[29855, 738, 530, 11, 24, "Message"],
-Cell[30388, 751, 201, 3, 22, "Print"],
-Cell[30592, 756, 532, 11, 42, "Message"],
-Cell[31127, 769, 203, 3, 22, "Print"],
-Cell[31333, 774, 532, 11, 42, "Message"],
-Cell[31868, 787, 533, 11, 24, "Message"],
-Cell[32404, 800, 203, 3, 22, "Print"]
+Cell[13992, 357, 961, 21, 107, "Input"],
+Cell[14956, 380, 231, 3, 22, "Print"]
 }, Open  ]]
 }, Open  ]]
 }
