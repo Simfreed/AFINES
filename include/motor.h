@@ -53,6 +53,14 @@ class motor
         void actin_update();
 
         void update_shape();
+        
+        int * get_aindex();
+        
+        double * get_pos_a_end();
+        
+        void move_end_detach(int hd, double pos);
+
+        inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
 
     private:
 
@@ -70,9 +78,6 @@ class motor
         
         double pos_a_end[2], fov[2];
 
-        inline void move_end_detach(int hd, double pos);
-
-        inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
 };
 
 #endif

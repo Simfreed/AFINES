@@ -103,6 +103,14 @@ class actin_ensemble
         
         bool is_polymer_start(int i);
 
+        void set_fov(double x, double y);
+
+        void set_nq(double x, double y);
+
+        void set_ld(double l);
+
+        void set_visc(double v);
+
     private:
         double dt, temperature, fov[2], view[2], rho, ld, visc, gamma;
         
