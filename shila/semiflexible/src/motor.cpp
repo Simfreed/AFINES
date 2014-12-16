@@ -43,12 +43,10 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     pos_a_end[1]=0;
 
     if (state0){
-        pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_start(aindex[0])[0],actin_network->get_start(aindex[0])[1]),
-                dis_points(hx[0],hy[0],actin_network->get_end(aindex[0])[0],actin_network->get_end(aindex[0])[1]));
+        pos_a_end[0] = dis_points(hx[0],hy[0],actin_network->get_end(aindex[0])[0],actin_network->get_end(aindex[0])[1]);
     }
     if (state1){
-        pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_start(aindex[1])[0],actin_network->get_start(aindex[1])[1]),
-                dis_points(hx[1],hy[1],actin_network->get_end(aindex[1])[0],actin_network->get_end(aindex[1])[1]));
+        pos_a_end[1] = dis_points(hx[1],hy[1],actin_network->get_end(aindex[1])[0],actin_network->get_end(aindex[1])[1]);
     }
     
     fov[0]=fovx;
@@ -280,7 +278,7 @@ void motor::update_shape()
 
 }
 
-inline void motor::move_end_detach(int hd, double pos)
+void motor::move_end_detach(int hd, double pos)
 {
     double rod_length = actin_network->get_alength(aindex[hd]);
     if (pos >= rod_length) { 
@@ -367,3 +365,12 @@ inline void motor::reflect(double t, double gamma, double x1, double x2, double 
         hy[0]=y1;
     }
 }
+
+int * motor::get_aindex(){
+    return aindex;
+}
+
+double * motor::get_pos_a_end(){
+    return pos_a_end;
+}
+
