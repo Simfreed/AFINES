@@ -91,7 +91,7 @@ void actin_ensemble::add_polymer(double startx, double starty, double phi0, int 
         xcm = network.back()->get_end()[0] + link_ld*cos(lphi) + ld*0.5*cos(phi);
         ycm = network.back()->get_end()[1] + link_ld*sin(lphi) + ld*0.5*sin(phi);
 
-        // Check that this monomer is in the field of view, otherwise start a new polymer:
+        // Check that this monomer is in the field of view; if not stop building the polymer
         if ( xcm > (0.5*(fov[0] - ld)) || xcm < (-0.5*(fov[0] - ld)) 
                 || ycm > (0.5*(fov[1] - ld)) || ycm < (-0.5*(fov[1] - ld)) )
         {
@@ -562,4 +562,8 @@ void actin_ensemble::update_shear(){
     {
         this->update_polymer_shear(p);
     }
+}
+
+bool actin_ensemble::is_polymer_start(int i){
+    return actin_link_map[-1][i];
 }

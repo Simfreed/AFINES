@@ -170,7 +170,7 @@ void motor::step_onehead(int hd)
     else
     {
         pos_temp=pos_a_end[hd]+dt*vs;
-        move_end_detach(hd,vs,pos_temp);
+        move_end_detach(hd,pos_temp);
 
 
     }
@@ -200,7 +200,7 @@ void motor::step_twoheads()
         //			pos_actin[0]=0;
         pos_a_end[0]=0;
         pos_temp=pos_a_end[1]+dt*vs;
-        move_end_detach(1,vs,pos_temp);
+        move_end_detach(1,pos_temp);
     }
     else if (event(offrate[1],dt)==1) {
         state[1]=0;
@@ -210,15 +210,15 @@ void motor::step_twoheads()
         //            pos_actin[1]=0;
         pos_a_end[1]=0;
         pos_temp=pos_a_end[0]+dt*vs;
-        move_end_detach(0,vs,pos_temp);
+        move_end_detach(0,pos_temp);
     }
 
     else {
 
         pos_temp=pos_a_end[0]+dt*vm[0];
-        move_end_detach(0,vm[0],pos_temp);
+        move_end_detach(0,pos_temp);
         pos_temp=pos_a_end[1]+dt*vm[1];
-        move_end_detach(1,vm[1],pos_temp); 
+        move_end_detach(1,pos_temp); 
     }
 }
 
@@ -280,23 +280,41 @@ void motor::update_shape()
 
 }
 
-inline void motor::move_end_detach(int hd, double speed, double pos)
+inline void motor::move_end_detach(int hd, double pos)
 {
-    stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-    if (pos>=actin_network->get_alength(aindex[hd])) { //not sure why only "greater than or equal"
-        if (event(kend,dt)==1) {
-            state[hd]=0;
-            aindex[hd]=-1;
-            //                pos_actin[hd]=0;
-            pos_a_end[hd]=0;
-            hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
-            hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
+    double rod_length = actin_network->get_alength(aindex[hd]);
+    if (pos >= rod_length) { 
+        
+        if (actin_network->is_polymer_start(aindex[hd])){
+            if (event(kend,dt)==1) {
+                state[hd]=0;
+                aindex[hd]=-1;
+
+                pos_a_end[hd]=0;
+                hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
+                hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
+            }
+            else {
+                hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
+                hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+                mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
+            }
         }
-        else {
+        else{ 
+            /*Move the motor to the next rod on the filament
+             *At the projected new position along that filament
+             */
+            
+            double rod_angle = actin_network->get_angle(aindex[hd]);
+
+            aindex[hd] = aindex[hd] - 1;
+            double new_rod_angle = actin_network->get_angle(aindex[hd]);
+            
+            pos_a_end[hd] = (pos - rod_length)*cos(new_rod_angle - rod_angle);
             hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
             hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
             mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
-            //                pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
+    
         }
     }
     else {
@@ -304,8 +322,8 @@ inline void motor::move_end_detach(int hd, double speed, double pos)
         hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
         hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
-        //            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
     }
+    
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
 
 }
