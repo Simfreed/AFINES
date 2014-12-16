@@ -100,6 +100,8 @@ class actin_ensemble
         void update_polymer_shear(int polymer_index);
 
         void update_shear();
+        
+        bool is_polymer_start(int i);
 
     private:
         double dt, temperature, fov[2], view[2], rho, ld, visc, gamma;
