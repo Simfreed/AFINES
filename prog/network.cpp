@@ -55,7 +55,9 @@ int main(int argc, char* argv[]){
     
     std::string   dir,    afile,  amfile,  pmfile,  lfile;                  // Output
     std::ofstream o_file, file_a, file_am, file_pm, file_l;
-   
+
+    double shear_rate;                                                      //External Force
+
     //Options allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
@@ -102,6 +104,8 @@ int main(int argc, char* argv[]){
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
 
+        ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
+        
         ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
         ("seed", po::value<int>(&seed)->default_value(time(NULL)), "Random number generator seed")
         ; 
