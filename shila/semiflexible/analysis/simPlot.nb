@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     15868,        414]
-NotebookOptionsPosition[     15215,        387]
-NotebookOutlinePosition[     15552,        402]
-CellTagsIndexPosition[     15509,        399]
+NotebookDataLength[     20939,        560]
+NotebookOptionsPosition[     19591,        509]
+NotebookOutlinePosition[     19948,        525]
+CellTagsIndexPosition[     19905,        522]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -31,12 +31,15 @@ Cell[BoxData[{
   ";"}]}], "Input",
  CellChangeTimes->{{3.627385105358482*^9, 3.627385147573698*^9}, {
   3.627737551226329*^9, 3.627737577414873*^9}, {3.627737635087924*^9, 
-  3.627737651990177*^9}}],
+  3.627737651990177*^9}, {3.627820471533111*^9, 3.6278204846202383`*^9}, {
+  3.62782216876772*^9, 3.627822195821567*^9}, {3.627822356825173*^9, 
+  3.6278223702966337`*^9}, {3.627822456889227*^9, 3.6278224616485786`*^9}}],
 
 Cell[CellGroupData[{
 
 Cell["Line Types", "Section",
- CellChangeTimes->{{3.624721620647819*^9, 3.624721631809332*^9}}],
+ CellChangeTimes->{{3.624721620647819*^9, 3.624721631809332*^9}, {
+  3.627822466679587*^9, 3.6278224698942432`*^9}}],
 
 Cell[BoxData[{
  RowBox[{
@@ -44,7 +47,7 @@ Cell[BoxData[{
    RowBox[{"actin", "[", "l_", "]"}], ":=", 
    RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
     RowBox[{"{", 
-     RowBox[{"Blue", ",", "\[IndentingNewLine]", 
+     RowBox[{"Red", ",", "\[IndentingNewLine]", 
       RowBox[{"Arrowheads", "[", "0.004", "]"}], ",", "\[IndentingNewLine]", 
       RowBox[{"Arrow", "[", 
        RowBox[{"{", 
@@ -75,7 +78,7 @@ Cell[BoxData[{
    RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
     RowBox[{"{", 
      RowBox[{
-     "Black", ",", "\[IndentingNewLine]", "Thick", ",", "\[IndentingNewLine]", 
+     "Green", ",", "\[IndentingNewLine]", "Thick", ",", "\[IndentingNewLine]", 
       RowBox[{"Arrowheads", "[", 
        RowBox[{"{", 
         RowBox[{
@@ -110,7 +113,8 @@ Cell[BoxData[{
    RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
     RowBox[{"{", 
      RowBox[{
-     "Red", ",", "\[IndentingNewLine]", "Thick", ",", "\[IndentingNewLine]", 
+     "Blue", ",", "\[IndentingNewLine]", "Thick", ",", "\[IndentingNewLine]", 
+      
       RowBox[{"Arrowheads", "[", 
        RowBox[{"{", 
         RowBox[{
@@ -143,7 +147,7 @@ Cell[BoxData[{
   3.6247900809247923`*^9, 3.624790105738361*^9}, {3.624790321204211*^9, 
   3.6247903349877043`*^9}, {3.62479183733952*^9, 3.6247918484489927`*^9}, {
   3.6247996078399754`*^9, 3.624799623302617*^9}, {3.6270568135601683`*^9, 
-  3.627056821205051*^9}}],
+  3.627056821205051*^9}, {3.627820489889915*^9, 3.627820516213564*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -164,6 +168,9 @@ Cell[BoxData[
       RowBox[{"particles", "=", 
        RowBox[{"Import", "[", 
         RowBox[{"file", ",", "\"\<Table\>\""}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Print", "[", 
+       RowBox[{"\"\<Finished importing \>\"", "<>", "file"}], "]"}], ";", 
       "\[IndentingNewLine]", 
       RowBox[{"nparticles", "=", 
        RowBox[{
@@ -191,7 +198,10 @@ Cell[BoxData[
       "\[IndentingNewLine]", 
       RowBox[{"{", 
        RowBox[{"nparticles", ",", " ", "dt", ",", "particlesT"}], "}"}]}]}], 
-    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input"]
+    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6278242574936934`*^9, 3.627824295760625*^9}, {
+  3.627824331428369*^9, 3.6278244373374643`*^9}, {3.6278245960866127`*^9, 
+  3.627824618045397*^9}}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -203,11 +213,18 @@ Cell[BoxData[
  RowBox[{
   RowBox[{
    RowBox[{
-    RowBox[{"sim", "[", "d_", "]"}], ":=", "\[IndentingNewLine]", 
+    RowBox[{"sim", "[", 
+     RowBox[{"d_", ",", "deltat_", ",", "genMovie_"}], "]"}], ":=", 
+    "\[IndentingNewLine]", 
     RowBox[{"Module", "[", "\[IndentingNewLine]", 
      RowBox[{
       RowBox[{"{", 
-       RowBox[{"dir", "=", "d"}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"dir", "=", "d"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"\[CapitalDelta]t", "=", "deltat"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"movieflag", "=", "genMovie"}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
       RowBox[{"(*", 
        RowBox[{"Load", " ", "Data"}], "*)"}], "\n", "        ", 
       RowBox[{
@@ -236,77 +253,98 @@ Cell[BoxData[
           RowBox[{"Length", "[", "pmt", "]"}], ",", 
           RowBox[{"Length", "[", "rt", "]"}]}], "]"}]}], ";", 
        "\[IndentingNewLine]", 
+       RowBox[{"Print", "[", 
+        RowBox[{"\"\<Generating frames for directory \>\"", "<>", "dir"}], 
+        "]"}], ";", "\[IndentingNewLine]", 
        RowBox[{"(*", 
         RowBox[{
          RowBox[{"Generate", " ", "Image", " ", "Time", " ", "Series"}], ",", 
          " ", 
          RowBox[{"make", " ", "into", " ", "movie"}]}], "*)"}], 
        "\[IndentingNewLine]", 
-       RowBox[{"Export", "[", "\[IndentingNewLine]", 
-        RowBox[{
-         RowBox[{"dir", "<>", "\"\</data/movie.avi\>\""}], ",", 
-         "\[IndentingNewLine]", 
-         RowBox[{"Table", "\[IndentingNewLine]", "[", "\[IndentingNewLine]", 
-          RowBox[{
-           RowBox[{"Show", "[", "\[IndentingNewLine]", 
-            RowBox[{
-             RowBox[{"Join", "[", "\[IndentingNewLine]", 
-              RowBox[{
-               RowBox[{"Table", "[", "\[IndentingNewLine]", 
-                RowBox[{
-                 RowBox[{"actin", "[", 
-                  RowBox[{"rt", "[", 
-                   RowBox[{"[", 
-                    RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
-                 "\[IndentingNewLine]", 
-                 RowBox[{"{", 
-                  RowBox[{"i", ",", 
-                   RowBox[{"Length", "[", 
-                    RowBox[{"rt", "[", 
-                    RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
-                "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
-               RowBox[{"Table", "[", "\[IndentingNewLine]", 
-                RowBox[{
-                 RowBox[{"amotor", "[", 
-                  RowBox[{"amt", "[", 
-                   RowBox[{"[", 
-                    RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
-                 "\[IndentingNewLine]", 
-                 RowBox[{"{", 
-                  RowBox[{"i", ",", 
-                   RowBox[{"Length", "[", 
-                    RowBox[{"amt", "[", 
-                    RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
-                "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
-               RowBox[{"Table", "[", "\[IndentingNewLine]", 
-                RowBox[{
-                 RowBox[{"pmotor", "[", 
-                  RowBox[{"pmt", "[", 
-                   RowBox[{"[", 
-                    RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
-                 "\[IndentingNewLine]", 
-                 RowBox[{"{", 
-                  RowBox[{"i", ",", 
-                   RowBox[{"Length", "[", 
-                    RowBox[{"pmt", "[", 
-                    RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
-                "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}], 
-             "\[IndentingNewLine]", ",", 
-             RowBox[{"Frame", "\[Rule]", "True"}], ",", 
-             RowBox[{"Background", "\[Rule]", "LightGray"}], ",", 
-             RowBox[{"PlotRange", "\[Rule]", 
-              RowBox[{"{", 
+       RowBox[{"frames", "=", 
+        RowBox[{"Table", "\[IndentingNewLine]", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"Show", "[", "\[IndentingNewLine]", 
+           RowBox[{
+            RowBox[{"Join", "[", "\[IndentingNewLine]", 
+             RowBox[{
+              RowBox[{"Table", "[", "\[IndentingNewLine]", 
                RowBox[{
+                RowBox[{"actin", "[", 
+                 RowBox[{"rt", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
+                "\[IndentingNewLine]", 
                 RowBox[{"{", 
-                 RowBox[{
-                  RowBox[{"-", "25"}], ",", "25"}], "}"}], ",", 
+                 RowBox[{"i", ",", 
+                  RowBox[{"Length", "[", 
+                   RowBox[{"rt", "[", 
+                    RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
+               "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+              RowBox[{"Table", "[", "\[IndentingNewLine]", 
+               RowBox[{
+                RowBox[{"amotor", "[", 
+                 RowBox[{"amt", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
+                "\[IndentingNewLine]", 
                 RowBox[{"{", 
-                 RowBox[{
-                  RowBox[{"-", "25"}], ",", "25"}], "}"}]}], "}"}]}]}], 
-            "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", ",", 
-           RowBox[{"{", 
-            RowBox[{"t", ",", "1", ",", "maxFrame", ",", "25"}], "}"}]}], 
-          "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}]}], 
+                 RowBox[{"i", ",", 
+                  RowBox[{"Length", "[", 
+                   RowBox[{"amt", "[", 
+                    RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
+               "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+              RowBox[{"Table", "[", "\[IndentingNewLine]", 
+               RowBox[{
+                RowBox[{"pmotor", "[", 
+                 RowBox[{"pmt", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"t", ",", "i"}], "]"}], "]"}], "]"}], ",", 
+                "\[IndentingNewLine]", 
+                RowBox[{"{", 
+                 RowBox[{"i", ",", 
+                  RowBox[{"Length", "[", 
+                   RowBox[{"pmt", "[", 
+                    RowBox[{"[", "t", "]"}], "]"}], "]"}]}], "}"}]}], 
+               "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}], 
+            "\[IndentingNewLine]", ",", 
+            RowBox[{"Frame", "\[Rule]", "True"}], ",", 
+            RowBox[{"Background", "\[Rule]", "Black"}], ",", 
+            RowBox[{"PlotRange", "\[Rule]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"-", "25"}], ",", "25"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"-", "25"}], ",", "25"}], "}"}]}], "}"}]}], ",", 
+            RowBox[{"FrameLabel", "\[Rule]", 
+             RowBox[{"{", 
+              RowBox[{"\"\<x (\[Mu]m)\>\"", ",", "\"\<y (\[Mu]m)\>\"", ",", 
+               RowBox[{"\"\<t = \>\"", "<>", 
+                RowBox[{"ToString", "[", 
+                 RowBox[{"dt", "*", 
+                  RowBox[{"(", 
+                   RowBox[{"t", "-", "1"}], ")"}]}], "]"}], "<>", 
+                "\"\< s \>\""}]}], "}"}]}], ",", 
+            RowBox[{"BaseStyle", "\[Rule]", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"FontSize", "\[Rule]", "16"}], ",", 
+               RowBox[{"FontColor", "\[Rule]", "White"}]}], "}"}]}]}], 
+           "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", ",", 
+          RowBox[{"{", 
+           RowBox[{"t", ",", "1", ",", "maxFrame", ",", "\[CapitalDelta]t"}], 
+           "}"}]}], "\[IndentingNewLine]", "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"If", "[", 
+        RowBox[{"movieflag", ",", " ", 
+         RowBox[{"Export", "[", 
+          RowBox[{
+           RowBox[{"dir", "<>", "\"\</data/movie.avi\>\""}], ",", "frames"}], 
+          "]"}]}], "]"}], ";", "\[IndentingNewLine]", "frames"}]}], 
      "\[IndentingNewLine]", "]"}]}], ";"}], "\[IndentingNewLine]"}]], "Input",\
 
  CellChangeTimes->{{3.6247212771647987`*^9, 3.624721388199992*^9}, {
@@ -328,7 +366,14 @@ Cell[BoxData[
    3.6270570964712*^9}, {3.6273852244411383`*^9, 3.627385289355863*^9}, {
    3.6273854255031548`*^9, 3.627385426560813*^9}, {3.6273854636708107`*^9, 
    3.6273854746136417`*^9}, {3.627386602719943*^9, 3.6273866060795*^9}, {
-   3.627386773271379*^9, 3.6273868137800083`*^9}, 3.627749599537079*^9}],
+   3.627386773271379*^9, 3.6273868137800083`*^9}, 3.627749599537079*^9, {
+   3.627820565603931*^9, 3.627820568835146*^9}, {3.627820600582638*^9, 
+   3.627820789445991*^9}, {3.6278208210361357`*^9, 3.6278208925862083`*^9}, {
+   3.627820922873385*^9, 3.627821081036934*^9}, {3.6278212249138117`*^9, 
+   3.627821228926012*^9}, {3.6278212706326323`*^9, 3.62782129310315*^9}, {
+   3.6278232706233664`*^9, 3.627823287986665*^9}, {3.627823344713081*^9, 
+   3.627823345802661*^9}, {3.627823757389501*^9, 3.62782376215167*^9}, {
+   3.627824625286357*^9, 3.627824627611021*^9}}],
 
 Cell[BoxData[{
  RowBox[{
@@ -381,13 +426,91 @@ Cell[BoxData[
 Cell[BoxData["\<\"Completed movie for dir \
 clnk_nm12_np500_tf1000_amRho.05_pmRho.40\"\>"], "Print",
  CellChangeTimes->{3.62738872574932*^9, 3.627747923838641*^9, 
-  3.627751222718114*^9, 3.627752646250321*^9, 3.62775460590016*^9}]
+  3.627751222718114*^9, 3.627752646250321*^9, 3.62775460590016*^9, 
+  3.6278224867236032`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"mdwout", "<>", 
+  RowBox[{"dirs", "[", 
+   RowBox[{"[", "6", "]"}], "]"}]}]], "Input"],
+
+Cell[BoxData["\<\"/Volumes/homes/Code/cytomod/shila/semiflexible/out/network/\
+clnk_nm12_np500_tf1000_amRho.05_pmRho.40\"\>"], "Output",
+ CellChangeTimes->{3.627821596063116*^9, 3.627822494791358*^9}],
+
+Cell["Still waiting for a safe time to evaluate $Inspector[]", "Print",
+ CellChangeTimes->{3.627823529054874*^9}],
+
+Cell[BoxData["$Aborted"], "Output",
+ CellChangeTimes->{3.6278237107390203`*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"Length", "[", "frames", "]"}]], "Input",
+ CellChangeTimes->{{3.627823472820657*^9, 3.6278234750926027`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Length", "[", "frames", "]"}]], "Input",
+ CellChangeTimes->{{3.627823715979905*^9, 3.6278237205252457`*^9}}],
+
+Cell[BoxData["1"], "Output",
+ CellChangeTimes->{3.627823720960956*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Length", "[", "rt", "]"}]], "Input",
+ CellChangeTimes->{{3.627823723432055*^9, 3.627823723924539*^9}, {
+  3.627823782662148*^9, 3.627823784371715*^9}}],
+
+Cell[BoxData["3"], "Output",
+ CellChangeTimes->{3.627823724463059*^9, 3.627823784908012*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"rt", "[", 
+  RowBox[{"[", "1", "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.627823790413*^9, 3.627823791556156*^9}}],
+
+Cell[BoxData[
+ RowBox[{"$Failed", "\[LeftDoubleBracket]", 
+  RowBox[{"2", ";;", "All"}], "\[RightDoubleBracket]"}]], "Output",
+ CellChangeTimes->{3.627823791936925*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"   ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"nrods", ",", "dt", ",", "rt"}], "}"}], "=", 
+    RowBox[{"ParticleTimeSeries", "[", 
+     RowBox[{
+      RowBox[{"mdwout", "<>", 
+       RowBox[{"dirs", "[", 
+        RowBox[{"[", "6", "]"}], "]"}]}], ",", "\"\<rods\>\""}], "]"}]}], 
+   ";"}], " "}]], "Input",
+ CellChangeTimes->{{3.627823811338541*^9, 3.6278238192982473`*^9}}],
+
+Cell[BoxData["$Aborted"], "Output",
+ CellChangeTimes->{3.627824247729581*^9}]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1008, 855},
-WindowMargins->{{Automatic, 64}, {70, Automatic}},
-FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
+WindowMargins->{{519, Automatic}, {Automatic, 130}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
+2014)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -401,19 +524,42 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 469, 13, 50, "Input"],
+Cell[558, 20, 664, 15, 46, "Input"],
 Cell[CellGroupData[{
-Cell[1052, 37, 95, 1, 79, "Section"],
-Cell[1150, 40, 3829, 105, 392, "Input"],
-Cell[4982, 147, 1717, 46, 202, "Input"]
+Cell[1247, 39, 146, 2, 64, "Section"],
+Cell[1396, 43, 3882, 106, 352, "Input"],
+Cell[5281, 151, 2021, 52, 199, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[6736, 198, 98, 1, 79, "Section"],
-Cell[6837, 201, 6215, 129, 677, "Input"],
-Cell[13055, 332, 912, 21, 69, "Input"],
+Cell[7339, 208, 98, 1, 64, "Section"],
+Cell[7440, 211, 7849, 164, 675, "Input"],
+Cell[15292, 377, 912, 21, 63, "Input"],
 Cell[CellGroupData[{
-Cell[13992, 357, 961, 21, 107, "Input"],
-Cell[14956, 380, 231, 3, 22, "Print"]
+Cell[16229, 402, 961, 21, 97, "Input"],
+Cell[17193, 425, 258, 4, 22, "Print"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17488, 434, 110, 3, 28, "Input"],
+Cell[17601, 439, 200, 2, 28, "Output"],
+Cell[17804, 443, 113, 1, 21, "Print"],
+Cell[17920, 446, 79, 1, 28, "Output"]
+}, Open  ]],
+Cell[18014, 450, 132, 2, 28, "Input"],
+Cell[CellGroupData[{
+Cell[18171, 456, 132, 2, 28, "Input"],
+Cell[18306, 460, 70, 1, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18413, 466, 175, 3, 28, "Input"],
+Cell[18591, 471, 92, 1, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18720, 477, 141, 3, 28, "Input"],
+Cell[18864, 482, 168, 3, 28, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[19069, 490, 414, 12, 28, "Input"],
+Cell[19486, 504, 77, 1, 28, "Output"]
 }, Open  ]]
 }, Open  ]]
 }
