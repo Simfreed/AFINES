@@ -263,7 +263,7 @@ void actin_ensemble::update(double t)
                 
             // Keep consecutive angles small 
         
-            if (j > 1){
+            if (j >= 1){
                 phiprev = network[monomers->at(j-1)]->get_angle();
 
                 if( phinew - phiprev > maxSmallAngle )
