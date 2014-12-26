@@ -21,7 +21,7 @@
 #include "vector"
 
 //=====================================
-//actin filament class
+//actin rod class
 class actin
 {
     public:
@@ -75,7 +75,7 @@ class actin
         double * calc_gay_berne(actin * a1);
 
         std::vector<std::vector<int> > get_quadrants();
-        
+       
         std::string write();
         
         std::string to_string();

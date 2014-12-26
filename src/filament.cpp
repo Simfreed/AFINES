@@ -11,27 +11,22 @@
 #include "actin.h"
 #include "globals.h"
 
-void filament::filament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, double nqx, double visc, bool isStraight,
+filament::filament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
+        double visc, double deltat, bool isStraight,
         double rodLength, double linkLength, double stretching_stiffness, double bending_stiffness)
 {
-    xcm0 = startx;
-    ycm0 = starty;
-    phi0 = startphi;
-    nrods = nrod;
     fov[0] = fovx;
     fov[1] = fovy;
     nq[0] = nqx;
     nq[1] = nqy;
-    rl = rodLength;
-    ll = linkLength;
-
+    dt = deltat;
     //the start of the polymer: 
-    rods.push_back( new actin( startx, starty, phi0, rl, fov[0], fov[1], nq[0], nq[1], visc) );
-    lks.push_back( new Link(link_length, stretching_stiffness, bending_stiffness, -1, 0) );  
+    rods.push_back( new actin( startx, starty, startphi, rodLength, fov[0], fov[1], nq[0], nq[1], visc) );
+    lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, -1, 0) );  
     
     double  xcm, ycm, lphi, phi;
-    phi = phi0;
-    for (int j = 1; j < nrods; j++) {
+    phi = startphi;
+    for (int j = 1; j < nrod; j++) {
 
         // Calculate the Next rod on the actin polymer--  continues from the link
         if (!isStraight){ 
@@ -43,41 +38,46 @@ void filament::filament(double startx, double starty, double startphi, int nrod,
         }
             
         lphi = (phi + rods.back()->get_angle())/2;
-        xcm = rods.back()->get_end()[0] + ll*cos(lphi) + rl*0.5*cos(phi);
-        ycm = rods.back()->get_end()[1] + ll*sin(lphi) + rl*0.5*sin(phi);
+        xcm = rods.back()->get_end()[0] + linkLength*cos(lphi) + rodLength*0.5*cos(phi);
+        ycm = rods.back()->get_end()[1] + linkLength*sin(lphi) + rodLength*0.5*sin(phi);
 
         // Check that this monomer is in the fierl of view; if not stop building the polymer
-        if (       xcm > (0.5*(fov[0] - rl)) || xcm < (-0.5*(fov[0] - rl)) 
-                || ycm > (0.5*(fov[1] - rl)) || ycm < (-0.5*(fov[1] - rl))      )
+        if (       xcm > (0.5*(fov[0] - rodLength)) || xcm < (-0.5*(fov[0] - rodLength)) 
+                || ycm > (0.5*(fov[1] - rodLength)) || ycm < (-0.5*(fov[1] - rodLength))      )
         {
-            std::cout<<"DEBUG:"<<j+1<<"th segment of "<<pol_index<<"th filament outside field of view; stopped building filament\n";
+            std::cout<<"DEBUG:"<<j+1<<"th segment of filament outside field of view; stopped building filament\n";
             break;
         }else{
             // Add the segment
-            rods.push_back( new actin(xcm, ycm, phi, rl, fov[0], fov[1], nq[0], nq[1], visc) );
-            lks.push_back( new Link(link_length, stretching_stiffness, bending_stiffness, j-1, j) );  
+            rods.push_back( new actin(xcm, ycm, phi, rodLength, fov[0], fov[1], nq[0], nq[1], visc) );
+            lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
         } 
 
     }
-    
-    lks.push_back( new Link(link_length, stretching_stiffness, bending_stiffness, j, -1) );  
+   
+    lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, nrod, -1) );  
 }
 
-void filament::quad_update()
+filament::~filament(){}
+
+std::vector<std::vector<std::vector<int> > > filament::get_quadrants()
 {
     quads_filled.clear();
+    //should return a map between rod and x, y coords of quadrant
+    std::vector<std::vector<std::vector<int> > > quads;
+    
     for (unsigned int i=0; i<rods.size(); i++) {
-        std::vector<std::vector<int> > tmp_quads=rods[i]->get_quadrants();
-        for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-            for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-                quads_filled[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(i);
-            }
-        }
+        
+        quads.push_back(rods[i]->get_quadrants());
     }
+    return quads;
 }
 
-void filament::update()
+void filament::update(double t)
 {
+    double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, phiprev, a_ends[4]; 
+    double xleft, xright;
+    
     for (unsigned int i = 0; i < rods.size(); i++){
 
         double * fric = rods[i]->get_friction();
@@ -122,9 +122,9 @@ void filament::update()
 
         // Keep consecutive angles small 
 
-        if (j >= 1){
+        if (i >= 1){
 
-            phiprev = rods[j-1]->get_angle();
+            phiprev = rods[i-1]->get_angle();
 
             if( phinew - phiprev > maxSmallAngle )
             {
@@ -150,12 +150,12 @@ void filament::update_bending()
     double forcex, forcey, force_par, force_perp, lft_trq, rt_trq;
     std::vector<double> node_forces_x, node_forces_y;
     
-    if (nrods < 2){ //no bending energy!
+    if (rods.size() < 2){ //no bending energy!
         return;
     }
     
     //initialize all NODE forces to be 0
-    for (unsigned int j = 0; j <= nrods; j++){
+    for (unsigned int j = 0; j <= rods.size(); j++){
         node_forces_x.push_back(0);
         node_forces_y.push_back(0);
     }
@@ -163,7 +163,7 @@ void filament::update_bending()
     //Calculate the force at each Link position as outlined by Nedelec, Foethke (2007)
     //Keep the forces at the ends of each filament 0
     
-    for (unsigned int j = 2; j <= nrods; j++){
+    for (unsigned int j = 2; j <= rods.size(); j++){
 
         forcex =    lks[j-2]->get_kb() * lks[j-2]->get_posx() 
               - 2 * lks[j-1]->get_kb() * lks[j-1]->get_posx() 
@@ -186,7 +186,7 @@ void filament::update_bending()
     //Calculate the forces at each center of mass of the segments
     //Update the monomer
 
-    for (unsigned int j = 0; j < nrods; j++){
+    for (unsigned int j = 0; j < rods.size(); j++){
     
         forcex = (node_forces_x[j] + node_forces_x[j+1]) / 2;
         forcey = (node_forces_y[j] + node_forces_y[j+1]) / 2;
@@ -200,7 +200,7 @@ void filament::update_bending()
             lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_posx(),
                             rods[j]->get_ycm() - lks[j]->get_posy(), forcex, forcey);
 
-        if (j == nrods - 1)
+        if (j == rods.size() - 1)
             rt_trq = 0;
         else{
             rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_posx(),
@@ -213,10 +213,54 @@ void filament::update_bending()
 
 }
 
-void filament::stretching_update()
+void filament::update_stretching()
 {
-    for (unsigned int i=0; i < nrods + 1; i++) {
+    for (unsigned int i=0; i < rods.size() + 1; i++) {
         lks[i]->step();
         lks[i]->actin_update();
     }
+}
+
+actin * filament::get_rod(int i)
+{
+    return rods[i];
+}
+
+void filament::update_shear(){
+    
+    double ycm, forcex, force_par, force_perp, lft_trq, rt_trq;
+    
+    for (unsigned int i = 0; i < rods.size(); i++){
+        
+        ycm = rods[i]->get_ycm();
+        forcex = gamma * ycm;
+        
+        if (i == 0)
+            lft_trq = 0;
+        else
+            lft_trq = -1 * forcex * (ycm - lks[i]->get_posy()); //cross product with fy = 0
+
+        if (i == rods.size() - 1)
+            rt_trq = 0;
+        else{
+            rt_trq = -1 * forcex * (ycm - lks[i+1]->get_posy());
+        }
+        
+        force_par   =  forcex*rods[i]->get_direction()[0];
+        force_perp  = -forcex*rods[i]->get_direction()[1];
+        
+        rods[i]->update_force(force_par, force_perp, lft_trq + rt_trq);
+    }
+
+
+}
+
+void filament::set_shear(double g){
+
+    gamma = g;
+
+}
+
+std::string filament::write(){
+    return "";
 }

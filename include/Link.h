@@ -15,6 +15,7 @@
 //=====================================
 // forward declared dependencies
 class actin_ensemble;
+class filament;
 
 //=====================================
 //included dependences
@@ -27,6 +28,7 @@ class Link
 {
     public:
         Link(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
+        Link(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
         ~Link();
 
         double* get_hx();
@@ -51,7 +53,8 @@ class Link
         std::string color;
                 
         actin_ensemble *actin_network;
-
+        
+        filament *fil;
 };
 
 class MidLink : public Link
