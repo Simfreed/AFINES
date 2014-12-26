@@ -32,6 +32,24 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
 
 }
 
+Link::Link(double len, double stretching_stiffness, double bending_stiffness, 
+        filament* f, int aindex0, int aindex1)
+{
+    kl              =   stretching_stiffness;
+    kb              =   bending_stiffness;
+    ld              =   len;
+    aindex[0]       =   aindex0;
+    aindex[1]       =   aindex1;
+    fil             =   fil;
+
+    // Set the coordinates of the heads:
+    hx[0] = 0;
+    hx[1] = 0;
+    hy[0] = 0;
+    hy[1] = 0;
+
+    //this->step();
+}
 Link::~Link(){ 
     //std::cout<<"DELETING LINK\n";
 };
