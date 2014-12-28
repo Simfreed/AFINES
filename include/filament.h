@@ -29,9 +29,13 @@ class filament
     public:
 
         filament(double x0, double y0, double phi0, int nrod, double fovx, double fovy, int nx, int ny, 
-                double vis, double deltat, bool isStraight,
+                double vis, double deltat, double temp, bool isStraight,
                 double rodLength, double linkLength, double stretching, double bending); 
-        
+
+        filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+                double deltat, double temp);
+       
+        filament();
         ~filament();
     
         void set_shear(double g);
@@ -54,10 +58,13 @@ class filament
         
         bool operator==(const filament& that);    
     
-
+        std::vector<actin *> get_rods(int first, int last);
+        
+        std::vector<filament *> fracture(int node);
+        
     private:
         
-        double fov[2], gamma, dt;
+        double fov[2], gamma, temperature, dt;
         
         int nq[2];
 

@@ -56,6 +56,12 @@ class actin
         
         double * get_end();
 
+        double * get_fov();
+
+        double * get_nq();
+        
+        double get_viscosity();
+
         void set_xcm(double xcm);
 
         void set_ycm(double ycm);
@@ -81,7 +87,8 @@ class actin
         std::string to_string();
         
         bool operator==(const actin& that);    
-    
+   
+
 
     private:
         double x,y,phi,ld, fov[2], nq[2], start[2], end[2], e[2], n[2], forces[3];

@@ -34,6 +34,8 @@ class Link
         double* get_hx();
         double* get_hy();
         double get_kb();
+        double get_kl();
+        double get_length();
         double get_posx();
         double get_posy();
         std::string get_color();
