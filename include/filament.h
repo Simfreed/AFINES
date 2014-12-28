@@ -30,10 +30,10 @@ class filament
 
         filament(double x0, double y0, double phi0, int nrod, double fovx, double fovy, int nx, int ny, 
                 double vis, double deltat, double temp, bool isStraight,
-                double rodLength, double linkLength, double stretching, double bending); 
+                double rodLength, double linkLength, double stretching, double bending, double fracture); 
 
         filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-                double deltat, double temp);
+                double deltat, double temp, double fracture);
        
         filament();
         ~filament();
@@ -44,7 +44,7 @@ class filament
         
         void update_bending();
         
-        void update_stretching();
+        std::vector<filament *> update_stretching();
 
         void update_shear(); 
         
@@ -64,7 +64,7 @@ class filament
         
     private:
         
-        double fov[2], gamma, temperature, dt;
+        double fov[2], gamma, temperature, dt, fracture_force;
         
         int nq[2];
 

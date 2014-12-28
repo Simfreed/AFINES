@@ -43,6 +43,7 @@ class Link
         void step();
         void actin_update();
         bool operator==(const Link& that);    
+        double get_stretch_force();
 
     protected:
 

@@ -101,15 +101,16 @@ void Link::step()
 
 }
 
+double Link::get_stretch_force(){
+    return kl * (dis_points(hx[0],hy[0],hx[1],hy[1])-ld);
+}
+
 void Link::actin_update()
 {
 
-    double force_stretch;
-    stretch         =   dis_points(hx[0],hy[0],hx[1],hy[1])-ld;
-    force_stretch   =   kl * stretch;
-    
-
+    double force_stretch = this->get_stretch_force();
     double * e0, * e1;
+    
     if (aindex[0] != -1){
         e0 = actin_network->get_direction(aindex[0]);
         forcex[0]       =   force_stretch * cos(phi); 
@@ -131,7 +132,6 @@ void Link::actin_update()
     }
 
 }
-
 double Link::get_kb(){
     return kb;
 }
