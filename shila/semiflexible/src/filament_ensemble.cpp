@@ -18,7 +18,7 @@ filament_ensemble::filament_ensemble(){}
 
 filament_ensemble::filament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp,
         double len, double vis, int nrods, double link_len, std::vector<double *> pos_sets, double stretching, double bending, 
-        double seed) {
+        double frac_force, double seed) {
     
     view[0] = (fovx - 2*nrods*len)/fovx;
     view[1] = (fovy - 2*nrods*len)/fovy;
@@ -49,11 +49,11 @@ filament_ensemble::filament_ensemble(double density, double fovx, double fovy, i
         int s = pos_sets.size();
         if ( i < s){
             network.push_back(new filament(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending) );
+                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force) );
         }else{
             network.push_back(new filament(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi),
                         nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending) );
+                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force) );
         }
     }
 }
@@ -189,6 +189,22 @@ void filament_ensemble::update_bending(){
     for (unsigned int f = 0; f < network.size(); f++)
     {
         network[f]->update_bending();
+    }
+}
+
+void filament_ensemble::update_stretching(){
+
+    std::vector<filament *> newfilaments;
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        newfilaments = network[f]->update_stretching();
+        
+        if (newfilaments){ //fracture event occured
+            network.erase(network.begin() + f);
+            network.push_back(newfilaments[0]);
+            network.push_back(newfilaments[1]);
+        }
+
     }
 }
 
