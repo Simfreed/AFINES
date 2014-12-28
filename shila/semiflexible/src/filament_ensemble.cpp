@@ -49,11 +49,11 @@ filament_ensemble::filament_ensemble(double density, double fovx, double fovy, i
         int s = pos_sets.size();
         if ( i < s){
             network.push_back(new filament(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, straight_filaments, ld, link_ld, stretching, bending) );
+                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending) );
         }else{
             network.push_back(new filament(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi),
                         nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, straight_filaments, ld, link_ld, stretching, bending) );
+                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending) );
         }
     }
 }

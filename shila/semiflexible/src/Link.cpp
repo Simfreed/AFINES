@@ -40,7 +40,7 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
     ld              =   len;
     aindex[0]       =   aindex0;
     aindex[1]       =   aindex1;
-    fil             =   fil;
+    fil             =   f;
 
     // Set the coordinates of the heads:
     hx[0] = 0;
@@ -136,6 +136,13 @@ double Link::get_kb(){
     return kb;
 }
 
+double Link::get_kl(){
+    return kl;
+}
+
+double Link::get_length(){
+    return ld;
+}
 double Link::get_posx(){
     return xcm;
 }

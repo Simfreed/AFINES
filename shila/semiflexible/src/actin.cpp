@@ -310,3 +310,15 @@ double * actin::calc_gay_berne(actin * a)
     return forces;
 
 }
+
+double * actin::get_fov(){
+    return fov;
+}
+
+double * actin::get_nq(){
+    return nq;
+}
+
+double actin::get_viscosity(){
+    return a_vis;
+}

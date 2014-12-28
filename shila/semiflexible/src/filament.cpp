@@ -11,8 +11,10 @@
 #include "actin.h"
 #include "globals.h"
 
+filament::filament(){}
+
 filament::filament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
-        double visc, double deltat, bool isStraight,
+        double visc, double deltat, double temp, bool isStraight,
         double rodLength, double linkLength, double stretching_stiffness, double bending_stiffness)
 {
     fov[0] = fovx;
@@ -20,6 +22,8 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     nq[0] = nqx;
     nq[1] = nqy;
     dt = deltat;
+    temperature = temp;
+
     //the start of the polymer: 
     rods.push_back( new actin( startx, starty, startphi, rodLength, fov[0], fov[1], nq[0], nq[1], visc) );
     lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, -1, 0) );  
@@ -58,7 +62,8 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, nrod, -1) );  
 }
 
-filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, double deltat){
+filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        double deltat, double temp){
 
     if (rods.size()==0)
     {
@@ -72,19 +77,18 @@ filament::filament(std::vector<actin *> rodvec, double linkLength, double stretc
         fov[1] = rodvec[0]->get_fov()[1];
         nq[0] = rodvec[0]->get_nq()[0];
         nq[1] = rodvec[0]->get_nq()[1];
-        visc = rodvec[0]->get_viscosity();
-        nrod = rodvec.size();
         dt = deltat;
-        //the start of the polymer: 
         rods = rodvec;
+        temperature = temp;
 
-        for (int j = 0; j < nrod; j++) {
+        //Link em up
+        for (int j = 0; j < rods.size(); j++) {
 
             lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
 
         }
 
-        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, nrod, -1) );  
+        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size(), -1) );  
     }
 }
 
@@ -298,9 +302,9 @@ std::string filament::write(){
 std::vector<actin *> filament::get_rods(int first, int last)
 {
     std::vector<actin *> newrods;
-    for ( i = first; i <= last; i++)
+    for ( unsigned int i = first; i <= last; i++)
     {
-        if (i >= nrods)
+        if (i >= rods.size())
             break;
         else
             newrods.push_back(rods[i]);
@@ -308,16 +312,15 @@ std::vector<actin *> filament::get_rods(int first, int last)
     return newrods;
 }
 
-std::vector<filament *> filament::fracture(filament * old, int last_link){
+std::vector<filament *> filament::fracture(int node){
 
-    filament * new1, new2;
     std::vector<filament *> newfilaments;
     
-    new1 = new filament(old.get_rods(0, last_link - 1), );
-    new1 = new filament(old.get_rods(last_link, old.get_nrods()));
+    newfilaments.push_back(
+            new filament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), dt, temperature));
+    newfilaments.push_back(
+            new filament(this->get_rods(node, rods.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), dt, temperature));
 
-    newfilaments.push_back(new1);
-    newfilaments.push_back(new2);
     return newfilaments;
 
 }
