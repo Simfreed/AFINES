@@ -41,7 +41,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
         xcm = rods.back()->get_end()[0] + linkLength*cos(lphi) + rodLength*0.5*cos(phi);
         ycm = rods.back()->get_end()[1] + linkLength*sin(lphi) + rodLength*0.5*sin(phi);
 
-        // Check that this monomer is in the fierl of view; if not stop building the polymer
+        // Check that this monomer is in the field of view; if not stop building the polymer
         if (       xcm > (0.5*(fov[0] - rodLength)) || xcm < (-0.5*(fov[0] - rodLength)) 
                 || ycm > (0.5*(fov[1] - rodLength)) || ycm < (-0.5*(fov[1] - rodLength))      )
         {
@@ -56,6 +56,36 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     }
    
     lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, nrod, -1) );  
+}
+
+filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, double deltat){
+
+    if (rods.size()==0)
+    {
+        filament();
+    }
+    
+    else
+    {
+
+        fov[0] = rodvec[0]->get_fov()[0];
+        fov[1] = rodvec[0]->get_fov()[1];
+        nq[0] = rodvec[0]->get_nq()[0];
+        nq[1] = rodvec[0]->get_nq()[1];
+        visc = rodvec[0]->get_viscosity();
+        nrod = rodvec.size();
+        dt = deltat;
+        //the start of the polymer: 
+        rods = rodvec;
+
+        for (int j = 0; j < nrod; j++) {
+
+            lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
+
+        }
+
+        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, nrod, -1) );  
+    }
 }
 
 filament::~filament(){}
@@ -263,4 +293,31 @@ void filament::set_shear(double g){
 
 std::string filament::write(){
     return "";
+}
+
+std::vector<actin *> filament::get_rods(int first, int last)
+{
+    std::vector<actin *> newrods;
+    for ( i = first; i <= last; i++)
+    {
+        if (i >= nrods)
+            break;
+        else
+            newrods.push_back(rods[i]);
+    }
+    return newrods;
+}
+
+std::vector<filament *> filament::fracture(filament * old, int last_link){
+
+    filament * new1, new2;
+    std::vector<filament *> newfilaments;
+    
+    new1 = new filament(old.get_rods(0, last_link - 1), );
+    new1 = new filament(old.get_rods(last_link, old.get_nrods()));
+
+    newfilaments.push_back(new1);
+    newfilaments.push_back(new2);
+    return newfilaments;
+
 }
