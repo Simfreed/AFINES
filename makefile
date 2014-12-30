@@ -53,6 +53,12 @@ motor_tester: $(OBJECTS)
 motor_ensemble_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/motor_ensemble_test.cpp $(INC) $(LIB) -o bin/motor_ensemble_tester
 
+filament_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/filament_test.cpp $(INC) $(LIB) -o bin/filament_tester
+
+filament_ensemble_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/filament_ensemble_test.cpp $(INC) $(LIB) -o bin/filament_ensemble_tester
+
 test:actin_tester actin_ensemble_tester link_tester link_ensemble_tester motor_tester motor_ensemble_tester
 
 # Spikes

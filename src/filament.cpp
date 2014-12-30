@@ -24,6 +24,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     nq[1] = nqy;
     dt = deltat;
     temperature = temp;
+    gamma = 0;
     fracture_force = frac_force;
 
     //the start of the polymer: 
@@ -65,42 +66,44 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
 }
 
 filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-        double deltat, double temp, double frac_force){
+        double deltat, double temp, double frac_force, double g){
 
-    if (rods.size()==0)
-    {
-        filament();
-    }
+    fov[0] = rodvec[0]->get_fov()[0];
+    fov[1] = rodvec[0]->get_fov()[1];
+    nq[0] = rodvec[0]->get_nq()[0];
+    nq[1] = rodvec[0]->get_nq()[1];
+    dt = deltat;
+    rods = rodvec;
+    temperature = temp;
+    fracture_force = frac_force;
+    gamma = g;
     
-    else
-    {
+    //Link em up
+    for (unsigned int j = 0; j < rods.size(); j++) {
 
-        fov[0] = rodvec[0]->get_fov()[0];
-        fov[1] = rodvec[0]->get_fov()[1];
-        nq[0] = rodvec[0]->get_nq()[0];
-        nq[1] = rodvec[0]->get_nq()[1];
-        dt = deltat;
-        rods = rodvec;
-        temperature = temp;
-        fracture_force = frac_force;
+        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
 
-        //Link em up
-        for (unsigned int j = 0; j < rods.size(); j++) {
+    }
 
-            lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
-
-        }
-
+    if (rods.size() > 0){
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size() - 1, -1) );  
-        
     }
 }
 
-filament::~filament(){}
+filament::~filament(){
+    
+    int nr = rods.size(), nl = lks.size();
+    for (int i = 0; i < nr; i ++)
+        delete rods[i];
+    for (int i = 0; i < nl; i ++)
+        delete lks[i];
+    
+    rods.clear();
+    lks.clear();
+}
 
 std::vector<std::vector<std::vector<int> > > filament::get_quadrants()
 {
-    quads_filled.clear();
     //should return a map between rod and x, y coords of quadrant
     std::vector<std::vector<std::vector<int> > > quads;
     
@@ -331,7 +334,7 @@ std::string filament::write_links(){
     std::string all_links;
     for (unsigned int i =0; i < lks.size(); i++)
     {
-        all_links += lks[i]->to_string();
+        all_links += lks[i]->write();
     }
 
     return all_links;
@@ -357,11 +360,44 @@ std::vector<filament *> filament::fracture(int node){
 
     newfilaments.push_back(
             new filament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
-                dt, temperature, fracture_force));
+                dt, temperature, fracture_force, gamma));
     newfilaments.push_back(
             new filament(this->get_rods(node, rods.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
-                dt, temperature, fracture_force));
+                dt, temperature, fracture_force, gamma));
 
     return newfilaments;
+
+}
+
+bool filament::operator==(const filament& that){
+    
+    for (unsigned int i = 0; i < rods.size(); i++)
+        if (!(rods[i] == that.rods[i]))
+            return false;
+    
+    for (unsigned int i = 0; i < lks.size(); i++)
+        if (!(lks[i] == that.lks[i]))
+            return false;
+
+    return (this->fov[0] == that.fov[0] && this->fov[1] == that.fov[1] && 
+            this->nq[0] == that.nq[0] && this->nq[1] == that.nq[1] &&
+            this->gamma == that.gamma && this->temperature == that.temperature &&
+            this->dt == that.dt && this->fracture_force == that.fracture_force);
+
+}
+
+std::string filament::to_string(){
+    
+    // Note: not including links in to_string, because link's to_string includes filament's to_string
+    char buffer[200];
+    std::string out = "";
+
+    for (unsigned int i = 0; i < rods.size(); i++)
+        out += rods[i]->to_string();
+
+    sprintf(buffer, "fov = (%f, %f)\tnq = (%d, %d)\tgamma = %f\ttemperature = %f\tdt = %f\tfracture_force=%f\n",
+            fov[0], fov[1], nq[0], nq[1], gamma, temperature, dt, fracture_force);
+   
+    return out + buffer; 
 
 }

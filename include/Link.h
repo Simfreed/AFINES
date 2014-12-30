@@ -26,6 +26,7 @@ class filament;
 class Link
 {
     public:
+        Link();
         Link(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
         ~Link();
 
@@ -36,8 +37,8 @@ class Link
         double get_length();
         double get_posx();
         double get_posy();
-        std::string get_color();
         std::string to_string();
+        std::string write();
         void step();
         void filament_update();
         bool operator==(const Link& that);    
@@ -49,8 +50,6 @@ class Link
         
         int aindex[2];
         
-        std::string color;
-                
         filament *fil;
 };
 

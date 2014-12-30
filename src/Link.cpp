@@ -11,6 +11,8 @@
 #include "globals.h"
 #include "filament.h"
 
+Link::Link(){ }
+
 Link::Link(double len, double stretching_stiffness, double bending_stiffness, 
         filament* f, int aindex0, int aindex1)
 {
@@ -39,11 +41,6 @@ double* Link::get_hx(){
 
 double* Link::get_hy(){
     return hy;
-}
-
-std::string Link::get_color()
-{
-    return color;
 }
 
 // stepping kinetics
@@ -130,9 +127,19 @@ double Link::get_posy(){
     return ycm;
 }
 
-std::string Link::to_string(){
+std::string Link::write(){
     return std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
-        + std::to_string(hy[1]-hy[0]) + "\t" + color + "\n";
+        + std::to_string(hy[1]-hy[0]) + "\n";
+}
+
+std::string Link::to_string(){
+    
+    char buffer [100];
+    sprintf(buffer, "aindex[0] = %d;\t aindex[1] = %d;\t kl = %f;\t kb = %f;\t ld = %f\nfilament : \n",
+                        aindex[0], aindex[1], kl, kb, ld);
+
+    return buffer + fil->to_string();
+
 }
 
 bool Link::operator==(const Link& that) 
