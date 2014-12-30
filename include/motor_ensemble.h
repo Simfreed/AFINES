@@ -14,7 +14,7 @@
 
 //=====================================
 // forward declared dependencies
-//class actin_ensemble;
+//class filament_ensemble;
 
 //=====================================
 //included dependences
@@ -26,7 +26,7 @@ class motor_ensemble
 {
     public:
 
-        motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, double mlen, actin_ensemble* network, double v0,
+        motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, double mlen, filament_ensemble* network, double v0,
                 double stiffness, double ron, double roff, double rend, double actin_len, double vis, std::vector<double *> positions);
 
         ~motor_ensemble();
@@ -47,7 +47,7 @@ class motor_ensemble
 
         double fov[2], mrho, mld, mang, motorx, motory, alpha, gamma;
         int nm, s[2];
-        actin_ensemble *a_network;
+        filament_ensemble *f_network;
         std::vector<motor *> n_motors;  
         std::string color;
 };

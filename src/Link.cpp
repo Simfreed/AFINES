@@ -9,28 +9,7 @@
 
 #include "Link.h"
 #include "globals.h"
-#include "actin_ensemble.h"
-
-Link::Link(double len, double stretching_stiffness, double bending_stiffness, 
-        actin_ensemble* network, int aindex0, int aindex1, std::string col)
-{
-    kl              =   stretching_stiffness;
-    kb              =   bending_stiffness;
-    ld              =   len;
-    aindex[0]       =   aindex0;
-    aindex[1]       =   aindex1;
-    actin_network   =   network;
-
-    // Set the coordinates of the heads:
-    hx[0] = 0;
-    hx[1] = 0;
-    hy[0] = 0;
-    hy[1] = 0;
-
-    this->step();
-    color           =   col; 
-
-}
+#include "filament.h"
 
 Link::Link(double len, double stretching_stiffness, double bending_stiffness, 
         filament* f, int aindex0, int aindex1)
@@ -48,7 +27,7 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
     hy[0] = 0;
     hy[1] = 0;
 
-    //this->step();
+    this->step();
 }
 Link::~Link(){ 
     //std::cout<<"DELETING LINK\n";
@@ -73,21 +52,21 @@ void Link::step()
     //CONVENTION: head 0 will be connected to the POINTY end of a filament
     //            head 1 will be connected to the BARBED end of a filament
     if (aindex[0]==-1){ //leftmost end of the polymer
-        double * start1 = actin_network->get_start(aindex[1]);
+        double * start1 = fil->get_rod(aindex[1])->get_start();
         hx[1] = start1[0];
         hy[1] = start1[1];
-        hx[0] = hx[1] - ld*cos( actin_network->get_angle(aindex[1]) );
-        hy[0] = hy[1] - ld*sin( actin_network->get_angle(aindex[1]) );
+        hx[0] = hx[1] - ld*cos( fil->get_rod(aindex[1])->get_angle() );
+        hy[0] = hy[1] - ld*sin( fil->get_rod(aindex[1])->get_angle() );
     }else if(aindex[1] == -1){ //rightmost end of the polymer
-        double * end0 = actin_network->get_end(aindex[0]);
+        double * end0 = fil->get_rod(aindex[0])->get_end();
         
         hx[0] = end0[0];
         hy[0] = end0[1];
-        hx[1] = hx[0] + ld*cos( actin_network->get_angle(aindex[0]) );
-        hy[1] = hy[0] + ld*sin( actin_network->get_angle(aindex[0]) );
+        hx[1] = hx[0] + ld*cos( fil->get_rod(aindex[0])->get_angle() );
+        hy[1] = hy[0] + ld*sin( fil->get_rod(aindex[0])->get_angle() );
     }else{
-        double * end0 = actin_network->get_end(aindex[0]);
-        double * start1 = actin_network->get_start(aindex[1]);
+        double * end0 = fil->get_rod(aindex[0])->get_end();
+        double * start1 = fil->get_rod(aindex[1])->get_start();
          
         hx[0] = end0[0];
         hy[0] = end0[1];
@@ -105,30 +84,30 @@ double Link::get_stretch_force(){
     return kl * (dis_points(hx[0],hy[0],hx[1],hy[1])-ld);
 }
 
-void Link::actin_update()
+void Link::filament_update()
 {
 
     double force_stretch = this->get_stretch_force();
     double * e0, * e1;
     
     if (aindex[0] != -1){
-        e0 = actin_network->get_direction(aindex[0]);
+        e0 = fil->get_rod(aindex[0])->get_direction();
         forcex[0]       =   force_stretch * cos(phi); 
         forcey[0]       =   force_stretch * sin(phi); 
         force_par[0]    =   forcex[0]*e0[0] + forcey[0]*e0[1];
         force_perp[0]   =  -forcex[0]*e0[1] + forcey[0]*e0[0];
-        torque[0]       =   cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
-        actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
+        torque[0]       =   cross(hx[0]-fil->get_rod(aindex[0])->get_xcm(),hy[0]-fil->get_rod(aindex[0])->get_ycm(),forcex[0],forcey[0]);
+        fil->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
     }
 
     if (aindex[1] != -1){
-        e1 = actin_network->get_direction(aindex[1]);
+        e1 = fil->get_rod(aindex[1])->get_direction();
         forcex[1]       =   -force_stretch * cos(phi);
         forcey[1]       =   -force_stretch * sin(phi);
         force_par[1]    =    forcex[1]*e1[0] + forcey[1]*e1[1];
         force_perp[1]   =   -forcex[1]*e1[1] + forcey[1]*e1[0];
-        torque[1]       =   cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
-        actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
+        torque[1]       =   cross(hx[1]-fil->get_rod(aindex[1])->get_xcm(),hy[1]-fil->get_rod(aindex[1])->get_ycm(),forcex[1],forcey[1]);
+        fil->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
     }
 
 }
@@ -160,15 +139,15 @@ bool Link::operator==(const Link& that)
 {
     return (this->aindex[0] == that.aindex[0] && this->aindex[1] == that.aindex[1] &&
             this->kl == that.kl && this->kb == that.kb &&
-            this->ld == that.ld && this->actin_network == that.actin_network);
+            this->ld == that.ld && this->fil == that.fil);
 }
 void MidLink::step()
 {
     
-    hx[0]=actin_network->get_xcm(aindex[0]);
-    hy[0]=actin_network->get_ycm(aindex[0]);
-    hx[1]=actin_network->get_xcm(aindex[1]);
-    hy[1]=actin_network->get_ycm(aindex[1]);
+    hx[0]=fil->get_rod(aindex[0])->get_xcm();
+    hy[0]=fil->get_rod(aindex[0])->get_ycm();
+    hx[1]=fil->get_rod(aindex[1])->get_xcm();
+    hy[1]=fil->get_rod(aindex[1])->get_ycm();
 
     phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
     

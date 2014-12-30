@@ -14,7 +14,7 @@
 
 //=====================================
 // forward declared dependencies
-class actin_ensemble;
+class filament_ensemble;
 
 //=====================================
 //included dependences
@@ -26,8 +26,9 @@ class motor
 {
     public:
 
-        motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int
-                aindex0, int aindex1, double fovx, double fovy, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
+        motor(double mx, double my, double mang, double mlen, filament_ensemble* network, int state0, int state1, 
+                int findex0, int findex1, int rindex0, int rindex1, 
+                double fovx, double fovy, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
                 double rend, double actin_len, double vis, std::string col);
 
         ~motor();
@@ -54,7 +55,9 @@ class motor
 
         void update_shape();
         
-        int * get_aindex();
+        int * get_f_index();
+        
+        int * get_r_index();
         
         double * get_pos_a_end();
         
@@ -64,17 +67,19 @@ class motor
 
     private:
 
-        double hx[2],hy[2], xm[2], ym[2], mphi,mld,mobility,fm[2],vm[2],offrate[2], onrate, stretch,forcex[2],forcey[2],torque[2], force_par[2],force_perp[2],vs, pos_temp;
+        double hx[2],hy[2], xm[2], ym[2], mphi,mld,
+               mobility,fm[2],vm[2],offrate[2], onrate, stretch,
+               forcex[2],forcey[2],torque[2], force_par[2],force_perp[2],vs, pos_temp;
 
-        int state[2], aindex[2];
+        int state[2], f_index[2], r_index[2];
         
         double dm,fmax,mk, kon, koff, kend, dt, temperature;
         
-        std::map<int, double> dist;
+        std::map<std::vector<int>, double> dist;
         
         std::string color;
         
-        actin_ensemble *actin_network;
+        filament_ensemble *actin_network;
         
         double pos_a_end[2], fov[2];
 

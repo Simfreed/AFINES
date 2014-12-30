@@ -36,6 +36,7 @@ class filament
                 double deltat, double temp, double fracture);
        
         filament();
+        
         ~filament();
     
         void set_shear(double g);
@@ -49,19 +50,25 @@ class filament
         void update_shear(); 
         
         actin * get_rod(int i);
+        
+        Link * get_link(int i);
 
         std::vector<std::vector<std::vector<int> > > get_quadrants();
         
-        std::string write();
+        std::string write_rods();
+        
+        std::string write_links();
         
         std::string to_string();
         
         bool operator==(const filament& that);    
     
-        std::vector<actin *> get_rods(int first, int last);
+        std::vector<actin *> get_rods(unsigned int first, unsigned int last);
         
         std::vector<filament *> fracture(int node);
         
+        void update_forces(int index, double f1, double f2, double f3);
+
     private:
         
         double fov[2], gamma, temperature, dt, fracture_force;

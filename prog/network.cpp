@@ -1,5 +1,4 @@
-#include "actin_ensemble.h"
-#include "link_ensemble.h"
+#include "filament_ensemble.h"
 #include "motor_ensemble.h"
 #include "globals.h"
 
@@ -9,8 +8,6 @@
 #include <array>
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
-
-// #define dt 0.0001 -- defined in globals.h
 
 template<class T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
@@ -40,7 +37,7 @@ int main(int argc, char* argv[]){
     double actin_length, npolymer, nmonomer;                                // Actin 
     std::string actin_pos_str;
     
-    double link_length, polymer_bending_modulus, link_stretching_stiffness; // Links
+    double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force; // Links
     std::string link_color = "1"; //"blue"
     
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
@@ -102,6 +99,7 @@ int main(int argc, char* argv[]){
         
         ("link_length", po::value<double>(&link_length)->default_value(0), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
+        ("fracture_force", po::value<double>(&fracture_force)->default_value(10), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
 
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
@@ -147,6 +145,11 @@ int main(int argc, char* argv[]){
     // DERIVED QUANTITIES :
     double xgrid  = 2*xrange;
     double ygrid  = 2*yrange;
+    
+    if (polymer_bending_modulus < 0){ //This is a flag for using the temperature for the bending modulus
+        polymer_bending_modulus = 10*temperature; // 10um * kT
+    }
+
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
     double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/actin_length,3);
     
@@ -170,13 +173,13 @@ int main(int argc, char* argv[]){
 
     // Create Network Objects
     std::cout<<"Creating actin network..\n";
-	actin_ensemble * net = new actin_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
+	
+    filament_ensemble * net = new filament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
-                                        actin_position_ptrs, seed);
-    std::cout<<"Creating link ensemble...\n";
-    link_ensemble * lks = new link_ensemble();
-    std::cout<<"Adding links to connect actin filament monomers...\n";
-    net->connect_polymers( lks, link_length, link_stretching_stiffness, link_bending_stiffness, link_color );
+                                        actin_position_ptrs, 
+                                        link_stretching_stiffness, link_bending_stiffness,
+                                        fracture_force, seed);
+
     std::cout<<"Adding active motors...\n";
     motor_ensemble * myosins = new motor_ensemble( a_motor_density, xrange, yrange, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
@@ -189,9 +192,9 @@ int main(int argc, char* argv[]){
             
     std::string time_str = "t = 0\n";
     file_a << time_str;
-    net->write(file_a);
+    net->write_rods(file_a);
     file_l << time_str;
-    lks->link_write(file_l);
+    net->write_links(file_l);
     file_am << time_str;
     myosins->motor_write(file_am);
     file_pm << time_str;
@@ -204,12 +207,14 @@ int main(int argc, char* argv[]){
 			std::cout<<"Time counts: "<<count<<"\n";
 		}
 
+        //update network
+        net->update_stretching();
         net->update_bending();
         net->update(t);
         net->quad_update();
         
-        //update network
-        lks->link_walk(); 
+        //lks->link_walk(); 
+        //update motors and cross linkers
         crosslks->motor_walk(t);
         myosins->motor_walk(t);
         
@@ -221,9 +226,11 @@ int main(int argc, char* argv[]){
 	        
             time_str = "t = "+std::to_string(t)+"\n";
             file_a << time_str;
-            net->write(file_a);
+//            net->write(file_a);
+            net->write_rods(file_a);
             file_l << time_str;
-            lks->link_write(file_l);
+//            lks->link_write(file_l);
+            net->write_links(file_l);
             file_am << time_str;
             myosins->motor_write(file_am);
             file_pm << time_str;
@@ -241,8 +248,9 @@ int main(int argc, char* argv[]){
     //Delete all objects created
     std::cout<<"Here's where I think I delete things\n";
     
-    delete lks;
+//    delete lks;
     delete myosins;
+    delete crosslks;
     delete net;
     
     int as = actin_position_ptrs.size(), ms = a_motor_position_ptrs.size();

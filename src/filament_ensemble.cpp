@@ -45,13 +45,15 @@ filament_ensemble::filament_ensemble(double density, double fovx, double fovy, i
     std::cout<<"DEBUG: Number of monomers per filament:"<<nrods<<"\n"; 
     std::cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
     
+    int s = pos_sets.size();
+    
     for (int i=0; i<npolymer; i++) {
-        int s = pos_sets.size();
-        if ( i < s){
+        if ( i < s ){
             network.push_back(new filament(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], nrods, fov[0], fov[1], nq[0], nq[1],
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force) );
         }else{
-            network.push_back(new filament(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi),
+            network.push_back(new filament(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), 
+                        rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi),
                         nrods, fov[0], fov[1], nq[0], nq[1],
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force) );
         }
@@ -161,6 +163,11 @@ double * filament_ensemble::get_forces(int fil, int rod)
     return network[fil]->get_rod(rod)->get_forces();
 }
 
+double * filament_ensemble::get_direction(int fil, int rod)
+{
+    return network[fil]->get_rod(rod)->get_direction();
+}
+
 void filament_ensemble::set_straight_filaments(bool is_straight)
 {
     straight_filaments = is_straight;
@@ -175,13 +182,19 @@ void filament_ensemble::update(double t)
 
 }
 
-void filament_ensemble::write(std::ofstream& fout)
+void filament_ensemble::write_rods(std::ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network.at(i)->write();
+        fout<<network[i]->write_rods();
     } 
 }
 
+void filament_ensemble::write_links(std::ofstream& fout)
+{
+    for (unsigned int i=0; i<network.size(); i++) {
+        fout<<network[i]->write_links();
+    } 
+}
 
 // Update bending forces between monomers
 void filament_ensemble::update_bending(){
@@ -199,10 +212,11 @@ void filament_ensemble::update_stretching(){
     {
         newfilaments = network[f]->update_stretching();
         
-        if (newfilaments){ //fracture event occured
+        if (newfilaments.size() > 0){ //fracture event occured
             network.erase(network.begin() + f);
             network.push_back(newfilaments[0]);
             network.push_back(newfilaments[1]);
+            break; //avoid infinite loops
         }
 
     }
@@ -247,5 +261,10 @@ void filament_ensemble::set_nq(double nqx, double nqy){
 
 void filament_ensemble::set_visc(double nu){
     visc = nu;
+}
+
+void filament_ensemble::update_forces(int f_index, int r_index, double f1, double f2, double f3)
+{
+    network[f_index]->update_forces(r_index, f1,f2,f3);
 }
 
