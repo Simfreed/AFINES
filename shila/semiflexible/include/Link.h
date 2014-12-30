@@ -14,7 +14,6 @@
 
 //=====================================
 // forward declared dependencies
-class actin_ensemble;
 class filament;
 
 //=====================================
@@ -27,7 +26,6 @@ class filament;
 class Link
 {
     public:
-        Link(double len, double stiffness, double bending_stiffness, actin_ensemble* network, int aindex0, int aindex1, std::string col);
         Link(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
         ~Link();
 
@@ -41,7 +39,7 @@ class Link
         std::string get_color();
         std::string to_string();
         void step();
-        void actin_update();
+        void filament_update();
         bool operator==(const Link& that);    
         double get_stretch_force();
 
@@ -49,14 +47,10 @@ class Link
 
         double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], kl, kb, xcm, ycm;
         
-        std::vector<std::vector<double> > bending_forces;        
-        
         int aindex[2];
         
         std::string color;
                 
-        actin_ensemble *actin_network;
-        
         filament *fil;
 };
 

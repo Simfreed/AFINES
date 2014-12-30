@@ -61,7 +61,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
 
     }
    
-    lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, nrod, -1) );  
+    lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size()-1, -1) );  
 }
 
 filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
@@ -85,13 +85,14 @@ filament::filament(std::vector<actin *> rodvec, double linkLength, double stretc
         fracture_force = frac_force;
 
         //Link em up
-        for (int j = 0; j < rods.size(); j++) {
+        for (unsigned int j = 0; j < rods.size(); j++) {
 
             lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
 
         }
 
-        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size(), -1) );  
+        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size() - 1, -1) );  
+        
     }
 }
 
@@ -254,14 +255,14 @@ void filament::update_bending()
 std::vector<filament *> filament::update_stretching()
 {
     std::vector<filament *> newfilaments;
-    for (unsigned int i=0; i < rods.size() + 1; i++) {
+    for (unsigned int i=0; i < lks.size(); i++) {
         lks[i]->step();
-        if (lks[i]->get_stretch_force() > fracture_force){
+        if (fabs(lks[i]->get_stretch_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
         else
-            lks[i]->actin_update();
+            lks[i]->filament_update();
     }
     return newfilaments;
 }
@@ -269,6 +270,11 @@ std::vector<filament *> filament::update_stretching()
 actin * filament::get_rod(int i)
 {
     return rods[i];
+}
+
+Link * filament::get_link(int i)
+{
+    return lks[i];
 }
 
 void filament::update_shear(){
@@ -300,20 +306,41 @@ void filament::update_shear(){
 
 }
 
+void filament::update_forces(int index, double f1, double f2, double f3)
+{
+    rods[index]->update_force(f1,f2,f3);
+}
+
 void filament::set_shear(double g){
 
     gamma = g;
 
 }
 
-std::string filament::write(){
-    return "";
+std::string filament::write_rods(){
+    std::string all_rods;
+    for (unsigned int i =0; i < rods.size(); i++)
+    {
+        all_rods += rods[i]->write();
+    }
+
+    return all_rods;
 }
 
-std::vector<actin *> filament::get_rods(int first, int last)
+std::string filament::write_links(){
+    std::string all_links;
+    for (unsigned int i =0; i < lks.size(); i++)
+    {
+        all_links += lks[i]->to_string();
+    }
+
+    return all_links;
+}
+
+std::vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
 {
     std::vector<actin *> newrods;
-    for ( unsigned int i = first; i <= last; i++)
+    for (unsigned int i = first; i <= last; i++)
     {
         if (i >= rods.size())
             break;
@@ -326,7 +353,8 @@ std::vector<actin *> filament::get_rods(int first, int last)
 std::vector<filament *> filament::fracture(int node){
 
     std::vector<filament *> newfilaments;
-    
+    std::cout<<"DEBUG: fracturing";
+
     newfilaments.push_back(
             new filament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
                 dt, temperature, fracture_force));

@@ -9,12 +9,12 @@
 
 #include "globals.h"
 #include "motor.h"
-#include "actin_ensemble.h"
+#include "filament_ensemble.h"
 //#include "actin.h"
 
 //motor class
-motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* network, int state0, int state1, int
-        aindex0, int aindex1, double fovx, double fovy, double delta_t, double temp,
+motor::motor(double mx, double my, double mang, double mlen, filament_ensemble* network, int state0, int state1, 
+        int findex0, int findex1, int rindex0, int rindex1, double fovx, double fovy, double delta_t, double temp,
         double v0, double stiffness, double ron, double roff, double
         rend, double actin_len, double vis, std::string col) {
     vs=v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
@@ -35,18 +35,25 @@ motor::motor(double mx, double my, double mang, double mlen, actin_ensemble* net
     mobility=log(10)/(4*pi*vis*mld);
     state[0]=state0;
     state[1]=state1;
-    aindex[0]=aindex0;//   actin index for head in state[0]
-    aindex[1]=aindex1;// actin index for head in state[1]
+    f_index[0]=findex0;//   actin index for head in state[0]
+    f_index[1]=findex1;// actin index for head in state[1]
+    r_index[0]=rindex0;//   actin index for head in state[0]
+    r_index[1]=rindex1;// actin index for head in state[1]
+    
     actin_network=network;
     //		pos_actin[0]=0; // I don't think this variable get's ACCESSED anywhere 
     pos_a_end[0]=0; //distance from pointy end -- by default 0
     pos_a_end[1]=0;
 
     if (state0){
-        pos_a_end[0] = dis_points(hx[0],hy[0],actin_network->get_end(aindex[0])[0],actin_network->get_end(aindex[0])[1]);
+        pos_a_end[0] = dis_points(hx[0],hy[0],
+                actin_network->get_end(f_index[0], r_index[0])[0],
+                actin_network->get_end(f_index[0], r_index[0])[1]);
     }
     if (state1){
-        pos_a_end[1] = dis_points(hx[1],hy[1],actin_network->get_end(aindex[1])[0],actin_network->get_end(aindex[1])[1]);
+        pos_a_end[1] = dis_points(hx[1],hy[1],
+                actin_network->get_end(f_index[1], r_index[1])[0],
+                actin_network->get_end(f_index[1], r_index[1])[1]);
     }
     
     fov[0]=fovx;
@@ -91,31 +98,33 @@ void motor::attach(int hd)
     dist.clear();
     dist=actin_network->get_dist(hx[hd],hy[hd]);
     if(!dist.empty()){
-        for (std::map<int,double>::iterator it=dist.begin(); it!=dist.end(); ++it)
+        for (std::map<std::vector<int>,double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
-            if (it->second <= dm && aindex[pr(hd)]!=it->first) {
+            if (it->second <= dm && f_index[pr(hd)]!=(it->first).at(0) && r_index[pr(hd)] != (it->first).at(1)) {
                 onrate=kon*exp(-((it->second)*(it->second))/(dm*dm));
                 if (event(onrate,dt)==1) {
                     //update state
-                    state[hd]=1;
-                    aindex[hd]=it->first;
+                    state[hd] = 1;
+                    f_index[hd] = (it->first).at(0);
+                    r_index[hd] = (it->first).at(1);
                     //update head position
                     
-                    double * intpoint = actin_network->get_intpoints(it->first,hx[hd],hy[hd]);
+                    double * intpoint = actin_network->get_intpoints(f_index[hd], r_index[hd], hx[hd],hy[hd]);
                     hx[hd] = intpoint[0];
                     hy[hd] = intpoint[1];
                     delete intpoint;
 
                     if (state[pr(hd)]==0) {
-                        hx[pr(hd)]=hx[hd]+pow(-1,hd)*mld*cos(mphi);
-                        hy[pr(hd)]=hy[hd]+pow(-1,hd)*mld*sin(mphi);
+                        hx[pr(hd)] = hx[hd]+pow(-1,hd)*mld*cos(mphi);
+                        hy[pr(hd)] = hy[hd]+pow(-1,hd)*mld*sin(mphi);
                     }
                     else {
                         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
                     }
 
-                    //                        pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_xcm(aindex[hd]),actin_network->get_ycm(aindex[hd]));
-                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],actin_network->get_end(aindex[hd])[0],actin_network->get_end(aindex[hd])[1]);
+                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],
+                            actin_network->get_end(f_index[hd], r_index[hd])[0],
+                            actin_network->get_end(f_index[hd], r_index[hd])[1]);
                     break;
                 }
             }
@@ -158,8 +167,9 @@ void motor::step_onehead(int hd)
 
     if (event(koff,dt)==1) {
         state[hd]=0;
-        aindex[hd]=-1;
-        //			pos_actin[hd]=0;
+        f_index[hd]=-1;
+        r_index[hd]=-1;
+        
         pos_a_end[hd]=0;
         hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
         hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
@@ -179,11 +189,11 @@ void motor::step_twoheads()
 {
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
     //fm = vec(Fm).(-vec(u)) 
-    fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(aindex[0])[0] +
-            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(aindex[0])[1]); 
+    fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[0],r_index[0])[0] +
+            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[0],r_index[0])[1]); 
     vm[0]=velocity(vs,fm[0],fmax);
-    fm[1]=mk*(-(hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(aindex[1])[0] -
-            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(aindex[1])[1]);
+    fm[1]=mk*(-(hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[1],r_index[1])[0] -
+            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[1],r_index[1])[1]);
 
     vm[1]=velocity(vs,fm[1],fmax);
     /*impose force-dependent bell's law on detachment rates*/
@@ -192,7 +202,8 @@ void motor::step_twoheads()
 
     if (event(offrate[0],dt)==1) {
         state[0]=0;
-        aindex[0]=-1;
+        f_index[0]=-1;
+        r_index[0]=-1;
         hx[0]=hx[1]-mld*cos(mphi);
         hy[0]=hy[1]-mld*sin(mphi);
         //			pos_actin[0]=0;
@@ -202,7 +213,8 @@ void motor::step_twoheads()
     }
     else if (event(offrate[1],dt)==1) {
         state[1]=0;
-        aindex[1]=-1;
+        f_index[1]=-1;
+        r_index[1]=-1;
         hx[1]=hx[0]+mld*cos(mphi);
         hy[1]=hy[0]+mld*sin(mphi);
         //            pos_actin[1]=0;
@@ -230,15 +242,15 @@ void motor::actin_update()
         forcex[1]=-forcex[0];
         forcey[0]=-mk*(hy[0]-hy[1]+mld*sin(mphi));
         forcey[1]=-forcey[0];
-        force_par[0]=forcex[0]*actin_network->get_direction(aindex[0])[0] + forcey[0]*actin_network->get_direction(aindex[0])[1];
-        force_perp[0]=-forcex[0]*actin_network->get_direction(aindex[0])[1] + forcey[0]*actin_network->get_direction(aindex[0])[0];
-        force_par[1]=forcex[1]*actin_network->get_direction(aindex[1])[0] + forcey[1]*actin_network->get_direction(aindex[1])[1];
-        force_perp[1]=-forcex[1]*actin_network->get_direction(aindex[1])[1] + forcey[1]*actin_network->get_direction(aindex[1])[0];
+        force_par[0]=forcex[0]*actin_network->get_direction(f_index[0],r_index[0])[0] + forcey[0]*actin_network->get_direction(f_index[0],r_index[0])[1];
+        force_perp[0]=-forcex[0]*actin_network->get_direction(f_index[0],r_index[0])[1] + forcey[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
+        force_par[1]=forcex[1]*actin_network->get_direction(f_index[1],r_index[1])[0] + forcey[1]*actin_network->get_direction(f_index[1],r_index[1])[1];
+        force_perp[1]=-forcex[1]*actin_network->get_direction(f_index[1],r_index[1])[1] + forcey[1]*actin_network->get_direction(f_index[1],r_index[1])[0];
 
-        torque[0]=cross(hx[0]-actin_network->get_xcm(aindex[0]),hy[0]-actin_network->get_ycm(aindex[0]),forcex[0],forcey[0]);
-        torque[1]=cross(hx[1]-actin_network->get_xcm(aindex[1]),hy[1]-actin_network->get_ycm(aindex[1]),forcex[1],forcey[1]);
-        actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
-        actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
+        torque[0]=cross(hx[0]-actin_network->get_xcm(f_index[0],r_index[0]),hy[0]-actin_network->get_ycm(f_index[0],r_index[0]),forcex[0],forcey[0]);
+        torque[1]=cross(hx[1]-actin_network->get_xcm(f_index[1],r_index[1]),hy[1]-actin_network->get_ycm(f_index[1],r_index[1]),forcex[1],forcey[1]);
+        actin_network->update_forces(f_index[0],r_index[0],force_par[0],force_perp[0],torque[0]);
+        actin_network->update_forces(f_index[1],r_index[1],force_par[1],force_perp[1],torque[1]);
     }
     else
         return;
@@ -248,26 +260,22 @@ void motor::actin_update()
 void motor::update_shape()
 {
     if (state[0]==1 && state[1]==1) {
-        hx[0]=actin_network->get_end(aindex[0])[0]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
-        hy[0]=actin_network->get_end(aindex[0])[1]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
-        //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_xcm(aindex[0]),actin_network->get_ycm(aindex[0]));
-        hx[1]=actin_network->get_end(aindex[1])[0]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
-        hy[1]=actin_network->get_end(aindex[1])[1]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
-        //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_xcm(aindex[1]),actin_network->get_ycm(aindex[1]));
+        hx[0]=actin_network->get_end(f_index[0],r_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
+        hy[0]=actin_network->get_end(f_index[0],r_index[0])[1]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[1];
+        hx[1]=actin_network->get_end(f_index[1],r_index[1])[0]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[0];
+        hy[1]=actin_network->get_end(f_index[1],r_index[1])[1]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==1 && state[1]==0)
     {
-        hx[0]=actin_network->get_end(aindex[0])[0]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
-        hy[0]=actin_network->get_end(aindex[0])[1]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
-        //            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_xcm(aindex[0]),actin_network->get_ycm(aindex[0]));
+        hx[0]=actin_network->get_end(f_index[0],r_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
+        hy[0]=actin_network->get_end(f_index[0],r_index[0])[1]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==0 && state[1]==1)
     {
-        hx[1]=actin_network->get_end(aindex[1])[0]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
-        hy[1]=actin_network->get_end(aindex[1])[1]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
-        //            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_xcm(aindex[1]),actin_network->get_ycm(aindex[1]));
+        hx[1]=actin_network->get_end(f_index[1],r_index[1])[0]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[0];
+        hy[1]=actin_network->get_end(f_index[1],r_index[1])[1]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else
@@ -280,21 +288,22 @@ void motor::update_shape()
 
 void motor::move_end_detach(int hd, double pos)
 {
-    double rod_length = actin_network->get_alength(aindex[hd]);
+    double rod_length = actin_network->get_alength(f_index[hd],r_index[hd]);
     if (pos >= rod_length) { 
         
-        if (actin_network->is_polymer_start(aindex[hd])){
+        if (r_index[hd] == 0){
             if (event(kend,dt)==1) {
                 state[hd]=0;
-                aindex[hd]=-1;
+                f_index[hd]=-1;
+                r_index[hd]=-1;
 
                 pos_a_end[hd]=0;
                 hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
                 hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
             }
             else {
-                hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-                hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+                hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
+                hy[hd]=actin_network->get_end(f_index[hd],r_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[1];
                 mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
             }
         }
@@ -303,22 +312,22 @@ void motor::move_end_detach(int hd, double pos)
              *At the projected new position along that filament
              */
             
-            double rod_angle = actin_network->get_angle(aindex[hd]);
+            double rod_angle = actin_network->get_angle(f_index[hd],r_index[hd]);
 
-            aindex[hd] = aindex[hd] - 1;
-            double new_rod_angle = actin_network->get_angle(aindex[hd]);
+            r_index[hd] = r_index[hd] - 1;
+            double new_rod_angle = actin_network->get_angle(f_index[hd],r_index[hd]);
             
             pos_a_end[hd] = (pos - rod_length)*cos(new_rod_angle - rod_angle);
-            hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-            hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+            hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
+            hy[hd]=actin_network->get_end(f_index[hd],r_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[1];
             mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     
         }
     }
     else {
         pos_a_end[hd]=pos;
-        hx[hd]=actin_network->get_end(aindex[hd])[0]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
-        hy[hd]=actin_network->get_end(aindex[hd])[1]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
+        hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
+        hy[hd]=actin_network->get_end(f_index[hd],r_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     
@@ -366,8 +375,12 @@ inline void motor::reflect(double t, double gamma, double x1, double x2, double 
     }
 }
 
-int * motor::get_aindex(){
-    return aindex;
+int * motor::get_f_index(){
+    return f_index;
+}
+
+int * motor::get_r_index(){
+    return r_index;
 }
 
 double * motor::get_pos_a_end(){

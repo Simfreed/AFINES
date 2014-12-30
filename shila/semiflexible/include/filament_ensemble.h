@@ -63,12 +63,14 @@ class filament_ensemble
         double* get_end(int fil, int rod);
         
         double* get_forces(int fil, int rod);
-
+        
         void update(double t);
 
         void update_forces(int fil, int rod, double f1, double f2, double f3);
 
-        void write(std::ofstream& fout);
+        void write_rods(std::ofstream& fout);
+        
+        void write_links(std::ofstream& fout);
         
         void set_straight_filaments(bool is_straight);
 

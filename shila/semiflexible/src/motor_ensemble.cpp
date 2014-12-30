@@ -10,12 +10,12 @@
 #include "globals.h"
 #include "motor.h"
 #include "motor_ensemble.h"
-#include "actin_ensemble.h"
+#include "filament_ensemble.h"
 
 //motor_ensemble class
 
 motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, 
-        double mlen, actin_ensemble* network, double v0, double stiffness, double ron, double roff, double rend, 
+        double mlen, filament_ensemble* network, double v0, double stiffness, double ron, double roff, double rend, 
         double actin_len, double vis, std::vector<double *> positions) {
     
     fov[0]=fovx;
@@ -24,7 +24,7 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
     mld=mlen;
     nm=int(ceil(mrho*fov[0]*fov[1]));
     std::cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
-    a_network=network;
+    f_network=network;
     alpha=0.8;
     gamma = 0;
 
@@ -46,7 +46,7 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
             mang   = rng(0,2*pi);
         }
 
-        n_motors.push_back(new motor(motorx,motory,mang,mld,a_network,0,0,-1,-1,fov[0],fov[1],delta_t, temp, 
+        n_motors.push_back(new motor(motorx,motory,mang,mld,f_network,0,0,-1,-1,-1,-1,fov[0],fov[1],delta_t, temp, 
                     v0,stiffness,ron,roff,rend,actin_len,vis,color));
     }
 }
