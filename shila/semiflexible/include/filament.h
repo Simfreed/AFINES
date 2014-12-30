@@ -33,7 +33,7 @@ class filament
                 double rodLength, double linkLength, double stretching, double bending, double fracture); 
 
         filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-                double deltat, double temp, double fracture);
+                double deltat, double temp, double fracture, double gamma);
        
         filament();
         
@@ -61,13 +61,13 @@ class filament
         
         std::string to_string();
         
-        bool operator==(const filament& that);    
-    
         std::vector<actin *> get_rods(unsigned int first, unsigned int last);
         
         std::vector<filament *> fracture(int node);
         
         void update_forces(int index, double f1, double f2, double f3);
+        
+        bool operator==(const filament& that);
 
     private:
         
@@ -75,13 +75,9 @@ class filament
         
         int nq[2];
 
-        std::vector<std::vector<int> > quads_filled; //vector of two vectors(x and y quadrants) of integers
-        
         std::vector<actin *> rods;
         
         std::vector<Link *> lks;
-       
-        std::vector<int> tmp;
 };
 
 #endif

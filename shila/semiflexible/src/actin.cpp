@@ -11,6 +11,8 @@
 #include "globals.h"
 
 //actin filament class
+actin::actin(){}
+
 actin::actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis)
 {
     x=xcm;

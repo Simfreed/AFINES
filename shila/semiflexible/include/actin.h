@@ -25,6 +25,7 @@
 class actin
 {
     public:
+        actin();
         actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis); 
         ~actin();
     
