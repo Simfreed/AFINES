@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     20939,        560]
-NotebookOptionsPosition[     19591,        509]
-NotebookOutlinePosition[     19948,        525]
-CellTagsIndexPosition[     19905,        522]
+NotebookDataLength[    105769,       2337]
+NotebookOptionsPosition[    102428,       2233]
+NotebookOutlinePosition[    102766,       2248]
+CellTagsIndexPosition[    102723,       2245]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -27,13 +27,14 @@ Cell[BoxData[{
  RowBox[{
   RowBox[{
   "mdwlcl", "=", 
-   "\"\</home/simonfreedman/scratch-midway/cytomod/out/network/\>\""}], 
+   "\"\</home/simonfreedman/scratch-midway/cytomod/out/pl/\>\""}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.627385105358482*^9, 3.627385147573698*^9}, {
   3.627737551226329*^9, 3.627737577414873*^9}, {3.627737635087924*^9, 
   3.627737651990177*^9}, {3.627820471533111*^9, 3.6278204846202383`*^9}, {
   3.62782216876772*^9, 3.627822195821567*^9}, {3.627822356825173*^9, 
-  3.6278223702966337`*^9}, {3.627822456889227*^9, 3.6278224616485786`*^9}}],
+  3.6278223702966337`*^9}, {3.627822456889227*^9, 3.6278224616485786`*^9}, {
+  3.627905091453683*^9, 3.6279050915166616`*^9}}],
 
 Cell[CellGroupData[{
 
@@ -373,7 +374,8 @@ Cell[BoxData[
    3.627821228926012*^9}, {3.6278212706326323`*^9, 3.62782129310315*^9}, {
    3.6278232706233664`*^9, 3.627823287986665*^9}, {3.627823344713081*^9, 
    3.627823345802661*^9}, {3.627823757389501*^9, 3.62782376215167*^9}, {
-   3.627824625286357*^9, 3.627824627611021*^9}}],
+   3.627824625286357*^9, 3.627824627611021*^9}, {3.627902031196925*^9, 
+   3.6279020675058002`*^9}, {3.628356629481802*^9, 3.628356634488028*^9}}],
 
 Cell[BoxData[{
  RowBox[{
@@ -398,36 +400,1758 @@ Cell[BoxData[{
   3.627057337104884*^9, 3.6270573453677807`*^9}, {3.627231138397395*^9, 
   3.6272311465618773`*^9}, {3.62738558605621*^9, 3.627385587533423*^9}}],
 
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"lds", "=", 
+   RowBox[{"{", 
+    RowBox[{
+    "\"\<.249\>\"", ",", "\"\<.332\>\"", ",", "\"\<.415\>\"", ",", 
+     "\"\<.498\>\"", ",", "\"\<.581\>\"", ",", "\"\<.664\>\"", ",", 
+     "\"\<.747\>\"", ",", "\"\<.830\>\""}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"basedir", "=", "\"\<clnk_nm12_np500_pmRho.64_ld\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"basedir", "<>", "l"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"l", ",", "lds"}], "}"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.627901751598287*^9, 3.627901792547021*^9}, {
+   3.627901826826836*^9, 3.627901839650629*^9}, {3.627901870242729*^9, 
+   3.627901975262793*^9}, 3.627902017095183*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"temps", "=", 
+   RowBox[{"{", 
+    RowBox[{"\"\<.0008\>\"", ",", "\"\<.0072\>\"", ",", "\"\<.0080\>\""}], 
+    "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"basedir", "=", "\"\<nmon120_temp\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"basedir", "<>", "t"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"t", ",", "temps"}], "}"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.627905558125721*^9, 3.62790556731076*^9}, {
+   3.627905657524935*^9, 3.6279057272528753`*^9}, 3.627906187440831*^9}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"nmons", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"ToString", "[", "i", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", "8", ",", "40", ",", "2"}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"nmonsHi", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"ToString", "[", "i", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", "45", ",", "100", ",", "5"}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"basedir", "=", "\"\<fixed_total_length_nmon\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"basedir", "<>", "n"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"n", ",", 
+       RowBox[{"Join", "[", 
+        RowBox[{"nmons", ",", "nmonsHi"}], "]"}]}], "}"}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.627919042194799*^9, 3.627919253272977*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"seeds", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"ToString", "[", "i", "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", "10"}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"basedir", "=", "\"\<nmon50_seed\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"basedir", "<>", "s"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"s", ",", "seeds"}], "}"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.627919042194799*^9, 3.627919253272977*^9}, {
+   3.627923038187622*^9, 3.62792306760362*^9}, {3.627930158334845*^9, 
+   3.6279302431967278`*^9}, {3.627930772041915*^9, 3.6279307721053257`*^9}, {
+   3.6279317013133783`*^9, 3.627931701426464*^9}, {3.627989847331604*^9, 
+   3.627989847498152*^9}, {3.6279919591477003`*^9, 3.627991959458593*^9}, {
+   3.62834467217076*^9, 3.628344676862647*^9}, {3.628345454573278*^9, 
+   3.628345454702385*^9}, {3.628345915545895*^9, 3.6283459156537046`*^9}, {
+   3.6283532559403973`*^9, 3.628353266863872*^9}, 3.628356398471669*^9}],
+
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{"Do", "[", "\[IndentingNewLine]", 
-  RowBox[{
-   RowBox[{
-    RowBox[{"sim", "[", 
-     RowBox[{"mdwlcl", "<>", "dr"}], "]"}], ";", "\[IndentingNewLine]", 
-    RowBox[{"Print", "[", 
-     RowBox[{"\"\<Completed movie for dir \>\"", "<>", "dr"}], "]"}]}], ",", 
-   "\[IndentingNewLine]", 
-   RowBox[{"{", 
-    RowBox[{"dr", ",", 
-     RowBox[{"dirs", "[", 
-      RowBox[{"[", 
-       RowBox[{"6", ";;", "6"}], "]"}], "]"}]}], "}"}]}], 
-  "\[IndentingNewLine]", "]"}]], "Input",
- CellChangeTimes->{{3.624799635340404*^9, 3.6247996405584717`*^9}, {
-  3.624799708678527*^9, 3.624799816664987*^9}, {3.62481092250633*^9, 
-  3.6248109430742617`*^9}, {3.627057139669621*^9, 3.6270571540691223`*^9}, {
-  3.62723115477763*^9, 3.627231160057384*^9}, {3.627385609825636*^9, 
-  3.627385633851941*^9}, {3.6277497736205263`*^9, 3.627749794498727*^9}, {
-  3.6277515478836613`*^9, 3.627751554698406*^9}, {3.627753319520054*^9, 
-  3.6277533292641563`*^9}}],
+ RowBox[{
+  RowBox[{"seedframes", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"sim", "[", 
+      RowBox[{
+       RowBox[{"mdwlcl", "<>", "dr"}], ",", "1", ",", "False"}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"dr", ",", "dirs"}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.62835966805052*^9, 3.628359705357794*^9}}],
 
-Cell[BoxData["\<\"Completed movie for dir \
-clnk_nm12_np500_tf1000_amRho.05_pmRho.40\"\>"], "Print",
- CellChangeTimes->{3.62738872574932*^9, 3.627747923838641*^9, 
-  3.627751222718114*^9, 3.627752646250321*^9, 3.62775460590016*^9, 
-  3.6278224867236032`*^9}]
+Cell[CellGroupData[{
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359707751981*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359707884705*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597079853487`*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359707998601*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597102935658`*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597104249163`*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359710529669*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359710544773*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359712489695*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597126204243`*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359712725193*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3\"\>"], "Print",\
+
+ CellChangeTimes->{3.62835971273687*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359714744831*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359714881629*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597149815197`*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359714983827*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359716754879*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359716886384*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597169890833`*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359716991025*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359718957024*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359719093601*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359719189457*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359719196203*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597213758383`*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359721515785*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.62835972161847*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7\"\>"], "Print",\
+
+ CellChangeTimes->{3.62835972162497*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359723618969*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597237553062`*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359723867364*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359723870487*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9/txt_stack/rods.\
+txt\"\>"], "Print",
+ CellChangeTimes->{3.628359726137134*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359726279819*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359726400581*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9\"\>"], "Print",\
+
+ CellChangeTimes->{3.628359726406624*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10/txt_stack/\
+rods.txt\"\>"], "Print",
+ CellChangeTimes->{3.62835972861736*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10/txt_stack/\
+amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.6283597287573557`*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10/txt_stack/\
+pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.628359728872365*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10\"\>"], "Print",\
+
+ CellChangeTimes->{3.62835972887819*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Length", "[", "seedframes", "]"}]], "Input",
+ CellChangeTimes->{{3.628356591597365*^9, 3.6283566141351347`*^9}}],
+
+Cell[BoxData["2001"], "Output",
+ CellChangeTimes->{{3.6283565977245293`*^9, 3.6283566145676537`*^9}, 
+   3.628359038361061*^9, 3.62835921567031*^9, 3.628359532477973*^9}]
+}, Open  ]],
+
+Cell["\<\
+In the nmon50 seed experiments
+Last good frame :
+  1 - 512
+2 - all good
+3 - 510
+4 - 858
+5 - 663
+6 - 538
+7 - 463
+8 - 522
+9 - 733
+10- 406\
+\>", "Text",
+ CellChangeTimes->{{3.628359777521719*^9, 3.628359818118239*^9}, {
+  3.628359865910265*^9, 3.6283598662869997`*^9}, {3.628360018928844*^9, 
+  3.628360020042132*^9}, {3.628360118240583*^9, 3.628360141386133*^9}, {
+  3.628360193528759*^9, 3.6283601941938972`*^9}, {3.628360292741641*^9, 
+  3.6283602956745663`*^9}, {3.628360338726759*^9, 3.628360359588208*^9}, {
+  3.6283604473521137`*^9, 3.628360456402478*^9}, {3.6283605768333797`*^9, 
+  3.628360608648964*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Table", "[", 
+  RowBox[{
+   RowBox[{"seedframes", "[", 
+    RowBox[{"[", 
+     RowBox[{"10", ",", "i"}], "]"}], "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"i", ",", "400", ",", "410"}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.628359041895149*^9, 3.62835906361019*^9}, {
+  3.6283592597191772`*^9, 3.628359263667488*^9}, {3.628359360533424*^9, 
+  3.6283593770532627`*^9}, {3.628359537517261*^9, 3.628359601517462*^9}, {
+  3.628359773489004*^9, 3.628359773647456*^9}, {3.628359825795081*^9, 
+  3.628359837649548*^9}, {3.6283598711458817`*^9, 3.6283599940585318`*^9}, {
+  3.6283600256429167`*^9, 3.628360113041326*^9}, {3.628360145649515*^9, 
+  3.628360197607284*^9}, {3.6283602417575283`*^9, 3.6283603467957163`*^9}, {
+  3.628360389101418*^9, 3.628360438254128*^9}, {3.6283604956303463`*^9, 
+  3.6283605039418364`*^9}, {3.6283605458143663`*^9, 3.628360568069936*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.993961, -24.956711}, {-24.464503999999998`, \
+-24.356980999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.461829, -24.359659}, {-23.977050000000002`, \
+-23.723272}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.982803, -23.715896}, {-23.523346, \
+-23.060992000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.529315, -23.059637}, {-23.118208, \
+-22.373348999999997`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.115192, -22.37666}, {-22.833037, -21.628069}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.833697, -21.619507}, {-22.701987000000003`, \
+-20.830423999999997`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.70764, -20.82995}, {-22.414813000000002`, -20.085469}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.400876, -20.079819}, {-22.29241, -19.287206}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.292138, -19.289117}, {-22.091059, -18.5148}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.087375, -18.521275}, {-22.064638000000002`, \
+-17.721598}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.061954, -17.710246}, {-22.194754, \
+-16.921345000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.197354, -16.927294}, {-22.297178000000002`, \
+-16.133546}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.277806, -16.135442}, {-22.313784000000002`, \
+-15.336251}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.305924, -15.343052}, {-22.133831, -14.561781}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.133322, -14.579274}, {-21.919094, -13.808491}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.909443, -13.806824}, {-21.759719999999998`, \
+-13.020959000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.741927, -13.028551}, {-21.60706, -12.240001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.598885, -12.239903}, {-21.367233, -11.474176}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.373753, -11.474853}, {-21.348179000000002`, \
+-10.675262}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.34709, -10.658918}, {-21.206139, -9.871433}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.207413, -9.871302}, {-20.955416, -9.112028}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.949761, -9.116665}, {-20.604609999999997`, \
+-8.394950999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.601051, -8.392188}, {-20.126732999999998`, \
+-7.747966000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.129262, -7.746849}, {-19.755611000000002`, -7.03947}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.750789, -7.04815}, {-19.36626, -6.3466249999999995`}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.362505, -6.348844}, {-18.818972, -5.761842}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.825057, -5.760059}, {-18.269259, -5.184656}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.274879, -5.179312}, {-17.804441999999998`, -4.53225}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.798757, -4.534161}, {-17.213790999999997`, \
+-3.9884370000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.219518, -3.993797}, {-16.551876, -3.553054}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.542744, -3.553736}, {-15.926993, -3.043001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.927131, -3.05111}, {-15.353848, -2.493125}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.346983, -2.489154}, {-14.677256999999999`, -2.051585}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.689098, -2.038334}, {-14.063512, -1.539694}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.051491, -1.551556}, {-13.354109000000001`, -1.159564}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-13.354325, -1.170222}, {-12.676784, -0.7448540000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.673411, -0.74821}, {-11.942553, -0.42287}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.938576, -0.433689}, {-11.217983, -0.086204}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.20889, -0.080271}, {-10.59477, 
+       0.43242400000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.609135, 0.429029}, {-9.940912, 0.8688899999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.935257, 0.875495}, {-9.312667, 1.377871}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.313995, 1.381562}, {-8.582662000000001, 1.705833}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.585117, 1.716577}, {-7.800089000000001, 1.870625}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.787075, 1.889524}, {-6.989727, 1.954613}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.984763, 1.943102}, {-6.191314, 1.840931}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.184311, 1.843271}, {-5.428795, 1.580222}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.439579, 1.57121}, {-4.758657, 1.151275}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.770904, 1.149861}, {-4.021428, 0.870066}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.017064, 0.87283}, {-3.2626430000000006`, 0.606654}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.276977, 0.603405}, {-2.490233, 0.45837399999999995`}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 3990. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.927076, -24.928185}, {-24.497818, -24.253102}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.50084, -24.255516}, {-24.009089, -23.6245}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.021488, -23.629918}, {-23.510364000000003`, \
+-23.01449}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.509413, -23.014743}, {-23.173454999999997`, \
+-22.288704}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.164183, -22.290093}, {-22.952692000000003`, \
+-21.518555}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.954034, -21.516948}, {-22.608899, -20.795226}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.603293, -20.805656}, {-22.423898, -20.02603}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.424858, -20.035146}, {-22.251687, -19.254113}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.253696, -19.25637}, {-22.123146000000002`, \
+-18.467094}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.116609, -18.468475}, {-22.046249, -17.671575}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.03629, -17.680624}, {-22.104357, \
+-16.883525000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.107747, -16.889855}, {-22.209042, -16.096294}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.215207, -16.095091}, {-22.128497, -15.299804}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.130532, -15.301871}, {-22.041445, -14.506847}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.045343, -14.507949}, {-21.903308, -13.720659}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.902561, -13.723517}, {-21.864092999999997`, \
+-12.924441999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.855975, -12.947594}, {-21.7249, -12.158405}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.730819, -12.152178}, {-21.619424, \
+-11.359971999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.621293, -11.354609}, {-21.354479, -10.600414}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.354235, -10.599857}, {-21.247328, -9.807032}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.251935, -9.794071}, {-20.958145, -9.049969}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.967066, -9.049848}, {-20.678189, -8.303825000000002}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.680181, -8.310726}, {-20.321074, -7.595854000000001}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.312422, -7.598431}, {-19.967913000000003`, -6.876411}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.971896, -6.874676}, {-19.482733, -6.241652}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.472903, -6.243078}, {-18.855017, -5.734927}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.854754, -5.743231}, {-18.358026, \
+-5.1161259999999995`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.344953, -5.132852}, {-17.784081, -4.562393999999999}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.776979, -4.565005}, {-17.259685, \
+-3.9547540000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.252576, -3.961451}, {-16.662627, -3.421118}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.661907, -3.422051}, {-16.156482999999998`, -2.801933}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.151387, -2.816661}, {-15.570355, -2.26675}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.574421, -2.247891}, {-14.890759999999998`, \
+-1.8324310000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.892359, -1.825487}, {-14.148106, -1.532081}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.135193, -1.516746}, {-13.379444999999999`, -1.254363}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-13.387485, -1.247274}, {-12.688418, -0.858293}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.688008, -0.863821}, {-12.0863, -0.33661299999999994`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.095438, -0.336938}, {-11.427382, 
+       0.10317699999999996`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.430186, 0.105653}, {-10.683443, 0.392664}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.672557, 0.399201}, {-9.963690999999999, 0.770024}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.97145, 0.750452}, {-9.234371000000001, 1.061441}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.239476, 1.075562}, {-8.483087, 1.336091}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.48763, 1.336709}, {-7.714923999999999, 1.543892}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.727924, 1.558359}, {-6.9372489999999996`, 
+       1.6801490000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.921299, 1.686744}, {-6.121538, 1.667181}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.132692, 1.666435}, {-5.3327219999999995`, 1.65952}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.327859, 1.67019}, {-4.5569370000000005`, 1.456463}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.549857, 1.453774}, {-3.8527310000000003`, 
+       1.0613259999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.851664, 1.07244}, {-3.2417059999999998`, 
+       0.5548000000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.2433, 0.553821}, {-2.637085, 0.031802}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4000. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.900132, -24.903784}, {-24.562547, \
+-24.178500000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.561964, -24.187592}, {-24.161229, \
+-23.495196999999997`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.183781, -23.503471}, {-23.711156, \
+-22.858005000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.715965, -22.867839}, {-23.366897, -22.148011}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.354078, -22.149608}, {-22.93569, -21.467734}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.943808, -21.471518}, {-22.616645000000002`, \
+-20.741474}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.613096, -20.731211}, {-22.269686, -20.008667}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.283113, -20.015759}, {-22.038509, -19.254071}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.047473, -19.267098}, {-22.008343, -18.468056}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.003064, -18.471608}, {-22.034844999999997`, \
+-17.67224}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.028673, -17.67713}, {-21.92031, -16.884503}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.914721, -16.882658}, {-21.956794, -16.083765}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.966661, -16.088819}, {-22.046445, \
+-15.292807000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.048555, -15.27887}, {-21.919598, -14.489332}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.921353, -14.494119}, {-21.787359, -13.70542}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.789336, -13.707748}, {-21.713265999999997`, \
+-12.911373000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.71155, -12.910893}, {-21.725113999999998`, \
+-12.111008}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.710183, -12.114135}, {-21.582337, -11.324416}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.582447, -11.332057}, {-21.376043999999997`, \
+-10.559142000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.364633, -10.553465}, {-21.104501000000003`, \
+-9.796938999999998}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.098352, -9.798047}, {-21.008018, -9.003163}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.998629, -8.996742}, {-20.722312000000002`, \
+-8.245975999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.717253, -8.260325}, {-20.290810999999998`, \
+-7.5834589999999995`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.293394, -7.58537}, {-19.846372, -6.921916}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.831437, -6.928694}, {-19.443561000000003`, -6.229014}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.457116, -6.229033}, {-19.085686, -5.520485000000001}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.073713, -5.516172}, {-18.552518000000003`, -4.909249}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.550299, -4.912144}, {-17.944729, -4.389377}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.942254, -4.390038}, {-17.293001999999998`, \
+-3.9226289999999997`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.288378, -3.923426}, {-16.685008000000003`, -3.398122}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.680505, -3.391246}, {-15.979982, \
+-3.0048950000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.987377, -3.011106}, {-15.299727, \
+-2.6022819999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.302614, -2.601605}, {-14.719945000000001`, \
+-2.0534290000000004`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.725944, -2.050444}, {-14.100091, \
+-1.5521390000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.100456, -1.551435}, {-13.536066, -0.9844569999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-13.539383, -0.988708}, {-12.892563, -0.517939}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.898257, -0.524039}, {-12.158221999999999`, \
+-0.22015200000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.16001, -0.215726}, {-11.441456, 0.13595700000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.462915, 0.137}, {-10.697828000000001`, 0.370757}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.703104, 0.367161}, {-10.021097, 0.785332}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.028684, 0.793769}, {-9.296406000000001, 1.1159}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.290972, 1.110001}, {-8.518406, 1.317707}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.515973, 1.320441}, {-7.754014000000001, 1.564201}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.757326, 1.558797}, {-6.989305, 1.782727}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.986876, 1.769861}, {-6.187319, 1.796473}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.194042, 1.788388}, {-5.4086039999999995`, 1.636443}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.418271, 1.639566}, {-4.631138, 1.4966620000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.630845, 1.483605}, {-3.902885, 1.1518320000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.909426, 1.147195}, {-3.2122339999999996`, 0.754864}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.226076, 0.754423}, {-2.483441, 0.45694499999999993`}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4010. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.936514, -24.977116}, {-24.750135, -24.19913}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.757611, -24.20372}, {-24.532682, -23.435991}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.525502, -23.43295}, {-24.177364999999998`, \
+-22.712672}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.175925, -22.70291}, {-23.805748, -21.993707}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.813201, -22.003002}, {-23.317294, \
+-21.375246999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.326972, -21.374768}, {-22.997634, -20.645703}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.008121, -20.639468}, {-22.529818, \
+-19.998198000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.545316, -19.986088}, {-22.249284, \
+-19.242874999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.278855, -19.229768}, {-21.979488, -18.487892}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.986988, -18.492195}, {-21.889834, -17.698116}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.902869, -17.68719}, {-21.986041, -16.891525}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.982399, -16.891181}, {-22.096282000000002`, \
+-16.099328}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.095062, -16.092675}, {-22.084511, -15.292745}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.090109, -15.298256}, {-22.09036, -14.498256}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.096589, -14.500676}, {-21.907377, -13.723374}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.913355, -13.707831}, {-21.76721, -12.921293}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.760357, -12.912722}, {-21.589136, \
+-12.131260000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.604826, -12.140107}, {-21.52579, -11.344021}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.533069, -11.333023}, {-21.390603000000002`, \
+-10.545811}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.395766, -10.534146}, {-21.185900999999998`, \
+-9.762164}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.19501, -9.761189}, {-20.951809, -8.999052}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.949062, -8.991862}, {-20.59319, -8.275374}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.604685, -8.276996}, {-20.18954, -7.593143}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.173963, -7.59166}, {-19.913413000000002`, -6.835278}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.916835, -6.851296}, {-19.469397, -6.188122}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.4579, -6.1923}, {-19.137023, -5.459471000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.128773, -5.46447}, {-18.738443, -4.7661560000000005`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.741983, -4.768097}, {-18.269378, -4.122617}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.272624, -4.124153}, {-17.678154, \
+-3.5887969999999996`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.67467, -3.599132}, {-17.049052, -3.100532}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.044519, -3.107436}, {-16.409814, -2.620456}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.399722, -2.629811}, {-15.660604000000001`, -2.323699}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.667413, -2.331664}, {-14.939569, -1.999635}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.938616, -1.997255}, {-14.162481999999999`, -1.803305}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.173333, -1.799075}, {-13.460179, \
+-1.4365679999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-13.457282, -1.43617}, {-12.819607999999999`, \
+-0.9530839999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.822195, -0.950704}, {-12.325335, \
+-0.32370299999999996`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.324602, -0.326375}, {-11.691447, 
+       0.16261899999999996`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.696909, 0.169356}, {-10.98312, 0.5306120000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.977672, 0.519257}, {-10.221287, 0.7797989999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.220321, 0.763227}, {-9.433091000000001, 0.905597}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.439203, 0.918109}, {-8.639906, 0.9516399999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.646968, 0.963938}, {-7.847040999999999, 
+       0.9747439999999999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.835399, 0.970075}, {-7.047464, 1.108487}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.058992, 1.11785}, {-6.283851, 1.315728}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.287865, 1.3171}, {-5.5113710000000005`, 1.509601}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.503278, 1.511831}, {-4.703419, 1.4968009999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.701742, 1.483782}, {-3.9255210000000003`, 1.290182}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.922229, 1.289145}, {-3.199752, 0.945594}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.193328, 0.948537}, {-2.559038, 0.46101699999999995`}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4020. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.878806, -24.979949}, {-24.658344, -24.210926}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.660289, -24.214379}, {-24.341838, \
+-23.480493000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.349072, -23.46807}, {-24.07571, -22.716223}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.069559, -22.722101}, {-23.797315, -21.969849}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.801666, -21.980539}, {-23.492166, -21.242833}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.487914, -21.244908}, {-23.156503999999998`, \
+-20.516782}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.154819, -20.526048}, {-22.783885, -19.817241}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.783247, -19.820878}, {-22.256052999999998`, \
+-19.219159}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.254061, -19.21668}, {-21.900567, -18.499016}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.899859, -18.501077}, {-21.695249, \
+-17.727684999999997`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.700814, -17.73069}, {-21.685442000000002`, \
+-16.930837999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.694591, -16.934856}, {-21.706915, -16.134951}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.716905, -16.13484}, {-21.874396, -15.350495}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.879374, -15.351377}, {-22.008473, -14.561862}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.998283, -14.550709}, {-21.918642000000002`, \
+-13.754683}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.911905, -13.7485}, {-21.712848, -12.97366}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.710472, -12.987002}, {-21.559642999999998`, \
+-12.201349}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.562133, -12.197184}, {-21.237089, -11.466194}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.240789, -11.472903}, {-21.092009, -10.686859}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.08567, -10.70124}, {-20.978732, -9.90842}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.967133, -9.895564}, {-20.928989, -9.096474}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.920051, -9.109925}, {-20.736455, -8.331277}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.725691, -8.336278}, {-20.423272, \
+-7.5956410000000005`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.41389, -7.590506}, {-20.115864, -6.848091}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.113989, -6.843264}, {-19.641901, -6.197405999999999}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.649541, -6.19954}, {-19.180743, -5.55129}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.17098, -5.547109}, {-18.632574, -4.955401}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.627147, -4.960944}, {-18.060528, -4.396192999999999}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.070171, -4.398581}, {-17.585935, -3.76178}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.57713, -3.761512}, {-17.127249, -3.0999930000000004`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.129901, -3.101164}, {-16.588965, -2.511768}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.589621, -2.518011}, {-15.957737000000002`, -2.027376}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.959128, -2.026027}, {-15.239447, -1.676657}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.236273, -1.688617}, {-14.477983, \
+-1.4336740000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.48101, -1.450585}, {-13.682573999999999`, -1.400589}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-13.683524, -1.41047}, {-12.918825, -1.1754479999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.926331, -1.185275}, {-12.205459999999999`, -0.838368}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.203312, -0.843589}, {-11.574732000000001`, -0.348729}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.585292, -0.329328}, {-10.905551, 0.09251500000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.912183, 0.082691}, {-10.190038000000001`, 0.426939}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.19077, 0.42017}, {-9.533915, 0.876834}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.540358, 0.881245}, {-8.800815, 1.186328}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.798801, 1.185723}, {-8.023928, 1.3846500000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.015229, 1.388917}, {-7.2218789999999995`, 
+       1.4918529999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.214142, 1.487766}, {-6.418627, 1.572357}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.412668, 1.580587}, {-5.612707, 1.588516}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.611091, 1.589812}, {-4.829108, 1.420987}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.8269, 1.420585}, {-4.033002, 1.321967}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.046166, 1.323763}, {-3.2865990000000003`, 1.072651}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.277975, 1.071037}, {-2.525573, 0.799207}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4030. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.765125, -24.976315}, {-24.773033, -24.176354}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.768409, -24.194532}, {-24.606831999999997`, \
+-23.411019}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.592826, -23.414326}, {-24.257499, -22.687996}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-24.262929, -22.687367}, {-23.801909, -22.033562}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.800759, -22.030256}, {-23.381851, \
+-21.348702000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.392295, -21.341456}, {-23.051402, -20.617721}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-23.052334, -20.614778}, {-22.721912, \
+-19.886203000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.729696, -19.897162}, {-22.479742, \
+-19.137213000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.478519, -19.146565}, {-22.088334, \
+-18.448169999999998`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-22.085836, -18.452544}, {-21.813745, -17.700237}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.810738, -17.700777}, {-21.594450000000002`, \
+-16.93057}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.592469, -16.933837}, {-21.502051, -16.138963}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.517625, -16.138359}, {-21.577045, \
+-15.340569000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.572191, -15.334234}, {-21.460296, \
+-14.542098000000001`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.464666, -14.54355}, {-21.276275000000002`, \
+-13.766048}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.282737, -13.766438}, {-21.298879, -12.966601}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.304633, -12.959864}, {-21.46642, -12.176394}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.463711, -12.179549}, {-21.4625, -11.37955}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.484984, -11.381129}, {-21.312068, -10.60004}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.310361, -10.599882}, {-21.044424, -9.845377}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-21.041156, -9.858677}, {-20.603741, -9.18885}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.602559, -9.183645}, {-20.307146, -8.440186}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.31234, -8.436123}, {-20.185309999999998`, -7.646273}}]}, \
+
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-20.186448, -7.660002}, {-19.913148999999997`, -6.908132}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.90903, -6.914587}, {-19.577106, -6.186695}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.576799, -6.189241}, {-19.125046, -5.528999}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-19.119026, -5.513852}, {-18.559005000000003`, -4.942558}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.573104, -4.956058}, {-18.016028000000002`, -4.381892}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-18.011951, -4.384816}, {-17.482759, -3.784853}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-17.480293, -3.786881}, {-16.863841999999998`, -3.276991}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.866263, -3.282018}, {-16.345807, -2.674461}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-16.353285, -2.686373}, {-15.820234, -2.089836}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.81475, -2.075859}, {-15.146931, -1.6353849999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-15.153049, -1.630421}, {-14.465684999999999`, \
+-1.2211159999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-14.459706, -1.233617}, {-13.708322, -0.958987}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-13.709732, -0.967192}, {-12.979592, -0.6402430000000001}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.984159, -0.649688}, {-12.221962, \
+-0.40667400000000004`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-12.214002, -0.411736}, {-11.415197000000001`, \
+-0.36803199999999997`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-11.417374, -0.375356}, {-10.642573, \
+-0.17615000000000003`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-10.643412, -0.1704}, {-9.919825, 0.170806}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.904697, 0.171615}, {-9.236205, 0.611067}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.237606, 0.620096}, {-8.583033, 1.0800239999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.584544, 1.082855}, {-7.835139999999999, 
+       1.3628419999999999`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.837178, 1.36791}, {-7.056019, 1.54051}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.057557, 1.53009}, {-6.2576730000000005`, 1.543726}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.261475, 1.553391}, {-5.461491, 1.558501}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.470949, 1.55756}, {-4.688296, 1.391866}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.690514, 1.390829}, {-3.9042250000000003`, 1.243351}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.902494, 1.231972}, {-3.1364859999999997`, 
+       1.0012530000000002`}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.127844, 1.02083}, {-2.354972, 0.8142669999999999}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4040. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.0473613626839447`*^35, -7.598209115531674*^34}, {
+       1.0473613626839447`*^35, -7.598209115531674*^34}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.0508896243042084`*^35, 
+       2.23154238268485*^35}, {-3.0508896243042084`*^35, 
+       2.23154238268485*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{4.786835490057854*^35, -3.557649413713236*^35}, {
+       4.786835490057854*^35, -3.557649413713236*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.117924615062737*^35, 
+       4.652486615011871*^35}, {-6.117924615062737*^35, 
+       4.652486615011871*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{6.965090887264625*^35, -5.4517271071687046`*^35}, {
+       6.965090887264625*^35, -5.4517271071687046`*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-7.312156285306172*^35, 
+       5.918183422648813*^35}, {-7.312156285306172*^35, 
+       5.918183422648813*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{7.200842461633043*^35, -6.04626067938633*^35}, {
+       7.200842461633043*^35, -6.04626067938633*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.716799186597894*^35, 
+       5.862369580619347*^35}, {-6.716799186597894*^35, 
+       5.862369580619347*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{5.970614511874427*^35, -5.420526986393551*^35}, {
+       5.970614511874427*^35, -5.420526986393551*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.0782374613423125`*^35, 
+       4.793630371695365*^35}, {-5.0782374613423125`*^35, 
+       4.793630371695365*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{4.144562523911197*^35, -4.062140028511738*^35}, {
+       4.144562523911197*^35, -4.062140028511738*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.252487880692142*^35, 
+       3.3026142532969906`*^35}, {-3.252487880692142*^35, 
+       3.3026142532969906`*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{2.4580984454668614`*^35, -2.5784525079065382`*^35}, {
+       2.4580984454668614`*^35, -2.5784525079065382`*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-1.7912173042499613`*^35, 
+       1.9344014507555407`*^35}, {-1.7912173042499613`*^35, 
+       1.9344014507555407`*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.259704449307236*^35, -1.3952308192686593`*^35}, {
+       1.259704449307236*^35, -1.3952308192686593`*^35}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-8.55623621853182*^34, 
+       9.679254418301856*^34}, {-8.55623621853182*^34, 
+       9.679254418301856*^34}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{5.616291478151077*^34, -6.46083923737664*^34}, {
+       5.616291478151077*^34, -6.46083923737664*^34}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.564345166684356*^34, 
+       4.150674797311338*^34}, {-3.564345166684356*^34, 
+       4.150674797311338*^34}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{2.187993211948235*^34, -2.5670992817584804`*^34}, {
+       2.187993211948235*^34, -2.5670992817584804`*^34}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-1.2995469759733526`*^34, 
+       1.5288088349888765`*^34}, {-1.2995469759733526`*^34, 
+       1.5288088349888765`*^34}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{7.470316436650381*^33, -8.768458734499378*^33}, {
+       7.470316436650381*^33, -8.768458734499378*^33}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.15710622829602*^33, 
+       4.8440116445644486`*^33}, {-4.15710622829602*^33, 
+       4.8440116445644486`*^33}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{2.239957436646859*^33, -2.5776754684226835`*^33}, {
+       2.239957436646859*^33, -2.5776754684226835`*^33}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-1.1688728731537421`*^33, 
+       1.3212821418952322`*^33}, {-1.1688728731537421`*^33, 
+       1.3212821418952322`*^33}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{5.908128684156244*^32, -6.523485622949853*^32}, {
+       5.908128684156244*^32, -6.523485622949853*^32}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-2.8930799152956354`*^32, 
+       3.1018207561980236`*^32}, {-2.8930799152956354`*^32, 
+       3.1018207561980236`*^32}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.3726814362644405`*^32, -1.4200312375905692`*^32}, {
+       1.3726814362644405`*^32, -1.4200312375905692`*^32}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-6.311736961585891*^31, 
+       6.256893249343052*^31}, {-6.311736961585891*^31, 
+       6.256893249343052*^31}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{2.8130011096276174`*^31, -2.651934673889037*^31}, {
+       2.8130011096276174`*^31, -2.651934673889037*^31}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-1.2153654161895294`*^31, 
+       1.0803858141983842`*^31}, {-1.2153654161895294`*^31, 
+       1.0803858141983842`*^31}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{5.091391201327369*^30, -4.226167914177933*^30}, {
+       5.091391201327369*^30, -4.226167914177933*^30}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-2.0684178315046532`*^30, 
+       1.584985509483104*^30}, {-2.0684178315046532`*^30, 
+       1.584985509483104*^30}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{8.150700324695228*^29, -5.6873447015253526`*^29}, {
+       8.150700324695228*^29, -5.6873447015253526`*^29}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.115961212039373*^29, 
+       1.9466719017812554`*^29}, {-3.115961212039373*^29, 
+       1.9466719017812554`*^29}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.1558939689024166`*^29, -6.327359815166714*^28}, {
+       1.1558939689024166`*^29, -6.327359815166714*^28}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.161630888985108*^28, 
+       1.9392594926427557`*^28}, {-4.161630888985108*^28, 
+       1.9392594926427557`*^28}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.4545257341168438`*^28, -5.53833173072547*^27}, {
+       1.4545257341168438`*^28, -5.53833173072547*^27}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.936118490937493*^27, 
+       1.4415298553003253`*^27}, {-4.936118490937493*^27, 
+       1.4415298553003253`*^27}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.6268621958661118`*^27, -3.2558831929195914`*^26}, {
+       1.6268621958661118`*^27, -3.2558831929195914`*^26}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-5.2084877489516796`*^26, 
+       5.490890005448111*^25}, {-5.2084877489516796`*^26, 
+       5.490890005448111*^25}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.6201754759094832`*^26, -1.3469874716270886`*^24}, {
+       1.6201754759094832`*^26, -1.3469874716270886`*^24}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.897722521028161*^25, -4.444353709439728*^24}, \
+{-4.897722521028161*^25, -4.444353709439728*^24}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.4391222690359278`*^25, 2.75250188454444*^24}, {
+       1.4391222690359278`*^25, 2.75250188454444*^24}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-4.1111080631038197`*^24, -1.203409104169318*^24}, \
+{-4.1111080631038197`*^24, -1.203409104169318*^24}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{1.141983261910114*^24, 4.505870032959053*^23}, {
+       1.141983261910114*^24, 4.505870032959053*^23}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-3.08514965802227*^23, -1.5308907036447318`*^23}, \
+{-3.08514965802227*^23, -1.5308907036447318`*^23}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{8.107074996326198*^22, 4.840279467395364*^22}, {
+       8.107074996326198*^22, 4.840279467395364*^22}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-2.0711802669013553`*^22, -1.4419287120057733`*^22}, \
+{-2.0711802669013553`*^22, -1.4419287120057733`*^22}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{5.087503850594891*^21, 4.020662411776768*^21}, {
+       5.087503850594891*^21, 4.020662411776768*^21}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{-9.524432839945037*^20, -8.196661694885745*^20}, \
+{-9.524432839945037*^20, -8.196661694885745*^20}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4050. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4060. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4070. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4080. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}], ",", 
+   GraphicsBox[{
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}, 
+     {RGBColor[1, 0, 0], Arrowheads[0.004], 
+      ArrowBox[{{"-nan", "-nan"}, {2 "-nan", 2 "-nan"}}]}},
+    Background->GrayLevel[0],
+    BaseStyle->{FontSize -> 16, FontColor -> GrayLevel[1]},
+    Frame->True,
+    FrameLabel->{
+      FormBox["\"x (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"y (\[Mu]m)\"", TraditionalForm], 
+      FormBox["\"t = 4090. s \"", TraditionalForm]},
+    PlotRange->{{-25, 25}, {-25, 25}}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.628359065247489*^9, 3.628359220265882*^9, 3.62835926526444*^9, {
+   3.628359370824329*^9, 3.628359378276092*^9}, {3.62835954115333*^9, 
+   3.628359602405108*^9}, 3.6283598392226143`*^9, 3.628359898793931*^9, 
+   3.628359940732798*^9, {3.628359971765727*^9, 3.628359995323133*^9}, {
+   3.628360036827407*^9, 3.6283601135402*^9}, {3.62836015368419*^9, 
+   3.628360180603681*^9}, {3.628360248361796*^9, 3.62836033110639*^9}, {
+   3.6283603904191628`*^9, 3.6283604395103493`*^9}, {3.6283605311739283`*^9, 
+   3.6283605690815163`*^9}}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -508,9 +2232,8 @@ Cell[BoxData["$Aborted"], "Output",
 }, Open  ]]
 },
 WindowSize->{1008, 855},
-WindowMargins->{{519, Automatic}, {Automatic, 130}},
-FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
-2014)",
+WindowMargins->{{68, Automatic}, {Automatic, -34}},
+FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -524,42 +2247,96 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 664, 15, 46, "Input"],
+Cell[558, 20, 710, 16, 55, "Input"],
 Cell[CellGroupData[{
-Cell[1247, 39, 146, 2, 64, "Section"],
-Cell[1396, 43, 3882, 106, 352, "Input"],
-Cell[5281, 151, 2021, 52, 199, "Input"]
+Cell[1293, 40, 146, 2, 81, "Section"],
+Cell[1442, 44, 3882, 106, 451, "Input"],
+Cell[5327, 152, 2021, 52, 253, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[7339, 208, 98, 1, 64, "Section"],
-Cell[7440, 211, 7849, 164, 675, "Input"],
-Cell[15292, 377, 912, 21, 63, "Input"],
+Cell[7385, 209, 98, 1, 81, "Section"],
+Cell[7486, 212, 7947, 165, 869, "Input"],
+Cell[15436, 379, 912, 21, 77, "Input"],
+Cell[16351, 402, 804, 21, 77, "Input"],
+Cell[17158, 425, 627, 17, 77, "Input"],
+Cell[17788, 444, 961, 30, 99, "Input"],
+Cell[18752, 476, 1126, 26, 77, "Input"],
 Cell[CellGroupData[{
-Cell[16229, 402, 961, 21, 97, "Input"],
-Cell[17193, 425, 258, 4, 22, "Print"]
+Cell[19903, 506, 365, 10, 32, "Input"],
+Cell[CellGroupData[{
+Cell[20293, 520, 180, 3, 23, "Print"],
+Cell[20476, 525, 183, 3, 23, "Print"],
+Cell[20662, 530, 185, 3, 23, "Print"],
+Cell[20850, 535, 174, 3, 23, "Print"],
+Cell[21027, 540, 182, 3, 23, "Print"],
+Cell[21212, 545, 185, 3, 23, "Print"],
+Cell[21400, 550, 183, 3, 23, "Print"],
+Cell[21586, 555, 174, 3, 23, "Print"],
+Cell[21763, 560, 180, 3, 23, "Print"],
+Cell[21946, 565, 185, 3, 23, "Print"],
+Cell[22134, 570, 183, 3, 23, "Print"],
+Cell[22320, 575, 173, 3, 23, "Print"],
+Cell[22496, 580, 180, 3, 23, "Print"],
+Cell[22679, 585, 183, 3, 23, "Print"],
+Cell[22865, 590, 185, 3, 23, "Print"],
+Cell[23053, 595, 174, 3, 23, "Print"],
+Cell[23230, 600, 180, 3, 23, "Print"],
+Cell[23413, 605, 183, 3, 23, "Print"],
+Cell[23599, 610, 185, 3, 23, "Print"],
+Cell[23787, 615, 174, 3, 23, "Print"],
+Cell[23964, 620, 180, 3, 23, "Print"],
+Cell[24147, 625, 183, 3, 23, "Print"],
+Cell[24333, 630, 183, 3, 23, "Print"],
+Cell[24519, 635, 174, 3, 23, "Print"],
+Cell[24696, 640, 182, 3, 23, "Print"],
+Cell[24881, 645, 183, 3, 23, "Print"],
+Cell[25067, 650, 182, 3, 23, "Print"],
+Cell[25252, 655, 173, 3, 23, "Print"],
+Cell[25428, 660, 180, 3, 23, "Print"],
+Cell[25611, 665, 185, 3, 23, "Print"],
+Cell[25799, 670, 183, 3, 23, "Print"],
+Cell[25985, 675, 174, 3, 23, "Print"],
+Cell[26162, 680, 180, 3, 23, "Print"],
+Cell[26345, 685, 183, 3, 23, "Print"],
+Cell[26531, 690, 183, 3, 23, "Print"],
+Cell[26717, 695, 174, 3, 23, "Print"],
+Cell[26894, 700, 180, 3, 23, "Print"],
+Cell[27077, 705, 186, 3, 23, "Print"],
+Cell[27266, 710, 184, 3, 23, "Print"],
+Cell[27453, 715, 174, 3, 23, "Print"]
+}, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[17488, 434, 110, 3, 28, "Input"],
-Cell[17601, 439, 200, 2, 28, "Output"],
-Cell[17804, 443, 113, 1, 21, "Print"],
-Cell[17920, 446, 79, 1, 28, "Output"]
+Cell[27676, 724, 136, 2, 32, "Input"],
+Cell[27815, 728, 170, 2, 32, "Output"]
 }, Open  ]],
-Cell[18014, 450, 132, 2, 28, "Input"],
+Cell[28000, 733, 621, 20, 275, "Text"],
 Cell[CellGroupData[{
-Cell[18171, 456, 132, 2, 28, "Input"],
-Cell[18306, 460, 70, 1, 28, "Output"]
+Cell[28646, 757, 895, 16, 32, "Input"],
+Cell[29544, 775, 70744, 1378, 679, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[18413, 466, 175, 3, 28, "Input"],
-Cell[18591, 471, 92, 1, 28, "Output"]
+Cell[100325, 2158, 110, 3, 32, "Input"],
+Cell[100438, 2163, 200, 2, 55, "Output"],
+Cell[100641, 2167, 113, 1, 23, "Print"],
+Cell[100757, 2170, 79, 1, 32, "Output"]
+}, Open  ]],
+Cell[100851, 2174, 132, 2, 32, "Input"],
+Cell[CellGroupData[{
+Cell[101008, 2180, 132, 2, 32, "Input"],
+Cell[101143, 2184, 70, 1, 32, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[18720, 477, 141, 3, 28, "Input"],
-Cell[18864, 482, 168, 3, 28, "Output"]
+Cell[101250, 2190, 175, 3, 32, "Input"],
+Cell[101428, 2195, 92, 1, 32, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[19069, 490, 414, 12, 28, "Input"],
-Cell[19486, 504, 77, 1, 28, "Output"]
+Cell[101557, 2201, 141, 3, 32, "Input"],
+Cell[101701, 2206, 168, 3, 32, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[101906, 2214, 414, 12, 32, "Input"],
+Cell[102323, 2228, 77, 1, 32, "Output"]
 }, Open  ]]
 }, Open  ]]
 }
