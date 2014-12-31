@@ -140,6 +140,10 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
     
     delete f;
+    
+    for(unsigned int i = 0; i < rodvec.size(); i++)
+        delete rodvec[i];
+
     rodvec.clear();
 } 
 
@@ -210,13 +214,71 @@ BOOST_AUTO_TEST_CASE( get_rods_test )
     }
     
     delete f; 
+    rods0to3.clear(); //this was an array of pointers, and those pointers were deleted with f
+    rods5to7.clear();
+    rods9to13.clear();
 
 }
 
 BOOST_AUTO_TEST_CASE( fracture_test)
 {
-    /*std::vector<filament *> fracture(int node);*/
+    // std::vector<filament *> fracture(int node);
+    int nrod = 10;
+    double xrange = 50;
+    double yrange = 50;
+    int xgrid = (int)(2*xrange);
+    int ygrid = (int)(2*yrange);
+    double actin_length = 1;
+    double dt = 1e-3;
+    double temp = 0;
+    double link_length = 1;
+    double viscosity = 0.5;
+    double stretching_stiffness = 100;
+    double bending_stiffness = 1; 
+    double fracture_force = 100;
+
+    double startx = 0, starty = 0, startphi = 0;
+    filament *f, *f1, *f2; 
+    Link l; 
+    actin a; 
+
+    f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            bending_stiffness, fracture_force);
+
+    std::vector<filament *> newfils = f->fracture(5);
+
+    f1 = new filament(startx, starty, startphi, 5, xrange, yrange, xgrid, ygrid, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            bending_stiffness, fracture_force);
+    f2 = new filament(startx + 10, starty, startphi, 5, xrange, yrange, xgrid, ygrid, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            bending_stiffness, fracture_force);
+    //check that everythings the same with the original filament
+    //Expect to have actin monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
+    for (int i = 0; i < nrod; i++){
+        a = actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        l = Link( link_length, stretching_stiffness, bending_stiffness, f, i-1, i);
+        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+    }
+    l = Link( link_length, stretching_stiffness, bending_stiffness, f, nrod-1, -1);
+    BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+
+    //check that the new filaments are the ones we expect
+    
+    BOOST_CHECK_MESSAGE(*(newfils[0]) == *f1, "\n" + newfils[0]->to_string() + "\ndoes not equal\n" + f1->to_string());
+    BOOST_CHECK_MESSAGE(*(newfils[1]) == *f2, "\n" + newfils[1]->to_string() + "\ndoes not equal\n" + f2->to_string());
+
+    delete f;
+    delete f1;
+    delete f2;
+   // newfils.clear();
+    for (unsigned int i = 0; i<newfils.size(); i++)
+        delete newfils[i];
+    newfils.clear();
 }
+
 
 BOOST_AUTO_TEST_CASE( add_polymer_test )
 {

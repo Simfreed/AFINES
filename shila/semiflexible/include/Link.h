@@ -42,6 +42,7 @@ class Link
         void step();
         void filament_update();
         bool operator==(const Link& that);    
+        bool is_similar(const Link& that);    
         double get_stretch_force();
 
     protected:

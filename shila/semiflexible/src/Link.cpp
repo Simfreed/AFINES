@@ -144,10 +144,24 @@ std::string Link::to_string(){
 
 bool Link::operator==(const Link& that) 
 {
+    /*Note: you can't compare the filament objects because that will lead to infinite recursion;
+     * this function requires the filament poiner to be identical to evaluate to true*/
     return (this->aindex[0] == that.aindex[0] && this->aindex[1] == that.aindex[1] &&
             this->kl == that.kl && this->kb == that.kb &&
             this->ld == that.ld && this->fil == that.fil);
 }
+
+bool Link::is_similar(const Link& that) 
+{
+    
+    /* Same as ==; but doesn't compare the filament pointer*/
+
+    return (this->aindex[0] == that.aindex[0] && this->aindex[1] == that.aindex[1] &&
+            this->kl == that.kl && this->kb == that.kb &&
+            this->ld == that.ld);
+}
+
+
 void MidLink::step()
 {
     

@@ -30,6 +30,22 @@ actin::actin(double xcm, double ycm, double angle, double len, double fovx, doub
     this->update();
 }
 
+actin::actin(const actin& other){
+    
+    x = other.x;
+    y = other.y;
+    phi = other.phi;
+    ld = other.ld;
+    diameter = other.diameter;
+    a_vis = other.a_vis;
+    fov[0] = other.fov[0];
+    fov[1] = other.fov[1];
+    nq[0] = other.nq[0];
+    nq[1] = other.nq[1];
+
+    this->update();
+}
+
 actin::~actin(){ 
     //std::cout<<"DELETING ACTIN\n";
 };

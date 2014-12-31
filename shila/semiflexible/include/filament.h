@@ -78,6 +78,8 @@ class filament
         std::vector<actin *> rods;
         
         std::vector<Link *> lks;
+
+        std::string tostring;
 };
 
 #endif

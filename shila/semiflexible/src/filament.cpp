@@ -63,6 +63,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     }
    
     lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size()-1, -1) );  
+    tostring = this->to_string();
 }
 
 filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
@@ -73,14 +74,15 @@ filament::filament(std::vector<actin *> rodvec, double linkLength, double stretc
     nq[0] = rodvec[0]->get_nq()[0];
     nq[1] = rodvec[0]->get_nq()[1];
     dt = deltat;
-    rods = rodvec;
+    //rods = rodvec;
     temperature = temp;
     fracture_force = frac_force;
     gamma = g;
     
     //Link em up
-    for (unsigned int j = 0; j < rods.size(); j++) {
+    for (unsigned int j = 0; j < rodvec.size(); j++) {
 
+        rods.push_back(new actin(*(rodvec[j])));
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
 
     }
@@ -88,6 +90,7 @@ filament::filament(std::vector<actin *> rodvec, double linkLength, double stretc
     if (rods.size() > 0){
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size() - 1, -1) );  
     }
+    tostring = this->to_string();
 }
 
 filament::~filament(){
@@ -372,11 +375,11 @@ std::vector<filament *> filament::fracture(int node){
 bool filament::operator==(const filament& that){
     
     for (unsigned int i = 0; i < rods.size(); i++)
-        if (!(rods[i] == that.rods[i]))
+        if (!(*(rods[i]) == *(that.rods[i])))
             return false;
     
     for (unsigned int i = 0; i < lks.size(); i++)
-        if (!(lks[i] == that.lks[i]))
+        if (!(lks[i]->is_similar(*(that.lks[i]))))
             return false;
 
     return (this->fov[0] == that.fov[0] && this->fov[1] == that.fov[1] && 
