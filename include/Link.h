@@ -35,8 +35,8 @@ class Link
         double get_kb();
         double get_kl();
         double get_length();
-        double get_posx();
-        double get_posy();
+        double get_xcm();
+        double get_ycm();
         std::string to_string();
         std::string write();
         void step();
@@ -57,6 +57,8 @@ class Link
 class MidLink : public Link
 {
     public:
+        MidLink(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
         void step();
+
 };
 #endif

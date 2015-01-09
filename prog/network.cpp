@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
     double actin_length, npolymer, nmonomer;                                // Actin 
     std::string actin_pos_str;
     
-    double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force; // Links
+    double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
     std::string link_color = "1"; //"blue"
     
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
@@ -100,6 +100,7 @@ int main(int argc, char* argv[]){
         ("link_length", po::value<double>(&link_length)->default_value(0), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(10), "pN-- filament breaking point")
+        ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(100), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
 
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
@@ -178,7 +179,7 @@ int main(int argc, char* argv[]){
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
-                                        fracture_force, seed);
+                                        fracture_force, seed); //bending_fracture_force, seed);
 
     std::cout<<"Adding active motors...\n";
     motor_ensemble * myosins = new motor_ensemble( a_motor_density, xrange, yrange, dt, temperature, 

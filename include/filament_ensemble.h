@@ -92,7 +92,8 @@ class filament_ensemble
 
         void set_visc(double v);
 
-    private:
+    protected:
+
         double dt, temperature, fov[2], view[2], rho, ld, visc, gamma;
         
         double link_ld;
@@ -109,4 +110,15 @@ class filament_ensemble
         
         std::map<std::vector<int>,double> t_map;
 };
+
+class DLfilament_ensemble : public filament_ensemble
+{
+    public:
+        DLfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
+                double len, double vis, int nrod,
+                double link_len, std::vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                double bending_frac_force, double seed);
+
+};
+
 #endif

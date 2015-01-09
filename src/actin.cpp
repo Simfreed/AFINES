@@ -340,3 +340,7 @@ double * actin::get_nq(){
 double actin::get_viscosity(){
     return a_vis;
 }
+
+double actin::get_diameter(){
+    return diameter;
+}

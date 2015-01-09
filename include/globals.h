@@ -28,6 +28,11 @@
 #include <stdlib.h>
 #include "vector"
 #include <stdio.h>
+#include <array>
+#include <map>
+
+using namespace std;
+
 /* distances in microns, time in seconds, forces in pN * 
  * --> Temp in pN-um                                   */
 //const double pi, eps, dt, temperature;
@@ -54,4 +59,6 @@ std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2);
 std::vector<double *> vec2ptrvec(std::vector<double>, int dim);
 std::vector<double *> str2ptrvec(std::string, std::string, std::string);
 
+map<array<int, 2>, double> transpose(map<array<int, 2>, double> mat);
+map<array<int, 2>, double> invert_block_diagonal(map<array<int, 2>, double> mat);
 #endif
