@@ -32,7 +32,7 @@ class filament_ensemble
         filament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
                 double len, double vis, int nrod,
                 double link_len, std::vector<double *> pos_sets, double stretching, double bending, double frac_force, 
-                double seed);
+                string bc, double seed);
         
         ~filament_ensemble();
         
@@ -117,7 +117,7 @@ class DLfilament_ensemble : public filament_ensemble
         DLfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
                 double len, double vis, int nrod,
                 double link_len, std::vector<double *> pos_sets, double stretching, double bending, double frac_force, 
-                double bending_frac_force, double seed);
+                double bending_frac_force, string bc, double seed);
 
 };
 

@@ -179,7 +179,7 @@ int main(int argc, char* argv[]){
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
-                                        fracture_force, seed); //bending_fracture_force, seed);
+                                        fracture_force, "REFLECTIVE", seed); //bending_fracture_force, seed);
 
     std::cout<<"Adding active motors...\n";
     motor_ensemble * myosins = new motor_ensemble( a_motor_density, xrange, yrange, dt, temperature, 

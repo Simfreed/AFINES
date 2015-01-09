@@ -16,7 +16,7 @@ filament::filament(){}
 filament::filament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
         double visc, double deltat, double temp, bool isStraight,
         double rodLength, double linkLength, double stretching_stiffness, double bending_stiffness,
-        double frac_force)
+        double frac_force, string bdcnd)
 {
     fov[0] = fovx;
     fov[1] = fovy;
@@ -27,6 +27,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     gamma = 0;
     fracture_force = frac_force;
     viscosity = visc;
+    BC = bdcnd;
 
     //the start of the polymer: 
     rods.push_back( new actin( startx, starty, startphi, rodLength, fov[0], fov[1], nq[0], nq[1], visc) );
@@ -53,7 +54,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
         if (       xcm > (0.5*(fov[0] - rodLength)) || xcm < (-0.5*(fov[0] - rodLength)) 
                 || ycm > (0.5*(fov[1] - rodLength)) || ycm < (-0.5*(fov[1] - rodLength))      )
         {
-            std::cout<<"DEBUG:"<<j+1<<"th segment of filament outside field of view; stopped building filament\n";
+            cout<<"DEBUG:"<<j+1<<"th segment of filament outside field of view; stopped building filament\n";
             break;
         }else{
             // Add the segment
@@ -64,11 +65,10 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     }
    
     lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size()-1, -1) );  
-    tostring = this->to_string();
 }
 
-filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-        double deltat, double temp, double frac_force, double g)
+filament::filament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        double deltat, double temp, double frac_force, double g, string bdcnd)
 {
 
     fov[0] = rodvec[0]->get_fov()[0];
@@ -79,8 +79,9 @@ filament::filament(std::vector<actin *> rodvec, double linkLength, double stretc
     //rods = rodvec;
     temperature = temp;
     fracture_force = frac_force;
-    gamma = g;
-    
+    gamma = g; 
+    BC = bdcnd;
+
     //Link em up
     for (unsigned int j = 0; j < rodvec.size(); j++) {
 
@@ -92,7 +93,6 @@ filament::filament(std::vector<actin *> rodvec, double linkLength, double stretc
     if (rods.size() > 0){
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size() - 1, -1) );  
     }
-    tostring = this->to_string();
 }
 
 filament::~filament(){
@@ -107,10 +107,10 @@ filament::~filament(){
     lks.clear();
 }
 
-std::vector<std::vector<std::vector<int> > > filament::get_quadrants()
+vector<vector<vector<int> > > filament::get_quadrants()
 {
     //should return a map between rod and x, y coords of quadrant
-    std::vector<std::vector<std::vector<int> > > quads;
+    vector<vector<vector<int> > > quads;
     
     for (unsigned int i=0; i<rods.size(); i++) {
         
@@ -147,25 +147,28 @@ void filament::update(double t)
         a_ends[3]=ynew+alength*0.5*sin(phinew);
 
         //Calculate the sheared simulation bounds (at this height)
-        xleft  = std::max(-fov[0] * 0.5 + gamma * a_ends[1] * t, -fov[0] * 0.5 + gamma * a_ends[3] * t);
-        xright = std::min( fov[0] * 0.5 + gamma * a_ends[1] * t,  fov[0] * 0.5 + gamma * a_ends[3] * t);
+        xleft  = max(-fov[0] * 0.5 + gamma * a_ends[1] * t, -fov[0] * 0.5 + gamma * a_ends[3] * t);
+        xright = min( fov[0] * 0.5 + gamma * a_ends[1] * t,  fov[0] * 0.5 + gamma * a_ends[3] * t);
 
-        if (a_ends[0]<=xleft || a_ends[0]>=xright || a_ends[2]<=xleft || a_ends[2]>=xright)
+        if(this->get_BC() == "REFLECTIVE")
         {
-            vx=-vx;//xnew=rods[i]->get_xcm()-dt*vx;//  
-            omega=-omega;//phinew=rods[i]->get_angle()-dt*omega;//omega=-omega;
+            if (a_ends[0]<=xleft || a_ends[0]>=xright || a_ends[2]<=xleft || a_ends[2]>=xright)
+            {
+                vx=-vx;//xnew=rods[i]->get_xcm()-dt*vx;//  
+                omega=-omega;//phinew=rods[i]->get_angle()-dt*omega;//omega=-omega;
 
+            }
+            if (a_ends[1]<=-fov[1]*0.5 || a_ends[1]>=fov[1]*0.5 || a_ends[3]<=-fov[1]*0.5 || a_ends[3]>=fov[1]*0.5)
+            {
+                vy=-vy;//ynew=rods[i]->get_ycm()-dt*vy;
+                omega=-omega;//phinew=rods[i]->get_angle()-dt*omega;
+            }
+
+            xnew=rods[i]->get_xcm()+dt*vx;
+            ynew=rods[i]->get_ycm()+dt*vy;
+            phinew=rods[i]->get_angle()+dt*omega;
         }
-        if (a_ends[1]<=-fov[1]*0.5 || a_ends[1]>=fov[1]*0.5 || a_ends[3]<=-fov[1]*0.5 || a_ends[3]>=fov[1]*0.5)
-        {
-            vy=-vy;//ynew=rods[i]->get_ycm()-dt*vy;
-            omega=-omega;//phinew=rods[i]->get_angle()-dt*omega;
-        }
-
-        xnew=rods[i]->get_xcm()+dt*vx;
-        ynew=rods[i]->get_ycm()+dt*vy;
-        phinew=rods[i]->get_angle()+dt*omega;
-
+        
         // Keep consecutive angles small 
 
         if (i >= 1){
@@ -194,7 +197,7 @@ void filament::update_bending()
 {
 
     double forcex, forcey, force_par, force_perp, lft_trq, rt_trq;
-    std::vector<double> node_forces_x, node_forces_y;
+    vector<double> node_forces_x, node_forces_y;
     
     if (rods.size() < 2){ //no bending energy!
         return;
@@ -259,9 +262,9 @@ void filament::update_bending()
 
 }
 
-std::vector<filament *> filament::update_stretching()
+vector<filament *> filament::update_stretching()
 {
-    std::vector<filament *> newfilaments;
+    vector<filament *> newfilaments;
     for (unsigned int i=0; i < lks.size(); i++) {
         lks[i]->step();
         if (fabs(lks[i]->get_stretch_force()) > fracture_force){
@@ -324,8 +327,8 @@ void filament::set_shear(double g){
 
 }
 
-std::string filament::write_rods(){
-    std::string all_rods;
+string filament::write_rods(){
+    string all_rods;
     for (unsigned int i =0; i < rods.size(); i++)
     {
         all_rods += rods[i]->write();
@@ -334,8 +337,8 @@ std::string filament::write_rods(){
     return all_rods;
 }
 
-std::string filament::write_links(){
-    std::string all_links;
+string filament::write_links(){
+    string all_links;
     for (unsigned int i =0; i < lks.size(); i++)
     {
         all_links += lks[i]->write();
@@ -344,9 +347,9 @@ std::string filament::write_links(){
     return all_links;
 }
 
-std::vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
+vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
 {
-    std::vector<actin *> newrods;
+    vector<actin *> newrods;
     for (unsigned int i = first; i <= last; i++)
     {
         if (i >= rods.size())
@@ -357,17 +360,17 @@ std::vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
     return newrods;
 }
 
-std::vector<filament *> filament::fracture(int node){
+vector<filament *> filament::fracture(int node){
 
-    std::vector<filament *> newfilaments;
-    std::cout<<"DEBUG: fracturing";
+    vector<filament *> newfilaments;
+    cout<<"DEBUG: fracturing";
 
     newfilaments.push_back(
             new filament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
-                dt, temperature, fracture_force, gamma));
+                dt, temperature, fracture_force, gamma, BC));
     newfilaments.push_back(
             new filament(this->get_rods(node, rods.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
-                dt, temperature, fracture_force, gamma));
+                dt, temperature, fracture_force, gamma, BC));
 
     return newfilaments;
 
@@ -390,11 +393,11 @@ bool filament::operator==(const filament& that){
 
 }
 
-std::string filament::to_string(){
+string filament::to_string(){
     
     // Note: not including links in to_string, because link's to_string includes filament's to_string
     char buffer[200];
-    std::string out = "";
+    string out = "";
 
     for (unsigned int i = 0; i < rods.size(); i++)
         out += rods[i]->to_string();
@@ -406,32 +409,32 @@ std::string filament::to_string(){
 
 }
 
-std::vector<NFfilament *> NFfilament::update_stretching()
+vector<NFfilament *> NFfilament::update_stretching()
 {
-    std::vector<NFfilament *> newfils;
+    vector<NFfilament *> newfils;
     return newfils;
 }
 
-std::vector<double> NFfilament::get_A_matrix()
+vector<double> NFfilament::get_A_matrix()
 {
-    std::vector<double> A;
+    vector<double> A;
     return A;
 }
 
-std::vector<double> NFfilament::get_B_matrix()
+vector<double> NFfilament::get_B_matrix()
 {   
-    std::vector<double> B;
+    vector<double> B;
     return B;
 }
 
-std::vector<double> NFfilament::get_G_matrix()
+vector<double> NFfilament::get_G_matrix()
 {
-    std::vector<double> G;
+    vector<double> G;
     return G;
 }
 
 // Very sparse matrix, consider implementing as a map
-std::vector<double> NFfilament::get_P_matrix()
+vector<double> NFfilament::get_P_matrix()
 {
     int p = lks.size() - 1, d = 2;
     int ncolsJ = d*(p+1);
@@ -515,11 +518,11 @@ double* NFfilament::get_mobility()
 
 }
 
-std::vector<double *> NFfilament::get_mobility_matrix()
+vector<double *> NFfilament::get_mobility_matrix()
 {
     
     double* mob = this->get_mobility();
-    std::vector<double *> mat;
+    vector<double *> mat;
     double* mobp = new double[3];
     for( unsigned int p = 0; p < lks.size(); p++){
         mobp[0] = (p + 1)*mob[0];
@@ -545,21 +548,21 @@ void NFfilament::update(double t)
 DLfilament::DLfilament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
         double visc, double deltat, double temp, bool isStraight,
         double rodLength, double linkLength, double stretching_stiffness, double bending_stiffness,
-        double frac_force, double bending_frac_force) 
+        double frac_force, double bending_frac_force, string bdcnd) 
     : filament(startx, starty, startphi, nrod, fovx, fovy, nqx, nqy, 
         visc, deltat, temp, isStraight,
         rodLength, linkLength, stretching_stiffness, bending_stiffness,
-        frac_force), bending_fracture_force(bending_frac_force)
+        frac_force, bdcnd), bending_fracture_force(bending_frac_force)
 {
     for (int j = 0; j < nrod - 1; j++) {
         midlks.push_back( new MidLink(linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
     }
 }
 
-DLfilament::DLfilament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-        double deltat, double temp, double frac_force, double bending_frac_force, double g)
+DLfilament::DLfilament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        double deltat, double temp, double frac_force, double bending_frac_force, double g, string bdcnd)
     : filament(rodvec, linkLength, stretching_stiffness, bending_stiffness, 
-        deltat, temp, frac_force, g), bending_fracture_force(bending_frac_force)
+        deltat, temp, frac_force, g, bdcnd), bending_fracture_force(bending_frac_force)
 {
     for (unsigned int j = 0; j < rodvec.size() - 1; j++) {
         midlks.push_back( new MidLink(linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
@@ -567,9 +570,9 @@ DLfilament::DLfilament(std::vector<actin *> rodvec, double linkLength, double st
 
 }
 
-std::vector<DLfilament *> DLfilament::update_bending()
+vector<DLfilament *> DLfilament::update_bending()
 {
-    std::vector<DLfilament *> newfilaments;
+    vector<DLfilament *> newfilaments;
     for (unsigned int i=0; i < midlks.size(); i++) {
         midlks[i]->step();
         if (fabs(midlks[i]->get_stretch_force()) > bending_fracture_force){
@@ -582,9 +585,9 @@ std::vector<DLfilament *> DLfilament::update_bending()
     return newfilaments;
 }
 
-std::vector<DLfilament *> DLfilament::update_stretching()
+vector<DLfilament *> DLfilament::update_stretching()
 {
-    std::vector<DLfilament *> newfilaments;
+    vector<DLfilament *> newfilaments;
     for (unsigned int i=0; i < lks.size(); i++) {
         lks[i]->step();
         if (fabs(midlks[i]->get_stretch_force()) > fracture_force){
@@ -597,19 +600,27 @@ std::vector<DLfilament *> DLfilament::update_stretching()
     return newfilaments;
 }
 
-std::vector<DLfilament *> DLfilament::fracture(int node)
+vector<DLfilament *> DLfilament::fracture(int node)
 {
 
-    std::vector<DLfilament *> newfilaments;
-    std::cout<<"DEBUG: fracturing";
+    vector<DLfilament *> newfilaments;
+    cout<<"DEBUG: fracturing";
 
     newfilaments.push_back(
             new DLfilament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
-                dt, temperature, fracture_force, bending_fracture_force, gamma));
+                dt, temperature, fracture_force, bending_fracture_force, gamma, BC));
     newfilaments.push_back(
             new DLfilament(this->get_rods(node, rods.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
-                dt, temperature, fracture_force, bending_fracture_force, gamma));
+                dt, temperature, fracture_force, bending_fracture_force, gamma, BC));
 
     return newfilaments;
 
+}
+
+string filament::get_BC(){
+    return BC; 
+}
+
+void filament::set_BC(string s){
+    this->BC = s;
 }

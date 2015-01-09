@@ -30,10 +30,10 @@ class filament
 
         filament(double x0, double y0, double phi0, int nrod, double fovx, double fovy, int nx, int ny, 
                 double vis, double deltat, double temp, bool isStraight,
-                double rodLength, double linkLength, double stretching, double bending, double fracture); 
+                double rodLength, double linkLength, double stretching, double bending, double fracture, string bc); 
 
-        filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-                double deltat, double temp, double fracture, double gamma);
+        filament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+                double deltat, double temp, double fracture, double gamma, string bc);
        
         filament();
         
@@ -45,7 +45,7 @@ class filament
         
         void update_bending();
         
-        std::vector<filament *> update_stretching();
+        vector<filament *> update_stretching();
 
         void update_shear(); 
         
@@ -55,23 +55,27 @@ class filament
 
         int get_nlinks();
 
-        std::vector<std::vector<std::vector<int> > > get_quadrants();
+        vector<vector<vector<int> > > get_quadrants();
         
-        std::string write_rods();
+        string write_rods();
         
-        std::string write_links();
+        string write_links();
         
-        std::string to_string();
+        string to_string();
         
-        std::vector<actin *> get_rods(unsigned int first, unsigned int last);
+        vector<actin *> get_rods(unsigned int first, unsigned int last);
         
-        std::vector<filament *> fracture(int node);
+        vector<filament *> fracture(int node);
         
         void update_forces(int index, double f1, double f2, double f3);
         
         bool operator==(const filament& that);
         
         void add_rod(actin * a);
+        
+        void set_BC(string s);
+
+        string get_BC();
 
     protected:
         
@@ -79,11 +83,11 @@ class filament
         
         int nq[2];
 
-        std::vector<actin *> rods;
+        vector<actin *> rods;
         
-        std::vector<Link *> lks;
+        vector<Link *> lks;
 
-        std::string tostring;
+        string BC;
 };
 
 // Filament class that is closer to the Nedelec and Foethke model than the above one
@@ -92,21 +96,21 @@ class NFfilament : public filament
 {
     public:
         
-        std::vector<double> get_P_matrix();
+        vector<double> get_P_matrix();
 
-        std::vector<double> get_A_matrix();
+        vector<double> get_A_matrix();
 
-        std::vector<double> get_B_matrix();
+        vector<double> get_B_matrix();
 
-        std::vector<double> get_G_matrix();
+        vector<double> get_G_matrix();
 
         double* get_mobility();
         
-        std::vector<double *> get_mobility_matrix();
+        vector<double *> get_mobility_matrix();
 
         double get_tau();
         
-        std::vector<NFfilament *> update_stretching();
+        vector<NFfilament *> update_stretching();
 
         void update(double t);
         
@@ -122,17 +126,17 @@ class DLfilament : public filament
         
         DLfilament(double x0, double y0, double phi0, int nrod, double fovx, double fovy, int nx, int ny, 
                 double vis, double deltat, double temp, bool isStraight,
-                double rodLength, double linkLength, double stretching, double bending, double fracture, double bending_fracture); 
+                double rodLength, double linkLength, double stretching, double bending, double fracture, double bending_fracture, string bc); 
 
-        DLfilament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-                double deltat, double temp, double fracture, double bending_fracture, double gamma);
+        DLfilament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+                double deltat, double temp, double fracture, double bending_fracture, double gamma, string bc);
 
 
-        std::vector<DLfilament *> update_bending();
+        vector<DLfilament *> update_bending();
         
-        std::vector<DLfilament *> update_stretching();
+        vector<DLfilament *> update_stretching();
         
-        std::vector<DLfilament *> fracture(int node);
+        vector<DLfilament *> fracture(int node);
             
     private:
 
