@@ -10,7 +10,7 @@
 #include "filament.h"
 #include "actin.h"
 #include "globals.h"
-
+//using namespace std;
 filament::filament(){}
 
 filament::filament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
@@ -26,6 +26,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     temperature = temp;
     gamma = 0;
     fracture_force = frac_force;
+    viscosity = visc;
 
     //the start of the polymer: 
     rods.push_back( new actin( startx, starty, startphi, rodLength, fov[0], fov[1], nq[0], nq[1], visc) );
@@ -67,7 +68,8 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
 }
 
 filament::filament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-        double deltat, double temp, double frac_force, double g){
+        double deltat, double temp, double frac_force, double g)
+{
 
     fov[0] = rodvec[0]->get_fov()[0];
     fov[1] = rodvec[0]->get_fov()[1];
@@ -116,7 +118,6 @@ std::vector<std::vector<std::vector<int> > > filament::get_quadrants()
     }
     return quads;
 }
-
 
 void filament::update(double t)
 {
@@ -210,13 +211,13 @@ void filament::update_bending()
     
     for (unsigned int j = 2; j <= rods.size(); j++){
 
-        forcex =    lks[j-2]->get_kb() * lks[j-2]->get_posx() 
-              - 2 * lks[j-1]->get_kb() * lks[j-1]->get_posx() 
-              +     lks[ j ]->get_kb() * lks[ j ]->get_posx(); 
+        forcex =    lks[j-2]->get_kb() * lks[j-2]->get_xcm() 
+              - 2 * lks[j-1]->get_kb() * lks[j-1]->get_xcm() 
+              +     lks[ j ]->get_kb() * lks[ j ]->get_xcm(); 
         
-        forcey =    lks[j-2]->get_kb() * lks[j-2]->get_posy() 
-              - 2 * lks[j-1]->get_kb() * lks[j-1]->get_posy() 
-              +     lks[ j ]->get_kb() * lks[ j ]->get_posy();
+        forcey =    lks[j-2]->get_kb() * lks[j-2]->get_ycm() 
+              - 2 * lks[j-1]->get_kb() * lks[j-1]->get_ycm() 
+              +     lks[ j ]->get_kb() * lks[ j ]->get_ycm();
 
         node_forces_x[j-2] += -1 * forcex;
         node_forces_x[j-1] +=  2 * forcex;
@@ -242,14 +243,14 @@ void filament::update_bending()
         if (j == 0)
             lft_trq = 0;
         else
-            lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_posx(),
-                            rods[j]->get_ycm() - lks[j]->get_posy(), forcex, forcey);
+            lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
+                            rods[j]->get_ycm() - lks[j]->get_ycm(), forcex, forcey);
 
         if (j == rods.size() - 1)
             rt_trq = 0;
         else{
-            rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_posx(),
-                           rods[j]->get_ycm() - lks[j+1]->get_posy(), forcex, forcey);
+            rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_xcm(),
+                           rods[j]->get_ycm() - lks[j+1]->get_ycm(), forcex, forcey);
         }
         
         rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
@@ -295,12 +296,12 @@ void filament::update_shear(){
         if (i == 0)
             lft_trq = 0;
         else
-            lft_trq = -1 * forcex * (ycm - lks[i]->get_posy()); //cross product with fy = 0
+            lft_trq = -1 * forcex * (ycm - lks[i]->get_ycm()); //cross product with fy = 0
 
         if (i == rods.size() - 1)
             rt_trq = 0;
         else{
-            rt_trq = -1 * forcex * (ycm - lks[i+1]->get_posy());
+            rt_trq = -1 * forcex * (ycm - lks[i+1]->get_ycm());
         }
         
         force_par   =  forcex*rods[i]->get_direction()[0];
@@ -402,5 +403,213 @@ std::string filament::to_string(){
             fov[0], fov[1], nq[0], nq[1], gamma, temperature, dt, fracture_force);
    
     return out + buffer; 
+
+}
+
+std::vector<NFfilament *> NFfilament::update_stretching()
+{
+    std::vector<NFfilament *> newfils;
+    return newfils;
+}
+
+std::vector<double> NFfilament::get_A_matrix()
+{
+    std::vector<double> A;
+    return A;
+}
+
+std::vector<double> NFfilament::get_B_matrix()
+{   
+    std::vector<double> B;
+    return B;
+}
+
+std::vector<double> NFfilament::get_G_matrix()
+{
+    std::vector<double> G;
+    return G;
+}
+
+// Very sparse matrix, consider implementing as a map
+std::vector<double> NFfilament::get_P_matrix()
+{
+    int p = lks.size() - 1, d = 2;
+    int ncolsJ = d*(p+1);
+    int ncolsJt = p;
+    int ncolsJJt = p;
+    vector<double> J, Jt, JJt, JJtInv;
+    J.resize(p*d*(p+1));
+    Jt.resize(p*d*(p+1));
+    JJt.resize(3*(p+1));
+    JJtInv.resize(p*p);
+
+    double x0, y0, x1, y1, x2, y2;
+    int ind;
+
+    x0 = 0;
+    y0 = 0;
+    x1 = lks[0]->get_xcm() - lks[1]->get_xcm();
+    y1 = lks[0]->get_ycm() - lks[1]->get_ycm(); 
+    for (int i = 0; i < p-1; i++){
+        
+        x2 = lks[i+1]->get_xcm() - lks[i+2]->get_xcm();
+        y2 = lks[i+1]->get_ycm() - lks[i+2]->get_ycm();
+
+        ind = ncolsJ*i + d*i;
+        J[ind] =  x1;
+        J[ind + 1] =  y1;
+        J[ind + 2] = -x1;
+        J[ind + 3] = -y1;
+
+        ind = ncolsJt*i*d + i;
+        Jt[ind            ] =  x1;
+        Jt[ind +   ncolsJt] =  y1;
+        Jt[ind + 2*ncolsJt] = -x1;
+        Jt[ind + 3*ncolsJt] = -y1;
+
+        ind = ncolsJJt*i;
+        JJt[ind]    = -1*(x0*x1 + y0*y1);
+        JJt[ind+1]  =  2*(x1*x1 + y1*y1);
+        JJt[ind+2]  = -1*(x2*x1 + y2*y1);
+
+        x0 = x1;
+        y0 = y1;
+        x1 = x2;
+        y1 = y2;
+    
+    }
+    
+    ind = (ncolsJ + d)*(p-1);
+    J[ind]     =  x1;
+    J[ind + 1] =  y1;
+    J[ind + 2] = -x1;
+    J[ind + 3] = -y1;
+
+    ind = (ncolsJt*d+1)*(p-1);
+    Jt[ind            ] =  x1;
+    Jt[ind +   ncolsJt] =  y1;
+    Jt[ind + 2*ncolsJt] = -x1;
+    Jt[ind + 3*ncolsJt] = -y1;
+
+    ind = ncolsJJt*(p-1);
+    JJt[ind]    = -1*(x0*x1 + y0*y1);
+    JJt[ind+1]  =  2*(x1*x1 + y1*y1);
+    JJt[ind+2]  =  0;
+    
+    vector<double> P;// = matrix_multiply(matrix_multiply(Jt, inverse(JJt)),J);
+    return P;
+
+}
+/* mu = mobility = 1 / friction, i think */
+
+double* NFfilament::get_mobility()
+{
+    
+    double L = rods[0]->get_length() * rods.size();
+    double* mob = new double[3];
+    
+    mob[0] = (rods.size() > 0) ? log(L / rods[0]->get_diameter())/(2 * pi * viscosity * L) : 0;
+    mob[1] = 2 * mob[0];
+    mob[2] = mob[0] * L * L / 4;
+    return mob;
+
+}
+
+std::vector<double *> NFfilament::get_mobility_matrix()
+{
+    
+    double* mob = this->get_mobility();
+    std::vector<double *> mat;
+    double* mobp = new double[3];
+    for( unsigned int p = 0; p < lks.size(); p++){
+        mobp[0] = (p + 1)*mob[0];
+        mobp[1] = (p + 1)*mob[1];
+        mobp[2] = (p + 1)*mob[2];
+        mat.push_back(mobp);
+    }
+
+    return mat;
+
+}
+
+double NFfilament::get_tau()
+{
+    double t = 0;
+    return t;
+}
+
+void NFfilament::update(double t)
+{
+}
+
+DLfilament::DLfilament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
+        double visc, double deltat, double temp, bool isStraight,
+        double rodLength, double linkLength, double stretching_stiffness, double bending_stiffness,
+        double frac_force, double bending_frac_force) 
+    : filament(startx, starty, startphi, nrod, fovx, fovy, nqx, nqy, 
+        visc, deltat, temp, isStraight,
+        rodLength, linkLength, stretching_stiffness, bending_stiffness,
+        frac_force), bending_fracture_force(bending_frac_force)
+{
+    for (int j = 0; j < nrod - 1; j++) {
+        midlks.push_back( new MidLink(linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+    }
+}
+
+DLfilament::DLfilament(std::vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        double deltat, double temp, double frac_force, double bending_frac_force, double g)
+    : filament(rodvec, linkLength, stretching_stiffness, bending_stiffness, 
+        deltat, temp, frac_force, g), bending_fracture_force(bending_frac_force)
+{
+    for (unsigned int j = 0; j < rodvec.size() - 1; j++) {
+        midlks.push_back( new MidLink(linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+    }
+
+}
+
+std::vector<DLfilament *> DLfilament::update_bending()
+{
+    std::vector<DLfilament *> newfilaments;
+    for (unsigned int i=0; i < midlks.size(); i++) {
+        midlks[i]->step();
+        if (fabs(midlks[i]->get_stretch_force()) > bending_fracture_force){
+            newfilaments = this->fracture(i);
+            break;
+        }
+        else
+            midlks[i]->filament_update();
+    }
+    return newfilaments;
+}
+
+std::vector<DLfilament *> DLfilament::update_stretching()
+{
+    std::vector<DLfilament *> newfilaments;
+    for (unsigned int i=0; i < lks.size(); i++) {
+        lks[i]->step();
+        if (fabs(midlks[i]->get_stretch_force()) > fracture_force){
+            newfilaments = this->fracture(i);
+            break;
+        }
+        else
+            lks[i]->filament_update();
+    }
+    return newfilaments;
+}
+
+std::vector<DLfilament *> DLfilament::fracture(int node)
+{
+
+    std::vector<DLfilament *> newfilaments;
+    std::cout<<"DEBUG: fracturing";
+
+    newfilaments.push_back(
+            new DLfilament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+                dt, temperature, fracture_force, bending_fracture_force, gamma));
+    newfilaments.push_back(
+            new DLfilament(this->get_rods(node, rods.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+                dt, temperature, fracture_force, bending_fracture_force, gamma));
+
+    return newfilaments;
 
 }

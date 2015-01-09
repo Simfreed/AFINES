@@ -89,7 +89,9 @@ class actin
         std::string to_string();
         
         bool operator==(const actin& that);    
-   
+        
+        double get_diameter();
+
 
 
     private:

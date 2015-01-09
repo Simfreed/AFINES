@@ -23,7 +23,7 @@ Link::Link(double len, double stretching_stiffness, double bending_stiffness,
     aindex[1]       =   aindex1;
     fil             =   f;
 
-    // Set the coordinates of the heads:
+    // initialize the coordinates of the heads:
     hx[0] = 0;
     hx[1] = 0;
     hy[0] = 0;
@@ -119,11 +119,11 @@ double Link::get_kl(){
 double Link::get_length(){
     return ld;
 }
-double Link::get_posx(){
+double Link::get_xcm(){
     return xcm;
 }
 
-double Link::get_posy(){
+double Link::get_ycm(){
     return ycm;
 }
 
@@ -162,6 +162,13 @@ bool Link::is_similar(const Link& that)
 }
 
 
+MidLink::MidLink(double len, double stretching_stiffness, double bending_stiffness, 
+        filament* f, int aindex0, int aindex1)
+    : Link(len, stretching_stiffness, bending_stiffness, f, aindex0, aindex1)
+{
+    // initialize the coordinates of the heads:
+//    this->step();
+}
 void MidLink::step()
 {
     
