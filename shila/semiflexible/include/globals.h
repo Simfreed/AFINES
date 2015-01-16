@@ -37,7 +37,7 @@ using namespace std;
  * --> Temp in pN-um                                   */
 //const double pi, eps, dt, temperature;
 const double pi = 3.14159265358979323;
-const double maxSmallAngle = pi/12; //Small angles DEFINED as such that sin(t) = t to 2 SigFigs
+const double maxSmallAngle = pi; //Small angles DEFINED as such that sin(t) = t to 2 SigFigs
 const double eps = 0.001;
 const double temperature = 0.004;
 /*generic functions to be used below*/

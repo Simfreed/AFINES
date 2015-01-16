@@ -70,29 +70,45 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
 filament::filament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
         double deltat, double temp, double frac_force, double g, string bdcnd)
 {
-
-    fov[0] = rodvec[0]->get_fov()[0];
-    fov[1] = rodvec[0]->get_fov()[1];
-    nq[0] = rodvec[0]->get_nq()[0];
-    nq[1] = rodvec[0]->get_nq()[1];
+    
     dt = deltat;
-    //rods = rodvec;
     temperature = temp;
     fracture_force = frac_force;
     gamma = g; 
     BC = bdcnd;
+
+    if (rodvec.size() > 0)
+    {
+        fov[0] = rodvec[0]->get_fov()[0];
+        fov[1] = rodvec[0]->get_fov()[1];
+        nq[0] = rodvec[0]->get_nq()[0];
+        nq[1] = rodvec[0]->get_nq()[1];
+    }
+    else{
+        fov[0] = 0;
+        fov[1] = 0;
+        nq[0] = 0;
+        nq[1] = 0;
+    }
 
     //Link em up
     for (unsigned int j = 0; j < rodvec.size(); j++) {
 
         rods.push_back(new actin(*(rodvec[j])));
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
-
     }
 
     if (rods.size() > 0){
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size() - 1, -1) );  
     }
+
+    int s = rodvec.size();
+    for (int i = 0; i<s; i++)
+    {
+        delete rodvec[i];
+    }
+    rodvec.clear();
+
 }
 
 filament::~filament(){
@@ -123,7 +139,10 @@ void filament::update(double t)
 {
     double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, phiprev, a_ends[4]; 
     double xleft, xright;
-   
+    bool recenter_filament = false;
+    double yleft  = -fov[1] * 0.5;
+    double yright =  fov[1] * 0.5;
+
     for (unsigned int i = 0; i < rods.size(); i++){
 
         double * fric = rods[i]->get_friction();
@@ -154,21 +173,44 @@ void filament::update(double t)
         {
             if (a_ends[0]<=xleft || a_ends[0]>=xright || a_ends[2]<=xleft || a_ends[2]>=xright)
             {
-                vx=-vx;//xnew=rods[i]->get_xcm()-dt*vx;//  
-                omega=-omega;//phinew=rods[i]->get_angle()-dt*omega;//omega=-omega;
+                vx=-vx;
+                omega=-omega;
 
             }
-            if (a_ends[1]<=-fov[1]*0.5 || a_ends[1]>=fov[1]*0.5 || a_ends[3]<=-fov[1]*0.5 || a_ends[3]>=fov[1]*0.5)
+            if (a_ends[1]<=yleft || a_ends[1]>=yright || a_ends[3]<=yleft || a_ends[3]>=yright)
             {
-                vy=-vy;//ynew=rods[i]->get_ycm()-dt*vy;
-                omega=-omega;//phinew=rods[i]->get_angle()-dt*omega;
+                vy=-vy;
+                omega=-omega;
             }
 
             xnew=rods[i]->get_xcm()+dt*vx;
             ynew=rods[i]->get_ycm()+dt*vy;
             phinew=rods[i]->get_angle()+dt*omega;
         }
-        
+        else if(this->get_BC() == "PERIODIC")
+        {
+            if (xnew < xleft) 
+            {
+                xnew += fov[0];
+            }
+            else if (xnew > xright)
+            {
+                xnew -= fov[0];
+            }
+            
+            if (ynew < yleft)
+            {
+                ynew += fov[1];
+            }
+            else if(ynew > yright)
+            {
+                ynew -= fov[1];
+            }
+        }
+        else if(this->get_BC() == "NONE")
+        {
+            recenter_filament = true;
+        }
         // Keep consecutive angles small 
 
         if (i >= 1){
@@ -191,6 +233,21 @@ void filament::update(double t)
         rods[i]->update(); //updates all derived quantities (e.g., endpoints, forces = 0, etc.)
 
     }
+    if (recenter_filament && rods.size() > 0){
+        double midx = rods[floor(rods.size()/2)]->get_xcm();
+        double midy = rods[floor(rods.size()/2)]->get_ycm();
+        for (unsigned int i = 0; i < rods.size(); i++){
+            //cout<<"\nDEBUG: recentering rod "<<i<<"to ("<<midx<<" , "<<midy<<")";
+            xnew = rods[i]->get_xcm()-midx;
+            ynew = rods[i]->get_ycm()-midy;
+            rods[i]->set_xcm(xnew);
+            rods[i]->set_ycm(ynew);
+            
+            //rods[i]->update();
+       
+            }
+    }
+
 }
 
 void filament::update_bending()
@@ -309,7 +366,7 @@ void filament::update_shear(){
         
         force_par   =  forcex*rods[i]->get_direction()[0];
         force_perp  = -forcex*rods[i]->get_direction()[1];
-        
+        cout<<"\nDEBUG: Shearing with (fx, fy, trq) = ("<<force_par<<" , "<<force_perp<<" , "<<lft_trq+rt_trq<<")"; 
         rods[i]->update_force(force_par, force_perp, lft_trq + rt_trq);
     }
 
@@ -350,12 +407,12 @@ string filament::write_links(){
 vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
 {
     vector<actin *> newrods;
-    for (unsigned int i = first; i <= last; i++)
+    for (unsigned int i = first; i < last; i++)
     {
         if (i >= rods.size())
             break;
         else
-            newrods.push_back(rods[i]);
+            newrods.push_back(new actin(*(rods[i])));
     }
     return newrods;
 }
@@ -363,13 +420,13 @@ vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
 vector<filament *> filament::fracture(int node){
 
     vector<filament *> newfilaments;
-    cout<<"DEBUG: fracturing";
+    cout<<"\nDEBUG: fracturing at node "<<node;
 
     newfilaments.push_back(
-            new filament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+            new filament(this->get_rods(0,node), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
                 dt, temperature, fracture_force, gamma, BC));
     newfilaments.push_back(
-            new filament(this->get_rods(node, rods.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+            new filament(this->get_rods(node, rods.size()), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
                 dt, temperature, fracture_force, gamma, BC));
 
     return newfilaments;
@@ -624,3 +681,77 @@ string filament::get_BC(){
 void filament::set_BC(string s){
     this->BC = s;
 }
+    
+//Calculate the force at each Link position 
+//using a simple finite differnce approximation
+// i.e., :F = -dU/dx = -dU/d(theta) * d(theta)/dx
+//        dU/d(theta)  = kappa/L * theta
+//        d(theta)/dx ~= (theta(i+1) - theta(i))/(x(i+1) - x(i)), etc.
+// based on energy functional in Dasanayake, Michalski, Carlsson, 2011
+// E = kappa/2L * Sum(delta(theta)^2)
+
+void filament::update_bending_FD()
+{
+    
+    double forcex0, forcey0, forcex, forcey, forcexrod, forceyrod, force_par, force_perp, lft_trq, rt_trq;
+    double theta0, theta1, dU_dtheta, dtheta, dx, dy;
+    double L, kappaOverL;
+    
+    if (rods.size() < 3){ //not enough rods to calculate a finite difference
+        return;
+    }
+    
+
+    theta0 = rods[1]->get_angle() - rods[0]->get_angle();
+    forcex0 = 0;
+    forcey0 = 0;
+    for (unsigned int j = 1; j < lks.size() - 2; j++){
+
+        theta1     = rods[j+1]->get_angle() - rods[j]->get_angle();
+        L          = rods[j]->get_length();
+        kappaOverL = lks[j]->get_kb() * L * L;
+
+        dU_dtheta = kappaOverL * theta0;
+        dtheta    = theta1 - theta0;
+        dx        = lks[j+1]->get_xcm() - lks[j]->get_xcm();
+        dy        = lks[j+1]->get_ycm() - lks[j]->get_ycm();
+        
+        forcex = -1 * dU_dtheta * dtheta / dx; 
+        forcey = -1 * dU_dtheta * dtheta / dy; 
+
+        forcexrod = (forcex + forcex0)/2;
+        forceyrod = (forcey + forcey0)/2;
+
+        force_par   =  forcexrod*rods[j]->get_direction()[0] + forceyrod*rods[j]->get_direction()[1];
+        force_perp  = -forcexrod*rods[j]->get_direction()[1] + forceyrod*rods[j]->get_direction()[0];
+        
+        lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
+                        rods[j]->get_ycm() - lks[j]->get_ycm(), forcexrod, forceyrod);
+
+        rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_xcm(),
+                       rods[j]->get_ycm() - lks[j+1]->get_ycm(), forcexrod, forceyrod);
+        
+        
+        rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
+        
+        forcex0 = forcex;
+        forcey0 = forcey;
+        theta0 = theta1;
+
+    }
+    forcex = 0;
+    forcey = 0;
+
+    forcexrod = (forcex + forcex0)/2;
+    forceyrod = (forcey + forcey0)/2;
+
+    int j = rods.size() - 1;
+    force_par   =  forcexrod*rods[j]->get_direction()[0] + forceyrod*rods[j]->get_direction()[1];
+    force_perp  = -forcexrod*rods[j]->get_direction()[1] + forceyrod*rods[j]->get_direction()[0];
+    lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
+                    rods[j]->get_ycm() - lks[j]->get_ycm(), forcexrod, forceyrod);
+    rt_trq = 0;
+    rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
+
+}
+
