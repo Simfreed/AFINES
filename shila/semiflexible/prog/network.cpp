@@ -10,9 +10,9 @@
 namespace po = boost::program_options;
 
 template<class T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
+ostream& operator<<(ostream& os, const vector<T>& v)
 {
-    std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
+    copy(v.begin(), v.end(), ostream_iterator<T>(os, " "));
     return os;
 }
 
@@ -33,34 +33,35 @@ int main(int argc, char* argv[]){
     double tinit = 0.0, t = tinit, tfinal, dt;
     
     double viscosity, temperature;                                          //Environment
-    
+    string bnd_cnd;                                         //Allowed values: NONE, PERIODIC, REFLECTIVE
+
     double actin_length, npolymer, nmonomer;                                // Actin 
-    std::string actin_pos_str;
+    string actin_pos_str;
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
-    std::string link_color = "1"; //"blue"
+    string link_color = "1"; //"blue"
     
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
             
-    std::string a_motor_pos_str; 
+    string a_motor_pos_str; 
     
     double p_motor_length=0.5, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
             p_motor_v=0, p_m_kon, p_m_kend, p_m_koff; 
-    std::string p_motor_pos_str;
+    string p_motor_pos_str;
     
-    std::string config_file;                                                // Input configuration
+    string config_file;                                                // Input configuration
     
-    std::string   dir,    afile,  amfile,  pmfile,  lfile;                  // Output
-    std::ofstream o_file, file_a, file_am, file_pm, file_l;
+    string   dir,    afile,  amfile,  pmfile,  lfile;                  // Output
+    ofstream o_file, file_a, file_am, file_pm, file_l;
 
     double shear_rate;                                                      //External Force
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
     generic.add_options()
-        ("version, v", "print version std::string")
+        ("version, v", "print version string")
         ("help", "produce help message")
-        ("config,c", po::value<std::string>(&config_file)->default_value("config/network.cfg"), "name of a configuration file")
+        ("config,c", po::value<string>(&config_file)->default_value("config/network.cfg"), "name of a configuration file")
         ;
 
     //Options allowed in a config file
@@ -77,15 +78,16 @@ int main(int argc, char* argv[]){
        
         ("viscosity", po::value<double>(&viscosity)->default_value(0.5), "Implicity viscosity to determine friction [um^2 / s]")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
+        ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("NONE"), "boundary conditions")
         
         ("nmonomer", po::value<double>(&nmonomer)->default_value(10), "number of monomers per filament")
         ("npolymer", po::value<double>(&npolymer)->default_value(3), "number of polymers in the network")
         ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
-        ("actin_pos_str", po::value<std::string> (&actin_pos_str), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
+        ("actin_pos_str", po::value<string> (&actin_pos_str)->default_value(""), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
         
         ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / area")
         ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.001), "number of passive motors / area")
-        ("a_motor_pos_str", po::value<std::string> (&a_motor_pos_str), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
+        ("a_motor_pos_str", po::value<string> (&a_motor_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
         
         ("a_m_kon", po::value<double>(&a_m_kon)->default_value(90.0),"active motor on rate")
         ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1),"active motor off rate")
@@ -99,13 +101,13 @@ int main(int argc, char* argv[]){
         
         ("link_length", po::value<double>(&link_length)->default_value(0), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
-        ("fracture_force", po::value<double>(&fracture_force)->default_value(10), "pN-- filament breaking point")
-        ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(100), "pN-- filament breaking point")
+        ("fracture_force", po::value<double>(&fracture_force)->default_value(1000), "pN-- filament breaking point")
+        ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(10000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
 
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
         
-        ("dir", po::value<std::string>(&dir)->default_value("out/test"), "output directory")
+        ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
         ("seed", po::value<int>(&seed)->default_value(time(NULL)), "Random number generator seed")
         ; 
     
@@ -113,7 +115,7 @@ int main(int argc, char* argv[]){
     //in config file, but will not be shown to user
     po::options_description hidden("Hidden options");
     hidden.add_options()
-        ("input-file", po::value< std::vector<std::string> >(), "input file")
+        ("input-file", po::value< vector<string> >(), "input file")
         ;
 
     po::options_description cmdline_options;
@@ -132,9 +134,9 @@ int main(int argc, char* argv[]){
     store(po::command_line_parser(argc, argv).options(cmdline_options).positional(p).run(), vm);
     notify(vm);
 
-    std::ifstream ifs(config_file.c_str());
+    ifstream ifs(config_file.c_str());
     if (!ifs){
-        std::cout<<"can not open config file: "<<config_file<<"\n";
+        cout<<"can not open config file: "<<config_file<<"\n";
         return 0;
     }
     else
@@ -154,11 +156,15 @@ int main(int argc, char* argv[]){
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
     double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/actin_length,3);
     
-    int n_bw_stdout = std::max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
-    int n_bw_print  = std::max(int((tfinal - tinit)/(dt*double(nframes))),1);
+    int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
+    int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
 
-    std::vector<double *> actin_position_ptrs = str2ptrvec(actin_pos_str, ";", ",");
-    std::vector<double *> a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ";", ",");
+    vector<double *> actin_position_ptrs, a_motor_position_ptrs;
+    if (actin_pos_str.size() > 0)
+        actin_position_ptrs = str2ptrvec(actin_pos_str, ";", ",");
+    if (a_motor_pos_str.size() > 0)
+        a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ";", ",");
+    
     srand(seed);
             
     
@@ -173,25 +179,28 @@ int main(int argc, char* argv[]){
 		    
 
     // Create Network Objects
-    std::cout<<"Creating actin network..\n";
+    cout<<"Creating actin network..\n";
 	
     filament_ensemble * net = new filament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
-                                        fracture_force, "REFLECTIVE", seed); //bending_fracture_force, seed);
+                                        fracture_force, bnd_cnd, seed); //bending_fracture_force, seed);
 
-    std::cout<<"Adding active motors...\n";
+    cout<<"Adding active motors...\n";
     motor_ensemble * myosins = new motor_ensemble( a_motor_density, xrange, yrange, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                                              a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
-    std::cout<<"Adding passive motors (crosslinkers) ...\n";
+    cout<<"Adding passive motors (crosslinkers) ...\n";
     motor_ensemble * crosslks = new motor_ensemble( p_motor_density, xrange, yrange, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
-    std::cout<<"Updating motors, filaments and crosslinks in the network..\n";
+    cout<<"Updating motors, filaments and crosslinks in the network..\n";
             
-    std::string time_str = "t = 0\n";
+    if (shear_rate != 0)
+        net->set_shear_rate(shear_rate);
+    
+    string time_str = "t = 0\n";
     file_a << time_str;
     net->write_rods(file_a);
     file_l << time_str;
@@ -205,16 +214,18 @@ int main(int argc, char* argv[]){
     while (t<=tfinal) {
         //print time count
 		if (count%n_bw_stdout==0) {
-			std::cout<<"Time counts: "<<count<<"\n";
+			cout<<"\nTime counts: "<<count;
 		}
 
         //update network
+        if (shear_rate != 0)
+            net->update_shear();
+
         net->update_stretching();
         net->update_bending();
         net->update(t);
         net->quad_update();
         
-        //lks->link_walk(); 
         //update motors and cross linkers
         crosslks->motor_walk(t);
         myosins->motor_walk(t);
@@ -225,12 +236,10 @@ int main(int argc, char* argv[]){
         //print to file
 	    if (count%n_bw_print==0) {
 	        
-            time_str = "t = "+std::to_string(t)+"\n";
+            time_str = "t = "+to_string(t)+"\n";
             file_a << time_str;
-//            net->write(file_a);
             net->write_rods(file_a);
             file_l << time_str;
-//            lks->link_write(file_l);
             net->write_links(file_l);
             file_am << time_str;
             myosins->motor_write(file_am);
@@ -247,19 +256,20 @@ int main(int argc, char* argv[]){
     file_pm.close();
     
     //Delete all objects created
-    std::cout<<"Here's where I think I delete things\n";
+    cout<<"\nHere's where I think I delete things\n";
     
 //    delete lks;
     delete myosins;
     delete crosslks;
     delete net;
-    
-    int as = actin_position_ptrs.size(), ms = a_motor_position_ptrs.size();
+   
+    int as = actin_position_ptrs.size();
     for (int i = 0; i < as; i++) delete [] actin_position_ptrs[i];
+    int ms = a_motor_position_ptrs.size();
     for (int i = 0; i < ms; i++) delete [] a_motor_position_ptrs[i];
     
     // Write the output configuration file
-    std::string output_file                         =   dir + "/data/output.txt";
+    string output_file                         =   dir + "/data/output.txt";
     o_file.open(output_file.c_str());
     o_file << " FILE: "                 << output_file     <<"\n";
     o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
@@ -271,12 +281,13 @@ int main(int argc, char* argv[]){
     o_file << " Passive Motor unbinding rate: " << p_m_koff          << ", Passive Motor end detachment rate: "  << p_m_kend                    <<"\n";
     o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
     o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", dt between output files: "<< n_bw_print*dt<<", Viscosity: " << viscosity              <<"\n";
+    o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
     o_file.close();
     
     
-    std::cout<<"\nTime counts: "<<count;
-	std::cout<<"\nExecuted";
-	std::cout<<"\n Done\n";
+    cout<<"\nTime counts: "<<count;
+	cout<<"\nExecuted";
+	cout<<"\n Done\n";
     
     return 0;
 }
