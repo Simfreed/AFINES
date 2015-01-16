@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    105769,       2337]
-NotebookOptionsPosition[    102428,       2233]
-NotebookOutlinePosition[    102766,       2248]
-CellTagsIndexPosition[    102723,       2245]
+NotebookDataLength[     99626,       2152]
+NotebookOptionsPosition[     97702,       2084]
+NotebookOutlinePosition[     98040,       2099]
+CellTagsIndexPosition[     97997,       2096]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -28,13 +28,19 @@ Cell[BoxData[{
   RowBox[{
   "mdwlcl", "=", 
    "\"\</home/simonfreedman/scratch-midway/cytomod/out/pl/\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+  "mdwtest", "=", 
+   "\"\</home/simonfreedman/Code/cytomod/shila/semiflexible/out/test/\>\""}], 
   ";"}]}], "Input",
  CellChangeTimes->{{3.627385105358482*^9, 3.627385147573698*^9}, {
   3.627737551226329*^9, 3.627737577414873*^9}, {3.627737635087924*^9, 
   3.627737651990177*^9}, {3.627820471533111*^9, 3.6278204846202383`*^9}, {
   3.62782216876772*^9, 3.627822195821567*^9}, {3.627822356825173*^9, 
   3.6278223702966337`*^9}, {3.627822456889227*^9, 3.6278224616485786`*^9}, {
-  3.627905091453683*^9, 3.6279050915166616`*^9}}],
+  3.627905091453683*^9, 3.6279050915166616`*^9}, {3.630074608062232*^9, 
+  3.630074637692267*^9}}],
 
 Cell[CellGroupData[{
 
@@ -481,7 +487,8 @@ Cell[BoxData[{
     RowBox[{
      RowBox[{"ToString", "[", "i", "]"}], ",", 
      RowBox[{"{", 
-      RowBox[{"i", ",", "10"}], "}"}]}], "]"}]}], 
+      RowBox[{"i", ",", 
+       RowBox[{"{", "826", "}"}]}], "}"}]}], "]"}]}], 
   ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"basedir", "=", "\"\<nmon50_seed\>\""}], 
@@ -500,223 +507,67 @@ Cell[BoxData[{
    3.627989847498152*^9}, {3.6279919591477003`*^9, 3.627991959458593*^9}, {
    3.62834467217076*^9, 3.628344676862647*^9}, {3.628345454573278*^9, 
    3.628345454702385*^9}, {3.628345915545895*^9, 3.6283459156537046`*^9}, {
-   3.6283532559403973`*^9, 3.628353266863872*^9}, 3.628356398471669*^9}],
+   3.6283532559403973`*^9, 3.628353266863872*^9}, 3.628356398471669*^9, {
+   3.629745302337907*^9, 3.629745317308014*^9}, {3.629745442987194*^9, 
+   3.629745444726727*^9}, {3.629746055732444*^9, 3.629746058564674*^9}, {
+   3.629746492209972*^9, 3.629746499052602*^9}, {3.629746652671876*^9, 
+   3.6297466585101852`*^9}, {3.62974771494703*^9, 3.62974771865206*^9}, {
+   3.629761358256774*^9, 3.62976138891612*^9}, {3.630161231655263*^9, 
+   3.630161255982457*^9}, {3.630161965215508*^9, 3.630161967754657*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"seedframes", "=", 
-   RowBox[{"Table", "[", 
-    RowBox[{
-     RowBox[{"sim", "[", 
-      RowBox[{
-       RowBox[{"mdwlcl", "<>", "dr"}], ",", "1", ",", "False"}], "]"}], ",", 
-     RowBox[{"{", 
-      RowBox[{"dr", ",", "dirs"}], "}"}]}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.62835966805052*^9, 3.628359705357794*^9}}],
+  RowBox[{"Do", "[", 
+   RowBox[{
+    RowBox[{"sim", "[", 
+     RowBox[{
+      RowBox[{"mdwlcl", "<>", "dr"}], ",", "1", ",", "True"}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"dr", ",", "dirs"}], "}"}]}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.62835966805052*^9, 3.628359705357794*^9}, {
+   3.629745332441598*^9, 3.629745345706122*^9}, {3.629745454225051*^9, 
+   3.6297454544450617`*^9}, 3.629747267255986*^9, 3.62974775964501*^9, 
+   3.629747794231889*^9, {3.630161263053413*^9, 3.6301612631880627`*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359707751981*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359707884705*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597079853487`*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed1\"\>"], "Print",\
-
- CellChangeTimes->{3.628359707998601*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.6283597102935658`*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597104249163`*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359710529669*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed2\"\>"], "Print",\
-
- CellChangeTimes->{3.628359710544773*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359712489695*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597126204243`*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359712725193*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed3\"\>"], "Print",\
-
- CellChangeTimes->{3.62835971273687*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359714744831*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359714881629*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597149815197`*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed4\"\>"], "Print",\
-
- CellChangeTimes->{3.628359714983827*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359716754879*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359716886384*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597169890833`*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed5\"\>"], "Print",\
-
- CellChangeTimes->{3.628359716991025*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359718957024*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359719093601*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359719189457*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed6\"\>"], "Print",\
-
- CellChangeTimes->{3.628359719196203*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.6283597213758383`*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359721515785*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.62835972161847*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed7\"\>"], "Print",\
-
- CellChangeTimes->{3.62835972162497*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359723618969*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597237553062`*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359723867364*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed8\"\>"], "Print",\
-
- CellChangeTimes->{3.628359723870487*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9/txt_stack/rods.\
-txt\"\>"], "Print",
- CellChangeTimes->{3.628359726137134*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9/txt_stack/\
-amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359726279819*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9/txt_stack/\
-pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359726400581*^9}],
-
-Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed9\"\>"], "Print",\
-
- CellChangeTimes->{3.628359726406624*^9}],
-
-Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10/txt_stack/\
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed826/txt_stack/\
 rods.txt\"\>"], "Print",
- CellChangeTimes->{3.62835972861736*^9}],
+ CellChangeTimes->{
+  3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
+   3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
+   3.629747295225071*^9, {3.629747778867606*^9, 3.629747808444593*^9}, 
+   3.629761382724489*^9, 3.630161264319889*^9, 3.630161972118187*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10/txt_stack/\
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed826/txt_stack/\
 amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6283597287573557`*^9}],
+ CellChangeTimes->{
+  3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
+   3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
+   3.629747295225071*^9, {3.629747778867606*^9, 3.629747808444593*^9}, 
+   3.629761382724489*^9, 3.630161264319889*^9, 3.630161972208705*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10/txt_stack/\
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed826/txt_stack/\
 pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.628359728872365*^9}],
+ CellChangeTimes->{
+  3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
+   3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
+   3.629747295225071*^9, {3.629747778867606*^9, 3.629747808444593*^9}, 
+   3.629761382724489*^9, 3.630161264319889*^9, 3.630161972218245*^9}],
 
 Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed10\"\>"], "Print",\
-
- CellChangeTimes->{3.62835972887819*^9}]
+/home/simonfreedman/scratch-midway/cytomod/out/pl/nmon50_seed826\"\>"], \
+"Print",
+ CellChangeTimes->{
+  3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
+   3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
+   3.629747295225071*^9, {3.629747778867606*^9, 3.629747808444593*^9}, 
+   3.629761382724489*^9, 3.630161264319889*^9, 3.630161972219788*^9}]
 }, Open  ]]
 }, Open  ]],
 
@@ -2231,8 +2082,8 @@ Cell[BoxData["$Aborted"], "Output",
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{1008, 855},
-WindowMargins->{{68, Automatic}, {Automatic, -34}},
+WindowSize->{1008, 806},
+WindowMargins->{{-5, Automatic}, {Automatic, -29}},
 FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
 StyleDefinitions->"Default.nb"
 ]
@@ -2247,96 +2098,60 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 710, 16, 55, "Input"],
+Cell[558, 20, 911, 22, 77, "Input"],
 Cell[CellGroupData[{
-Cell[1293, 40, 146, 2, 81, "Section"],
-Cell[1442, 44, 3882, 106, 451, "Input"],
-Cell[5327, 152, 2021, 52, 253, "Input"]
+Cell[1494, 46, 146, 2, 81, "Section"],
+Cell[1643, 50, 3882, 106, 451, "Input"],
+Cell[5528, 158, 2021, 52, 253, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[7385, 209, 98, 1, 81, "Section"],
-Cell[7486, 212, 7947, 165, 869, "Input"],
-Cell[15436, 379, 912, 21, 77, "Input"],
-Cell[16351, 402, 804, 21, 77, "Input"],
-Cell[17158, 425, 627, 17, 77, "Input"],
-Cell[17788, 444, 961, 30, 99, "Input"],
-Cell[18752, 476, 1126, 26, 77, "Input"],
+Cell[7586, 215, 98, 1, 81, "Section"],
+Cell[7687, 218, 7947, 165, 869, "Input"],
+Cell[15637, 385, 912, 21, 77, "Input"],
+Cell[16552, 408, 804, 21, 77, "Input"],
+Cell[17359, 431, 627, 17, 77, "Input"],
+Cell[17989, 450, 961, 30, 99, "Input"],
+Cell[18953, 482, 1592, 33, 77, "Input"],
 Cell[CellGroupData[{
-Cell[19903, 506, 365, 10, 32, "Input"],
+Cell[20570, 519, 541, 12, 32, "Input"],
 Cell[CellGroupData[{
-Cell[20293, 520, 180, 3, 23, "Print"],
-Cell[20476, 525, 183, 3, 23, "Print"],
-Cell[20662, 530, 185, 3, 23, "Print"],
-Cell[20850, 535, 174, 3, 23, "Print"],
-Cell[21027, 540, 182, 3, 23, "Print"],
-Cell[21212, 545, 185, 3, 23, "Print"],
-Cell[21400, 550, 183, 3, 23, "Print"],
-Cell[21586, 555, 174, 3, 23, "Print"],
-Cell[21763, 560, 180, 3, 23, "Print"],
-Cell[21946, 565, 185, 3, 23, "Print"],
-Cell[22134, 570, 183, 3, 23, "Print"],
-Cell[22320, 575, 173, 3, 23, "Print"],
-Cell[22496, 580, 180, 3, 23, "Print"],
-Cell[22679, 585, 183, 3, 23, "Print"],
-Cell[22865, 590, 185, 3, 23, "Print"],
-Cell[23053, 595, 174, 3, 23, "Print"],
-Cell[23230, 600, 180, 3, 23, "Print"],
-Cell[23413, 605, 183, 3, 23, "Print"],
-Cell[23599, 610, 185, 3, 23, "Print"],
-Cell[23787, 615, 174, 3, 23, "Print"],
-Cell[23964, 620, 180, 3, 23, "Print"],
-Cell[24147, 625, 183, 3, 23, "Print"],
-Cell[24333, 630, 183, 3, 23, "Print"],
-Cell[24519, 635, 174, 3, 23, "Print"],
-Cell[24696, 640, 182, 3, 23, "Print"],
-Cell[24881, 645, 183, 3, 23, "Print"],
-Cell[25067, 650, 182, 3, 23, "Print"],
-Cell[25252, 655, 173, 3, 23, "Print"],
-Cell[25428, 660, 180, 3, 23, "Print"],
-Cell[25611, 665, 185, 3, 23, "Print"],
-Cell[25799, 670, 183, 3, 23, "Print"],
-Cell[25985, 675, 174, 3, 23, "Print"],
-Cell[26162, 680, 180, 3, 23, "Print"],
-Cell[26345, 685, 183, 3, 23, "Print"],
-Cell[26531, 690, 183, 3, 23, "Print"],
-Cell[26717, 695, 174, 3, 23, "Print"],
-Cell[26894, 700, 180, 3, 23, "Print"],
-Cell[27077, 705, 186, 3, 23, "Print"],
-Cell[27266, 710, 184, 3, 23, "Print"],
-Cell[27453, 715, 174, 3, 23, "Print"]
+Cell[21136, 535, 439, 7, 23, "Print"],
+Cell[21578, 544, 442, 7, 23, "Print"],
+Cell[22023, 553, 442, 7, 23, "Print"],
+Cell[22468, 562, 433, 7, 23, "Print"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[27676, 724, 136, 2, 32, "Input"],
-Cell[27815, 728, 170, 2, 32, "Output"]
+Cell[22950, 575, 136, 2, 32, "Input"],
+Cell[23089, 579, 170, 2, 32, "Output"]
 }, Open  ]],
-Cell[28000, 733, 621, 20, 275, "Text"],
+Cell[23274, 584, 621, 20, 275, "Text"],
 Cell[CellGroupData[{
-Cell[28646, 757, 895, 16, 32, "Input"],
-Cell[29544, 775, 70744, 1378, 679, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[100325, 2158, 110, 3, 32, "Input"],
-Cell[100438, 2163, 200, 2, 55, "Output"],
-Cell[100641, 2167, 113, 1, 23, "Print"],
-Cell[100757, 2170, 79, 1, 32, "Output"]
-}, Open  ]],
-Cell[100851, 2174, 132, 2, 32, "Input"],
-Cell[CellGroupData[{
-Cell[101008, 2180, 132, 2, 32, "Input"],
-Cell[101143, 2184, 70, 1, 32, "Output"]
+Cell[23920, 608, 895, 16, 32, "Input"],
+Cell[24818, 626, 70744, 1378, 679, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[101250, 2190, 175, 3, 32, "Input"],
-Cell[101428, 2195, 92, 1, 32, "Output"]
+Cell[95599, 2009, 110, 3, 32, "Input"],
+Cell[95712, 2014, 200, 2, 55, "Output"],
+Cell[95915, 2018, 113, 1, 23, "Print"],
+Cell[96031, 2021, 79, 1, 32, "Output"]
+}, Open  ]],
+Cell[96125, 2025, 132, 2, 32, "Input"],
+Cell[CellGroupData[{
+Cell[96282, 2031, 132, 2, 32, "Input"],
+Cell[96417, 2035, 70, 1, 32, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[101557, 2201, 141, 3, 32, "Input"],
-Cell[101701, 2206, 168, 3, 32, "Output"]
+Cell[96524, 2041, 175, 3, 32, "Input"],
+Cell[96702, 2046, 92, 1, 32, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[101906, 2214, 414, 12, 32, "Input"],
-Cell[102323, 2228, 77, 1, 32, "Output"]
+Cell[96831, 2052, 141, 3, 32, "Input"],
+Cell[96975, 2057, 168, 3, 32, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[97180, 2065, 414, 12, 32, "Input"],
+Cell[97597, 2079, 77, 1, 32, "Output"]
 }, Open  ]]
 }, Open  ]]
 }
