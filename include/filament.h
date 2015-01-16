@@ -45,6 +45,8 @@ class filament
         
         void update_bending();
         
+        void update_bending_FD();
+        
         vector<filament *> update_stretching();
 
         void update_shear(); 

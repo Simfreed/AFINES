@@ -7,9 +7,10 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 {
     actin * a1 = new actin(-1, 2, 0, 1, 0, 0, 0, 0, 0);
     actin * a2 = new actin( 1, 2, 0, 1, 0, 0, 0, 0, 0);
-    actin_ensemble ae = actin_ensemble();
-    ae.add_monomer(a1, 0);
-    ae.add_monomer(a2, 0);
+    filament_ensemble f;
+    f.add_rod(a1);
+    f.add_rod(a2);
+
     Link l( 1, 100, 100, &ae, 0, 1, "green");
 
     double tol = 0.001;

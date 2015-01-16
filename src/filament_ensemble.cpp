@@ -205,6 +205,14 @@ void filament_ensemble::update_bending(){
     }
 }
 
+void filament_ensemble::update_bending_FD(){
+    
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->update_bending_FD();
+    }
+}
+
 void filament_ensemble::update_stretching(){
 
     std::vector<filament *> newfilaments;
