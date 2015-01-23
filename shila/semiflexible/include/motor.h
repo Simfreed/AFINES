@@ -14,7 +14,7 @@
 
 //=====================================
 // forward declared dependencies
-class filament_ensemble;
+//template <class filament_ensemble_type> class filament_ensemble;
 
 //=====================================
 //included dependences
@@ -22,11 +22,12 @@ class filament_ensemble;
 #include "string"
 
 //motor class
+template <class filament_ensemble_type>
 class motor 
 {
     public:
 
-        motor(double mx, double my, double mang, double mlen, filament_ensemble* network, int state0, int state1, 
+        motor(double mx, double my, double mang, double mlen, filament_ensemble_type* network, int state0, int state1, 
                 int findex0, int findex1, int rindex0, int rindex1, 
                 double fovx, double fovy, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
                 double rend, double actin_len, double vis, std::string col);
@@ -79,7 +80,7 @@ class motor
         
         std::string color;
         
-        filament_ensemble *actin_network;
+        filament_ensemble_type *actin_network;
         
         double pos_a_end[2], fov[2];
 

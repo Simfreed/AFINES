@@ -23,6 +23,12 @@
 #include "Link.h"
 #include "globals.h"
 //=====================================
+//actin filament template
+/*
+template <class f_type> 
+class filament
+*/
+//=====================================
 //actin filament class
 class filament
 {
@@ -140,6 +146,8 @@ class DLfilament : public filament
         
         vector<DLfilament *> fracture(int node);
             
+        ~DLfilament();
+
     private:
 
         vector<MidLink *> midlks;

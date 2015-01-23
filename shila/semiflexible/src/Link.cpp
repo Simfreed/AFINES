@@ -87,6 +87,7 @@ void Link::filament_update()
     double force_stretch = this->get_stretch_force();
     double * e0, * e1;
     
+    //cout<<"\nDEBUG:stretch = "<<force_stretch;
     if (aindex[0] != -1){
         e0 = fil->get_rod(aindex[0])->get_direction();
         forcex[0]       =   force_stretch * cos(phi); 

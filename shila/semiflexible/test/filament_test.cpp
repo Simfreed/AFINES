@@ -8,15 +8,12 @@
 
 /*
        
-        filament();
-        
         ~filament();
     
         void set_shear(double g);
 
         void update(double t);
         
-        void update_bending();
         
         vector<filament *> update_stretching();
 
@@ -316,122 +313,69 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     
 }
 
-
-BOOST_AUTO_TEST_CASE( add_polymer_test )
+BOOST_AUTO_TEST_CASE( bending_test_two_rods )
 {
+    //Check if the angle between two rods is smaller after some small number of integration steps
+    int nrod = 2;
+    double xrange = 50;
+    double yrange = 50;
+    int xgrid = (int)(2*xrange);
+    int ygrid = (int)(2*yrange);
+    double actin_length = 1;
+    double dt = 1e-3;
+    double temp = 0;
+    double link_length = 1;
+    double viscosity = 0.5;
+    double stretching_stiffness = 100;
+    double bending_stiffness = 1; 
+    double fracture_force = 100;
+    string bc="NONE";
+    double startx = 0, starty = 0, startphi = 0;
+    filament * f; 
+    Link l; 
+    actin a; 
+    
+    int nsteps = 20;
 
-}
-BOOST_AUTO_TEST_CASE( direction_test)
-{
-    /*
-    actin * a = new actin(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
-    actin_ensemble ae = actin_ensemble();
-    ae.add_monomer(a, 0);
-    double tol = 0.001; //% 
-    BOOST_CHECK_CLOSE( ae.get_direction(0)[0] , 0.731689 , tol); 
-    BOOST_CHECK_CLOSE( ae.get_direction(0)[1] , 0.681639 , tol); 
-
+    f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
+            viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
+            bending_stiffness, fracture_force, bc);
+   
+    double a0 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
+    double a1;
+    for (int t = 0; t < nsteps; t++){
+        cout<<"\nAngle at time "<<t<<" : "<<a0;
+        f->update_bending();
+        f->update(t);
+        a1 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
+        BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "Angles not getting smaller at time " + to_string(t));
+        a0 = a1;
+    }
+    
+    delete f;
+   /*
+    nrod = 10;
+    cout<<"\n"<<nrod<<" Rod Bending Test";
+    f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
+            viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
+            bending_stiffness, fracture_force, bc);
+    
+    vector<double> angs;
+    for(int j = 1; j < nrod; j++)
+        angs.push_back(f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle());
+    
+    for (int t = 0; t < nsteps; t++){
+        f->update_bending();
+        f->update(t);
+        for(int j = 1; j < nrod; j++){
+            a1 = f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle();
+            cout<<"\nAngle "<<j<<" at time "<<t<<" : "<<a1;
+            BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(angs[j-1]), "\nAngle "<<j<<" not getting smaller at time " + to_string(t));
+            angs[j-1] = a1;
+        }
+    }
+    delete f; 
     */
-}
-
-BOOST_AUTO_TEST_CASE( start_end_test)
-{
-/*
-    actin * a = new actin(0, 0, 0, 1, 0, 0, 0, 0, 0);
-    actin_ensemble ae = actin_ensemble();
-    ae.add_monomer(a, 0);
-    double tol = 0.001; //% 
-    BOOST_CHECK_CLOSE( ae.get_start(0)[0], -0.500000, tol); 
-    BOOST_CHECK_CLOSE( ae.get_start(0)[1],  0.000000, tol); 
-    BOOST_CHECK_CLOSE( ae.get_end(0)[0],  0.500000, tol); 
-    BOOST_CHECK_CLOSE( ae.get_end(0)[1],  0.000000, tol); 
-  */  
-}
-
-BOOST_AUTO_TEST_CASE( get_intpoint_test)
-{
-    /*
-     * actin * a = new actin(0, 0, 0, 1, 0, 0, 0, 0, 0);
-    actin_ensemble ae = actin_ensemble();
-    ae.add_monomer(a, 0);
-    double x = 0.1, y = 1;
-    double tol = 0.001;
-    double * intpoint = ae.get_intpoints(0,x,y);
-    BOOST_CHECK_CLOSE( intpoint[0], 0.1, tol);
-    BOOST_CHECK_CLOSE( intpoint[1], 0, tol);
-    double ipx = intpoint[0];
-    double ipy = intpoint[1];
-    delete[] intpoint;
-    BOOST_CHECK_CLOSE( ipx, 0.1, tol);
-    BOOST_CHECK_CLOSE( ipy, 0, tol);
-*/
-}
-
-BOOST_AUTO_TEST_CASE( update_bending_test )
-{
-
-    /*
-     * double lnk_len = 1;
-    double kl = 100;
-    double kb = 2;
-    string col = "yellow";
-  */  
-    /**************************
-     * Case 1: 1 monomer      *
-     * ***********************/
-/*    actin * a0 = new actin(-1, 0, 0, 1, 0, 0, 0, 0, 0);
-    link_ensemble * lks = new link_ensemble();
-    actin_ensemble * ae = new actin_ensemble();
-    ae->set_straight_filaments(true);
-    ae->add_monomer(a0, 0);
-    ae->connect_polymers(lks, lnk_len, kl, kb, col);
-    ae->update_polymer_bending(0);
-
-    double * frcs = ae->get_forces(0);
-    BOOST_CHECK_EQUAL(frcs[0] , 0);
-    BOOST_CHECK_EQUAL(frcs[1] , 0);
-    BOOST_CHECK_EQUAL(frcs[2] , 0);
-
-    delete lks;
-    delete ae;
-*/
-    /**************************
-     * Case 2: 2 monomers     *
-     * ***********************/
-/*    actin * a1 = new actin(-0.5, 0, 0, 1, 0, 0, 0, 0, 0);
-    actin * a2 = new actin(3.0/(2.0*sqrt(2.0)), 3.0/(2.0*sqrt(2.0)), pi/4, 1, 0, 0, 0, 0, 0);
-    lks = new link_ensemble();
-    ae = new actin_ensemble();
-    ae->set_straight_filaments(true);
-    
-    ae->add_monomer(a1, 0);
-    ae->add_monomer(a2, 0);
-    ae->connect_polymers(lks, lnk_len, kl, kb, col);
-    ae->update_polymer_bending(0);
-    
-    double tol = 0.001;
-    
-    //these are the first forces calculated in the update_polymer_bending function
-    double fx = kb*(-1.5 + 3.0/(2.0*sqrt(2.0)));
-    double fy = kb*(3.0/(2.0*sqrt(2.0)));
-    frcs = ae->get_forces(0);
-    BOOST_CHECK_CLOSE(frcs[0] , fx/2.0 , tol );
-    BOOST_CHECK_CLOSE(frcs[1] , fy/2.0 , tol );
-    BOOST_CHECK_CLOSE(frcs[2] , -0.25*(fy*(1.0/sqrt(2.0) + 1) - fx/sqrt(2.0)) , tol );
-
-    frcs = ae->get_forces(1); 
-    BOOST_CHECK_CLOSE(frcs[0] , sqrt(2.0)/4.0*(fx + fy) , tol );
-    BOOST_CHECK_CLOSE(frcs[1] , sqrt(2.0)/4.0*(fy - fx) , tol );
-    BOOST_CHECK_CLOSE(frcs[2] , 1.0/(2.0*sqrt(2.0))*(fy - fx) , tol );
-    
-    delete lks;
-    delete ae;
-*/
-    /**************************
-     * Case 3: n monomers    *
-     * ***********************/
-    // This would be really annoying to do on pen and paper, can't i just live with the fact
-    // that the 2 monomer case passed?
 }
 
 // EOF

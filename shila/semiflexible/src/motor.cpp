@@ -13,7 +13,8 @@
 //#include "actin.h"
 
 //motor class
-motor::motor(double mx, double my, double mang, double mlen, filament_ensemble* network, int state0, int state1, 
+template <class filament_ensemble_type>
+motor<filament_ensemble_type>::motor(double mx, double my, double mang, double mlen, filament_ensemble_type * network, int state0, int state1, 
         int findex0, int findex1, int rindex0, int rindex1, double fovx, double fovy, double delta_t, double temp,
         double v0, double stiffness, double ron, double roff, double
         rend, double actin_len, double vis, std::string col) {
@@ -62,38 +63,45 @@ motor::motor(double mx, double my, double mang, double mlen, filament_ensemble* 
 
 }
 
-motor::~motor(){ 
+template <class filament_ensemble_type>
+motor<filament_ensemble_type>::~motor(){ 
 };
 
 //return motor state with a given head number
-int* motor::get_states() 
+template <class filament_ensemble_type>
+int* motor<filament_ensemble_type>::get_states() 
 {
     return state;
 }
 
-double* motor::get_hx()
+template <class filament_ensemble_type>
+double* motor<filament_ensemble_type>::get_hx()
 {
     return hx;
 }
 
-double* motor::get_hy()
+template <class filament_ensemble_type>
+double* motor<filament_ensemble_type>::get_hy()
 {
     return hy;
 }
 
-std::string motor::get_color()
+template <class filament_ensemble_type>
+std::string motor<filament_ensemble_type>::get_color()
 {
     return color;
 }
 
-double motor::tension()
+template <class filament_ensemble_type>
+double motor<filament_ensemble_type>::tension()
 {
     double lf=dis_points(hx[0],hy[0],hx[1],hy[1]);
     return mk*(lf-mld)/fmax;
 }
 
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
-void motor::attach(int hd)
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::attach(int hd)
 {
     dist.clear();
     dist=actin_network->get_dist(hx[hd],hy[hd]);
@@ -133,7 +141,8 @@ void motor::attach(int hd)
 } 
 
 //perform brownian motion and shear if head unattached
-void motor::brownian(double t, double gamma)
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::brownian(double t, double gamma)
 {
     if (state[0]==0 && state[1]==0) {
 
@@ -162,7 +171,8 @@ void motor::brownian(double t, double gamma)
 }
 
 //stepping and detachment kinetics of a single bound head 
-void motor::step_onehead(int hd)
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::step_onehead(int hd)
 {
 
     if (event(koff,dt)==1) {
@@ -185,7 +195,8 @@ void motor::step_onehead(int hd)
 }
 
 //stepping and detachment kinetics of a motor with both heads attached
-void motor::step_twoheads()
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::step_twoheads()
 {
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
     //fm = vec(Fm).(-vec(u)) 
@@ -233,7 +244,8 @@ void motor::step_twoheads()
 }
 
 
-void motor::actin_update()
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::actin_update()
 {
     if (state[0]==1 && state[1]==1) {
         stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
@@ -257,7 +269,8 @@ void motor::actin_update()
 
 }
 
-void motor::update_shape()
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::update_shape()
 {
     if (state[0]==1 && state[1]==1) {
         hx[0]=actin_network->get_end(f_index[0],r_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
@@ -286,7 +299,8 @@ void motor::update_shape()
 
 }
 
-void motor::move_end_detach(int hd, double pos)
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 {
     double rod_length = actin_network->get_alength(f_index[hd],r_index[hd]);
     if (pos >= rod_length) { 
@@ -335,7 +349,8 @@ void motor::move_end_detach(int hd, double pos)
 
 }
 
-inline void motor::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
+template <class filament_ensemble_type>
+inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
 {
     //Calculate the sheared simulation bounds (at this height)
     double xleft, xright;
@@ -375,15 +390,20 @@ inline void motor::reflect(double t, double gamma, double x1, double x2, double 
     }
 }
 
-int * motor::get_f_index(){
+template <class filament_ensemble_type>
+int * motor<filament_ensemble_type>::get_f_index(){
     return f_index;
 }
 
-int * motor::get_r_index(){
+template <class filament_ensemble_type>
+int * motor<filament_ensemble_type>::get_r_index(){
     return r_index;
 }
 
-double * motor::get_pos_a_end(){
+template <class filament_ensemble_type>
+double * motor<filament_ensemble_type>::get_pos_a_end(){
     return pos_a_end;
 }
 
+template class motor<NFfilament_ensemble>;
+template class motor<DLfilament_ensemble>;
