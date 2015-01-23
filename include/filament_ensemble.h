@@ -24,25 +24,21 @@
 
 //=====================================
 //filament network class
+template <class filament_type>
 class filament_ensemble
 {
     public:
         filament_ensemble();
 
-        filament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
-                double len, double vis, int nrod,
-                double link_len, std::vector<double *> pos_sets, double stretching, double bending, double frac_force, 
-                string bc, double seed);
-        
         ~filament_ensemble();
         
         void quad_update_monomer(int i);
         
         void quad_update();
 
-        std::vector<filament *> * get_network();
+        vector<filament_type *> * get_network();
 
-        std::map<std::vector<int>, double> get_dist(double x, double y);
+        map<vector<int>, double> get_dist(double x, double y);
 
         double* get_direction(int fil, int rod);
 
@@ -68,20 +64,14 @@ class filament_ensemble
 
         void update_forces(int fil, int rod, double f1, double f2, double f3);
 
-        void write_rods(std::ofstream& fout);
+        void write_rods(ofstream& fout);
         
-        void write_links(std::ofstream& fout);
+        void write_links(ofstream& fout);
         
         void set_straight_filaments(bool is_straight);
 
         void set_shear_rate(double);
 
-        void update_bending();
-        
-        void update_bending_FD();
-        
-        void update_stretching();
-        
         void update_shear();
         
         bool is_polymer_start(int f, int r);
@@ -104,23 +94,47 @@ class filament_ensemble
        
         bool straight_filaments = false;
 
-        std::vector<filament *> network;
+        vector<int> empty_vector;
         
-        std::vector<int> empty_vector;
+        map<int, map<int,vector< vector<int> > > > quad_fils;
         
-        std::map<int, std::map<int,std::vector< std::vector<int> > > > quad_fils;
-        
-        std::map<std::vector<int>,double> t_map;
+        map<vector<int>,double> t_map;
+    
+//    private:
+        vector<filament_type *> network;
 };
 
-class DLfilament_ensemble : public filament_ensemble
+class NFfilament_ensemble:
+    public filament_ensemble<filament>
+{
+
+    public:
+        
+        NFfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
+                double len, double vis, int nrod,
+                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                string bc, double seed);
+        
+        void update_stretching();
+        
+        void update_bending();
+        
+        void update_bending_FD();
+
+};
+  
+class DLfilament_ensemble:
+    public filament_ensemble<DLfilament>
 {
     public:
         DLfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
                 double len, double vis, int nrod,
-                double link_len, std::vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
                 double bending_frac_force, string bc, double seed);
-
+        
+        void update_bending();
+        
+        void update_stretching();
 };
 
 #endif

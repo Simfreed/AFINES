@@ -212,7 +212,7 @@ void filament::update(double t)
             recenter_filament = true;
         }
         // Keep consecutive angles small 
-
+/*
         if (i >= 1){
 
             phiprev = rods[i-1]->get_angle();
@@ -227,6 +227,9 @@ void filament::update(double t)
             }
 
         }
+*/
+//        cout<<"\nDEBUG: (xold, yold, phiold) = ("<<rods[i]->get_xcm()<<" , "<<rods[i]->get_ycm()<<" , "<<rods[i]->get_angle()<<")";
+//        cout<<"\nDEBUG: (xnew, ynew, phinew) = ("<<xnew<<" , "<<ynew<<" , "<<phinew<<")";
         rods[i]->set_xcm(xnew);
         rods[i]->set_ycm(ynew);
         rods[i]->set_phi(phinew);
@@ -279,6 +282,9 @@ void filament::update_bending()
               - 2 * lks[j-1]->get_kb() * lks[j-1]->get_ycm() 
               +     lks[ j ]->get_kb() * lks[ j ]->get_ycm();
 
+     //   forcex *= -1;
+     //   forcey *= -1;
+
         node_forces_x[j-2] += -1 * forcex;
         node_forces_x[j-1] +=  2 * forcex;
         node_forces_x[j  ] += -1 * forcex;
@@ -286,6 +292,7 @@ void filament::update_bending()
         node_forces_y[j-2] += -1 * forcey;
         node_forces_y[j-1] +=  2 * forcey;
         node_forces_y[j  ] += -1 * forcey;
+        
     
     }
     
@@ -296,25 +303,26 @@ void filament::update_bending()
     
         forcex = (node_forces_x[j] + node_forces_x[j+1]) / 2;
         forcey = (node_forces_y[j] + node_forces_y[j+1]) / 2;
+        //cout<<"\nDEBUG : (forcex, forcey) = ("<<forcex<<" , "<<forcey<<" )";
 
         force_par   =  forcex*rods[j]->get_direction()[0] + forcey*rods[j]->get_direction()[1];
         force_perp  = -forcex*rods[j]->get_direction()[1] + forcey*rods[j]->get_direction()[0];
         
-        if (j == 0)
-            lft_trq = 0;
-        else
-            lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
-                            rods[j]->get_ycm() - lks[j]->get_ycm(), forcex, forcey);
+        
+        //if (j == 0)
+        //    lft_trq = 0;
+        //else
+        lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
+                        rods[j]->get_ycm() - lks[j]->get_ycm(), node_forces_x[j], node_forces_y[j]);
 
-        if (j == rods.size() - 1)
-            rt_trq = 0;
-        else{
-            rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_xcm(),
-                           rods[j]->get_ycm() - lks[j+1]->get_ycm(), forcex, forcey);
-        }
+        //if (j == rods.size() - 1)
+         //   rt_trq = 0;
+        //else
+        rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_xcm(),
+                       rods[j]->get_ycm() - lks[j+1]->get_ycm(), node_forces_x[j+1], node_forces_y[j+1]);
         
         rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
-
+        //cout<<"\nDEBUG : (fpar, fperp, tau) = ("<<force_par<<" , "<<force_perp<<" , "<<lft_trq+rt_trq<<" )";
     }
 
 }
@@ -612,7 +620,7 @@ DLfilament::DLfilament(double startx, double starty, double startphi, int nrod, 
         frac_force, bdcnd), bending_fracture_force(bending_frac_force)
 {
     for (int j = 0; j < nrod - 1; j++) {
-        midlks.push_back( new MidLink(linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+        midlks.push_back( new MidLink(rodLength + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
     }
 }
 
@@ -621,8 +629,13 @@ DLfilament::DLfilament(vector<actin *> rodvec, double linkLength, double stretch
     : filament(rodvec, linkLength, stretching_stiffness, bending_stiffness, 
         deltat, temp, frac_force, g, bdcnd), bending_fracture_force(bending_frac_force)
 {
-    for (unsigned int j = 0; j < rodvec.size() - 1; j++) {
-        midlks.push_back( new MidLink(linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+    
+    if (rods.size() > 0)
+    {
+        double rodLength = rods[0]->get_length();
+        for (unsigned int j = 0; j < rods.size() - 1; j++) {
+            midlks.push_back( new MidLink(rodLength + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+        }
     }
 
 }
@@ -636,8 +649,9 @@ vector<DLfilament *> DLfilament::update_bending()
             newfilaments = this->fracture(i);
             break;
         }
-        else
+        else{
             midlks[i]->filament_update();
+        }
     }
     return newfilaments;
 }
@@ -647,7 +661,7 @@ vector<DLfilament *> DLfilament::update_stretching()
     vector<DLfilament *> newfilaments;
     for (unsigned int i=0; i < lks.size(); i++) {
         lks[i]->step();
-        if (fabs(midlks[i]->get_stretch_force()) > fracture_force){
+        if (fabs(lks[i]->get_stretch_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
@@ -753,5 +767,19 @@ void filament::update_bending_FD()
     rt_trq = 0;
     rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
 
+}
+DLfilament::~DLfilament(){
+    
+    int nr = rods.size(), nl = lks.size(), nml = midlks.size();
+    for (int i = 0; i < nr; i ++)
+        delete rods[i];
+    for (int i = 0; i < nl; i ++)
+        delete lks[i];
+    for (int i = 0; i < nml; i++)
+        delete midlks[i];
+    
+    rods.clear();
+    lks.clear();
+    midlks.clear();
 }
 

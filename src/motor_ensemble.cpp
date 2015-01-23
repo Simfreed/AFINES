@@ -13,9 +13,9 @@
 #include "filament_ensemble.h"
 
 //motor_ensemble class
-
-motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, 
-        double mlen, filament_ensemble* network, double v0, double stiffness, double ron, double roff, double rend, 
+template <class filament_ensemble_type>
+motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, 
+        double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
         double actin_len, double vis, std::vector<double *> positions) {
     
     fov[0]=fovx;
@@ -46,12 +46,13 @@ motor_ensemble::motor_ensemble(double mdensity, double fovx, double fovy, double
             mang   = rng(0,2*pi);
         }
 
-        n_motors.push_back(new motor(motorx,motory,mang,mld,f_network,0,0,-1,-1,-1,-1,fov[0],fov[1],delta_t, temp, 
+        n_motors.push_back(new motor<filament_ensemble_type>(motorx,motory,mang,mld,f_network,0,0,-1,-1,-1,-1,fov[0],fov[1],delta_t, temp, 
                     v0,stiffness,ron,roff,rend,actin_len,vis,color));
     }
 }
 
-motor_ensemble::~motor_ensemble( ){ 
+template <class filament_ensemble_type>
+motor_ensemble<filament_ensemble_type>::~motor_ensemble( ){ 
     std::cout<<"DELETING MOTOR ENSEMBLE\n";
     int s = n_motors.size();
     for (int i = 0; i < s; i++){
@@ -60,7 +61,8 @@ motor_ensemble::~motor_ensemble( ){
     n_motors.clear();
 };
 
-void motor_ensemble::motor_walk(double t)
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 {
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
@@ -93,7 +95,8 @@ void motor_ensemble::motor_walk(double t)
 
 }
 
-void motor_ensemble::reshape()
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::reshape()
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
         n_motors[i]->update_shape();
@@ -102,7 +105,8 @@ void motor_ensemble::reshape()
 
 
 
-void motor_ensemble::motor_write(std::ofstream& fout)
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::motor_write(std::ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
         //double stretch=dis_points(n_motors[i]->get_hx()[0],n_motors[i]->get_hy()[0],n_motors[i]->get_hx()[1],n_motors[i]->get_hy()[1])-mld;
@@ -116,19 +120,25 @@ void motor_ensemble::motor_write(std::ofstream& fout)
     } 
 }
 
-void motor_ensemble::motor_tension(std::ofstream& fout)
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::motor_tension(std::ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
         fout<<n_motors[i]->tension()<<"\n";
     }
 }
 
-void motor_ensemble::add_motor(motor * m)
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::add_motor(motor<filament_ensemble_type> * m)
 {
     n_motors.push_back(m);
 }
 
-void motor_ensemble::set_shear(double g)
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::set_shear(double g)
 {
     gamma = g;
 }
+
+template class motor_ensemble<DLfilament_ensemble>;
+template class motor_ensemble<NFfilament_ensemble>;

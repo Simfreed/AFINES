@@ -101,7 +101,7 @@ int main(int argc, char* argv[]){
         
         ("link_length", po::value<double>(&link_length)->default_value(0), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
-        ("fracture_force", po::value<double>(&fracture_force)->default_value(1000), "pN-- filament breaking point")
+        ("fracture_force", po::value<double>(&fracture_force)->default_value(1000000), "pN-- filament breaking point")
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(10000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
 
@@ -181,18 +181,18 @@ int main(int argc, char* argv[]){
     // Create Network Objects
     cout<<"Creating actin network..\n";
 	
-    filament_ensemble * net = new filament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
+    DLfilament_ensemble * net = new DLfilament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
-                                        fracture_force, bnd_cnd, seed); //bending_fracture_force, seed);
+                                        fracture_force, bending_fracture_force, bnd_cnd, seed); 
 
     cout<<"Adding active motors...\n";
-    motor_ensemble * myosins = new motor_ensemble( a_motor_density, xrange, yrange, dt, temperature, 
+    motor_ensemble<DLfilament_ensemble> * myosins = new motor_ensemble<DLfilament_ensemble>( a_motor_density, xrange, yrange, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                                              a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble * crosslks = new motor_ensemble( p_motor_density, xrange, yrange, dt, temperature, 
+    motor_ensemble<DLfilament_ensemble> * crosslks = new motor_ensemble<DLfilament_ensemble>( p_motor_density, xrange, yrange, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     cout<<"Updating motors, filaments and crosslinks in the network..\n";
@@ -221,8 +221,8 @@ int main(int argc, char* argv[]){
         if (shear_rate != 0)
             net->update_shear();
 
-        net->update_stretching();
         net->update_bending();
+        net->update_stretching();
         net->update(t);
         net->quad_update();
         
