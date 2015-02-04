@@ -3,6 +3,7 @@
 ### What is this repository for? ###
 
 * Coarse-grained model of actomyosin networks
+<<<<<<< HEAD
 
 ### System Requirements ###
 Minimally, this system requires gcc+11 and boost which you can load on midway via the commands:
@@ -162,6 +163,19 @@ p_motor_density=0.5
 actin_pos_str=0,0,0
 
 /////Example ends at the line above////
+=======
+* 0
+* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+
+### How do I get set up? ###
+
+* run execute_simulation.py
+* see execute_simulation.py
+* g++, gnuplot, python
+* How to run tests
+* python execute_simulation.py
+  pngs will be in appropriate amf_*_* folder
+>>>>>>> c8a59e58ad872d99d9d09326e70f3522c5b6bd54
 
 ### Contribution guidelines ###
 
@@ -172,4 +186,7 @@ actin_pos_str=0,0,0
 ### Who do I talk to? ###
 
 * Simon Freedman
+<<<<<<< HEAD
 * GCIS E126
+=======
+>>>>>>> c8a59e58ad872d99d9d09326e70f3522c5b6bd54
