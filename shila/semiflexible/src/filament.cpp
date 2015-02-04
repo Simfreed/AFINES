@@ -57,7 +57,7 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
             //Nedelec/ Foethke claim their bending energy regime matters
             
         //    phi += rng(-1*maxSmallAngle , maxSmallAngle);
-            phi = rng(-pi, pi);
+              phi = rng(-pi/2, pi/2);
         }
             
         lphi = (phi + rods.back()->get_angle())/2;
@@ -172,8 +172,8 @@ void filament::update(double t)
     double yright =  fov[1] * 0.5;
 
     for (unsigned int i = 0; i < rods.size(); i++){
-//        cout<<"\nDEBUG: rod "<<i<<" start: ( "<<rods[i]->get_start()[0]<<" , "<<rods[i]->get_start()[1]<<")";
-//        cout<<"\nDEBUG: rod "<<i<<" end  : ( "<<rods[i]->get_end()[0]<<" , "<<rods[i]->get_end()[1]<<")";
+    //    cout<<"\nDEBUG: rod "<<i<<" start: ( "<<rods[i]->get_start()[0]<<" , "<<rods[i]->get_start()[1]<<")";
+    //    cout<<"\nDEBUG: rod "<<i<<" end  : ( "<<rods[i]->get_end()[0]<<" , "<<rods[i]->get_end()[1]<<")";
 
         double * fric = rods[i]->get_friction();
         vpar  = (rods[i]->get_forces()[0])/fric[0]  + sqrt(2*temperature/(dt*fric[0]))*rng_n(0,1);
@@ -652,7 +652,7 @@ void filament::update_bending()
             force_perp = 0;
         }
         
-        rods[j]->update_force(-force_par, -force_perp, rt_trq);
+        rods[j]->update_force(force_par, -force_perp, rt_trq);
         //rods[j]->update_force(0, 0, rt_trq);
     } 
     delete link_fwd_forces_x;
