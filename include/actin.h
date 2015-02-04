@@ -70,18 +70,6 @@ class actin
 
         void set_phi(double theta);
 
-        void set_gay_berne(double sigma0, double eps0, double epsS, double epsE, double m, double n);
-        
-        double get_sigma0();
-        
-        double get_eps0();
-        
-        double get_chi();
-        
-        double get_chiPrime();
-
-        double * calc_gay_berne(actin * a1);
-
         std::vector<std::vector<int> > get_quadrants();
        
         std::string write();
@@ -99,8 +87,6 @@ class actin
         
         double diameter, a_vis;
        
-        double sigma0, eps0, mu, nu, chi, chiPrime;
-        
         std::vector<std::vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
         
         std::vector<int> tmp;

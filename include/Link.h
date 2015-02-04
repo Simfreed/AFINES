@@ -28,7 +28,7 @@ class Link
     public:
         Link();
         Link(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
-        ~Link();
+        virtual ~Link();
 
         double* get_hx();
         double* get_hy();
@@ -43,7 +43,10 @@ class Link
         void filament_update();
         bool operator==(const Link& that);    
         bool is_similar(const Link& that);    
-        double get_stretch_force();
+
+        virtual double get_stretch_force();
+
+        void set_aindex1(int i);
 
     protected:
 
@@ -58,7 +61,15 @@ class MidLink : public Link
 {
     public:
         MidLink(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
+        
         void step();
+        
+        double get_stretch_force();
+        
+        void set_linear(bool lin);
 
+    protected:
+
+        bool is_linear;
 };
 #endif

@@ -39,8 +39,10 @@ int main(int argc, char* argv[]){
     string actin_pos_str;
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
+    double bending_correction_factor = 250;
     string link_color = "1"; //"blue"
-    
+    bool use_linear_bending;
+
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
             
     string a_motor_pos_str; 
@@ -102,9 +104,9 @@ int main(int argc, char* argv[]){
         ("link_length", po::value<double>(&link_length)->default_value(0), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(1000000), "pN-- filament breaking point")
-        ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(10000), "pN-- filament breaking point")
-        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(100), "stiffness of link, pN/um")
-
+        ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")
+        ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(true),"option to send spring type of bending springs")
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
@@ -154,7 +156,7 @@ int main(int argc, char* argv[]){
     }
 
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
-    double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/actin_length,3);
+    double link_bending_stiffness    = bending_correction_factor * polymer_bending_modulus * pow(1.0/actin_length,3);
     
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
@@ -200,6 +202,10 @@ int main(int argc, char* argv[]){
     if (shear_rate != 0)
         net->set_shear_rate(shear_rate);
     
+    if (use_linear_bending){
+        net->set_bending_linear();
+        cout<<"\nusing linear bending\n";
+    }
     string time_str = "t = 0\n";
     file_a << time_str;
     net->write_rods(file_a);

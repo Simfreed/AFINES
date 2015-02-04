@@ -79,12 +79,28 @@ class filament
         
         bool operator==(const filament& that);
         
-        void add_rod(actin * a);
+        void add_rod(actin * a, double l0, double kl, double kb);
         
         void set_BC(string s);
 
         string get_BC();
+       
+        vector<vector<double> *>* fwd_bending_calc();
+        
+        vector<vector<double> *>* bwd_bending_calc();
 
+        void update_bending_AT();
+
+        //void linkForce2rodForce(vector<double> * l1, vector<double> * l2);
+        
+        int get_nrods();
+        
+        double get_bending_energy();
+
+        double get_stretching_energy();
+
+        double get_total_energy();
+    
     protected:
         
         double fov[2], gamma, temperature, dt, fracture_force, viscosity;
@@ -139,6 +155,10 @@ class DLfilament : public filament
         DLfilament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
                 double deltat, double temp, double fracture, double bending_fracture, double gamma, string bc);
 
+        
+        DLfilament(const DLfilament& other);
+
+        void set_bending_linear();
 
         vector<DLfilament *> update_bending();
         

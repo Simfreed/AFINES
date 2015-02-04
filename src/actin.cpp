@@ -38,12 +38,29 @@ actin::actin(const actin& other){
     ld = other.ld;
     diameter = other.diameter;
     a_vis = other.a_vis;
+    
     fov[0] = other.fov[0];
     fov[1] = other.fov[1];
     nq[0] = other.nq[0];
     nq[1] = other.nq[1];
 
-    this->update();
+    start[0] = other.start[0];
+    start[1] = other.start[1];
+    end[0] = other.end[0];
+    end[1] = other.end[1];
+
+    e[0] = other.e[0];
+    e[1] = other.e[1];
+    n[0] = other.n[0];
+    n[1] = other.n[1];
+
+    forces[0] = other.forces[0];
+    forces[1] = other.forces[1];
+    forces[2] = other.forces[2];
+    
+    quad = other.quad;
+    tmp = other.tmp;
+
 }
 
 actin::~actin(){ 
@@ -268,65 +285,6 @@ std::string actin::to_string()
            std::to_string(a_vis) + "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : " +
            std::to_string(forces[1]) + "\tforces[2] : " + std::to_string(forces[2]) + "\n";
  
-}
-
-// EXCLUDED VOLUME STUFF
-//
-
-void actin::set_gay_berne(double s0, double e0, double epsS, double epsE, double m, double n)
-{
-    sigma0 = s0;
-    eps0 = e0;
-    mu = m;
-    nu = n;
-    
-    chi      = (ld * ld - diameter * diameter)  / (ld * ld + diameter * diameter);
-    chiPrime = (pow(epsS, 1.0/mu)-pow(epsE, 1.0/mu))/(pow(epsS, 1.0/mu) + pow(epsE, 1.0/mu));
-
-}
-
-double actin::get_sigma0()
-{
-    return sigma0;
-}
-
-double actin::get_eps0()
-{
-    return eps0;
-}
-
-double actin::get_chi()
-{
-    return chi;
-}
-
-double actin::get_chiPrime()
-{
-    return chiPrime;
-}
-
-//Calculates the Gay Berne forces and torques between two actin rods
-
-double * actin::calc_gay_berne(actin * a)
-{
-    double u1u2, ru1, ru2, rx, ry, R, sigma, eps, epsPrime, epsUnPrime;
-    double * u1, * u2;
-    double * forces = new double[3]; 
-    u1 = e;
-    u2 = a->get_direction();
-    rx = x - a->get_xcm();
-    ry = y - a->get_ycm();
-    R = rx*rx + ry*ry;
-    
-    u1u2 = dot(u1[0], u1[1], u2[0], u2[1]);
-    ru1 = dot(rx, ry, u1[0], u1[1]);
-    ru2 = dot(rx, ry, u1[0], u1[1]);
-    
-    epsUnPrime = eps0 * pow((1.0-pow(chi,2)*u1u2*u1u2),-0.5);
-    epsPrime   = 1 - chiPrime / 2.0 * ( pow(ru1 + ru2, 2)/(1+chiPrime*u1u2) + pow(ru1 - ru2, 2)/(1-chiPrime*u1u2) );
-
-    return forces;
-
 }
 
 double * actin::get_fov(){

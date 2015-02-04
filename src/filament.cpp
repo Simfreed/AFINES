@@ -11,7 +11,20 @@
 #include "actin.h"
 #include "globals.h"
 //using namespace std;
-filament::filament(){}
+filament::filament(){
+
+    fov[0] = 0;
+    fov[1] = 0;
+    nq[0] = 0;
+    nq[1] = 0;
+    dt = 0.001;
+    temperature = 0;
+    gamma = 0;
+    fracture_force = 1000000;
+    viscosity = 0.5;
+    BC = "REFLECTIVE";
+
+}
 
 filament::filament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
         double visc, double deltat, double temp, bool isStraight,
@@ -43,7 +56,8 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
             //constrain angle between consecutive segments to be small because that's where
             //Nedelec/ Foethke claim their bending energy regime matters
             
-            phi += rng(-1*maxSmallAngle , maxSmallAngle);
+        //    phi += rng(-1*maxSmallAngle , maxSmallAngle);
+            phi = rng(-pi, pi);
         }
             
         lphi = (phi + rods.back()->get_angle())/2;
@@ -123,6 +137,19 @@ filament::~filament(){
     lks.clear();
 }
 
+void filament::add_rod(actin * a, double linkLength, double stretching_stiffness, double bending_stiffness){
+    
+    rods.push_back(new actin(*a));
+    
+    if (lks.size() == 0)
+        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, -1,  0) );  
+    else 
+        lks[lks.size()-1]->set_aindex1(rods.size()-1);
+    
+    lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, rods.size() - 1, -1) );  
+
+}
+
 vector<vector<vector<int> > > filament::get_quadrants()
 {
     //should return a map between rod and x, y coords of quadrant
@@ -137,34 +164,38 @@ vector<vector<vector<int> > > filament::get_quadrants()
 
 void filament::update(double t)
 {
-    double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, phiprev, a_ends[4]; 
-    double xleft, xright;
+    double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, a_ends[4]; 
+//    double phiprev;
+    double xleft = -fov[0]*0.5, xright=fov[0]*0.5;
     bool recenter_filament = false;
     double yleft  = -fov[1] * 0.5;
     double yright =  fov[1] * 0.5;
 
     for (unsigned int i = 0; i < rods.size(); i++){
+//        cout<<"\nDEBUG: rod "<<i<<" start: ( "<<rods[i]->get_start()[0]<<" , "<<rods[i]->get_start()[1]<<")";
+//        cout<<"\nDEBUG: rod "<<i<<" end  : ( "<<rods[i]->get_end()[0]<<" , "<<rods[i]->get_end()[1]<<")";
 
         double * fric = rods[i]->get_friction();
-        vpar=(rods[i]->get_forces()[0])/fric[0]  + sqrt(2*temperature/(dt*fric[0]))*rng_n(0,1);
-        vperp=(rods[i]->get_forces()[1])/fric[1] + sqrt(2*temperature/(dt*fric[1]))*rng_n(0,1);
-        vx=vpar*cos(rods[i]->get_angle())-vperp*sin(rods[i]->get_angle());
-        vy=vpar*sin(rods[i]->get_angle())+vperp*cos(rods[i]->get_angle());
-        omega=rods[i]->get_forces()[2]/fric[2] + sqrt(2*temperature/(dt*fric[2]))*rng_n(0,1);
+        vpar  = (rods[i]->get_forces()[0])/fric[0]  + sqrt(2*temperature/(dt*fric[0]))*rng_n(0,1);
+        vperp = (rods[i]->get_forces()[1])/fric[1]  + sqrt(2*temperature/(dt*fric[1]))*rng_n(0,1);
+        vx    = vpar*cos(rods[i]->get_angle()) - vperp*sin(rods[i]->get_angle());
+        vy    = vpar*sin(rods[i]->get_angle()) + vperp*cos(rods[i]->get_angle());
+        
+        omega = rods[i]->get_forces()[2]/fric[2] + sqrt(2*temperature/(dt*fric[2]))*rng_n(0,1);
         delete[] fric;
 
         alength=rods[i]->get_length();
 
-        xnew=rods[i]->get_xcm()+dt*vx;
-        ynew=rods[i]->get_ycm()+dt*vy;
-        phinew=rods[i]->get_angle()+dt*omega;
+        xnew = rods[i]->get_xcm()+dt*vx;
+        ynew = rods[i]->get_ycm()+dt*vy;
+        phinew = rods[i]->get_angle()+dt*omega;
 
 
         a_ends[0]=xnew-alength*0.5*cos(phinew);
         a_ends[1]=ynew-alength*0.5*sin(phinew);
         a_ends[2]=xnew+alength*0.5*cos(phinew);
         a_ends[3]=ynew+alength*0.5*sin(phinew);
-
+        
         //Calculate the sheared simulation bounds (at this height)
         xleft  = max(-fov[0] * 0.5 + gamma * a_ends[1] * t, -fov[0] * 0.5 + gamma * a_ends[3] * t);
         xright = min( fov[0] * 0.5 + gamma * a_ends[1] * t,  fov[0] * 0.5 + gamma * a_ends[3] * t);
@@ -234,7 +265,6 @@ void filament::update(double t)
         rods[i]->set_ycm(ynew);
         rods[i]->set_phi(phinew);
         rods[i]->update(); //updates all derived quantities (e.g., endpoints, forces = 0, etc.)
-
     }
     if (recenter_filament && rods.size() > 0){
         double midx = rods[floor(rods.size()/2)]->get_xcm();
@@ -249,80 +279,6 @@ void filament::update(double t)
             //rods[i]->update();
        
             }
-    }
-
-}
-
-void filament::update_bending()
-{
-
-    double forcex, forcey, force_par, force_perp, lft_trq, rt_trq;
-    vector<double> node_forces_x, node_forces_y;
-    
-    if (rods.size() < 2){ //no bending energy!
-        return;
-    }
-    
-    //initialize all NODE forces to be 0
-    for (unsigned int j = 0; j <= rods.size(); j++){
-        node_forces_x.push_back(0);
-        node_forces_y.push_back(0);
-    }
-    
-    //Calculate the force at each Link position as outlined by Nedelec, Foethke (2007)
-    //Keep the forces at the ends of each filament 0
-    
-    for (unsigned int j = 2; j <= rods.size(); j++){
-
-        forcex =    lks[j-2]->get_kb() * lks[j-2]->get_xcm() 
-              - 2 * lks[j-1]->get_kb() * lks[j-1]->get_xcm() 
-              +     lks[ j ]->get_kb() * lks[ j ]->get_xcm(); 
-        
-        forcey =    lks[j-2]->get_kb() * lks[j-2]->get_ycm() 
-              - 2 * lks[j-1]->get_kb() * lks[j-1]->get_ycm() 
-              +     lks[ j ]->get_kb() * lks[ j ]->get_ycm();
-
-     //   forcex *= -1;
-     //   forcey *= -1;
-
-        node_forces_x[j-2] += -1 * forcex;
-        node_forces_x[j-1] +=  2 * forcex;
-        node_forces_x[j  ] += -1 * forcex;
-
-        node_forces_y[j-2] += -1 * forcey;
-        node_forces_y[j-1] +=  2 * forcey;
-        node_forces_y[j  ] += -1 * forcey;
-        
-    
-    }
-    
-    //Calculate the forces at each center of mass of the segments
-    //Update the monomer
-
-    for (unsigned int j = 0; j < rods.size(); j++){
-    
-        forcex = (node_forces_x[j] + node_forces_x[j+1]) / 2;
-        forcey = (node_forces_y[j] + node_forces_y[j+1]) / 2;
-        //cout<<"\nDEBUG : (forcex, forcey) = ("<<forcex<<" , "<<forcey<<" )";
-
-        force_par   =  forcex*rods[j]->get_direction()[0] + forcey*rods[j]->get_direction()[1];
-        force_perp  = -forcex*rods[j]->get_direction()[1] + forcey*rods[j]->get_direction()[0];
-        
-        
-        //if (j == 0)
-        //    lft_trq = 0;
-        //else
-        lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
-                        rods[j]->get_ycm() - lks[j]->get_ycm(), node_forces_x[j], node_forces_y[j]);
-
-        //if (j == rods.size() - 1)
-         //   rt_trq = 0;
-        //else
-        rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_xcm(),
-                       rods[j]->get_ycm() - lks[j+1]->get_ycm(), node_forces_x[j+1], node_forces_y[j+1]);
-        
-        rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
-        //cout<<"\nDEBUG : (fpar, fperp, tau) = ("<<force_par<<" , "<<force_perp<<" , "<<lft_trq+rt_trq<<" )";
     }
 
 }
@@ -378,7 +334,6 @@ void filament::update_shear(){
         rods[i]->update_force(force_par, force_perp, lft_trq + rt_trq);
     }
 
-
 }
 
 void filament::update_forces(int index, double f1, double f2, double f3)
@@ -428,7 +383,7 @@ vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
 vector<filament *> filament::fracture(int node){
 
     vector<filament *> newfilaments;
-    cout<<"\nDEBUG: fracturing at node "<<node;
+    cout<<"\n\tDEBUG: fracturing at node "<<node;
 
     newfilaments.push_back(
             new filament(this->get_rods(0,node), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
@@ -474,141 +429,261 @@ string filament::to_string(){
 
 }
 
-vector<NFfilament *> NFfilament::update_stretching()
-{
-    vector<NFfilament *> newfils;
-    return newfils;
+string filament::get_BC(){
+    return BC; 
 }
 
-vector<double> NFfilament::get_A_matrix()
+void filament::set_BC(string s){
+    this->BC = s;
+}
+    
+vector<vector<double> *>* filament::fwd_bending_calc()
 {
-    vector<double> A;
-    return A;
+    //Calculate the force at each Link position as outlined by 
+    // Allen and Tildesley in Computer Simulation of Liquids, Appendix C
+    // Here we let db = (xb, yb) = (linkx[b] - linkx[b-1], linky[b] - linky[b-1])
+    
+    vector<double> * node_forces_x = new vector<double>();
+    vector<double> * node_forces_y = new vector<double>();
+    vector<vector<double> *>* node_forces_xy = new vector<vector<double>* >();
+
+    double xam1, xa, xap1, xap2;
+    double yam1, ya, yap1, yap2;
+    double Cam1am1, Caa, Cap1ap1, Cap2ap2, Caam1, Caap1, Cap1ap2;
+    double theta_a, theta_ap1, theta_ap2;
+    double coef1, coef2, coef3;
+    double fx1, fx2, fx3, fy1, fy2, fy3;
+    
+    double k = lks[0]->get_kb();
+    double forcex, forcey;
+    //initialize all NODE forces to be 0
+    
+    //single rod --> no bending energy 
+    if (rods.size() > 1)
+    { 
+        //First two rods won't have any bending forces: 
+        node_forces_x->push_back(0);
+        node_forces_y->push_back(0);
+        node_forces_x->push_back(0);
+        node_forces_y->push_back(0);
+
+        // More than 1 rod--> bending forces to calculate
+        xam1      = lks[1]->get_xcm() - lks[0]->get_xcm();
+        yam1      = lks[1]->get_ycm() - lks[0]->get_ycm();
+
+        xa        = lks[2]->get_xcm() - lks[1]->get_xcm();
+        ya        = lks[2]->get_ycm() - lks[1]->get_ycm();
+
+        Cam1am1 = xam1*xam1 + yam1*yam1;
+        Caa     = xa  *xa   + ya  *ya;
+        Caam1   = xam1*xa   + yam1*ya;
+
+        theta_a   = rods[1]->get_angle() - rods[0]->get_angle();
+
+        coef1 = -k*theta_a   / sin(theta_a)   * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
+
+        //2 rods --> bending force on last link; only has one term
+        if (rods.size() == 2)
+        {
+
+            fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+            fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+            //cout<<"\nDEBUG: magnitude of bending forces at links: ( "<<fx1<<" , "<<fy1<<" )";
+            
+            if (fabs(fx1) < eps)
+                fx1 = 0;
+            if (fabs(fy1) < eps)
+                fy1 = 0;
+            node_forces_x->push_back(fx1);
+            node_forces_y->push_back(fy1);
+
+        }
+        else
+        {
+            //More than 2 rods--> more bending forces to calculate
+            xap1 = lks[3]->get_xcm() - lks[2]->get_xcm();
+            yap1 = lks[3]->get_ycm() - lks[2]->get_ycm();
+
+            Cap1ap1 = xap1*xap1 + yap1*yap1;
+            Caap1   = xap1*xa   + yap1*ya;
+
+            theta_ap1 = rods[2]->get_angle() - rods[1]->get_angle();
+            coef2 =  k*theta_ap1 / sin(theta_ap1) * ( 1 / sqrt( Caa     * Cap1ap1 ) );
+
+            //Enter loop if more than 3 rods. For 3 rod case, the loop is skipped
+            for (unsigned int j = 2; j < lks.size() - 2; j++){
+
+                xap2 = lks[j+2]->get_xcm() - lks[j+1]->get_xcm();
+                yap2 = lks[j+2]->get_ycm() - lks[j+1]->get_ycm();
+
+                Cap2ap2 = xap2*xap2 + yap2*yap2;
+                Cap1ap2 = xap1*xap2 + yap1*yap2;
+
+                theta_ap2 = rods[j+1]->get_angle() - rods[j]->get_angle();
+                coef3 = -k*theta_ap2 / sin(theta_ap2) * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
+
+                fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+                fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+
+                fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * xap1 - (1 + Caap1/Caa) * xa ); 
+                fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * yap1 - (1 + Caap1/Caa) * ya ); 
+
+                fx3 = coef3 * ( xap2 - Cap1ap2/Cap1ap1 * xap1);
+                fy3 = coef3 * ( yap2 - Cap1ap2/Cap1ap1 * yap1);
+
+                forcex = fx1 + fx2 + fx3;
+                forcey = fy1 + fy2 + fy3;
+                if (fabs(forcex) < eps)
+                    forcex = 0;
+                if (fabs(forcey) < eps)
+                    forcey = 0;
+
+                node_forces_x->push_back(forcex);
+                node_forces_y->push_back(forcey);
+
+                //increment all variables for next iteration:
+                xam1 = xa;
+                xa   = xap1;
+                xap1 = xap2;
+
+                yam1 = ya;
+                ya   = yap1;
+                yap1 = yap2;
+
+                Cam1am1 = Caa;
+                Caa     = Cap1ap1;
+                Cap1ap1 = Cap2ap2;
+
+                Caam1 = Caap1;
+                Caap1 = Cap1ap2;
+
+                coef1 = -1*coef2;
+                coef2 = -1*coef3;
+
+            }
+
+            //LAST TWO RODS ON THE FILAMENT:
+            fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+            fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+            fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * xap1 - (1 + Caap1/Caa) * xa ); 
+            fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * yap1 - (1 + Caap1/Caa) * ya ); 
+            
+            //cout<<"\nDEBUG: 2nd to last rod: (fx1, fy1) + (fx2, fy2) = ( "<<fx1<< " , "<<fy1<<" ) + ( "<<fx2<<" , " <<fy2<<" )";
+            
+            forcex = fx1 + fx2;
+            forcey = fy1 + fy2;
+            if (fabs(forcex) < eps)
+                forcex = 0;
+            if (fabs(forcey) < eps)
+                forcey = 0;
+            
+            node_forces_x->push_back(forcex);
+            node_forces_y->push_back(forcey);
+
+            /*INCREMENT*/
+            xam1 = xa;
+            xa   = xap1;
+
+            yam1 = ya;
+            ya   = yap1;
+
+            Caa   = Cap1ap1;
+            Caam1 = Caap1;
+
+            coef1 = -1*coef2;
+
+            fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+            fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+            //cout<<"\nDEBUG: Last rod: (fx1, fy1) = ( "<<fx1<< " , "<<fy1<<" )";
+
+            if (fabs(fx1) < eps)
+                fx1 = 0;
+            if (fabs(fy1) < eps)
+                fy1 = 0;
+            
+            node_forces_x->push_back(fx1);
+            node_forces_y->push_back(fy1);
+
+        }
+    }
+    
+    node_forces_xy->push_back(node_forces_x);
+    node_forces_xy->push_back(node_forces_y);
+    return node_forces_xy;
+
 }
 
-vector<double> NFfilament::get_B_matrix()
-{   
-    vector<double> B;
-    return B;
-}
 
-vector<double> NFfilament::get_G_matrix()
+//NOTE: this bending method is still in under construction, 
+//      for the time being, consider using DLfilament
+//Calculate the forces at each center of mass of the segments
+//Update the monomer
+void filament::update_bending()
 {
-    vector<double> G;
-    return G;
-}
+    vector<vector<double>* >* fwd_bending = this->fwd_bending_calc();
+    vector<double> * link_fwd_forces_x = fwd_bending->at(0);
+    vector<double> * link_fwd_forces_y = fwd_bending->at(1);
 
-// Very sparse matrix, consider implementing as a map
-vector<double> NFfilament::get_P_matrix()
-{
-    int p = lks.size() - 1, d = 2;
-    int ncolsJ = d*(p+1);
-    int ncolsJt = p;
-    int ncolsJJt = p;
-    vector<double> J, Jt, JJt, JJtInv;
-    J.resize(p*d*(p+1));
-    Jt.resize(p*d*(p+1));
-    JJt.resize(3*(p+1));
-    JJtInv.resize(p*p);
-
-    double x0, y0, x1, y1, x2, y2;
-    int ind;
-
-    x0 = 0;
-    y0 = 0;
-    x1 = lks[0]->get_xcm() - lks[1]->get_xcm();
-    y1 = lks[0]->get_ycm() - lks[1]->get_ycm(); 
-    for (int i = 0; i < p-1; i++){
+    double rt_trq, omega_bend, rodLengthOver2dt, force_par, force_perp;   
+    
+    for (unsigned int j = 0; j < rods.size(); j++){
         
-        x2 = lks[i+1]->get_xcm() - lks[i+2]->get_xcm();
-        y2 = lks[i+1]->get_ycm() - lks[i+2]->get_ycm();
+//        cout<<"\nDEBUG: rod "<<j<<" link_fwd_forces : ( "<<link_fwd_forces_x->at(j+1) << " , "<<link_fwd_forces_y->at(j+1)<<" )"; 
+        rt_trq = cross(lks[j+1]->get_xcm() - rods[j]->get_xcm(),
+                       lks[j+1]->get_ycm() - rods[j]->get_ycm(), link_fwd_forces_x->at(j+1), link_fwd_forces_y->at(j+1));
+        
+        
+        if (rt_trq!=0){
+            double * fric = rods[j]->get_friction();
+            rodLengthOver2dt = rods[j]->get_length() / (2*dt);
 
-        ind = ncolsJ*i + d*i;
-        J[ind] =  x1;
-        J[ind + 1] =  y1;
-        J[ind + 2] = -x1;
-        J[ind + 3] = -y1;
+            // "Compensate" for the fact that the rotation is about the adjacent link, 
+            // (not the center of mass) by adding a force at the center of mass
 
-        ind = ncolsJt*i*d + i;
-        Jt[ind            ] =  x1;
-        Jt[ind +   ncolsJt] =  y1;
-        Jt[ind + 2*ncolsJt] = -x1;
-        Jt[ind + 3*ncolsJt] = -y1;
+            omega_bend  = rt_trq / fric[2];
+            force_par   = fric[0] * rodLengthOver2dt * (cos(omega_bend*dt) - 1);
+            force_perp  = fric[1] * rodLengthOver2dt * sin(omega_bend*dt);  
+            
+            delete [] fric;
+        }
+        else
+        {
+            force_par = 0;
+            force_perp = 0;
+        }
+        
+        rods[j]->update_force(-force_par, -force_perp, rt_trq);
+        //rods[j]->update_force(0, 0, rt_trq);
+    } 
+    delete link_fwd_forces_x;
+    delete link_fwd_forces_y;
+    delete fwd_bending;
+}
 
-        ind = ncolsJJt*i;
-        JJt[ind]    = -1*(x0*x1 + y0*y1);
-        JJt[ind+1]  =  2*(x1*x1 + y1*y1);
-        JJt[ind+2]  = -1*(x2*x1 + y2*y1);
+int filament::get_nrods(){
+    return rods.size();
+}
 
-        x0 = x1;
-        y0 = y1;
-        x1 = x2;
-        y1 = y2;
-    
+double filament::get_bending_energy(){
+    if(rods.size() == 0){
+        return 0;
     }
     
-    ind = (ncolsJ + d)*(p-1);
-    J[ind]     =  x1;
-    J[ind + 1] =  y1;
-    J[ind + 2] = -x1;
-    J[ind + 3] = -y1;
+    double sum = 0, theta;
 
-    ind = (ncolsJt*d+1)*(p-1);
-    Jt[ind            ] =  x1;
-    Jt[ind +   ncolsJt] =  y1;
-    Jt[ind + 2*ncolsJt] = -x1;
-    Jt[ind + 3*ncolsJt] = -y1;
-
-    ind = ncolsJJt*(p-1);
-    JJt[ind]    = -1*(x0*x1 + y0*y1);
-    JJt[ind+1]  =  2*(x1*x1 + y1*y1);
-    JJt[ind+2]  =  0;
-    
-    vector<double> P;// = matrix_multiply(matrix_multiply(Jt, inverse(JJt)),J);
-    return P;
-
-}
-/* mu = mobility = 1 / friction, i think */
-
-double* NFfilament::get_mobility()
-{
-    
-    double L = rods[0]->get_length() * rods.size();
-    double* mob = new double[3];
-    
-    mob[0] = (rods.size() > 0) ? log(L / rods[0]->get_diameter())/(2 * pi * viscosity * L) : 0;
-    mob[1] = 2 * mob[0];
-    mob[2] = mob[0] * L * L / 4;
-    return mob;
-
-}
-
-vector<double *> NFfilament::get_mobility_matrix()
-{
-    
-    double* mob = this->get_mobility();
-    vector<double *> mat;
-    double* mobp = new double[3];
-    for( unsigned int p = 0; p < lks.size(); p++){
-        mobp[0] = (p + 1)*mob[0];
-        mobp[1] = (p + 1)*mob[1];
-        mobp[2] = (p + 1)*mob[2];
-        mat.push_back(mobp);
+    for (unsigned int i = 0; i < rods.size() - 1; i++)
+    {
+        theta = rods[i+1]->get_angle() - rods[i]->get_angle();
+        sum += theta*theta;
     }
-
-    return mat;
+    
+    return lks[0]->get_kb()*sum/2.0;
 
 }
 
-double NFfilament::get_tau()
-{
-    double t = 0;
-    return t;
-}
-
-void NFfilament::update(double t)
-{
-}
+/////////////////////////////////////
+//DOUBLY LINKED FILAMENT FUNCTIONS///
+/////////////////////////////////////
 
 DLfilament::DLfilament(double startx, double starty, double startphi, int nrod, double fovx, double fovy, int nqx, int nqy, 
         double visc, double deltat, double temp, bool isStraight,
@@ -619,7 +694,7 @@ DLfilament::DLfilament(double startx, double starty, double startphi, int nrod, 
         rodLength, linkLength, stretching_stiffness, bending_stiffness,
         frac_force, bdcnd), bending_fracture_force(bending_frac_force)
 {
-    for (int j = 0; j < nrod - 1; j++) {
+    for (int j = 0; j < (int)rods.size() - 1; j++) {
         midlks.push_back( new MidLink(rodLength + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
     }
 }
@@ -638,6 +713,14 @@ DLfilament::DLfilament(vector<actin *> rodvec, double linkLength, double stretch
         }
     }
 
+}
+
+void DLfilament::set_bending_linear()
+{
+    for (unsigned int j = 0; j < midlks.size(); j++)
+    {
+        midlks[j]->set_linear(true);
+    }
 }
 
 vector<DLfilament *> DLfilament::update_bending()
@@ -675,7 +758,7 @@ vector<DLfilament *> DLfilament::fracture(int node)
 {
 
     vector<DLfilament *> newfilaments;
-    cout<<"DEBUG: fracturing";
+    cout<<"\n\tDEBUG: fracturing at node "<<node;
 
     newfilaments.push_back(
             new DLfilament(this->get_rods(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
@@ -688,88 +771,7 @@ vector<DLfilament *> DLfilament::fracture(int node)
 
 }
 
-string filament::get_BC(){
-    return BC; 
-}
-
-void filament::set_BC(string s){
-    this->BC = s;
-}
-    
-//Calculate the force at each Link position 
-//using a simple finite differnce approximation
-// i.e., :F = -dU/dx = -dU/d(theta) * d(theta)/dx
-//        dU/d(theta)  = kappa/L * theta
-//        d(theta)/dx ~= (theta(i+1) - theta(i))/(x(i+1) - x(i)), etc.
-// based on energy functional in Dasanayake, Michalski, Carlsson, 2011
-// E = kappa/2L * Sum(delta(theta)^2)
-
-void filament::update_bending_FD()
-{
-    
-    double forcex0, forcey0, forcex, forcey, forcexrod, forceyrod, force_par, force_perp, lft_trq, rt_trq;
-    double theta0, theta1, dU_dtheta, dtheta, dx, dy;
-    double L, kappaOverL;
-    
-    if (rods.size() < 3){ //not enough rods to calculate a finite difference
-        return;
-    }
-    
-
-    theta0 = rods[1]->get_angle() - rods[0]->get_angle();
-    forcex0 = 0;
-    forcey0 = 0;
-    for (unsigned int j = 1; j < lks.size() - 2; j++){
-
-        theta1     = rods[j+1]->get_angle() - rods[j]->get_angle();
-        L          = rods[j]->get_length();
-        kappaOverL = lks[j]->get_kb() * L * L;
-
-        dU_dtheta = kappaOverL * theta0;
-        dtheta    = theta1 - theta0;
-        dx        = lks[j+1]->get_xcm() - lks[j]->get_xcm();
-        dy        = lks[j+1]->get_ycm() - lks[j]->get_ycm();
-        
-        forcex = -1 * dU_dtheta * dtheta / dx; 
-        forcey = -1 * dU_dtheta * dtheta / dy; 
-
-        forcexrod = (forcex + forcex0)/2;
-        forceyrod = (forcey + forcey0)/2;
-
-        force_par   =  forcexrod*rods[j]->get_direction()[0] + forceyrod*rods[j]->get_direction()[1];
-        force_perp  = -forcexrod*rods[j]->get_direction()[1] + forceyrod*rods[j]->get_direction()[0];
-        
-        lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
-                        rods[j]->get_ycm() - lks[j]->get_ycm(), forcexrod, forceyrod);
-
-        rt_trq = cross(rods[j]->get_xcm() - lks[j+1]->get_xcm(),
-                       rods[j]->get_ycm() - lks[j+1]->get_ycm(), forcexrod, forceyrod);
-        
-        
-        rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
-        
-        forcex0 = forcex;
-        forcey0 = forcey;
-        theta0 = theta1;
-
-    }
-    forcex = 0;
-    forcey = 0;
-
-    forcexrod = (forcex + forcex0)/2;
-    forceyrod = (forcey + forcey0)/2;
-
-    int j = rods.size() - 1;
-    force_par   =  forcexrod*rods[j]->get_direction()[0] + forceyrod*rods[j]->get_direction()[1];
-    force_perp  = -forcexrod*rods[j]->get_direction()[1] + forceyrod*rods[j]->get_direction()[0];
-    lft_trq = cross(rods[j]->get_xcm() - lks[j]->get_xcm(),
-                    rods[j]->get_ycm() - lks[j]->get_ycm(), forcexrod, forceyrod);
-    rt_trq = 0;
-    rods[j]->update_force(force_par, force_perp, lft_trq + rt_trq);
-
-}
 DLfilament::~DLfilament(){
-    
     int nr = rods.size(), nl = lks.size(), nml = midlks.size();
     for (int i = 0; i < nr; i ++)
         delete rods[i];
@@ -782,4 +784,5 @@ DLfilament::~DLfilament(){
     lks.clear();
     midlks.clear();
 }
+
 

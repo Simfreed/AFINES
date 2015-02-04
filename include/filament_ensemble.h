@@ -135,6 +135,8 @@ class DLfilament_ensemble:
         void update_bending();
         
         void update_stretching();
+        
+        void set_bending_linear();
 };
 
 #endif
