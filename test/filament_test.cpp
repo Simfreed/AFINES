@@ -328,12 +328,14 @@ BOOST_AUTO_TEST_CASE( bending_test_two_rods_known_angle )
     int nx = 100;
     int  ny = 100;
     filament * f = new filament(); 
-    int nsteps = 200000;
+    int nsteps = 20;
 
     actin * act1 = new actin(0, 0, 0, actin_length, fovx, fovy, nx, ny, viscosity);
     actin * act2 = new actin(0.5, 0.5, pi/2, actin_length, fovx, fovy, nx, ny, viscosity);
     f->add_rod(act1, link_length, stretching_stiffness, bending_stiffness);
     f->add_rod(act2, link_length, stretching_stiffness, bending_stiffness);
+
+    cout<<f->to_string();
     
     double a0 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
     double a1;
@@ -416,16 +418,18 @@ BOOST_AUTO_TEST_CASE( bending_test_two_rods_random_angle )
     double temp = 0;
     double link_length = 0.01;
     double viscosity = 0.5;
-    double stretching_stiffness = 0.8;
+    double stretching_stiffness = 0.1;
     double bending_stiffness = 0.04; 
     double fracture_force = 100000;
     string bc="REFLECTIVE";
+    
     double startx = 0, starty = 0, startphi = 0;
     filament * f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
             viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
             bending_stiffness,fracture_force, bc);
     
-    int nsteps = 1000;
+    cout<<f->to_string();
+    int nsteps = 20;
 
     double a0 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
     double a1;

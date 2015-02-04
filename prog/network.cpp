@@ -82,9 +82,9 @@ int main(int argc, char* argv[]){
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
         ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("NONE"), "boundary conditions")
         
-        ("nmonomer", po::value<double>(&nmonomer)->default_value(10), "number of monomers per filament")
+        ("nmonomer", po::value<double>(&nmonomer)->default_value(1), "number of monomers per filament")
         ("npolymer", po::value<double>(&npolymer)->default_value(3), "number of polymers in the network")
-        ("actin_length", po::value<double>(&actin_length)->default_value(1), "Length of a single actin monomer")
+        ("actin_length", po::value<double>(&actin_length)->default_value(10), "Length of a single actin monomer")
         ("actin_pos_str", po::value<string> (&actin_pos_str)->default_value(""), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
         
         ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / area")
