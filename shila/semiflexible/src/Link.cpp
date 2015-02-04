@@ -43,6 +43,10 @@ double* Link::get_hy(){
     return hy;
 }
 
+void Link::set_aindex1(int i){
+    aindex[1] = i;
+}
+
 // stepping kinetics
 void Link::step()
 {
@@ -78,6 +82,7 @@ void Link::step()
 }
 
 double Link::get_stretch_force(){
+    //cout<<"\nDEBUG:Stretch force = "<<kl*(dis_points(hx[0],hy[0],hx[1],hy[1])-ld);
     return kl * (dis_points(hx[0],hy[0],hx[1],hy[1])-ld);
 }
 
@@ -95,6 +100,7 @@ void Link::filament_update()
         force_par[0]    =   forcex[0]*e0[0] + forcey[0]*e0[1];
         force_perp[0]   =  -forcex[0]*e0[1] + forcey[0]*e0[0];
         torque[0]       =   cross(hx[0]-fil->get_rod(aindex[0])->get_xcm(),hy[0]-fil->get_rod(aindex[0])->get_ycm(),forcex[0],forcey[0]);
+        //cout<<"\nDEBUG: rod "<<aindex[0]<<" : ("<<force_par[0]<<","<<force_perp[0]<<","<<torque[0]<<")";
         fil->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
     }
 
@@ -105,6 +111,7 @@ void Link::filament_update()
         force_par[1]    =    forcex[1]*e1[0] + forcey[1]*e1[1];
         force_perp[1]   =   -forcex[1]*e1[1] + forcey[1]*e1[0];
         torque[1]       =   cross(hx[1]-fil->get_rod(aindex[1])->get_xcm(),hy[1]-fil->get_rod(aindex[1])->get_ycm(),forcex[1],forcey[1]);
+        //cout<<"\nDEBUG: rod "<<aindex[1]<<" : ("<<force_par[1]<<","<<force_perp[1]<<","<<torque[1]<<")";
         fil->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
     }
 
@@ -168,11 +175,12 @@ MidLink::MidLink(double len, double stretching_stiffness, double bending_stiffne
     : Link(len, stretching_stiffness, bending_stiffness, f, aindex0, aindex1)
 {
     // initialize the coordinates of the heads:
-//    this->step();
+    is_linear=false;
+    this->step();
 }
 void MidLink::step()
 {
-    
+
     hx[0]=fil->get_rod(aindex[0])->get_xcm();
     hy[0]=fil->get_rod(aindex[0])->get_ycm();
     hx[1]=fil->get_rod(aindex[1])->get_xcm();
@@ -183,4 +191,23 @@ void MidLink::step()
     xcm = (hx[0]+hx[1])/2.0;
     ycm = (hy[0]+hy[1])/2.0;
 
+}
+
+double MidLink::get_stretch_force(){
+    double stretch = dis_points(hx[0],hy[0],hx[1],hy[1])-ld; 
+    if (is_linear){
+        return kb * stretch;
+    }
+    else{
+        if (stretch > 0)
+            return kb;
+        else if(stretch < 0)
+            return -1*kb;
+        else 
+            return 0;
+    }
+}
+
+void MidLink::set_linear(bool linear){
+    is_linear = linear;
 }

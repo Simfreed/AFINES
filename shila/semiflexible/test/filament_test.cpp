@@ -58,12 +58,13 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     filament * f; 
     Link l; 
     actin a; 
-
+   
     f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
             viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
             bending_stiffness, fracture_force, bc);
     //Expect to have rods  at (0, 0), (2, 0), (4, 0), ..., (18, 0)
     //Expect to have links at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
+    
     for (int i = 0; i < nrod; i++){
         a = actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
@@ -90,6 +91,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
 
     delete f;
+
 } 
 
 BOOST_AUTO_TEST_CASE( fracture_constructor )
@@ -313,7 +315,95 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     
 }
 
-BOOST_AUTO_TEST_CASE( bending_test_two_rods )
+BOOST_AUTO_TEST_CASE( bending_test_two_rods_known_angle )
+{
+    //Check if the angle between two rods is smaller after some small number of integration steps
+    double viscosity = 0.5;
+    double actin_length = 1;
+    double link_length = 0.01;
+    double stretching_stiffness = 0.1; 
+    double bending_stiffness = 0.04; 
+    double fovx = 50;
+    double fovy = 50;
+    int nx = 100;
+    int  ny = 100;
+    filament * f = new filament(); 
+    int nsteps = 200000;
+
+    actin * act1 = new actin(0, 0, 0, actin_length, fovx, fovy, nx, ny, viscosity);
+    actin * act2 = new actin(0.5, 0.5, pi/2, actin_length, fovx, fovy, nx, ny, viscosity);
+    f->add_rod(act1, link_length, stretching_stiffness, bending_stiffness);
+    f->add_rod(act2, link_length, stretching_stiffness, bending_stiffness);
+    
+    double a0 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
+    double a1;
+    vector<filament *> newfils;
+    for (int t = 0; t < nsteps; t++){
+        cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
+        newfils = f->update_stretching();
+        if (newfils.size()>0)
+            break;
+        f->update_bending();
+        f->update(t);
+        a1 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
+        BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "\nAngles not getting smaller at time " + to_string(t));
+        a0 = a1;
+    }
+    
+    delete f;
+    delete act1;
+    delete act2;
+    if (newfils.size()>0){
+        delete newfils[0];
+        delete newfils[1];
+    }
+}    
+
+BOOST_AUTO_TEST_CASE( bending_test_two_rods_known_negative_angle )
+{
+    //Check if the angle between two rods is smaller after some small number of integration steps
+    double viscosity = 0.5;
+    double actin_length = 1;
+    double link_length = 0.01;
+    double stretching_stiffness = 0.1; 
+    double bending_stiffness = 0.04; 
+    double fovx = 50;
+    double fovy = 50;
+    int nx = 100;
+    int  ny = 100;
+    filament * f = new filament(); 
+    int nsteps = 1000;
+
+    actin * act1 = new actin(0, 0, 0, actin_length, fovx, fovy, nx, ny, viscosity);
+    actin * act2 = new actin(0.5, -0.5, -pi/2, actin_length, fovx, fovy, nx, ny, viscosity);
+    f->add_rod(act1, link_length, stretching_stiffness, bending_stiffness);
+    f->add_rod(act2, link_length, stretching_stiffness, bending_stiffness);
+    
+    double a0 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
+    double a1;
+    vector<filament *> newfils;
+    for (int t = 0; t < nsteps; t++){
+        cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
+        newfils = f->update_stretching();
+        if (newfils.size()>0)
+            break;
+        f->update_bending();
+        f->update(t);
+        a1 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
+        BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "\nAngles not getting smaller at time " + to_string(t));
+        a0 = a1;
+    }
+    
+    delete f;
+    delete act1;
+    delete act2;
+    if (newfils.size()>0){
+        delete newfils[0];
+        delete newfils[1];
+    }
+}    
+
+BOOST_AUTO_TEST_CASE( bending_test_two_rods_random_angle )
 {
     //Check if the angle between two rods is smaller after some small number of integration steps
     int nrod = 2;
@@ -324,55 +414,133 @@ BOOST_AUTO_TEST_CASE( bending_test_two_rods )
     double actin_length = 1;
     double dt = 1e-3;
     double temp = 0;
-    double link_length = 1;
+    double link_length = 0.01;
     double viscosity = 0.5;
-    double stretching_stiffness = 100;
-    double bending_stiffness = 1; 
-    double fracture_force = 100;
-    string bc="NONE";
+    double stretching_stiffness = 0.8;
+    double bending_stiffness = 0.04; 
+    double fracture_force = 100000;
+    string bc="REFLECTIVE";
     double startx = 0, starty = 0, startphi = 0;
-    filament * f; 
-    Link l; 
-    actin a; 
-    
-    int nsteps = 20;
-
-    f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
+    filament * f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
             viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
-            bending_stiffness, fracture_force, bc);
-   
+            bending_stiffness,fracture_force, bc);
+    
+    int nsteps = 1000;
+
     double a0 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
     double a1;
+    vector<filament *> newfils;
     for (int t = 0; t < nsteps; t++){
-        cout<<"\nAngle at time "<<t<<" : "<<a0;
+        if (t%1==0)
+            cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
         f->update_bending();
+        newfils = f->update_stretching();
         f->update(t);
         a1 = f->get_rod(1)->get_angle() - f->get_rod(0)->get_angle();
-        BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "Angles not getting smaller at time " + to_string(t));
+        BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "\nAngles not getting smaller at time " + to_string(t));
         a0 = a1;
     }
     
     delete f;
-   /*
-    nrod = 10;
-    cout<<"\n"<<nrod<<" Rod Bending Test";
+}    
+
+BOOST_AUTO_TEST_CASE( bending_test_three_rods_known_angle )
+{
+    //Check if the angle between two rods is smaller after some small number of integration steps
+    double viscosity = 0.5;
+    double actin_length = 1;
+    double link_length = 0;
+    double stretching_stiffness = 100;
+    double bending_stiffness = 0.04; 
+    
+    filament * f = new filament(); 
+    int nsteps = 10;
+
+    actin * act1 = new actin(0, 0, 0, actin_length, 0, 0, 0, 0, viscosity);
+    actin * act2 = new actin(0.5, 0.5, pi/2, actin_length, 0, 0, 0, 0, viscosity);
+    actin * act3 = new actin(0, 1, pi, actin_length, 0, 0, 0, 0, viscosity);
+    f->add_rod(act1, link_length, stretching_stiffness, bending_stiffness);
+    f->add_rod(act2, link_length, stretching_stiffness, bending_stiffness);
+    f->add_rod(act3, link_length, stretching_stiffness, bending_stiffness);
+    
+    double e0 = f->get_bending_energy(), e1;
+    vector<filament *> newfils;
+    for (int t = 0; t < nsteps; t++){
+        //if (t%100==0)
+            cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
+        f->update_bending();
+        newfils = f->update_stretching();
+        f->update(t);
+        e1 = f->get_bending_energy();
+        BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nEnergy not getting smaller at time " + to_string(t));
+        e0 = e1;
+    }
+    
+    delete f;
+    delete act1;
+    delete act2;
+    delete act3;
+}    
+
+BOOST_AUTO_TEST_CASE(bending_test_3_rods)
+{
+/*
+   nrod = 4;
+    //cout<<"\n"<<nrod<<" Rod Bending Test";
     f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
             viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
-            bending_stiffness, fracture_force, bc);
+            bending_stiffness,fracture_force, bc);
     
-    vector<double> angs;
-    for(int j = 1; j < nrod; j++)
-        angs.push_back(f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle());
-    
+    //vector<double> angs;
+    double sum0 = 0, sum1 = 0;
+    for(int j = 1; j < nrod; j++){
+        //angs.push_back(f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle());
+        a0 = f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle();  
+        sum0 += a0*a0;
+    }
+    nsteps = 20; 
     for (int t = 0; t < nsteps; t++){
+        cout<<"\nEnergy at time "<<t<<" ~ "<<sum0;
+        sum1 = 0;
         f->update_bending();
+        newfils = f->update_stretching();
         f->update(t);
         for(int j = 1; j < nrod; j++){
             a1 = f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle();
-            cout<<"\nAngle "<<j<<" at time "<<t<<" : "<<a1;
-            BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(angs[j-1]), "\nAngle "<<j<<" not getting smaller at time " + to_string(t));
-            angs[j-1] = a1;
+            sum1 += a1*a1;
         }
+        BOOST_CHECK_MESSAGE(sum1 <= sum0, "\nEnergy of filament not getting smaller at time " + to_string(t));
+        sum0 = sum1;
+    }
+    delete f; 
+   */
+    /* 
+    nrod = 50;
+    //cout<<"\n"<<nrod<<" Rod Bending Test";
+    f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
+            viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
+            bending_stiffness,fracture_force, bc);
+    nrod = f->get_nrods(); 
+    //vector<double> angs;
+    sum0 = 0, sum1 = 0;
+    for(int j = 1; j < nrod; j++){
+        //angs.push_back(f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle());
+        a0 = f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle();  
+        sum0 += a0*a0;
+    }
+    nsteps = 20; 
+    for (int t = 0; t < nsteps; t++){
+        cout<<"\nEnergy at time "<<t<<" ~ "<<sum0;
+        sum1 = 0;
+        f->update_bending();
+        //newfils = f->update_stretching();
+        f->update(t);
+        for(int j = 1; j < nrod; j++){
+            a1 = f->get_rod(j)->get_angle() - f->get_rod(j-1)->get_angle();
+            sum1 += a1*a1;
+        }
+        BOOST_CHECK_MESSAGE(sum1 <= sum0, "\nEnergy of filament not getting smaller at time " + to_string(t));
+        sum0 = sum1;
     }
     delete f; 
     */

@@ -282,14 +282,6 @@ void NFfilament_ensemble::update_bending(){
     }
 }
 
-void NFfilament_ensemble::update_bending_FD(){
-    
-    for (unsigned int f = 0; f < network.size(); f++)
-    {
-        network[f]->update_bending_FD();
-    }
-}
-
 void NFfilament_ensemble::update_stretching(){
 
     vector<filament *> newfilaments;
@@ -298,9 +290,11 @@ void NFfilament_ensemble::update_stretching(){
         newfilaments = network[f]->update_stretching();
         
         if (newfilaments.size() > 0){ //fracture event occured
+            filament * broken = network[f];
             network.erase(network.begin() + f);
             network.push_back(newfilaments[0]);
             network.push_back(newfilaments[1]);
+            delete broken;
             break; //avoid infinite loops
         }
 
@@ -355,9 +349,11 @@ void DLfilament_ensemble::update_stretching(){
         newfilaments = network[f]->update_stretching();
         
         if (newfilaments.size() > 0){ //fracture event occured
+            DLfilament * broken = network[f];
             network.erase(network.begin() + f);
             network.push_back(newfilaments[0]);
             network.push_back(newfilaments[1]);
+            delete broken; 
             break; //avoid infinite loops
         }
 
@@ -379,6 +375,11 @@ void DLfilament_ensemble::update_bending(){
         }
 
     }
+}
+
+void DLfilament_ensemble::set_bending_linear(){
+    for (unsigned int f = 0; f < network.size(); f++)
+        network[f]->set_bending_linear();
 }
 
 template class filament_ensemble<filament>;

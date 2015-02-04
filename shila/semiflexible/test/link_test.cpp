@@ -1,5 +1,5 @@
 #include "Link.h"
-#include "actin_ensemble.h"
+#include "filament.h"
 #define BOOST_TEST_MODULE link_test
 #include <boost/test/unit_test.hpp>
 
@@ -7,11 +7,15 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 {
     actin * a1 = new actin(-1, 2, 0, 1, 0, 0, 0, 0, 0);
     actin * a2 = new actin( 1, 2, 0, 1, 0, 0, 0, 0, 0);
-    filament_ensemble f;
-    f.add_rod(a1);
-    f.add_rod(a2);
+    double link_length = 0;
+    double stretching_stiffness = 100;
+    double bending_stiffness = 1000;
+    filament f;
+    f.add_rod(a1, link_length, stretching_stiffness, bending_stiffness);
+  
+    f.add_rod(a2, link_length, stretching_stiffness, bending_stiffness);
 
-    Link l( 1, 100, 100, &ae, 0, 1, "green");
+    Link l( 1, 100, 100, &f, 0, 1);
 
     double tol = 0.001;
 
@@ -20,22 +24,31 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_EQUAL( l.get_hx()[1],  0.5);                   // 1 //
     BOOST_CHECK_EQUAL( l.get_hy()[0], 2);                // 1 //
     BOOST_CHECK_EQUAL( l.get_hy()[1], 2);               
-    BOOST_CHECK_EQUAL( l.get_color(), "green");
 
-    BOOST_CHECK_CLOSE( l.get_posx(), 0, tol);
-    BOOST_CHECK_CLOSE( l.get_posy(), 2, tol);
+    BOOST_CHECK_CLOSE( l.get_xcm(), 0, tol);
+    BOOST_CHECK_CLOSE( l.get_ycm(), 2, tol);
     
+    delete a1;
+    delete a2;
 } 
 
-BOOST_AUTO_TEST_CASE( actin_update )
+BOOST_AUTO_TEST_CASE( filament_update )
 {
+    
     actin * a1 = new actin(-1, 2, 0, 1, 0, 0, 0, 0, 0);
     actin * a2 = new actin( 1, 2, 0, 1, 0, 0, 0, 0, 0);
-    actin_ensemble ae = actin_ensemble();
-    ae.add_monomer(a1, 0);
-    ae.add_monomer(a2, 0);
-    Link l( 1, 100, 100, &ae, 0, 1, "green");
-    l.actin_update();
+    double link_length = 0;
+    double stretching_stiffness = 100;
+    double bending_stiffness = 1000;
+    filament f;
+    f.add_rod(a1, link_length, stretching_stiffness, bending_stiffness);
+    f.add_rod(a2, link_length, stretching_stiffness, bending_stiffness);
+    
+    Link l( 1, 100, 100, &f, 0, 1);
+    l.filament_update();
+    
+    delete a1;
+    delete a2;
 
 }
 BOOST_AUTO_TEST_CASE( friction_test )
