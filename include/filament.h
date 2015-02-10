@@ -22,12 +22,7 @@
 #include "actin.h"
 #include "Link.h"
 #include "globals.h"
-//=====================================
-//actin filament template
-/*
-template <class f_type> 
-class filament
-*/
+
 //=====================================
 //actin filament class
 class filament
@@ -91,7 +86,7 @@ class filament
 
         void update_bending_AT();
 
-        //void linkForce2rodForce(vector<double> * l1, vector<double> * l2);
+        double * endForces2centerForce(int rod, double fx0, double fy0, double fx1, double fy1);
         
         int get_nrods();
         

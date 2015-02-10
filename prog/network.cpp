@@ -39,8 +39,7 @@ int main(int argc, char* argv[]){
     string actin_pos_str;
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
-    double bending_correction_factor = 250;
-    string link_color = "1"; //"blue"
+    double bending_correction_factor = 1;
     bool use_linear_bending;
 
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
@@ -101,12 +100,12 @@ int main(int argc, char* argv[]){
         ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0),"passive motor off rate at filament end")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(50),"passive motor spring stiffness (pN/um)")
         
-        ("link_length", po::value<double>(&link_length)->default_value(0), "Length of links connecting monomers")
+        ("link_length", po::value<double>(&link_length)->default_value(0.01), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
-        ("fracture_force", po::value<double>(&fracture_force)->default_value(1000000), "pN-- filament breaking point")
+        ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
-        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")
-        ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(true),"option to send spring type of bending springs")
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")
+        ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
@@ -183,30 +182,31 @@ int main(int argc, char* argv[]){
     // Create Network Objects
     cout<<"Creating actin network..\n";
 	
-    DLfilament_ensemble * net = new DLfilament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
+    ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
-                                        fracture_force, bending_fracture_force, bnd_cnd, seed); 
+                                        fracture_force, bnd_cnd, seed); 
 
     cout<<"Adding active motors...\n";
-    motor_ensemble<DLfilament_ensemble> * myosins = new motor_ensemble<DLfilament_ensemble>( a_motor_density, xrange, yrange, dt, temperature, 
+    motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, xrange, yrange, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                                              a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble<DLfilament_ensemble> * crosslks = new motor_ensemble<DLfilament_ensemble>( p_motor_density, xrange, yrange, dt, temperature, 
+    motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, xrange, yrange, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     cout<<"Updating motors, filaments and crosslinks in the network..\n";
             
+    string time_str = "t = 0\n";
     if (shear_rate != 0)
         net->set_shear_rate(shear_rate);
     
     if (use_linear_bending){
-        net->set_bending_linear();
+        //net->set_bending_linear();
         cout<<"\nusing linear bending\n";
     }
-    string time_str = "t = 0\n";
+
     file_a << time_str;
     net->write_rods(file_a);
     file_l << time_str;
@@ -226,9 +226,9 @@ int main(int argc, char* argv[]){
         //update network
         if (shear_rate != 0)
             net->update_shear();
-
-        net->update_bending();
+        
         net->update_stretching();
+        net->update_bending();
         net->update(t);
         net->quad_update();
         

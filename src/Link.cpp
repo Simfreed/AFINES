@@ -45,6 +45,7 @@ double* Link::get_hy(){
 
 void Link::set_aindex1(int i){
     aindex[1] = i;
+    this->step();
 }
 
 // stepping kinetics
@@ -95,8 +96,8 @@ void Link::filament_update()
     //cout<<"\nDEBUG:stretch = "<<force_stretch;
     if (aindex[0] != -1){
         e0 = fil->get_rod(aindex[0])->get_direction();
-        forcex[0]       =   force_stretch * cos(phi); 
-        forcey[0]       =   force_stretch * sin(phi); 
+        forcex[0]       =  -force_stretch * cos(phi); 
+        forcey[0]       =  -force_stretch * sin(phi); 
         force_par[0]    =   forcex[0]*e0[0] + forcey[0]*e0[1];
         force_perp[0]   =  -forcex[0]*e0[1] + forcey[0]*e0[0];
         torque[0]       =   cross(hx[0]-fil->get_rod(aindex[0])->get_xcm(),hy[0]-fil->get_rod(aindex[0])->get_ycm(),forcex[0],forcey[0]);
@@ -106,8 +107,8 @@ void Link::filament_update()
 
     if (aindex[1] != -1){
         e1 = fil->get_rod(aindex[1])->get_direction();
-        forcex[1]       =   -force_stretch * cos(phi);
-        forcey[1]       =   -force_stretch * sin(phi);
+        forcex[1]       =    force_stretch * cos(phi);
+        forcey[1]       =    force_stretch * sin(phi);
         force_par[1]    =    forcex[1]*e1[0] + forcey[1]*e1[1];
         force_perp[1]   =   -forcex[1]*e1[1] + forcey[1]*e1[0];
         torque[1]       =   cross(hx[1]-fil->get_rod(aindex[1])->get_xcm(),hy[1]-fil->get_rod(aindex[1])->get_ycm(),forcex[1],forcey[1]);
@@ -116,6 +117,48 @@ void Link::filament_update()
     }
 
 }
+
+/*********************************************************
+ * Calculates the x and y forces on the end of rod due   *
+ *      to the link that connects them                   *
+ * For Link j in the filament, this function             *
+ *      returns an array of doubles callled forces       *
+ * where:                                                *
+ *      forces[0] is the x force on the end of rod j-1   *
+ *      forces[1] is the y force on the end of rod j-1   *
+ *      forces[2] is the x force at the start of rod j   *
+ *      forces[3] is the y force at the start of rod j   *
+ *********************************************************/
+
+double* Link::get_forces()
+{
+
+    double* forces = new double[4]; 
+    
+    if (aindex[0] == -1 || aindex[1] == -1){
+        forces[0] = 0;
+        forces[1] = 0;
+        forces[2] = 0;
+        forces[3] = 0;
+    }
+    else
+    {
+        double force_stretch = this->get_stretch_force();
+    //    cout<<"\nDEBUG: force_stretch = "<<force_stretch; 
+        forces[0] = force_stretch * cos(phi); 
+        forces[1] = force_stretch * sin(phi); 
+        forces[2] = -force_stretch * cos(phi);
+        forces[3] = -force_stretch * sin(phi);
+    /*    cout<<"\nDEBUG: forces[0] = "<<forces[0]; 
+        cout<<"\nDEBUG: forces[1] = "<<forces[1]; 
+        cout<<"\nDEBUG: forces[2] = "<<forces[2]; 
+        cout<<"\nDEBUG: forces[3] = "<<forces[3]; 
+    */
+    }
+    
+    return forces;
+}
+
 double Link::get_kb(){
     return kb;
 }

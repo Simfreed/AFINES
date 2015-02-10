@@ -405,5 +405,5 @@ double * motor<filament_ensemble_type>::get_pos_a_end(){
     return pos_a_end;
 }
 
-template class motor<NFfilament_ensemble>;
+template class motor<ATfilament_ensemble>;
 template class motor<DLfilament_ensemble>;

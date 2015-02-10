@@ -104,13 +104,13 @@ class filament_ensemble
         vector<filament_type *> network;
 };
 
-class NFfilament_ensemble:
+class ATfilament_ensemble:
     public filament_ensemble<filament>
 {
 
     public:
         
-        NFfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
+        ATfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
                 double len, double vis, int nrod,
                 double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
@@ -119,8 +119,6 @@ class NFfilament_ensemble:
         
         void update_bending();
         
-        void update_bending_FD();
-
 };
   
 class DLfilament_ensemble:

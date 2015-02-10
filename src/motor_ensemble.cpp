@@ -141,4 +141,4 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
 }
 
 template class motor_ensemble<DLfilament_ensemble>;
-template class motor_ensemble<NFfilament_ensemble>;
+template class motor_ensemble<ATfilament_ensemble>;

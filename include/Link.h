@@ -20,6 +20,7 @@ class filament;
 //included dependences
 #include "string"
 #include "vector"
+#include "globals.h"
 
 //=====================================
 //Link class
@@ -27,26 +28,42 @@ class Link
 {
     public:
         Link();
+        
         Link(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
+        
         virtual ~Link();
 
         double* get_hx();
+        
         double* get_hy();
+        
         double get_kb();
+        
         double get_kl();
+        
         double get_length();
+        
         double get_xcm();
+        
         double get_ycm();
-        std::string to_string();
-        std::string write();
+        
+        string to_string();
+        
+        string write();
+        
         void step();
+        
         void filament_update();
+        
         bool operator==(const Link& that);    
+        
         bool is_similar(const Link& that);    
 
         virtual double get_stretch_force();
 
         void set_aindex1(int i);
+        
+        double * get_forces();
 
     protected:
 

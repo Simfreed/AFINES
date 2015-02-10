@@ -229,7 +229,7 @@ void filament_ensemble<filament_type>::update_forces(int f_index, int r_index, d
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
 
-NFfilament_ensemble::NFfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp,
+ATfilament_ensemble::ATfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp,
         double len, double vis, int nrods, double link_len, vector<double *> pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
@@ -274,7 +274,7 @@ NFfilament_ensemble::NFfilament_ensemble(double density, double fovx, double fov
 }
 
 // Update bending forces between monomers
-void NFfilament_ensemble::update_bending(){
+void ATfilament_ensemble::update_bending(){
     
     for (unsigned int f = 0; f < network.size(); f++)
     {
@@ -282,8 +282,8 @@ void NFfilament_ensemble::update_bending(){
     }
 }
 
-void NFfilament_ensemble::update_stretching(){
-
+void ATfilament_ensemble::update_stretching(){
+    
     vector<filament *> newfilaments;
     for (unsigned int f = 0; f < network.size(); f++)
     {
