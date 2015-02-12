@@ -145,11 +145,17 @@ int main(int argc, char* argv[]){
         store(parse_config_file(ifs, config_file_options), vm);
         notify(vm);
     }
-    
+    double xgrid, ygrid; 
     // DERIVED QUANTITIES :
-    double xgrid  = 2*xrange;
-    double ygrid  = 2*yrange;
-    
+    if(a_motor_density == 0 && p_motor_density==0){
+        xgrid = 0;
+        ygrid = 0;
+    }
+    else{
+        xgrid  = 2*xrange;
+        ygrid  = 2*yrange;
+    }
+
     if (polymer_bending_modulus < 0){ //This is a flag for using the temperature for the bending modulus
         polymer_bending_modulus = 10*temperature; // 10um * kT
     }

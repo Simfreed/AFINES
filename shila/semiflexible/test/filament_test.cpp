@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( bending_test_two_rods_known_angle )
     int nx = 100;
     int  ny = 100;
     filament * f = new filament(); 
-    int nsteps = 20;
+    int nsteps = 2000;
 
     actin * act1 = new actin(0, 0, 0, actin_length, fovx, fovy, nx, ny, viscosity);
     actin * act2 = new actin(0.5, 0.5, pi/2, actin_length, fovx, fovy, nx, ny, viscosity);

@@ -842,7 +842,7 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
     double temp = 0.00;
     double link_length = 0.01;
     double viscosity = 0.5;
-    double stretching_stiffness = 1;
+    double stretching_stiffness = 0.4;
     double bending_stiffness = 0.04; 
     double fracture_force = 100000;
     string bc="REFLECTIVE";

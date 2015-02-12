@@ -9,14 +9,14 @@
 
 #include "iostream"
 #include "iomanip"
-#include "math.h"
+#include <math.h>
 #include "fstream"
 #include "string"
 #include "stdint.h"
+#include <stdlib.h>
 #include "vector"
 #include <map>
 #include "time.h"
-
 /* distances in microns, time in seconds, forces in pN */
 
 #define pi 3.14159265358979323
@@ -25,9 +25,10 @@
 
 //These two things should probably be inputs to various classes
 #define dt 0.0001
-#define temperature 0.004
+#define temperature 0//0.004
 
 class motor_ensemble; //forward declaration of motor ensemble because I need it in actin_ensemble
+class link_ensemble; 
 
 /*generic functions to be used below*/
 double rng(double start, double end)
@@ -283,7 +284,7 @@ actin(double xcm, double ycm, double angle, double len, double fovx, double fovy
         double yintercept=y-slope*x;
         xcor=(slope*yp + xp - slope*yintercept)/(slope*slope + 1);
         ycor=(slope*slope*yp + slope*xp + yintercept)/(1 + slope*slope);
-        angle=atan((ycor-yp)/(xcor-xp));
+        angle=atan2((ycor-yp),(xcor-xp));
         return angle;
     }
 	
@@ -397,13 +398,13 @@ public:
         double * rod_end_pts;
         double  xcm, ycm, theta;
         for (int i=0; i<npolymer; i++) {
-            theta=rng(0,2*pi);
+            theta=3*pi/2;//rng(0,2*pi);
             //nmonomer = (int) rng(nmonomer_min, nmonomer_max);
             //the start of the polymer: 
-            network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
-                        theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
-//            std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
-//            network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+//            network.push_back(actin(rng(-0.5*(view*fovx-ld),0.5*(view*fovx-ld)), rng(-0.5*(view*fovy-ld),0.5*(view*fovy-ld)),
+//                        theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
+            std::cout<<"WARNING: STARTING ACTIN FILAMENT POSITION CHOSEN DETERMINISTICALLY\n";
+            network.push_back(actin(0,0,theta,ld,fov[0],fov[1],nq[0],nq[1],visc));
             //Add the quadrants of the first rod
             std::vector<std::vector<int> > tmp_quads=network.back().get_quadrants();
             for (int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
@@ -655,7 +656,7 @@ public:
     }
     
 void connect_polymers(motor_ensemble * mots, double link_length, double link_stiffness, std::string link_color);
-void connect_polymers(motor_ensemble * mots, 
+void connect_polymers(link_ensemble * links, 
         double link_length, double link_stiffness, std::string link_color,
         double b_link_stiffness, std::string b_link_color);
 
@@ -698,15 +699,21 @@ public:
         aindex[0]=aindex0;//   actin index for head in state[0]
         aindex[1]=aindex1;// actin index for head in state[1]
         actin_network=network;
-		pos_actin[0]=0; // I don't think this variable get's ACCESSED anywhere 
+//		pos_actin[0]=0; // I don't think this variable get's ACCESSED anywhere 
         pos_a_end[0]=0; //distance from pointy end -- by default 0
         pos_a_end[1]=0;
-        if (state0)
-            pos_a_end[0] = dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[2],actin_network->get_ends(aindex[0])[3]);
-		if (state1)
-            pos_a_end[1] = dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[2],actin_network->get_ends(aindex[1])[3]);
 
-        pos_actin[1]=0;
+        if (state0){
+            pos_a_end[0] = fmin(dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[0],actin_network->get_ends(aindex[0])[1]),
+                                dis_points(hx[0],hy[0],actin_network->get_ends(aindex[0])[2],actin_network->get_ends(aindex[0])[3]));
+		    std::cout<<"DEBUG: distance of head 0 from pointy end of actin monomer "<<aindex[0]<<" : "<<pos_a_end[0]<<"\n";
+        }
+        if (state1){
+            pos_a_end[1] = fmin(dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[0],actin_network->get_ends(aindex[1])[1]),
+                                dis_points(hx[1],hy[1],actin_network->get_ends(aindex[1])[2],actin_network->get_ends(aindex[1])[3]));
+		    std::cout<<"DEBUG: distance of head 1 from pointy end of actin monomer "<<aindex[1]<<" : "<<pos_a_end[0]<<"\n";
+        }
+//        pos_actin[1]=0;
 		fov[0]=fovx;
 		fov[1]=fovy;
         color = col; 
@@ -768,10 +775,10 @@ public:
                             hy[pr(hd)]=hy[hd]+pow(-1,hd)*mld*sin(mphi);
                         }
                         else {
-                            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
+                            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
                         }
                         
-                        pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
+//                        pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
                         pos_a_end[hd]=dis_points(hx[hd],hy[hd],actin_network->get_ends(aindex[hd])[2],actin_network->get_ends(aindex[hd])[3]);
                         break;
                     }
@@ -790,7 +797,7 @@ public:
 			ym[0]=hy[0]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
 			ym[1]=hy[1]+sqrt(dt*mobility*6*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
             reflect(xm[0],xm[1],ym[0],ym[1]);
-            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
+            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
 		}
 		else if (state[0]==0 || state[1]==0) {
 			int hd=state[0];
@@ -800,7 +807,7 @@ public:
             xm[pr(hd)]=hx[pr(hd)];
             ym[pr(hd)]=hy[pr(hd)];
             reflect(xm[0],xm[1],ym[0],ym[1]);
-            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
+            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
 		}
 		else {
 			return;
@@ -815,7 +822,7 @@ public:
 		if (event(koff,dt)==1) {
 			state[hd]=0;
 			aindex[hd]=-1;
-			pos_actin[hd]=0;
+//			pos_actin[hd]=0;
             pos_a_end[hd]=0;
             hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
 			hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
@@ -834,7 +841,7 @@ public:
     void step_twoheads()
     {
 		stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-        //std::cout<<"DEBUG: stretch = "<<stretch<<"\n";
+        std::cout<<"DEBUG: step_twoheads: color = "<< color<< "\tstretch = "<<stretch<<"\n";
         //fm = vec(Fm).(-vec(u)) 
 		fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(aindex[0])[0] + (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(aindex[0])[1]);
         vm[0]=velocity(vs,fm[0],fmax);
@@ -850,7 +857,7 @@ public:
 			aindex[0]=-1;
 			hx[0]=hx[1]-mld*cos(mphi);
 			hy[0]=hy[1]-mld*sin(mphi);
-			pos_actin[0]=0;
+//			pos_actin[0]=0;
             pos_a_end[0]=0;
             pos_temp=pos_a_end[1]+dt*vs;
 			move_end_detach(1,vs,pos_temp);
@@ -860,7 +867,7 @@ public:
             aindex[1]=-1;
             hx[1]=hx[0]+mld*cos(mphi);
             hy[1]=hy[0]+mld*sin(mphi);
-            pos_actin[1]=0;
+//            pos_actin[1]=0;
             pos_a_end[1]=0;
             pos_temp=pos_a_end[0]+dt*vs;
 			move_end_detach(0,vs,pos_temp);
@@ -884,6 +891,7 @@ public:
     {
         if (state[0]==1 && state[1]==1) {
 			stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
+            std::cout<<"DEBUG: actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
             forcex[0]=-mk*(hx[0]-hx[1]+mld*cos(mphi));
             forcex[1]=-forcex[0];
             forcey[0]=-mk*(hy[0]-hy[1]+mld*sin(mphi));
@@ -908,25 +916,25 @@ public:
         if (state[0]==1 && state[1]==1) {
             hx[0]=actin_network->get_ends(aindex[0])[2]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
             hy[0]=actin_network->get_ends(aindex[0])[3]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
-            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_position(aindex[0])[0],actin_network->get_position(aindex[0])[1]);
+//            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_position(aindex[0])[0],actin_network->get_position(aindex[0])[1]);
             hx[1]=actin_network->get_ends(aindex[1])[2]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
             hy[1]=actin_network->get_ends(aindex[1])[3]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
-            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_position(aindex[1])[0],actin_network->get_position(aindex[1])[1]);
-            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
+//            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_position(aindex[1])[0],actin_network->get_position(aindex[1])[1]);
+            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
         }
         else if(state[0]==1 && state[1]==0)
         {
             hx[0]=actin_network->get_ends(aindex[0])[2]-pos_a_end[0]*actin_network->get_direction(aindex[0])[0];
             hy[0]=actin_network->get_ends(aindex[0])[3]-pos_a_end[0]*actin_network->get_direction(aindex[0])[1];
-            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_position(aindex[0])[0],actin_network->get_position(aindex[0])[1]);
-            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
+//            pos_actin[0]=dis_points(hx[0],hy[0],actin_network->get_position(aindex[0])[0],actin_network->get_position(aindex[0])[1]);
+            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
         }
         else if(state[0]==0 && state[1]==1)
         {
             hx[1]=actin_network->get_ends(aindex[1])[2]-pos_a_end[1]*actin_network->get_direction(aindex[1])[0];
             hy[1]=actin_network->get_ends(aindex[1])[3]-pos_a_end[1]*actin_network->get_direction(aindex[1])[1];
-            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_position(aindex[1])[0],actin_network->get_position(aindex[1])[1]);
-            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
+//            pos_actin[1]=dis_points(hx[1],hy[1],actin_network->get_position(aindex[1])[0],actin_network->get_position(aindex[1])[1]);
+            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
         }
         else
         {
@@ -937,43 +945,47 @@ public:
     }
     
 private:
-    double hx[2],hy[2],vhx[2], xm[2], ym[2], vhy[2], mphi,mld,mobility,fm[2],vm[2],offrate[2], onrate, stretch,forcex[2],forcey[2],torque[2], force_par[2],force_perp[2],vs, pos_temp;
+    double hx[2],hy[2], xm[2], ym[2], mphi,mld,mobility,fm[2],vm[2],offrate[2], onrate, stretch,forcex[2],forcey[2],torque[2], force_par[2],force_perp[2],vs, pos_temp;
     int state[2], aindex[2];
     double dm,fmax,mk, kon, koff, kend;
     std::map<int, double> dist;
     std::string color;
     actin_ensemble *actin_network;
-	double pos_actin[2], pos_a_end[2], fov[2];
+	double /*pos_actin[2],*/ pos_a_end[2], fov[2];
     
     
     inline void move_end_detach(int hd, double speed, double pos)
     {
+        stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
+        std::cout<<"DEBUG: move_end_detach, before, hd = "<<hd<<" : color = "<< color<< "\tstretch = "<<stretch<<"\n";
         if (pos>=actin_network->get_alength(aindex[hd])) { //not sure why only "greater than or equal"
             if (event(kend,dt)==1) {
-                //std::cout<<"\nThe new myosin position of head "<<hd<<" is OFF the actin filament AND detaching";
+                std::cout<<"The new myosin position of head "<<hd<<" is OFF the actin filament AND detaching\n";
                 state[hd]=0;
                 aindex[hd]=-1;
-                pos_actin[hd]=0;
+//                pos_actin[hd]=0;
                 pos_a_end[hd]=0;
                 hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
                 hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
             }
             else {
-                //std::cout<<"\nThe new myosin position of head "<<hd<<" is OFF the actin filament BUT not detaching";
+                std::cout<<"The new myosin position of head "<<hd<<" is OFF the actin filament BUT not detaching\n";
                 hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
                 hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
-                mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
-                pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
+                mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
+//                pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
             }
         }
         else {
-            //std::cout<<"\nThe new myosin position of head "<<hd<<" is "<<pos<<" away from the pointy end of the actin filament "; //still on the actin filament";
+            std::cout<<"The new myosin position of head "<<hd<<" is "<<pos<<" away from the pointy end of the actin filament \n"; //still on the actin filament";
             pos_a_end[hd]=pos;
             hx[hd]=actin_network->get_ends(aindex[hd])[2]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[0];
             hy[hd]=actin_network->get_ends(aindex[hd])[3]-pos_a_end[hd]*actin_network->get_direction(aindex[hd])[1];
-            mphi=atan((hy[1]-hy[0])/(hx[1]-hx[0]));
-            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
+            mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
+//            pos_actin[hd]=dis_points(hx[hd],hy[hd],actin_network->get_position(aindex[hd])[0],actin_network->get_position(aindex[hd])[1]);
         }
+        stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
+        std::cout<<"DEBUG: move_end_detach, after, hd = "<<hd<<" : color = "<< color<< "\tstretch = "<<stretch<<"\n";
         
     }
     
@@ -1113,6 +1125,125 @@ private:
     std::string color;
 };
 
+//Link class
+class Link
+{
+public:
+    Link(double len, double stiffness, actin_ensemble* network, 
+            int aindex0, int aindex1, std::string col)
+    {
+        lk              =   stiffness;
+        ld              =   len;
+        aindex[0]       =   aindex0;
+        aindex[1]       =   aindex1;
+        actin_network   =   network;
+		
+        // Set the coordinates of the heads:
+        this->step();
+        color           =   col; 
+        
+    }
+    ~Link(){}
+    
+     
+    double* get_heads()
+    {
+        double h[4];
+        double *gh;
+        h[0]=hx[0];
+        h[1]=hy[0];
+        h[2]=hx[1];
+        h[3]=hy[1];
+        gh=h;
+        return gh;
+    }
+    
+    std::string get_color()
+    {
+        return color;
+    }
+
+	// stepping kinetics
+    void step()
+    {
+    
+        //CONVENTION: head 0 will be connected to the POINTY end of a filament
+        //            head 1 will be connected to the BARBED end of a filament
+        hx[0]=actin_network->get_ends(aindex[0])[2];
+        hy[0]=actin_network->get_ends(aindex[0])[3];
+        hx[1]=actin_network->get_ends(aindex[0])[0];
+        hy[1]=actin_network->get_ends(aindex[0])[1];
+        
+        phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
+        
+	}
+	
+    void actin_update()
+    {
+        stretch         =   dis_points(hx[0],hy[0],hx[1],hy[1])-ld;
+        std::cout<<"DEBUG: actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
+    
+        forcex[0]       =   lk * stretch * cos(phi); //-lk*(hx[0]-hx[1]+ld*cos(phi)); <-- old formula, probably equivalent
+        forcex[1]       =   -forcex[0];
+        forcey[0]       =   lk * stretch * sin(phi); //-lk*(hy[0]-hy[1]+ld*sin(phi)); <-- old formula, probably equivalent
+        forcey[1]       =   -forcey[0];
+        
+        force_par[0]    =   forcex[0]*actin_network->get_direction(aindex[0])[0] + forcey[0]*actin_network->get_direction(aindex[0])[1];
+        force_perp[0]   =   -forcex[0]*actin_network->get_direction(aindex[0])[1] + forcey[0]*actin_network->get_direction(aindex[0])[0];
+        force_par[1]    =   forcex[1]*actin_network->get_direction(aindex[1])[0] + forcey[1]*actin_network->get_direction(aindex[1])[1];
+        force_perp[1]   =   -forcex[1]*actin_network->get_direction(aindex[1])[1] + forcey[1]*actin_network->get_direction(aindex[1])[0];
+
+        torque[0]       =   cross(hx[0]-actin_network->get_position(aindex[0])[0],hy[0]-actin_network->get_position(aindex[0])[1],forcex[0],forcey[0]);
+        torque[1]       =   cross(hx[1]-actin_network->get_position(aindex[1])[0],hy[1]-actin_network->get_position(aindex[1])[1],forcex[1],forcey[1]);
+        
+        actin_network->update_forces(aindex[0],force_par[0],force_perp[0],torque[0]);
+        actin_network->update_forces(aindex[1],force_par[1],force_perp[1],torque[1]);
+    }
+    
+private:
+    double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], lk;
+    int aindex[2];
+    std::string color;
+    actin_ensemble *actin_network;
+
+};
+
+//link ensemble class
+class link_ensemble
+{
+public:
+    
+    link_ensemble(){};
+    ~link_ensemble(){};
+    
+    void link_walk()
+    {
+        for (int i=0; i<links.size(); i++) {
+            
+            links[i].step();
+            links[i].actin_update();
+        }
+    }
+    
+    void link_write(std::ofstream& fout)
+    {
+        for (int i=0; i<links.size(); i++) {
+            fout<<links[i].get_heads()[0]<<"\t"<<links[i].get_heads()[1]<<"\t"
+                <<links[i].get_heads()[2]-links[i].get_heads()[0]<<"\t"<<
+                links[i].get_heads()[3]-links[i].get_heads()[1]<<"\t"<<
+                links[i].get_color()<<"\n";
+        } 
+    }
+    
+    void add_link(Link l)
+    {
+        links.push_back(l);
+    }
+
+private:
+    std::vector<Link> links;
+};
+
 // Adds dead motors between monomers of an actin polymer to act as springs.
 // Needs a motor_ensemble object to work, first 
 void actin_ensemble::connect_polymers(motor_ensemble * mots, double link_length, double link_stiffness, 
@@ -1132,12 +1263,12 @@ void actin_ensemble::connect_polymers(motor_ensemble * mots, double link_length,
 // Adds dead motors between monomers of an actin polymer to act as springs.
 // Add additional dead motors between center of masses of monomers to account for bending energy
 // Needs a motor_ensemble object to work, first 
-void actin_ensemble::connect_polymers(motor_ensemble * mots, 
+void actin_ensemble::connect_polymers(link_ensemble * links, 
         double link_length, double link_stiffness, std::string link_color,
         double b_link_stiffness, std::string b_link_color){
     
     int mono1, mono2;
-    double x1, x2, y1, y2, b_link_length1, b_link_length2;
+    double x1, x2, y1, y2, ang, link_length2, b_link_length1, b_link_length2;
     std::vector<double> motor_coords;
     for (int i = 0; i < mono_map.size(); i++){
         for (int j = 0; j < mono_map[i].size(); j++){
@@ -1145,10 +1276,10 @@ void actin_ensemble::connect_polymers(motor_ensemble * mots,
             // Join monomers within the polymer
             mono1 = mono_map[i][j];
             mono2 = mono1 + 1; //mono_map[i][j+1];
-            motor_coords = link_map[mono1];
-            mots->add_motor( motor( motor_coords[0], motor_coords[1], motor_coords[2], 
-                        link_length, this, 1, 1, mono1, mono2, fov[0], fov[1], 0, link_stiffness,
-                        0, 0, 0, ld, visc, link_color) );
+            
+            link_length2 = 10; //dis_points(x1, x2, y1, y2) + 100 * eps;
+            std::cout<<"DEBUG: motor angle = "<<ang<<"\n";
+            links->add_link( Link( link_length, link_stiffness, this, mono1, mono2,  link_color) );
             
             // Add bending energy links
             x1      = network[mono1].getposcm()[0];
@@ -1159,9 +1290,9 @@ void actin_ensemble::connect_polymers(motor_ensemble * mots,
             b_link_length2 = dis_points(x1,y1,x2,y2);
 //            std::cout<<"DEBUG: b_link_length2-b_link_length1 : "<<b_link_length2-b_link_length1<<"\n";
 
-            mots->add_motor( motor( (x2+x1)/2, (y2+y1)/2, motor_coords[2],//atan2(y2-y1,x2-x1), 
-                        b_link_length1, this, 1, 1, mono1, mono2, fov[0], fov[1], 0, b_link_stiffness,
-                        0, 0, 0, ld, visc, b_link_color) ); 
+//            mots->add_motor( motor( (x2+x1)/2, (y2+y1)/2, motor_coords[2],//atan2(y2-y1,x2-x1), 
+//                        b_link_length1, this, 1, 1, mono1, mono2, fov[0], fov[1], 0, b_link_stiffness,
+//                        0, 0, 0, ld, visc, b_link_color) ); 
         
         }
     }
