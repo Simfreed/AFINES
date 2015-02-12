@@ -13,14 +13,12 @@
 //actin filament class
 actin::actin(){}
 
-actin::actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis)
+actin::actin(double xcm, double ycm, double len, double fovx, double fovy, int nx, int ny, double vis)
 {
     //now i will make these spherical
     x=xcm;
     y=ycm;
-    phi=angle;
-    ld=len;
-    diameter= 0.006; //source: Google //ld/40;
+    ld=len; //radius
     a_vis=vis;
     
     fov[0] = fovx;
@@ -35,9 +33,7 @@ actin::actin(const actin& other){
     
     x = other.x;
     y = other.y;
-    phi = other.phi;
     ld = other.ld;
-    diameter = other.diameter;
     a_vis = other.a_vis;
     
     fov[0] = other.fov[0];
@@ -45,19 +41,8 @@ actin::actin(const actin& other){
     nq[0] = other.nq[0];
     nq[1] = other.nq[1];
 
-    start[0] = other.start[0];
-    start[1] = other.start[1];
-    end[0] = other.end[0];
-    end[1] = other.end[1];
-
-    e[0] = other.e[0];
-    e[1] = other.e[1];
-    n[0] = other.n[0];
-    n[1] = other.n[1];
-
     forces[0] = other.forces[0];
     forces[1] = other.forces[1];
-    forces[2] = other.forces[2];
     
     quad = other.quad;
     tmp = other.tmp;
@@ -71,21 +56,9 @@ actin::~actin(){
 // Updates all derived quantities of a monomer
 void actin::update(){
     
-    start[0]=x-ld*0.5*cos(phi);
-    start[1]=y-ld*0.5*sin(phi);
-    end[0]=x+ld*0.5*cos(phi);
-    end[1]=y+ld*0.5*sin(phi);
-    
-    //unit vector
-    e[0]=cos(phi);
-    e[1]=sin(phi);
-    //unit normal
-    n[0] = -e[1];
-    n[1] = e[0];
     //motor-induced forces
     forces[0]=0; //along the filament
     forces[1]=0; //perpendicular to the filament
-    forces[2]=0; //torque
 
     //quadrant numbers crossed by the actin in x-direction
     quad.clear();
