@@ -15,6 +15,7 @@ actin::actin(){}
 
 actin::actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis)
 {
+    //now i will make these spherical
     x=xcm;
     y=ycm;
     phi=angle;
