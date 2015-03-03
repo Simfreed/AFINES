@@ -20,6 +20,7 @@ actin::actin(double xcm, double ycm, double len, double fovx, double fovy, int n
     y=ycm;
     ld=len; //radius
     a_vis=vis;
+    friction = 4*pi*a_vis*ld;
     
     //fov = new array<double, 2>();
     //nq = new array<int, 2>();
@@ -28,39 +29,23 @@ actin::actin(double xcm, double ycm, double len, double fovx, double fovy, int n
     nq[0]  = nx;
     nq[1]  = ny;
     
-    frictions[0]=2*pi*a_vis*ld/log(ld/diameter);
-    frictions[1]=2*frictions[0];
-    frictions[2]=frictions[0]*pow(ld,2)/4;
-    
-    this->update();
-    
+    forces[0] = 0;
+    forces[1] = 0;
 }
 
 actin::actin(const actin& other){
+    
     //cout<<"\nDEBUG: calling copy constructor"; 
     x = other.x;
     y = other.y;
     ld = other.ld;
     a_vis = other.a_vis;
-    
+    friction = other.friction;
+
     fov[0] = other.fov[0];
     fov[1] = other.fov[1];
     nq[0] = other.nq[0];
     nq[1] = other.nq[1];
-
-    frictions[0] = other.frictions[0];
-    frictions[1] = other.frictions[1];
-    frictions[2] = other.frictions[2];
-
-    start[0] = other.start[0];
-    start[1] = other.start[1];
-    end[0] = other.end[0];
-    end[1] = other.end[1];
-
-    e[0] = other.e[0];
-    e[1] = other.e[1];
-    n[0] = other.n[0];
-    n[1] = other.n[1];
 
     forces[0] = other.forces[0];
     forces[1] = other.forces[1];
@@ -74,130 +59,10 @@ actin::~actin(){
     //cout<<"DELETING ACTIN\n";
 };
 
-// Updates all derived quantities of a monomer
-void actin::update(){
-    
-    //motor-induced forces
-    forces[0]=0; //along the filament
-    forces[1]=0; //perpendicular to the filament
 
-    //quadrant numbers crossed by the actin in x-direction
-    quad.clear();
-    tmp.clear();
-    int lower_limit, upper_limit, index;
-    if(start[0] <= end[0])
-    {
-        lower_limit = int(floor(start[0]/fov[0]*nq[0]));
-        if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(end[0]/fov[0]*nq[0]));
-        if(upper_limit < nq[0]-1){upper_limit++;};
-
-        for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);};
-    }
-    else
-    {
-        lower_limit = int(floor(end[0]/fov[0]*nq[0]));
-        if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(start[0]/fov[0]*nq[0]));
-        if(upper_limit < nq[0]-1){upper_limit++;};
-        for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);};
-    };
-    quad.push_back(tmp);
-
-    //quadrant numbers crossed by the actin in y-direction
-    tmp.clear();
-    if(start[1] <= end[1])
-    {
-        lower_limit = int(floor(start[1]/fov[1]*nq[1]));
-        if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(end[1]/fov[1]*nq[1]));
-        if(upper_limit < nq[1]-1){upper_limit++;};
-        for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);}
-    }
-    else
-    {
-        lower_limit = int(floor(end[1]/fov[1]*nq[1]));
-        if(lower_limit > 0){lower_limit--;};
-        upper_limit = int(ceil(start[1]/fov[1]*nq[1]));
-        if(upper_limit < nq[1]-1){upper_limit++;};
-        for(index = lower_limit; index < upper_limit;index++){tmp.push_back(index);}
-    };
-    quad.push_back(tmp);
-
-}
-//shortest(perpendicular) distance between an arbitray point and the filament
-double actin::get_distance(double xp, double yp)
-{
-    double l2=pow(dis_points(start[0],start[1],end[0],end[1]),2);
-    if (l2==0) {
-        return dis_points(xp,yp,start[0],start[1]);
-    }
-    double tp=dot(xp-start[0],yp-start[1],end[0]-start[0],end[1]-start[1])/l2;
-    if (tp<0) {
-        return dis_points(xp,yp,start[0],start[1]);
-    }
-    else if(tp>1.0){
-        return dis_points(xp,yp,end[0],end[1]);
-    }
-    else{
-        double px=start[0]+tp*(end[0]-start[0]);
-        double py=start[1]+tp*(end[1]-start[1]);
-        return dis_points(xp,yp,px,py);
-    }
-}
-
-array<double,2> actin::get_intpoint(double xp, double yp)
-{
-    array<double,2> coordinates;
-    double l2 = pow(dis_points(start[0], start[1], end[0], end[1]) , 2);
-    if (l2==0) {
-        coordinates[0]=start[0];
-        coordinates[1]=start[1];
-    }
-    double tp=dot(xp-start[0],yp-start[1],end[0]-start[0],end[1]-start[1])/l2;
-    if (tp<0) {
-        coordinates[0]=start[0];
-        coordinates[1]=start[1];
-    }
-    else if(tp>1.0){
-        coordinates[0]=end[0];
-        coordinates[1]=end[1];
-    }
-    else{
-        coordinates[0]=start[0]+tp*(end[0]-start[0]);
-        coordinates[1]=start[1]+tp*(end[1]-start[1]);
-    }
-    return coordinates;
-}
-
-double actin::get_int_angle(double xp, double yp)
-{
-    double angle;
-    double xcor,ycor;
-    double slope=(end[1]-start[1])/(end[0]-start[0]);
-    double yintercept=y-slope*x;
-    xcor=(slope*yp + xp - slope*yintercept)/(slope*slope + 1);
-    ycor=(slope*slope*yp + slope*xp + yintercept)/(1 + slope*slope);
-    angle=atan2((ycor-yp),(xcor-xp));
-    return angle;
-}
-
-array<double,2> actin::get_direction()
-{
-    return e;
-}
-
-array<double,3> actin::get_forces()
+array<double,2> actin::get_forces()
 {
     return forces;
-}
-
-array<double,2> actin::get_start(){
-    return start;
-}
-
-array<double,2> actin::get_end(){
-    return end;
 }
 
 array<double,2> actin::get_fov(){
@@ -214,16 +79,10 @@ double actin::get_length()
     return ld;
 }
 
-void actin::update_force(double f1, double f2, double f3)
+void actin::update_force(double f1, double f2)
 {
     forces[0]+=f1;
     forces[1]+=f2;
-    forces[2]+=f3;
-}
-
-array<double,3> actin::get_frictions()
-{
-    return frictions;
 }
 
 double actin::get_xcm()
@@ -236,16 +95,8 @@ double actin::get_ycm()
     return y;
 }
 
-double actin::get_angle()
-{
-    return phi;
-}
-
 void actin::set_xcm(double xcm)
 {
-    /*if (x!=x){
-        cout<<"\nDEBUG: xcm is infinite when setting it within set_xcm() function";
-    }*/
     x = xcm;
 }
 
@@ -254,46 +105,29 @@ void actin::set_ycm(double ycm)
     y = ycm;
 }
 
-void actin::set_phi(double theta)
-{
-    phi = theta;
-}
-
-vector<vector<int> > actin::get_quadrants()
-{ 
-    return quad; 
-}
-
 bool actin::operator==(const actin& that) 
 {
     double err = eps; 
     return (close(x , that.x , err) && close(y , that.y , err) &&
-            close(phi , that.phi , err) && close(ld , that.ld , err) &&
+            close(ld , that.ld , err) &&
             close(a_vis , that.a_vis , err) && close(forces[0] , that.forces[0] , err) &&
-            close(forces[1] , that.forces[1] , err) && close(forces[2] , that.forces[2], err) 
+            close(forces[1] , that.forces[1] , err)
            );
 }
 
 string actin::write()
 {
-    return std::to_string(start[0]) + "\t" + std::to_string(start[1]) + "\t" + 
-           std::to_string(end[0]-start[0]) + "\t" + std::to_string(end[1]-start[1]) + "\n";
- 
+    return std::to_string(x) + "\t" + std::to_string(y);
 }
 
 string actin::to_string()
 {
-    return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) + "\tphi : " + 
-           std::to_string(phi) + "\tld : " + std::to_string(ld) + "\ta_vis : "+
-           std::to_string(a_vis) + "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : "+
-           std::to_string(forces[1]) + "\tforces[2] : " + std::to_string(forces[2]) + "\n";
+    return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) +
+           "\tld : " + std::to_string(ld) + "\ta_vis : "+ std::to_string(a_vis) + 
+           "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : "+ std::to_string(forces[1]) + "\n";
  
 }
 
 double actin::get_viscosity(){
     return a_vis;
-}
-
-double actin::get_diameter(){
-    return diameter;
 }

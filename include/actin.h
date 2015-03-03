@@ -26,9 +26,13 @@
 class actin
 {
     public:
+
         actin();
-        actin(double xcm, double ycm, double angle, double len, double fovx, double fovy, int nx, int ny, double vis); 
+        
+        actin(double xcm, double ycm, double len, double fovx, double fovy, int nx, int ny, double vis); 
+        
         actin(const actin& other);
+        
         ~actin();
     
         void update();
@@ -49,29 +53,21 @@ class actin
         
         void update_force(double f1, double f2, double f3);
 
-        array<double,2> get_start();
-        
-        array<double,2> get_end();
-
         array<double,2> get_fov();
 
-        array<double,2> get_direction();
-        
         array<int,2> get_nq();
         
         array<double,2> get_intpoint(double xp, double yp);
         
-        array<double,3> get_forces();
+        array<double,2> get_forces();
 
-        array<double,3> get_frictions();
+        double get_friction();
         
         double get_viscosity();
 
         void set_xcm(double xcm);
 
         void set_ycm(double ycm);
-
-        void set_phi(double theta);
 
         vector<vector<int> > get_quadrants();
        
@@ -81,16 +77,19 @@ class actin
         
         bool operator==(const actin& that);    
         
-        double get_diameter();
-
-
 
     private:
-        double x, y, phi, ld, diameter, a_vis;
-        array<double,2> fov, start, end, e, n; 
+        
+        double x, y, ld, a_vis, friction;
+
+        array<double,2> fov; 
+        
         array<int,2> nq;
-        array<double, 3> forces, frictions;
+        
+        array<double, 2> forces;
+        
         vector<vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
+        
         vector<int> tmp;
 };
 
