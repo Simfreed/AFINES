@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     24973,        632]
-NotebookOptionsPosition[     23899,        592]
-NotebookOutlinePosition[     24237,        607]
-CellTagsIndexPosition[     24194,        604]
+NotebookDataLength[     32337,        802]
+NotebookOptionsPosition[     30767,        749]
+NotebookOutlinePosition[     31105,        764]
+CellTagsIndexPosition[     31062,        761]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -25,8 +25,8 @@ Cell["Set your own home directories up here:", "Text",
 Cell[BoxData[{
  RowBox[{
   RowBox[{
-  "mdwout", " ", "=", " ", 
-   "\"\</Volumes/homes/Code/cytomod/shila/semiflexible/out/network/\>\""}], 
+  "mdwnt", " ", "=", 
+   "\"\</home/simonfreedman/scratch-midway/cytomod/out/network/\>\""}], 
   ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
@@ -44,7 +44,7 @@ Cell[BoxData[{
   3.62782216876772*^9, 3.627822195821567*^9}, {3.627822356825173*^9, 
   3.6278223702966337`*^9}, {3.627822456889227*^9, 3.6278224616485786`*^9}, {
   3.627905091453683*^9, 3.6279050915166616`*^9}, {3.630074608062232*^9, 
-  3.630074637692267*^9}}],
+  3.630074637692267*^9}, {3.632969777416066*^9, 3.632969804816153*^9}}],
 
 Cell[CellGroupData[{
 
@@ -474,7 +474,8 @@ all the directories I want to plot in a list called dirs, and run the \
 simulator in a Do loop on the whole list. \
 \>", "Text",
  CellChangeTimes->{{3.632058702633338*^9, 3.6320587451969843`*^9}, {
-  3.6320592781905203`*^9, 3.6320593698734417`*^9}}],
+  3.6320592781905203`*^9, 3.6320593698734417`*^9}, {3.633346967041009*^9, 
+  3.633346968479939*^9}}],
 
 Cell[BoxData[
  RowBox[{"(*", 
@@ -517,8 +518,12 @@ Cell[BoxData[
 Cell[BoxData[
  RowBox[{
   RowBox[{"dirs", "=", 
-   RowBox[{"{", "mdwtest", "}"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.6320579105142736`*^9, 3.632057926010301*^9}}],
+   RowBox[{"{", 
+    RowBox[{"mdwnt", "<>", "\"\<clnk_flexible_ap0_pp0.08\>\""}], "}"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.6320579105142736`*^9, 3.632057926010301*^9}, {
+  3.632969838997953*^9, 3.6329698691412888`*^9}, {3.632969921614349*^9, 
+  3.6329699225120163`*^9}}],
 
 Cell[CellGroupData[{
 
@@ -527,7 +532,7 @@ Cell[BoxData[
   RowBox[{"Do", "[", 
    RowBox[{
     RowBox[{"sim", "[", 
-     RowBox[{"dr", ",", "1", ",", "True"}], "]"}], ",", 
+     RowBox[{"dr", ",", "20", ",", "True"}], "]"}], ",", 
     RowBox[{"{", 
      RowBox[{"dr", ",", "dirs"}], "}"}]}], "]"}], ";"}]], "Input",
  CellChangeTimes->{{3.62835966805052*^9, 3.628359705357794*^9}, {
@@ -536,13 +541,13 @@ Cell[BoxData[
    3.629747794231889*^9, {3.630161263053413*^9, 3.6301612631880627`*^9}, {
    3.630673723160728*^9, 3.630673727535849*^9}, {3.630682654470729*^9, 
    3.630682657455441*^9}, 3.630688479669444*^9, {3.632057893291849*^9, 
-   3.6320579082833233`*^9}}],
+   3.6320579082833233`*^9}, {3.633347026550734*^9, 3.633347026852775*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/Code/cytomod/shila/semiflexible/out/test//txt_stack/rods.\
-txt\"\>"], "Print",
+/home/simonfreedman/scratch-midway/cytomod/out/network/clnk_flexible_ap0_pp0.\
+08/txt_stack/rods.txt\"\>"], "Print",
  CellChangeTimes->{
   3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
    3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
@@ -550,11 +555,12 @@ txt\"\>"], "Print",
    3.629761382724489*^9, 3.630161264319889*^9, 3.630161972118187*^9, 
    3.630673730698398*^9, 3.6306806825680113`*^9, 3.630680740449277*^9, 
    3.630682669072865*^9, 3.63068848160744*^9, {3.631298562036311*^9, 
-   3.631298583783593*^9}, 3.6320579301447887`*^9}],
+   3.631298583783593*^9}, 3.6320579301447887`*^9, 3.6329698950831823`*^9, 
+   3.63296994900841*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/Code/cytomod/shila/semiflexible/out/test//txt_stack/\
-amotors.txt\"\>"], "Print",
+/home/simonfreedman/scratch-midway/cytomod/out/network/clnk_flexible_ap0_pp0.\
+08/txt_stack/amotors.txt\"\>"], "Print",
  CellChangeTimes->{
   3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
    3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
@@ -562,11 +568,70 @@ amotors.txt\"\>"], "Print",
    3.629761382724489*^9, 3.630161264319889*^9, 3.630161972118187*^9, 
    3.630673730698398*^9, 3.6306806825680113`*^9, 3.630680740449277*^9, 
    3.630682669072865*^9, 3.63068848160744*^9, {3.631298562036311*^9, 
-   3.631298583783593*^9}, 3.632057930244735*^9}],
+   3.631298583783593*^9}, 3.6320579301447887`*^9, 3.6329698950831823`*^9, 
+   3.632969949420211*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partw"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part \[NoBreak]\\!\\(1\\)\[NoBreak] of \
+\[NoBreak]\\!\\({}\\)\[NoBreak] does not exist. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
+\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.6329699494611797`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "pspec"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(1 + \
+\\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
+\[RightDoubleBracket]\\)\\)\\)\[NoBreak] is neither a machine-sized integer \
+nor a list of machine-sized integers. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\
+\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/pspec\\\", ButtonNote -> \
+\\\"Part::pspec\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969949501165*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "take"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Cannot take positions \[NoBreak]\\!\\(2\\)\[NoBreak] \
+through \[NoBreak]\\!\\(-1\\)\[NoBreak] in \[NoBreak]\\!\\({}\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/Part/take\\\", \
+ButtonNote -> \\\"Part::take\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969949522998*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Partition", "::", "ilsmn"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Single or list of non-negative machine-sized integers \
+expected at position \[NoBreak]\\!\\(2\\)\[NoBreak] of \
+\[NoBreak]\\!\\(Partition[\\(\\(\\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \\(\
+\\(2 ;; All\\)\\) \[RightDoubleBracket]\\)\\), \\(\\(\\(\\(-1\\)\\) + \
+\\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \\(\\(1, 1\\)\\) \
+\[RightDoubleBracket]\\)\\)\\)\\), \\(\\(\\(\\({}\\)\\) \[LeftDoubleBracket] \
+\\(\\(1, 1\\)\\) \[RightDoubleBracket]\\)\\)\\)\\)]\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/ilsmn\\\", \
+ButtonNote -> \\\"Partition::ilsmn\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969949556623*^9}],
+
+Cell[CellGroupData[{
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/Code/cytomod/shila/semiflexible/out/test//txt_stack/\
-pmotors.txt\"\>"], "Print",
+/home/simonfreedman/scratch-midway/cytomod/out/network/clnk_flexible_ap0_pp0.\
+08/txt_stack/pmotors.txt\"\>"], "Print",
  CellChangeTimes->{
   3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
    3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
@@ -574,10 +639,12 @@ pmotors.txt\"\>"], "Print",
    3.629761382724489*^9, 3.630161264319889*^9, 3.630161972118187*^9, 
    3.630673730698398*^9, 3.6306806825680113`*^9, 3.630680740449277*^9, 
    3.630682669072865*^9, 3.63068848160744*^9, {3.631298562036311*^9, 
-   3.631298583783593*^9}, 3.632057930332288*^9}],
+   3.631298583783593*^9}, 3.6320579301447887`*^9, 3.6329698950831823`*^9, 
+   3.632969950459669*^9}],
 
 Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/Code/cytomod/shila/semiflexible/out/test/\"\>"], "Print",
+/home/simonfreedman/scratch-midway/cytomod/out/network/clnk_flexible_ap0_pp0.\
+08\"\>"], "Print",
  CellChangeTimes->{
   3.628359707751981*^9, 3.6297453484151*^9, 3.629745457867406*^9, 
    3.629746063476149*^9, 3.629746599430242*^9, 3.629747117320134*^9, 
@@ -585,13 +652,103 @@ Cell[BoxData["\<\"Generating frames for directory \
    3.629761382724489*^9, 3.630161264319889*^9, 3.630161972118187*^9, 
    3.630673730698398*^9, 3.6306806825680113`*^9, 3.630680740449277*^9, 
    3.630682669072865*^9, 3.63068848160744*^9, {3.631298562036311*^9, 
-   3.631298583783593*^9}, 3.6320579303741407`*^9}]
-}, Open  ]]
+   3.631298583783593*^9}, 3.6320579301447887`*^9, 3.6329698950831823`*^9, 
+   3.6329699504815493`*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partw"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part \[NoBreak]\\!\\(1\\)\[NoBreak] of \
+\[NoBreak]\\!\\({}\\)\[NoBreak] does not exist. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
+\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969950704548*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partw"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part \[NoBreak]\\!\\(2\\)\[NoBreak] of \
+\[NoBreak]\\!\\({}\\)\[NoBreak] does not exist. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partw\\\", ButtonNote -> \
+\\\"Part::partw\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.6329699507551527`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
+partw\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
+calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969950777362*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(\\(\\((\\(-1\\))\\)\\) \
+\[LeftDoubleBracket] 1 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
+depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
+\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969951060058*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(\\(\\((\\(-1\\))\\)\\) \
+\[LeftDoubleBracket] 2 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
+depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
+\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.63296995109545*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"Part", "::", "partd"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(\\(\\((\\(-1\\))\\)\\) \
+\[LeftDoubleBracket] 1 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
+depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
+\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
+\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.63296995112808*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \[NoBreak]\\!\\(\\*StyleBox[\\(Part :: \
+partd\\), \\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this \
+calculation. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/General/stop\\\", ButtonNote -> \
+\\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.632969894983815*^9, 3.632969951148183*^9}]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1008, 806},
-WindowMargins->{{417, Automatic}, {Automatic, 62}},
+WindowMargins->{{129, Automatic}, {Automatic, -5}},
 FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
 StyleDefinitions->"Default.nb"
 ]
@@ -607,31 +764,44 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[558, 20, 144, 2, 33, "Text"],
-Cell[705, 24, 911, 22, 77, "Input"],
+Cell[705, 24, 947, 22, 77, "Input"],
 Cell[CellGroupData[{
-Cell[1641, 50, 146, 2, 81, "Section"],
-Cell[1790, 54, 3882, 106, 451, "Input"]
+Cell[1677, 50, 146, 2, 81, "Section"],
+Cell[1826, 54, 3882, 106, 451, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[5709, 165, 96, 1, 81, "Section"],
-Cell[5808, 168, 1305, 40, 275, "Text"],
-Cell[7116, 210, 2021, 52, 253, "Input"]
+Cell[5745, 165, 96, 1, 81, "Section"],
+Cell[5844, 168, 1305, 40, 275, "Text"],
+Cell[7152, 210, 2021, 52, 253, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[9174, 267, 156, 2, 81, "Section"],
-Cell[9333, 271, 1094, 30, 209, "Text"],
-Cell[10430, 303, 7947, 165, 869, "Input"],
-Cell[18380, 470, 338, 6, 55, "Text"],
-Cell[18721, 478, 1716, 36, 77, "Input"],
-Cell[20440, 516, 168, 4, 32, "Input"],
+Cell[9210, 267, 156, 2, 81, "Section"],
+Cell[9369, 271, 1094, 30, 209, "Text"],
+Cell[10466, 303, 7947, 165, 869, "Input"],
+Cell[18416, 470, 387, 7, 55, "Text"],
+Cell[18806, 479, 1716, 36, 77, "Input"],
+Cell[20525, 517, 328, 8, 32, "Input"],
 Cell[CellGroupData[{
-Cell[20633, 524, 682, 14, 32, "Input"],
+Cell[20878, 529, 729, 14, 32, "Input"],
 Cell[CellGroupData[{
-Cell[21340, 542, 629, 10, 23, "Print"],
-Cell[21972, 554, 630, 10, 23, "Print"],
-Cell[22605, 566, 630, 10, 23, "Print"],
-Cell[23238, 578, 621, 9, 23, "Print"]
-}, Open  ]]
+Cell[21632, 547, 696, 11, 43, "Print"],
+Cell[22331, 560, 700, 11, 43, "Print"]
+}, Open  ]],
+Cell[23046, 574, 489, 10, 24, "Message"],
+Cell[23538, 586, 616, 12, 24, "Message"],
+Cell[24157, 600, 523, 10, 24, "Message"],
+Cell[24683, 612, 878, 15, 24, "Message"],
+Cell[CellGroupData[{
+Cell[25586, 631, 700, 11, 43, "Print"],
+Cell[26289, 644, 693, 11, 43, "Print"]
+}, Open  ]],
+Cell[26997, 658, 487, 10, 24, "Message"],
+Cell[27487, 670, 489, 10, 24, "Message"],
+Cell[27979, 682, 550, 11, 24, "Message"],
+Cell[28532, 695, 550, 11, 24, "Message"],
+Cell[29085, 708, 549, 11, 24, "Message"],
+Cell[29637, 721, 549, 11, 24, "Message"],
+Cell[30189, 734, 550, 11, 24, "Message"]
 }, Open  ]]
 }, Open  ]]
 }
