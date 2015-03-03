@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
-        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
         
@@ -186,7 +186,7 @@ int main(int argc, char* argv[]){
 		    
 
     // Create Network Objects
-    cout<<"Creating actin network..\n";
+    cout<<"\nCreating actin network..";
 	
     ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]){
                                         link_stretching_stiffness, link_bending_stiffness,
                                         fracture_force, bnd_cnd, seed); 
 
-    cout<<"Adding active motors...\n";
+    cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, xrange, yrange, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                                              a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
@@ -202,8 +202,9 @@ int main(int argc, char* argv[]){
     motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, xrange, yrange, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
-    cout<<"Updating motors, filaments and crosslinks in the network..\n";
-            
+    cout<<"\nUpdating motors, filaments and crosslinks in the network..";
+    //cout<<"\nDEBUG: pointer to network = "<<net;
+
     string time_str = "t = 0\n";
     if (shear_rate != 0)
         net->set_shear_rate(shear_rate);
@@ -242,6 +243,9 @@ int main(int argc, char* argv[]){
         crosslks->motor_walk(t);
         myosins->motor_walk(t);
         
+        //clear the vector of fractured filaments
+        net->clear_broken();
+
         t+=dt;
 		count++;
 

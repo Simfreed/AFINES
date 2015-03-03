@@ -16,15 +16,16 @@
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, 
         double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
-        double actin_len, double vis, std::vector<double *> positions) {
+        double actin_len, double vis, vector<double *> positions) {
     
     fov[0]=fovx;
     fov[1]=fovy;
     mrho=mdensity;
     mld=mlen;
     nm=int(ceil(mrho*fov[0]*fov[1]));
-    std::cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
+    cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
     f_network=network;
+    //cout<<"\nDEBUG: pointer to network = "<<f_network;
     alpha=0.8;
     gamma = 0;
 
@@ -53,7 +54,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, double f
 
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::~motor_ensemble( ){ 
-    std::cout<<"DELETING MOTOR ENSEMBLE\n";
+    cout<<"DELETING MOTOR ENSEMBLE\n";
     int s = n_motors.size();
     for (int i = 0; i < s; i++){
         delete n_motors[i];
@@ -61,16 +62,55 @@ motor_ensemble<filament_ensemble_type>::~motor_ensemble( ){
     n_motors.clear();
 };
 
+//check if any motors attached to filaments that no longer exist; 
+// if they do, detach them
+// Worst case scenario, this is a O(m*n*p) function,
+// where m is the number of filaments
+//       n is the number of rods per filament
+//       p is the number of motors
+// However: we don't expect to fracture often, 
+// so this loop should rarely if ever be accessed.
+    
+
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::check_broken_filaments()
+{
+    vector<int> broken_filaments = f_network->get_broken();
+    array<int, 2> f_index;
+    
+    for (unsigned int i = 0; i < broken_filaments.size(); i++){
+        
+        for(unsigned int j = 0; j < n_motors.size(); j++){
+            
+            f_index = n_motors[j]->get_f_index();
+
+            if(f_index[0] == broken_filaments[i]){
+                n_motors[j]->detach_head(0);
+                //cout<<"\nDEBUG: detaching head 0 of motor "<<j<<" from broken filament "<<broken_filaments[i];
+            }
+
+            if(f_index[1] == broken_filaments[i]){
+                n_motors[j]->detach_head(1);
+                //cout<<"\nDEBUG: detaching head 1 of motor "<<j<<" from broken filament "<<broken_filaments[i];
+            }
+        }
+    }
+
+
+}
+
 template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 {
+
+    this->check_broken_filaments();
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
 
         s[0]=n_motors[i]->get_states()[0];
         s[1]=n_motors[i]->get_states()[1];
 
-
+        //cout<<"\nDEBUG: updating motor "<<i<<", states: ( "<<s[0]<<" , "<<s[1]<<" ), f_indexes: ( "<<n_motors[i]->get_f_index()[0]<< " , "<<n_motors[i]->get_f_index()[1]<<" )";
         if (s[0]==0 && s[1]==0) {
             n_motors[i]->attach(0);
             n_motors[i]->attach(1);
@@ -89,7 +129,7 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
         else {
             n_motors[i]->step_twoheads();
         }
-
+    
         n_motors[i]->actin_update();
     }
 
@@ -106,7 +146,7 @@ void motor_ensemble<filament_ensemble_type>::reshape()
 
 
 template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_write(std::ofstream& fout)
+void motor_ensemble<filament_ensemble_type>::motor_write(ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
         //double stretch=dis_points(n_motors[i]->get_hx()[0],n_motors[i]->get_hy()[0],n_motors[i]->get_hx()[1],n_motors[i]->get_hy()[1])-mld;
@@ -121,7 +161,7 @@ void motor_ensemble<filament_ensemble_type>::motor_write(std::ofstream& fout)
 }
 
 template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_tension(std::ofstream& fout)
+void motor_ensemble<filament_ensemble_type>::motor_tension(ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
         fout<<n_motors[i]->tension()<<"\n";

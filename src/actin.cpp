@@ -21,16 +21,23 @@ actin::actin(double xcm, double ycm, double len, double fovx, double fovy, int n
     ld=len; //radius
     a_vis=vis;
     
+    //fov = new array<double, 2>();
+    //nq = new array<int, 2>();
     fov[0] = fovx;
     fov[1] = fovy;
     nq[0]  = nx;
     nq[1]  = ny;
     
+    frictions[0]=2*pi*a_vis*ld/log(ld/diameter);
+    frictions[1]=2*frictions[0];
+    frictions[2]=frictions[0]*pow(ld,2)/4;
+    
     this->update();
+    
 }
 
 actin::actin(const actin& other){
-    
+    //cout<<"\nDEBUG: calling copy constructor"; 
     x = other.x;
     y = other.y;
     ld = other.ld;
@@ -41,6 +48,20 @@ actin::actin(const actin& other){
     nq[0] = other.nq[0];
     nq[1] = other.nq[1];
 
+    frictions[0] = other.frictions[0];
+    frictions[1] = other.frictions[1];
+    frictions[2] = other.frictions[2];
+
+    start[0] = other.start[0];
+    start[1] = other.start[1];
+    end[0] = other.end[0];
+    end[1] = other.end[1];
+
+    e[0] = other.e[0];
+    e[1] = other.e[1];
+    n[0] = other.n[0];
+    n[1] = other.n[1];
+
     forces[0] = other.forces[0];
     forces[1] = other.forces[1];
     
@@ -50,7 +71,7 @@ actin::actin(const actin& other){
 }
 
 actin::~actin(){ 
-    //std::cout<<"DELETING ACTIN\n";
+    //cout<<"DELETING ACTIN\n";
 };
 
 // Updates all derived quantities of a monomer
@@ -125,9 +146,9 @@ double actin::get_distance(double xp, double yp)
     }
 }
 
-double* actin::get_intpoint(double xp, double yp)
+array<double,2> actin::get_intpoint(double xp, double yp)
 {
-    double* coordinates = new double[2];
+    array<double,2> coordinates;
     double l2 = pow(dis_points(start[0], start[1], end[0], end[1]) , 2);
     if (l2==0) {
         coordinates[0]=start[0];
@@ -161,19 +182,36 @@ double actin::get_int_angle(double xp, double yp)
     return angle;
 }
 
-double*  actin::get_direction()
+array<double,2> actin::get_direction()
 {
     return e;
 }
 
+array<double,3> actin::get_forces()
+{
+    return forces;
+}
+
+array<double,2> actin::get_start(){
+    return start;
+}
+
+array<double,2> actin::get_end(){
+    return end;
+}
+
+array<double,2> actin::get_fov(){
+    return fov;
+}
+
+array<int, 2> actin::get_nq(){
+    return nq;
+}
+
+
 double actin::get_length()
 {
     return ld;
-}
-
-double* actin::get_forces()
-{
-    return forces;
 }
 
 void actin::update_force(double f1, double f2, double f3)
@@ -183,13 +221,9 @@ void actin::update_force(double f1, double f2, double f3)
     forces[2]+=f3;
 }
 
-double* actin::get_friction()
+array<double,3> actin::get_frictions()
 {
-    double* fric = new double[3];
-    fric[0]=2*pi*a_vis*ld/log(ld/diameter);
-    fric[1]=2*fric[0];
-    fric[2]=fric[0]*pow(ld,2)/4;
-    return fric;
+    return frictions;
 }
 
 double actin::get_xcm()
@@ -207,16 +241,11 @@ double actin::get_angle()
     return phi;
 }
 
-double * actin::get_start(){
-    return start;
-}
-
-double * actin::get_end(){
-    return end;
-}
-
 void actin::set_xcm(double xcm)
 {
+    /*if (x!=x){
+        cout<<"\nDEBUG: xcm is infinite when setting it within set_xcm() function";
+    }*/
     x = xcm;
 }
 
@@ -230,7 +259,7 @@ void actin::set_phi(double theta)
     phi = theta;
 }
 
-std::vector<std::vector<int> > actin::get_quadrants()
+vector<vector<int> > actin::get_quadrants()
 { 
     return quad; 
 }
@@ -245,28 +274,20 @@ bool actin::operator==(const actin& that)
            );
 }
 
-std::string actin::write()
+string actin::write()
 {
     return std::to_string(start[0]) + "\t" + std::to_string(start[1]) + "\t" + 
            std::to_string(end[0]-start[0]) + "\t" + std::to_string(end[1]-start[1]) + "\n";
  
 }
 
-std::string actin::to_string()
+string actin::to_string()
 {
     return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) + "\tphi : " + 
-           std::to_string(phi) + "\tld : " + std::to_string(ld) + "\ta_vis : " +
-           std::to_string(a_vis) + "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : " +
+           std::to_string(phi) + "\tld : " + std::to_string(ld) + "\ta_vis : "+
+           std::to_string(a_vis) + "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : "+
            std::to_string(forces[1]) + "\tforces[2] : " + std::to_string(forces[2]) + "\n";
  
-}
-
-double * actin::get_fov(){
-    return fov;
-}
-
-double * actin::get_nq(){
-    return nq;
 }
 
 double actin::get_viscosity(){

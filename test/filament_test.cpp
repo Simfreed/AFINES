@@ -33,8 +33,6 @@
     
         vector<actin *> get_rods(unsigned int first, unsigned int last);
         
-        vector<filament *> fracture(int node);
-        
         void update_forces(int index, double f1, double f2, double f3);
 */
 
@@ -57,7 +55,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double startx = 0, starty = 0, startphi = 0;
     filament * f; 
     Link l; 
-    actin a; 
+    actin * a; 
    
     f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
             viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
@@ -66,15 +64,17 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     //Expect to have links at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
     
     for (int i = 0; i < nrod; i++){
-        a = actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a->to_string() );
         l = Link( link_length, stretching_stiffness, bending_stiffness, f, i-1, i);
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        delete a;
     }
     l = Link( link_length, stretching_stiffness, bending_stiffness, f, nrod-1, -1);
     BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
 
     delete f;
+    
     startx=-1; starty = 0; startphi= 3*pi/2;
 
     f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
@@ -82,10 +82,11 @@ BOOST_AUTO_TEST_CASE( constructors_test )
             bending_stiffness, fracture_force, bc);
     //Expect to have actin monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
     for (int i = 0; i < nrod; i++){
-        a = actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a->to_string() );
         l = Link( link_length, stretching_stiffness, bending_stiffness, f, i-1, i);
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        delete a;
     }
     l = Link( link_length, stretching_stiffness, bending_stiffness, f, nrod-1, -1);
     BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
@@ -117,7 +118,7 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     string bc = "NONE";
     filament * f; 
     Link l; 
-    actin a;
+    actin * a;
     vector<actin *> rodvec;
 
     f = new filament(rodvec, link_length, stretching_stiffness, bending_stiffness, dt, temp, fracture_force, shear, bc);
@@ -132,10 +133,11 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     //Expect to have links at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
     
     for (int i = 0; i < nrod; i++){
-        a = actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a->to_string() );
         l = Link( link_length, stretching_stiffness, bending_stiffness, f, i-1, i);
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        delete a;
     }
     
     l = Link( link_length, stretching_stiffness, bending_stiffness, f, nrod-1, -1);
@@ -165,7 +167,7 @@ BOOST_AUTO_TEST_CASE( get_rods_test )
     double startx = 0, starty = 0, startphi = 0;
     filament * f; 
     Link l; 
-    actin a; 
+    actin * a; 
 
     startx=-1; starty = 0; startphi= 3*pi/2;
 
@@ -189,10 +191,11 @@ BOOST_AUTO_TEST_CASE( get_rods_test )
     //check that everythings the same with the original filament
     //Expect to have actin monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
     for (int i = 0; i < nrod; i++){
-        a = actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a->to_string() );
         l = Link( link_length, stretching_stiffness, bending_stiffness, f, i-1, i);
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        delete a;
     }
     l = Link( link_length, stretching_stiffness, bending_stiffness, f, nrod-1, -1);
     BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
@@ -200,23 +203,27 @@ BOOST_AUTO_TEST_CASE( get_rods_test )
 
     //check the rods arrays
     for (int i = 0; i < 3; i++){
-        a = actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(rods0to3[i]), "\n" + rods0to3[i]->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(rods0to3[i]), "\n" + rods0to3[i]->to_string() + "\ndoes not equal\n" + a->to_string() );
+        delete a;
     }
 
     for (int i = 5; i < 7; i++){
-        a = actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(rods5to7[i-5]), "\n" + rods5to7[i-5]->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(rods5to7[i-5]), "\n" + rods5to7[i-5]->to_string() + "\ndoes not equal\n" + a->to_string() );
+        delete a;
     }
     
     for (int i = 9; i < nrod; i++){
-        a = actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(rods9to13[i-9]), "\n" + rods9to13[i-9]->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(rods9to13[i-9]), "\n" + rods9to13[i-9]->to_string() + "\ndoes not equal\n" + a->to_string() );
+        delete a;
     }
     
     for (int i = 0; i < nrod; i++){
-        a = actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(rodsAll[i]), "\n" + rodsAll[i]->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( -1 , -2*i, 3*pi/2, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(rodsAll[i]), "\n" + rodsAll[i]->to_string() + "\ndoes not equal\n" + a->to_string() );
+        delete a;
     }
     
     delete f; 
@@ -257,7 +264,7 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     double startx = 0, starty = 0, startphi = 0;
     filament *f, *f1, *f2, *f2a, *f2b; 
     Link l; 
-    actin a; 
+    actin *a; 
 
     f = new filament(startx, starty, startphi, nrod, xrange, yrange, xgrid, ygrid, 
             viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
@@ -274,10 +281,11 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     //check that everythings the same with the original filament
     //Expect to have actin monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
     for (int i = 0; i < nrod; i++){
-        a = actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        a = new actin( 2*i, 0, 0, actin_length, xrange, yrange, xgrid, ygrid, viscosity );
+        BOOST_CHECK_MESSAGE( *a == *(f->get_rod(i)), "\n" + f->get_rod(i)->to_string() + "\ndoes not equal\n" + a->to_string() );
         l = Link( link_length, stretching_stiffness, bending_stiffness, f, i-1, i);
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        delete a;
     }
     l = Link( link_length, stretching_stiffness, bending_stiffness, f, nrod-1, -1);
     BOOST_CHECK_MESSAGE( l == *(f->get_link(nrod)), "\nLink : " + f->get_link(nrod)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
@@ -675,7 +683,7 @@ BOOST_AUTO_TEST_CASE(bending_test_12_rods)
             bending_stiffness,fracture_force, bc);
     
     double e0 = f->get_bending_energy(), e1;
-    int nsteps = 1000;
+    int nsteps = 10;
     vector<filament *> newfils;
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
@@ -707,7 +715,7 @@ BOOST_AUTO_TEST_CASE(bending_test_12_rods_nonzero_temp)
     double temp = 0.004;
     double link_length = 0.01;
     double viscosity = 0.5;
-    double stretching_stiffness = 1;
+    double stretching_stiffness = 70;
     double bending_stiffness = 0.04; 
     double fracture_force = 100000;
     string bc="REFLECTIVE";

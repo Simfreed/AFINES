@@ -34,12 +34,6 @@ class motor
 
         ~motor();
 
-        int* get_states();
-
-        double* get_hx();
-
-        double* get_hy();
-
         std::string get_color();
 
         double tension();
@@ -56,25 +50,30 @@ class motor
 
         void update_shape();
         
-        int * get_f_index();
+        array<int,2> get_f_index();
         
-        int * get_r_index();
+        array<int,2> get_r_index();
         
-        double * get_pos_a_end();
+        array<double,2> get_pos_a_end();
         
+        array<int, 2> get_states();
+        
+        array<double, 2> get_hx();
+
+        array<double, 2> get_hy();
+
+        void detach_head(int hd);
+
         void move_end_detach(int hd, double pos);
 
         inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
 
     private:
 
-        double hx[2],hy[2], xm[2], ym[2], mphi,mld,
-               mobility,fm[2],vm[2],offrate[2], onrate, stretch,
-               forcex[2],forcey[2],torque[2], force_par[2],force_perp[2],vs, pos_temp;
-
-        int state[2], f_index[2], r_index[2];
+        double mphi,mld, mobility, onrate, stretch, vs, pos_temp, dm, fmax, mk, kon, koff, kend, dt, temperature;
         
-        double dm,fmax,mk, kon, koff, kend, dt, temperature;
+        array<double,2> hx, hy, xm, ym, fm, vm, offrate, forcex, forcey, torque, force_par, force_perp, pos_a_end, fov;
+        array<int,2> state, f_index, r_index;
         
         std::map<std::vector<int>, double> dist;
         
@@ -82,8 +81,6 @@ class motor
         
         filament_ensemble_type *actin_network;
         
-        double pos_a_end[2], fov[2];
-
 };
 
 #endif

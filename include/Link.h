@@ -33,9 +33,9 @@ class Link
         
         virtual ~Link();
 
-        double* get_hx();
+        array<double, 2> get_hx();
         
-        double* get_hy();
+        array<double, 2> get_hy();
         
         double get_kb();
         
@@ -63,13 +63,14 @@ class Link
 
         void set_aindex1(int i);
         
-        double * get_forces();
+        array<double,4> get_forces();
 
     protected:
 
-        double hx[2],hy[2], phi, ld, stretch, forcex[2], forcey[2], torque[2], force_par[2],force_perp[2], kl, kb, xcm, ycm;
-        
-        int aindex[2];
+        double phi, ld, stretch, kl, kb, xcm, ycm;
+       
+        array<double,2> hx, hy, forcex, forcey, torque, force_par, force_perp;
+        array<int, 2> aindex;
         
         filament *fil;
 };
