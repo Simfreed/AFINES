@@ -1,19 +1,20 @@
 import math
 import random
+import sys
 
 xbds=[-500,500]
 ybds=[-500,500]
 zbds=[-0.05,0.05]
 
-nrod = 200
-rodlength=1
+bondlength = float(sys.argv[1]) if len(sys.argv) > 0 else 1
+nrod = int(200 / bondlength)
 
 rod_pos=[]
 
 pos = [-150,0,0]
 phi = 0 
 small_angle = 0.1 #math.pi/12
-
+nbondtypes = 3 
 #atoms
 atoms = []
 
@@ -27,13 +28,13 @@ for i in range(nrod):
     atom   = [i+1, 1, 1, pos[0], pos[1], 0]#, pos[0] + rodlength*math.cos(phi), pos[0] + rodlength*math.sin(phi), 0]
     atoms.append(atom)
 
-    pos = (pos[0] + rodlength*math.cos(phi), pos[1]+rodlength*math.sin(phi), 0)
+    pos = (pos[0] + bondlength*math.cos(phi), pos[1]+bondlength*math.sin(phi), 0)
 
 #bonds
 bonds = []
 for i in range(nrod-1):
     
-    bonds.append([i, 1, i+1, i+2])
+    bonds.append([i, i%nbondtypes + 1, i+1, i+2])
 
 #angles
 angles = []
@@ -42,10 +43,10 @@ for i in range(nrod-2):
     angles.append([i+1, 1, i+1, i+2, i+3])
 
 #write to file
-f=open('filament.txt','w')
+f=open('init_cfgs/filament_bl{0:.2f}.txt'.format(bondlength),'w')
 f.write('#Actin filament\n')
 f.write('\n{0} atoms\n{1} bonds\n{2} angles\n'.format(len(atoms),len(bonds),len(angles)))
-f.write('\n1 atom types\n1 bond types\n1 angle types\n')
+f.write('\n1 atom types\n{0} bond types\n1 angle types\n'.format(nbondtypes))
 
 f.write('\n{0} {1} xlo xhi\n{2} {3} ylo yhi\n{4} {5} zlo zhi\n'.format(xbds[0], xbds[1], ybds[0], ybds[1], zbds[0],
     zbds[1]))
