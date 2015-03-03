@@ -42,19 +42,24 @@ filament::filament(double startx, double starty, double startphi, int nrod, doub
     viscosity = visc;
     BC = bdcnd;
 
+    
     //the start of the polymer: 
-    rods.push_back( new actin( startx, starty, startphi, rodLength, fov[0], fov[1], nq[0], nq[1], visc) );
+    rods.push_back(new actin( startx, starty, startphi, rodLength, fov[0], fov[1], nq[0], nq[1], visc));
     lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, -1, 0) );  
     
-    double  xcm, ycm, lphi, phi;
+    double  xcm, ycm, lphi, phi, variance;
     phi = startphi;
+    
+    if (temp != 0) variance = temp/(bending_stiffness*rodLength*rodLength);
+    else variance = 1;
+
     for (int j = 1; j < nrod; j++) {
 
         // Calculate the Next rod on the actin polymer--  continues from the link
         if (!isStraight){ 
 
-        //    phi += rng(-1*maxSmallAngle , maxSmallAngle);
-              phi = rng(-pi/2, pi/2);
+            phi += rng(-1*maxSmallAngle , maxSmallAngle);
+            //phi += rng_n(0, variance);
         }
             
         lphi = (phi + rods.back()->get_angle())/2;
@@ -104,9 +109,15 @@ filament::filament(vector<actin *> rodvec, double linkLength, double stretching_
 
     //Link em up
     for (unsigned int j = 0; j < rodvec.size(); j++) {
-
-        rods.push_back(new actin(*(rodvec[j])));
+        
+//        cout<<"\nDEBUG: adding new rod "<<j;
+//      rods.push_back(new actin(*(rodvec[j])));
+        actin * a = new actin(rodvec[j]->get_xcm(), rodvec[j]->get_ycm(), rodvec[j]->get_angle(), rodvec[j]->get_length(), rodvec[j]->get_fov()[0], rodvec[j]->get_fov()[1],
+                    rodvec[j]->get_nq()[0], rodvec[j]->get_nq()[1], rodvec[j]->get_viscosity());
+        rods.push_back(a); 
+//        cout<<"\nDEBUG: adding new link "<<j;
         lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
+        //cout<<"\nDEBUG: creating rod pointer "<<rods[j];
     }
 
     if (rods.size() > 0){
@@ -119,14 +130,17 @@ filament::filament(vector<actin *> rodvec, double linkLength, double stretching_
         delete rodvec[i];
     }
     rodvec.clear();
-
+    
 }
 
 filament::~filament(){
     
     int nr = rods.size(), nl = lks.size();
     for (int i = 0; i < nr; i ++)
+    {    
+        //cout<<"\nDEBUG: deleting pointer "<<rods[i];     
         delete rods[i];
+    }
     for (int i = 0; i < nl; i ++)
         delete lks[i];
     
@@ -162,7 +176,6 @@ vector<vector<vector<int> > > filament::get_quadrants()
 void filament::update(double t)
 {
     double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, a_ends[4]; 
-//    double phiprev;
     double xleft = -fov[0]*0.5, xright=fov[0]*0.5;
     bool recenter_filament = false;
     double yleft  = -fov[1] * 0.5;
@@ -172,7 +185,9 @@ void filament::update(double t)
         //cout<<"\nDEBUG: rod "<<i<<" start: ( "<<rods[i]->get_start()[0]<<" , "<<rods[i]->get_start()[1]<<")";
         //cout<<"\nDEBUG: rod "<<i<<" end  : ( "<<rods[i]->get_end()[0]<<" , "<<rods[i]->get_end()[1]<<")";
 
-        double * fric = rods[i]->get_friction();
+    //    if(rods[i]->get_forces()[0] != rods[i]->get_forces()[0] ||rods[i]->get_forces()[1] != rods[i]->get_forces()[1] ||rods[i]->get_forces()[2] != rods[i]->get_forces()[2])
+      //      cout<<"\nDEBUG: inf force on rod ["<<i<<"]";
+        array<double,3> fric = rods[i]->get_frictions();
         vpar  = (rods[i]->get_forces()[0])/fric[0]  + sqrt(2*temperature/(dt*fric[0]))*rng_n(0,1);
         vperp = (rods[i]->get_forces()[1])/fric[1]  + sqrt(2*temperature/(dt*fric[1]))*rng_n(0,1);
        // cout<<"\nDEBUG: rod "<<i<<" (vpar, vperp) = ( "<<vpar<<" , "<<vperp<<" )"; 
@@ -180,7 +195,6 @@ void filament::update(double t)
         vy    = vpar*sin(rods[i]->get_angle()) + vperp*cos(rods[i]->get_angle());
        // cout<<"\nDEBUG: rod "<<i<<" (vx, vy) = ( "<<vx<<" , "<<vy<<" )"; 
         omega = rods[i]->get_forces()[2]/fric[2] + sqrt(2*temperature/(dt*fric[2]))*rng_n(0,1);
-        delete[] fric;
 
         alength=rods[i]->get_length();
 
@@ -244,25 +258,10 @@ void filament::update(double t)
         {
             recenter_filament = true;
         }
-        // Keep consecutive angles small 
-/*
-        if (i >= 1){
-
-            phiprev = rods[i-1]->get_angle();
-
-            if( phinew - phiprev > maxSmallAngle )
-            {
-                phinew = phiprev + maxSmallAngle;
-            }
-            if( phinew - phiprev < -1 * maxSmallAngle)
-            {
-                phinew = phiprev - maxSmallAngle;
-            }
-
-        }
-*/
-//        cout<<"\nDEBUG: (xold, yold, phiold) = ("<<rods[i]->get_xcm()<<" , "<<rods[i]->get_ycm()<<" , "<<rods[i]->get_angle()<<")";
-//        cout<<"\nDEBUG: (xnew, ynew, phinew) = ("<<xnew<<" , "<<ynew<<" , "<<phinew<<")";
+        
+   /*     if (xnew!=xnew){
+            cout<<"\nDEBUG: xnew is a nan at update time."<<t<<"  vx = "<<vx;
+        }*/
         rods[i]->set_xcm(xnew);
         rods[i]->set_ycm(ynew);
         rods[i]->set_phi(phinew);
@@ -275,10 +274,14 @@ void filament::update(double t)
             //cout<<"\nDEBUG: recentering rod "<<i<<"to ("<<midx<<" , "<<midy<<")";
             xnew = rods[i]->get_xcm()-midx;
             ynew = rods[i]->get_ycm()-midy;
+            /*
+            if (xnew!=xnew){
+                cout<<"\nDEBUG: xnew is a nan at BC time. midx = "<<midx;
+            }*/
             rods[i]->set_xcm(xnew);
             rods[i]->set_ycm(ynew);
             
-            //rods[i]->update();
+            rods[i]->update();
        
             }
     }
@@ -292,46 +295,58 @@ vector<filament *> filament::update_stretching()
     if(lks.size() == 0)
         return newfilaments;
     
-    double * end_forces0;
-    double * end_forces1;
-    double * mid_forces;
+    array<double,4> end_forces0, end_forces1;
+    array<double,3> mid_forces;
     
     lks[0]->step();
     end_forces0 = lks[0]->get_forces();
     
     for (unsigned int i=1; i < lks.size(); i++) {
+//        if (lks[i]->get_xcm()!=lks[i]->get_xcm()) cout<<"\nDEBUG: lks["<<i<<"]->get_xcm() is inf";
         lks[i]->step();
         if (fabs(lks[i]->get_stretch_force()) > fracture_force){
+            
+//            cout<<"\nDEBUG: position of rods "<<i<<" and "<<i+1<<": ( "<<rods[i]->get_end()[0]<<" , "<<rods[i]->get_end()[1]<<" ) and ( "<<rods[i+1]->get_start()[0]<<" , "<<rods[i+1]->get_start()[1]<<" ) ";
+//            cout<<"\nDEBUG: cm of rods "<<i<<" and "<<i+1<<": ( "<<rods[i]->get_xcm()<<" , "<<rods[i]->get_ycm()<<" ) and ( "<<rods[i+1]->get_xcm()<<" , "<<rods[i+1]->get_ycm()<<" ) ";
+//            cout<<"\nDEBUG: distance between rods = "<<pow(rods[i+1]->get_start()[0]-rods[i]->get_end()[0],2) + pow(rods[i+1]->get_start()[1]-rods[i]->get_end()[1],2);
             newfilaments = this->fracture(i);
             break;
         }
         else
         {
+        
             end_forces1 = lks[i]->get_forces();
            //cout<<"\nDEBUG: rod "<<i-1<<" end forces : ( "<<end_forces0[2]<<" , "<<end_forces0[3]<<" , "<<end_forces1[0]<<" , "<<end_forces1[1]<<" ) ";
             mid_forces  = this->endForces2centerForce(i-1, end_forces0[2], end_forces0[3], end_forces1[0], end_forces1[1]);
-            
+           
+            /*
+            if (mid_forces[0] != mid_forces[0] || mid_forces[1] != mid_forces[1] || mid_forces[2] != mid_forces[2])
+                cout<<"\nDEBUG: encountered inf STRETCHING force at link "<<i;
+            */
             rods[i-1]->update_force(mid_forces[0], mid_forces[1], mid_forces[2]);
            //cout<<"\nDEBUG: rod "<<i-1<<" mid forces : ( "<<mid_forces[0]<<" , "<<mid_forces[1]<<" , "<<mid_forces[2]<<" ) ";
              
-            delete[] end_forces0;
-            delete[] mid_forces;
-
             end_forces0 = end_forces1;
         }
     }
-    if (newfilaments.size() > 0)
-        delete[] end_forces0;
-    else
-        delete[] end_forces1;
-
+    
     return newfilaments;
 }
 
 
 actin * filament::get_rod(int i)
 {
-    return rods[i];
+//    cout<<"\nDEBUG: returning pointer "<<rods[i];
+    try
+    {
+        return rods[i];
+    }
+    catch (int e)
+    {
+        cout<<"\nDEBUG: an exception occured while returning the rods[ "<<i<<"]";
+        actin * a;
+        return a;
+    }
 }
 
 Link * filament::get_link(int i)
@@ -403,10 +418,11 @@ vector<actin *> filament::get_rods(unsigned int first, unsigned int last)
     vector<actin *> newrods;
     for (unsigned int i = first; i < last; i++)
     {
-        if (i >= rods.size())
+        if (i < 0 || i >= rods.size())
             break;
         else
             newrods.push_back(new actin(*(rods[i])));
+       // cout<<"\nDEBUG: pushing onto stack rods["<<i<<"] : "<<rods[i]->write();
     }
     return newrods;
 }
@@ -655,8 +671,6 @@ vector<vector<double> *>* filament::fwd_bending_calc()
 }
 
 
-//NOTE: this bending method is still in under construction, 
-//      for the time being, consider using DLfilament
 //Calculate the forces at each center of mass of the segments
 //Update the monomer
 void filament::update_bending()
@@ -665,14 +679,17 @@ void filament::update_bending()
         return;
 
     vector<vector<double>* >* fwd_bending = this->fwd_bending_calc();
-    double* forces;
+    array<double,3> forces;
 
     for (unsigned int j = 0; j < rods.size(); j++){
         forces = this->endForces2centerForce(j, fwd_bending->at(0)->at(j),   fwd_bending->at(1)->at(j), 
                                                 fwd_bending->at(0)->at(j+1), fwd_bending->at(1)->at(j+1) );
+        /*
+        if (forces[0] != forces[0] || forces[1] != forces[1] || forces[2] != forces[2])
+            cout<<"\nDEBUG: encountered inf BENDING force at rod "<<j;
+        */
         rods[j]->update_force(forces[0], forces[1], forces[2]);
-        
-        delete[] forces;
+                
     }
     
     delete fwd_bending->at(1);
@@ -690,16 +707,17 @@ void filament::update_bending()
  * where the torque is around the center of mass                              *
  * ***************************************************************************/
 
-double* filament::endForces2centerForce(int j, double fx0, double fy0, double fx1, double fy1)
+array<double,3> filament::endForces2centerForce(int j, double fx0, double fy0, double fx1, double fy1)
 {
     double f0_par, f0_perp, f1_par, f1_perp;
     double x0dot, y0dot, x1dot, y1dot, xdot, ydot, phidot, v_par, v_perp;   
     double x0, y0, x1, y1, dx, dy;     
     
-    double * fric, * e;
-    double * forces = new double[3];
+    array<double,3> fric;
+    array<double,2> e;
+    array<double,3> forces;
 
-    fric = rods[j]->get_friction();
+    fric = rods[j]->get_frictions();
     e = rods[j]->get_direction();
 
     /*
@@ -742,7 +760,7 @@ double* filament::endForces2centerForce(int j, double fx0, double fy0, double fx
     forces[0] = v_par  * fric[0];
     forces[1] = v_perp * fric[1];
     forces[2] = phidot * fric[2];
-    delete[] fric; 
+    
     return forces; 
 }
 
@@ -852,13 +870,15 @@ vector<DLfilament *> DLfilament::update_stretching()
 {
     vector<DLfilament *> newfilaments;
     for (unsigned int i=0; i < lks.size(); i++) {
-        lks[i]->step();
         if (fabs(lks[i]->get_stretch_force()) > fracture_force){
+            
             newfilaments = this->fracture(i);
             break;
         }
-        else
+        else{
+            lks[i]->step();
             lks[i]->filament_update();
+        }
     }
     return newfilaments;
 }

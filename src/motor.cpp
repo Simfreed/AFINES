@@ -36,9 +36,9 @@ motor<filament_ensemble_type>::motor(double mx, double my, double mang, double m
     mobility=log(10)/(4*pi*vis*mld);
     state[0]=state0;
     state[1]=state1;
-    f_index[0]=findex0;//   actin index for head in state[0]
+    f_index[0]=findex0;//   actin filament index for head in state[0]
     f_index[1]=findex1;// actin index for head in state[1]
-    r_index[0]=rindex0;//   actin index for head in state[0]
+    r_index[0]=rindex0;//   actin filament index for head in state[0]
     r_index[1]=rindex1;// actin index for head in state[1]
     
     actin_network=network;
@@ -69,19 +69,19 @@ motor<filament_ensemble_type>::~motor(){
 
 //return motor state with a given head number
 template <class filament_ensemble_type>
-int* motor<filament_ensemble_type>::get_states() 
+array<int, 2> motor<filament_ensemble_type>::get_states() 
 {
     return state;
 }
 
 template <class filament_ensemble_type>
-double* motor<filament_ensemble_type>::get_hx()
+array<double, 2> motor<filament_ensemble_type>::get_hx()
 {
     return hx;
 }
 
 template <class filament_ensemble_type>
-double* motor<filament_ensemble_type>::get_hy()
+array<double, 2> motor<filament_ensemble_type>::get_hy()
 {
     return hy;
 }
@@ -117,10 +117,9 @@ void motor<filament_ensemble_type>::attach(int hd)
                     r_index[hd] = (it->first).at(1);
                     //update head position
                     
-                    double * intpoint = actin_network->get_intpoints(f_index[hd], r_index[hd], hx[hd],hy[hd]);
+                    array<double, 2> intpoint = actin_network->get_intpoints(f_index[hd], r_index[hd], hx[hd],hy[hd]);
                     hx[hd] = intpoint[0];
                     hy[hd] = intpoint[1];
-                    delete intpoint;
 
                     if (state[pr(hd)]==0) {
                         hx[pr(hd)] = hx[hd]+pow(-1,hd)*mld*cos(mphi);
@@ -176,14 +175,7 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
 {
 
     if (event(koff,dt)==1) {
-        state[hd]=0;
-        f_index[hd]=-1;
-        r_index[hd]=-1;
-        
-        pos_a_end[hd]=0;
-        hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
-        hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
-
+        this->detach_head(hd);
     }
     else
     {
@@ -212,23 +204,15 @@ void motor<filament_ensemble_type>::step_twoheads()
     offrate[1]=koff*exp(fabs(fm[1])/fmax);
 
     if (event(offrate[0],dt)==1) {
-        state[0]=0;
-        f_index[0]=-1;
-        r_index[0]=-1;
-        hx[0]=hx[1]-mld*cos(mphi);
-        hy[0]=hy[1]-mld*sin(mphi);
-        //			pos_actin[0]=0;
+        this->detach_head(0);
+        
         pos_a_end[0]=0;
         pos_temp=pos_a_end[1]+dt*vs;
         move_end_detach(1,pos_temp);
     }
     else if (event(offrate[1],dt)==1) {
-        state[1]=0;
-        f_index[1]=-1;
-        r_index[1]=-1;
-        hx[1]=hx[0]+mld*cos(mphi);
-        hy[1]=hy[0]+mld*sin(mphi);
-        //            pos_actin[1]=0;
+        this->detach_head(1);
+
         pos_a_end[1]=0;
         pos_temp=pos_a_end[0]+dt*vs;
         move_end_detach(0,pos_temp);
@@ -300,20 +284,30 @@ void motor<filament_ensemble_type>::update_shape()
 }
 
 template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::detach_head(int hd)
+{
+    state[hd]=0;
+    f_index[hd]=-1;
+    r_index[hd]=-1;
+
+    pos_a_end[hd]=0;
+    hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
+    hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
+
+}
+
+template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 {
+    //cout<<"\nDEBUG:getting length of rod at ( "<<f_index[hd]<<" , "<<r_index[hd]<<" )";
     double rod_length = actin_network->get_alength(f_index[hd],r_index[hd]);
     if (pos >= rod_length) { 
         
         if (r_index[hd] == 0){
             if (event(kend,dt)==1) {
-                state[hd]=0;
-                f_index[hd]=-1;
-                r_index[hd]=-1;
+ 
+                this->detach_head(hd);
 
-                pos_a_end[hd]=0;
-                hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
-                hy[hd]=hy[pr(hd)]-pow(-1,hd)*mld*sin(mphi);
             }
             else {
                 hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
@@ -391,17 +385,17 @@ inline void motor<filament_ensemble_type>::reflect(double t, double gamma, doubl
 }
 
 template <class filament_ensemble_type>
-int * motor<filament_ensemble_type>::get_f_index(){
+array<int, 2> motor<filament_ensemble_type>::get_f_index(){
     return f_index;
 }
 
 template <class filament_ensemble_type>
-int * motor<filament_ensemble_type>::get_r_index(){
+array<int, 2> motor<filament_ensemble_type>::get_r_index(){
     return r_index;
 }
 
 template <class filament_ensemble_type>
-double * motor<filament_ensemble_type>::get_pos_a_end(){
+array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
     return pos_a_end;
 }
 

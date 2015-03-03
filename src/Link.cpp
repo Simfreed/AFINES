@@ -35,11 +35,11 @@ Link::~Link(){
     //std::cout<<"DELETING LINK\n";
 };
 
-double* Link::get_hx(){
+array<double,2> Link::get_hx(){
     return hx;
 }
 
-double* Link::get_hy(){
+array<double,2> Link::get_hy(){
     return hy;
 }
 
@@ -54,21 +54,21 @@ void Link::step()
     //CONVENTION: head 0 will be connected to the POINTY end of a filament
     //            head 1 will be connected to the BARBED end of a filament
     if (aindex[0]==-1){ //leftmost end of the polymer
-        double * start1 = fil->get_rod(aindex[1])->get_start();
+        array<double,2> start1 = fil->get_rod(aindex[1])->get_start();
         hx[1] = start1[0];
         hy[1] = start1[1];
         hx[0] = hx[1] - ld*cos( fil->get_rod(aindex[1])->get_angle() );
         hy[0] = hy[1] - ld*sin( fil->get_rod(aindex[1])->get_angle() );
     }else if(aindex[1] == -1){ //rightmost end of the polymer
-        double * end0 = fil->get_rod(aindex[0])->get_end();
+        array<double,2> end0 = fil->get_rod(aindex[0])->get_end();
         
         hx[0] = end0[0];
         hy[0] = end0[1];
         hx[1] = hx[0] + ld*cos( fil->get_rod(aindex[0])->get_angle() );
         hy[1] = hy[0] + ld*sin( fil->get_rod(aindex[0])->get_angle() );
     }else{
-        double * end0 = fil->get_rod(aindex[0])->get_end();
-        double * start1 = fil->get_rod(aindex[1])->get_start();
+        array<double,2> end0 = fil->get_rod(aindex[0])->get_end();
+        array<double,2> start1 = fil->get_rod(aindex[1])->get_start();
          
         hx[0] = end0[0];
         hy[0] = end0[1];
@@ -84,6 +84,7 @@ void Link::step()
 
 double Link::get_stretch_force(){
     //cout<<"\nDEBUG:Stretch force = "<<kl*(dis_points(hx[0],hy[0],hx[1],hy[1])-ld);
+    if (kl!=kl) cout<<"\nDEBUG: kl is inf";
     return kl * (dis_points(hx[0],hy[0],hx[1],hy[1])-ld);
 }
 
@@ -91,7 +92,7 @@ void Link::filament_update()
 {
 
     double force_stretch = this->get_stretch_force();
-    double * e0, * e1;
+    array<double,2> e0, e1;
     
     //cout<<"\nDEBUG:stretch = "<<force_stretch;
     if (aindex[0] != -1){
@@ -130,10 +131,10 @@ void Link::filament_update()
  *      forces[3] is the y force at the start of rod j   *
  *********************************************************/
 
-double* Link::get_forces()
+array<double,4> Link::get_forces()
 {
 
-    double* forces = new double[4]; 
+    array<double,4> forces; 
     
     if (aindex[0] == -1 || aindex[1] == -1){
         forces[0] = 0;

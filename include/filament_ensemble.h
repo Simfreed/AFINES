@@ -40,10 +40,16 @@ class filament_ensemble
 
         map<vector<int>, double> get_dist(double x, double y);
 
-        double* get_direction(int fil, int rod);
+        array<double,2> get_direction(int fil, int rod);
 
-        double* get_intpoints(int fil, int rod, double xp, double yp);
+        array<double,2> get_intpoints(int fil, int rod, double xp, double yp);
 
+        array<double,2> get_start(int fil, int rod);
+        
+        array<double,2> get_end(int fil, int rod);
+        
+        array<double,3> get_forces(int fil, int rod);
+        
         double get_int_direction(int fil, int rod, double xp, double yp);
 
         double get_xcm(int fil, int rod);
@@ -53,12 +59,6 @@ class filament_ensemble
         double get_angle(int fil, int rod);
 
         double get_alength(int fil, int rod);
-
-        double* get_start(int fil, int rod);
-        
-        double* get_end(int fil, int rod);
-        
-        double* get_forces(int fil, int rod);
         
         void update(double t);
 
@@ -84,23 +84,23 @@ class filament_ensemble
 
         void set_visc(double v);
 
+        vector<int> get_broken();
+
+        void clear_broken();
+        
     protected:
 
-        double dt, temperature, fov[2], view[2], rho, ld, visc, gamma;
-        
-        double link_ld;
-        
-        int npolymer, nmon, nq[2];
-       
+        double dt, temperature, rho, ld, link_ld, visc, gamma;
+        int npolymer, nmon;
         bool straight_filaments = false;
-
-        vector<int> empty_vector;
+        
+        array<double,2> fov, view;
+        array<int, 2> nq;
+        vector<int> broken_filaments, empty_vector;
         
         map<int, map<int,vector< vector<int> > > > quad_fils;
-        
         map<vector<int>,double> t_map;
     
-//    private:
         vector<filament_type *> network;
 };
 

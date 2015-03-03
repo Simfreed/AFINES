@@ -27,6 +27,7 @@
 #include "stdint.h"
 #include <stdlib.h>
 #include "vector"
+#include "array"
 #include <stdio.h>
 #include <array>
 #include <map>

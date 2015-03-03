@@ -86,7 +86,7 @@ class filament
 
         void update_bending_AT();
 
-        double * endForces2centerForce(int rod, double fx0, double fy0, double fx1, double fy1);
+        array<double,3> endForces2centerForce(int rod, double fx0, double fy0, double fx1, double fy1);
         
         int get_nrods();
         
@@ -98,9 +98,10 @@ class filament
     
     protected:
         
-        double fov[2], gamma, temperature, dt, fracture_force, viscosity;
+        double gamma, temperature, dt, fracture_force, viscosity;
         
-        int nq[2];
+        array<double,2> fov;
+        array<int,2> nq;
 
         vector<actin *> rods;
         

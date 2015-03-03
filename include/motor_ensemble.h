@@ -32,6 +32,8 @@ class motor_ensemble
 
         ~motor_ensemble();
 
+        void check_broken_filaments();
+
         void motor_walk(double t);
 
         void reshape();
@@ -46,8 +48,11 @@ class motor_ensemble
 
     private:
 
-        double fov[2], mrho, mld, mang, motorx, motory, alpha, gamma;
-        int nm, s[2];
+        double mrho, mld, mang, motorx, motory, alpha, gamma;
+        int nm;
+        
+        array<double, 2> fov;
+        array<int, 2> s;
         filament_ensemble_type *f_network;
         std::vector<motor<filament_ensemble_type> *> n_motors;  
         std::string color;

@@ -19,6 +19,7 @@
 //included dependences
 #include "string"
 #include "vector"
+#include "globals.h"
 
 //=====================================
 //actin rod class
@@ -34,11 +35,9 @@ class actin
 
         double get_distance(double xp, double yp);
 
-        double* get_intpoint(double xp, double yp);
 
         double get_int_angle(double xp, double yp);
 
-        double* get_direction();
 
         double get_length();
 
@@ -48,19 +47,23 @@ class actin
         
         double get_angle();
         
-        double* get_forces();
-
         void update_force(double f1, double f2, double f3);
 
-        double* get_friction();
+        array<double,2> get_start();
         
-        double * get_start();
+        array<double,2> get_end();
+
+        array<double,2> get_fov();
+
+        array<double,2> get_direction();
         
-        double * get_end();
+        array<int,2> get_nq();
+        
+        array<double,2> get_intpoint(double xp, double yp);
+        
+        array<double,3> get_forces();
 
-        double * get_fov();
-
-        double * get_nq();
+        array<double,3> get_frictions();
         
         double get_viscosity();
 
@@ -70,11 +73,11 @@ class actin
 
         void set_phi(double theta);
 
-        std::vector<std::vector<int> > get_quadrants();
+        vector<vector<int> > get_quadrants();
        
-        std::string write();
+        string write();
         
-        std::string to_string();
+        string to_string();
         
         bool operator==(const actin& that);    
         
@@ -83,13 +86,12 @@ class actin
 
 
     private:
-        double x,y,phi,ld, fov[2], nq[2], start[2], end[2], e[2], n[2], forces[3];
-        
-        double diameter, a_vis;
-       
-        std::vector<std::vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
-        
-        std::vector<int> tmp;
+        double x, y, phi, ld, diameter, a_vis;
+        array<double,2> fov, start, end, e, n; 
+        array<int,2> nq;
+        array<double, 3> forces, frictions;
+        vector<vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
+        vector<int> tmp;
 };
 
 #endif

@@ -37,6 +37,7 @@ void filament_ensemble<filament_type>::quad_update()
     vector<vector<int> > tmp_quads;
     vector<int> index;
 
+    //cout<<"\nDEBUG:network.size() = "<<network.size();
     for (unsigned int i=0; i<network.size(); i++) {
         
         all_tmp_quads = network[i]->get_quadrants(); //quadrants for every rod on the filament
@@ -85,7 +86,7 @@ map<vector<int>,double> filament_ensemble<filament_type>::get_dist(double x, dou
 }
 
 template <class filament_type>
-double* filament_ensemble<filament_type>::get_intpoints(int fil, int rod, double xp, double yp)
+array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int rod, double xp, double yp)
 {
     return network[fil]->get_rod(rod)->get_intpoint(xp,yp);
 }
@@ -115,25 +116,25 @@ double filament_ensemble<filament_type>::get_alength(int fil, int rod)
 }
 
 template <class filament_type>
-double * filament_ensemble<filament_type>::get_start(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_start(int fil, int rod)
 {
     return network[fil]->get_rod(rod)->get_start();
 }
 
 template <class filament_type>
-double * filament_ensemble<filament_type>::get_end(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_end(int fil, int rod)
 {
     return network[fil]->get_rod(rod)->get_end();
 }
 
 template <class filament_type>
-double * filament_ensemble<filament_type>::get_forces(int fil, int rod)
+array<double,3> filament_ensemble<filament_type>::get_forces(int fil, int rod)
 {
     return network[fil]->get_rod(rod)->get_forces();
 }
 
 template <class filament_type>
-double * filament_ensemble<filament_type>::get_direction(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_direction(int fil, int rod)
 {
     return network[fil]->get_rod(rod)->get_direction();
 }
@@ -225,6 +226,16 @@ void filament_ensemble<filament_type>::update_forces(int f_index, int r_index, d
     network[f_index]->update_forces(r_index, f1,f2,f3);
 }
 
+template <class filament_type> 
+vector<int> filament_ensemble<filament_type>::get_broken(){
+    return broken_filaments;
+}
+
+template <class filament_type> 
+void filament_ensemble<filament_type>::clear_broken(){
+    broken_filaments.clear();
+}
+
 ////////////////////////////////////////
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
@@ -285,17 +296,25 @@ void ATfilament_ensemble::update_bending(){
 void ATfilament_ensemble::update_stretching(){
     
     vector<filament *> newfilaments;
-    for (unsigned int f = 0; f < network.size(); f++)
+    int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
+    for (int f = 0; f < s; f++)
     {
         newfilaments = network[f]->update_stretching();
         
         if (newfilaments.size() > 0){ //fracture event occured
-            filament * broken = network[f];
-            network.erase(network.begin() + f);
-            network.push_back(newfilaments[0]);
-            network.push_back(newfilaments[1]);
-            delete broken;
-            break; //avoid infinite loops
+
+            cout<<"\n\tDEBUG: fracturing filament : "<<f;
+            //cout<<"\nDEBUG: this->get_xcm( "<<f<<" , 0 ) = "<<this->get_xcm(f,0); 
+            filament * broken = network[f];//store a pointer to the broken filament to delete it with
+            //network.erase(network.begin() + f);//remove that pointer from the vector of filaments
+            network[f] = newfilaments[0];//replace that pointer with one of the new filaments
+            //cout<<"\nDEBUG: this->get_xcm( "<<f<<" , 0 ) = "<<this->get_xcm(f,0); 
+            //network.push_back(newfilaments[0]);// add the new filaments
+            network.push_back(newfilaments[1]);//add the second filament to the top of the stack
+            
+            broken_filaments.push_back(f);// record the index, for automatic motor detachment
+            delete broken;// delete the old filament
+            
         }
 
     }
