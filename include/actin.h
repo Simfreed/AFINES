@@ -37,27 +37,17 @@ class actin
     
         void update();
 
-        double get_distance(double xp, double yp);
-
-
-        double get_int_angle(double xp, double yp);
-
-
         double get_length();
 
         double get_xcm();
         
         double get_ycm();
         
-        double get_angle();
-        
-        void update_force(double f1, double f2, double f3);
+        void update_force(double f1, double f2);
 
         array<double,2> get_fov();
 
         array<int,2> get_nq();
-        
-        array<double,2> get_intpoint(double xp, double yp);
         
         array<double,2> get_forces();
 
@@ -69,8 +59,6 @@ class actin
 
         void set_ycm(double ycm);
 
-        vector<vector<int> > get_quadrants();
-       
         string write();
         
         string to_string();
@@ -88,9 +76,6 @@ class actin
         
         array<double, 2> forces;
         
-        vector<vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
-        
-        vector<int> tmp;
 };
 
 #endif

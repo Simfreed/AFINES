@@ -3,6 +3,7 @@
  *  
  *
  *  Created by Shiladitya Banerjee on 9/3/13.
+ *  Adapted into spherical setting by Simon Freedman, 3/2015
  *  Copyright 2013 University of Chicago. All rights reserved.
  *
  */
@@ -50,9 +51,6 @@ actin::actin(const actin& other){
     forces[0] = other.forces[0];
     forces[1] = other.forces[1];
     
-    quad = other.quad;
-    tmp = other.tmp;
-
 }
 
 actin::~actin(){ 

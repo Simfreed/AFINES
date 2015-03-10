@@ -37,8 +37,6 @@ class Link
         
         array<double, 2> get_hy();
         
-        double get_kb();
-        
         double get_kl();
         
         double get_length();
@@ -64,30 +62,26 @@ class Link
         void set_aindex1(int i);
         
         array<double,4> get_forces();
+        
+        double get_distance(double xp, double yp);
+
+        double get_int_angle(double xp, double yp);
+        
+        array<double,2> get_intpoint(double xp, double yp);
+        
+        vector<vector<int> > get_quadrants();
+       
+        void quad_update();
 
     protected:
 
-        double phi, ld, stretch, kl, kb, xcm, ycm;
+        double xcm, ycm, phi, l0, kl;
        
-        array<double,2> hx, hy, forcex, forcey, torque, force_par, force_perp;
+        array<double,2> hx, hy;
         array<int, 2> aindex;
         
         filament *fil;
-};
-
-class MidLink : public Link
-{
-    public:
-        MidLink(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
         
-        void step();
-        
-        double get_stretch_force();
-        
-        void set_linear(bool lin);
-
-    protected:
-
-        bool is_linear;
+        vector<vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
 };
 #endif
