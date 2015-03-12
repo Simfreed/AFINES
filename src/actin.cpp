@@ -129,3 +129,7 @@ string actin::to_string()
 double actin::get_viscosity(){
     return a_vis;
 }
+
+double actin::get_friction(){
+    return friction;
+}

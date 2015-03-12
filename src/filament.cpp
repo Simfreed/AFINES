@@ -42,6 +42,7 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
     fracture_force = frac_force;
     viscosity = visc;
     BC = bdcnd;
+    kb = bending_stiffness;
 
     //the start of the polymer: 
     actins.push_back(new actin( startx, starty, ballRadius, fov[0], fov[1], nq[0], nq[1], visc));
@@ -66,7 +67,7 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
         }else{
             // Add the segment
             actins.push_back( new actin(xcm, ycm, phi, ballRadius, fov[0], fov[1], nq[0], nq[1], visc) );
-            lks.push_back( new Link(linkLength, stretching_stiffness, this, j-1, j) );  
+            links.push_back( new Link(linkLength, stretching_stiffness, this, j-1, j) );  
             
         } 
         
@@ -90,6 +91,7 @@ filament::filament(vector<actin *> actinvec, double linkLength, double stretchin
     fracture_force = frac_force;
     gamma = g; 
     BC = bdcnd;
+    kb = bending_stiffness;
 
     if (actinvec.size() > 0)
     {
@@ -97,6 +99,8 @@ filament::filament(vector<actin *> actinvec, double linkLength, double stretchin
         fov[1] = actinvec[0]->get_fov()[1];
         nq[0] = actinvec[0]->get_nq()[0];
         nq[1] = actinvec[0]->get_nq()[1];
+
+        actins.push_back(new actin(*(actinvec[0])));
     }
     else{
         fov[0] = 0;
@@ -106,57 +110,37 @@ filament::filament(vector<actin *> actinvec, double linkLength, double stretchin
     }
 
     //Link em up
-    for (unsigned int j = 0; j < actinvec.size(); j++) {
+    for (unsigned int j = 1; j < actinvec.size(); j++) {
         
-//        cout<<"\nDEBUG: adding new actin "<<j;
-//      actins.push_back(new actin(*(actinvec[j])));
-        actin * a = new actin(actinvec[j]->get_xcm(), actinvec[j]->get_ycm(), actinvec[j]->get_angle(), actinvec[j]->get_length(), actinvec[j]->get_fov()[0], actinvec[j]->get_fov()[1],
-                    actinvec[j]->get_nq()[0], actinvec[j]->get_nq()[1], actinvec[j]->get_viscosity());
-        actins.push_back(a); 
-//        cout<<"\nDEBUG: adding new link "<<j;
-        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
-        //cout<<"\nDEBUG: creating actin pointer "<<actins[j];
-    }
-
-    if (actins.size() > 0){
-        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, actins.size() - 1, -1) );  
-    }
-
-    int s = actinvec.size();
-    for (int i = 0; i<s; i++)
-    {
-        delete actinvec[i];
-    }
-    actinvec.clear();
+        links.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
+        actins.push_back(new actin(*(actinvec[j])));
     
+    }
+
 }
 
 filament::~filament(){
     
-    int nr = actins.size(), nl = lks.size();
+    int nr = actins.size(), nl = links.size();
     for (int i = 0; i < nr; i ++)
     {    
         //cout<<"\nDEBUG: deleting pointer "<<actins[i];     
         delete actins[i];
     }
     for (int i = 0; i < nl; i ++)
-        delete lks[i];
+        delete links[i];
     
     actins.clear();
-    lks.clear();
+    links.clear();
 }
 
-void filament::add_actin(actin * a, double linkLength, double stretching_stiffness, double bending_stiffness){
+void filament::add_actin(actin * a, double linkLength, double stretching_stiffness){
     
     actins.push_back(new actin(*a));
     
-    if (lks.size() == 0)
-        lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, -1,  0) );  
-    else 
-        lks[lks.size()-1]->set_aindex1(actins.size()-1);
+    if (actins.size() > 1)
+        links.push_back( new Link(linkLength, stretching_stiffness, this, actins.size()-1,  actins.size() ) );  
     
-    lks.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, actins.size() - 1, -1) );  
-
 }
 
 vector<vector<vector<int> > > filament::get_quadrants()
@@ -164,9 +148,10 @@ vector<vector<vector<int> > > filament::get_quadrants()
     //should return a map between actin and x, y coords of quadrant
     vector<vector<vector<int> > > quads;
     
-    for (unsigned int i=0; i<actins.size(); i++) {
+    for (unsigned int i=0; i<links.size(); i++) {
         
-        quads.push_back(actins[i]->get_quadrants());
+        quads.push_back(links[i]->get_quadrants());
+    
     }
     return quads;
 }
@@ -176,43 +161,26 @@ void filament::update(double t)
     double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, a_ends[4]; 
     double xleft = -fov[0]*0.5, xright=fov[0]*0.5;
     bool recenter_filament = false;
+    double xleft  = -fov[0] * 0.5;
+    double xright =  fov[0] * 0.5;
     double yleft  = -fov[1] * 0.5;
     double yright =  fov[1] * 0.5;
 
     for (unsigned int i = 0; i < actins.size(); i++){
-        //cout<<"\nDEBUG: actin "<<i<<" start: ( "<<actins[i]->get_start()[0]<<" , "<<actins[i]->get_start()[1]<<")";
-        //cout<<"\nDEBUG: actin "<<i<<" end  : ( "<<actins[i]->get_end()[0]<<" , "<<actins[i]->get_end()[1]<<")";
+        
+        double fric = actins[i]->get_friction();
+        vx  = (actins[i]->get_forces()[0])/fric  + sqrt(2*temperature/(dt*fric))*rng_n(0,1);
+        vy  = (actins[i]->get_forces()[1])/fric  + sqrt(2*temperature/(dt*fric))*rng_n(0,1);
 
-    //    if(actins[i]->get_forces()[0] != actins[i]->get_forces()[0] ||actins[i]->get_forces()[1] != actins[i]->get_forces()[1] ||actins[i]->get_forces()[2] != actins[i]->get_forces()[2])
-      //      cout<<"\nDEBUG: inf force on actin ["<<i<<"]";
-        array<double,3> fric = actins[i]->get_frictions();
-        vpar  = (actins[i]->get_forces()[0])/fric[0]  + sqrt(2*temperature/(dt*fric[0]))*rng_n(0,1);
-        vperp = (actins[i]->get_forces()[1])/fric[1]  + sqrt(2*temperature/(dt*fric[1]))*rng_n(0,1);
-       // cout<<"\nDEBUG: actin "<<i<<" (vpar, vperp) = ( "<<vpar<<" , "<<vperp<<" )"; 
-        vx    = vpar*cos(actins[i]->get_angle()) - vperp*sin(actins[i]->get_angle());
-        vy    = vpar*sin(actins[i]->get_angle()) + vperp*cos(actins[i]->get_angle());
-       // cout<<"\nDEBUG: actin "<<i<<" (vx, vy) = ( "<<vx<<" , "<<vy<<" )"; 
-        omega = actins[i]->get_forces()[2]/fric[2] + sqrt(2*temperature/(dt*fric[2]))*rng_n(0,1);
-
-        alength=actins[i]->get_length();
-
-       //cout<<"\nDEBUG: actin "<<i<<" (xold, yold) = ( "<<actins[i]->get_xcm()<<" , "<<actins[i]->get_ycm()<<" )"; 
         xnew = actins[i]->get_xcm()+dt*vx;
         ynew = actins[i]->get_ycm()+dt*vy;
-       //cout<<"\nDEBUG: actin "<<i<<" (xnew, ynew) = ( "<<xnew<<" , "<<ynew<<" )"; 
-        phinew = actins[i]->get_angle()+dt*omega;
 
-
-        a_ends[0]=xnew-alength*0.5*cos(phinew);
-        a_ends[1]=ynew-alength*0.5*sin(phinew);
-        a_ends[2]=xnew+alength*0.5*cos(phinew);
-        a_ends[3]=ynew+alength*0.5*sin(phinew);
-        
         //Calculate the sheared simulation bounds (at this height)
-        xleft  = max(-fov[0] * 0.5 + gamma * a_ends[1] * t, -fov[0] * 0.5 + gamma * a_ends[3] * t);
-        xright = min( fov[0] * 0.5 + gamma * a_ends[1] * t,  fov[0] * 0.5 + gamma * a_ends[3] * t);
-       //cout<<"\nDEBUG: (xleft, xright) = ( "<<xleft<<" , "<<xright<<" )";
-       //cout<<"\nDEBUG: (yleft, yright) = ( "<<yleft<<" , "<<yright<<" )";
+        if (gamma != 0){
+            xleft  = -fov[0] * 0.5 + gamma * ynew[1] * t;
+            xright =  fov[0] * 0.5 + gamma * ynew[1] * t;
+        }
+
         if(this->get_BC() == "REFLECTIVE")
         {
             if (a_ends[0]<=xleft || a_ends[0]>=xright || a_ends[2]<=xleft || a_ends[2]>=xright)
@@ -290,19 +258,19 @@ vector<filament *> filament::update_stretching()
 {
     vector<filament *> newfilaments;
     
-    if(lks.size() == 0)
+    if(links.size() == 0)
         return newfilaments;
     
     array<double,4> end_forces0, end_forces1;
     array<double,3> mid_forces;
     
-    lks[0]->step();
-    end_forces0 = lks[0]->get_forces();
+    links[0]->step();
+    end_forces0 = links[0]->get_forces();
     
-    for (unsigned int i=1; i < lks.size(); i++) {
-//        if (lks[i]->get_xcm()!=lks[i]->get_xcm()) cout<<"\nDEBUG: lks["<<i<<"]->get_xcm() is inf";
-        lks[i]->step();
-        if (fabs(lks[i]->get_stretch_force()) > fracture_force){
+    for (unsigned int i=1; i < links.size(); i++) {
+//        if (links[i]->get_xcm()!=links[i]->get_xcm()) cout<<"\nDEBUG: links["<<i<<"]->get_xcm() is inf";
+        links[i]->step();
+        if (fabs(links[i]->get_stretch_force()) > fracture_force){
             
 //            cout<<"\nDEBUG: position of actins "<<i<<" and "<<i+1<<": ( "<<actins[i]->get_end()[0]<<" , "<<actins[i]->get_end()[1]<<" ) and ( "<<actins[i+1]->get_start()[0]<<" , "<<actins[i+1]->get_start()[1]<<" ) ";
 //            cout<<"\nDEBUG: cm of actins "<<i<<" and "<<i+1<<": ( "<<actins[i]->get_xcm()<<" , "<<actins[i]->get_ycm()<<" ) and ( "<<actins[i+1]->get_xcm()<<" , "<<actins[i+1]->get_ycm()<<" ) ";
@@ -313,7 +281,7 @@ vector<filament *> filament::update_stretching()
         else
         {
         
-            end_forces1 = lks[i]->get_forces();
+            end_forces1 = links[i]->get_forces();
            //cout<<"\nDEBUG: actin "<<i-1<<" end forces : ( "<<end_forces0[2]<<" , "<<end_forces0[3]<<" , "<<end_forces1[0]<<" , "<<end_forces1[1]<<" ) ";
             mid_forces  = this->endForces2centerForce(i-1, end_forces0[2], end_forces0[3], end_forces1[0], end_forces1[1]);
            
@@ -349,7 +317,7 @@ actin * filament::get_actin(int i)
 
 Link * filament::get_link(int i)
 {
-    return lks[i];
+    return links[i];
 }
 
 void filament::update_shear(){
@@ -364,12 +332,12 @@ void filament::update_shear(){
         if (i == 0)
             lft_trq = 0;
         else
-            lft_trq = -1 * forcex * (ycm - lks[i]->get_ycm()); //cross pactinuct with fy = 0
+            lft_trq = -1 * forcex * (ycm - links[i]->get_ycm()); //cross pactinuct with fy = 0
 
         if (i == actins.size() - 1)
             rt_trq = 0;
         else{
-            rt_trq = -1 * forcex * (ycm - lks[i+1]->get_ycm());
+            rt_trq = -1 * forcex * (ycm - links[i+1]->get_ycm());
         }
         
         force_par   =  forcex*actins[i]->get_direction()[0];
@@ -403,9 +371,9 @@ string filament::write_actins(){
 
 string filament::write_links(){
     string all_links;
-    for (unsigned int i =0; i < lks.size(); i++)
+    for (unsigned int i =0; i < links.size(); i++)
     {
-        all_links += lks[i]->write();
+        all_links += links[i]->write();
     }
 
     return all_links;
@@ -429,14 +397,24 @@ vector<filament *> filament::fracture(int node){
 
     vector<filament *> newfilaments;
     cout<<"\n\tDEBUG: fracturing at node "<<node;
+    
+    vector<actin *> lower_half = this->get_actins(0, node);
+    vector<actin *> upper_half = this->get_actins(node, actins.size());
 
     newfilaments.push_back(
-            new filament(this->get_actins(0,node), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+            new filament(lower_half, links[0]->get_length(), links[0]->get_kl(), links[0]->get_kb(), 
                 dt, temperature, fracture_force, gamma, BC));
     newfilaments.push_back(
-            new filament(this->get_actins(node, actins.size()), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+            new filament(upper_half, links[0]->get_length(), links[0]->get_kl(), links[0]->get_kb(), 
                 dt, temperature, fracture_force, gamma, BC));
 
+    int s = actinvec.size();
+    for (int i = 0; i < node; i++) delete lower_half[i];
+    for (int i = node; i < actins.size(); i++) delete upper_half[i];
+    
+    lower_half.clear();
+    upper_half.clear();
+    
     return newfilaments;
 
 }
@@ -447,8 +425,8 @@ bool filament::operator==(const filament& that){
         if (!(*(actins[i]) == *(that.actins[i])))
             return false;
     
-    for (unsigned int i = 0; i < lks.size(); i++)
-        if (!(lks[i]->is_similar(*(that.lks[i]))))
+    for (unsigned int i = 0; i < links.size(); i++)
+        if (!(links[i]->is_similar(*(that.links[i]))))
             return false;
 
     return (this->fov[0] == that.fov[0] && this->fov[1] == that.fov[1] && 
@@ -499,7 +477,7 @@ vector<vector<double> *>* filament::fwd_bending_calc()
     double coef1, coef2, coef3;
     double fx1, fx2, fx3, fy1, fy2, fy3;
     
-    double k = lks[0]->get_kb();
+    double k = links[0]->get_kb();
     double forcex, forcey;
     //initialize all NODE forces to be 0
     
@@ -513,11 +491,11 @@ vector<vector<double> *>* filament::fwd_bending_calc()
         node_forces_y->push_back(0);
 
         // More than 1 actin--> bending forces to calculate
-        xam1      = lks[1]->get_xcm() - lks[0]->get_xcm();
-        yam1      = lks[1]->get_ycm() - lks[0]->get_ycm();
+        xam1      = links[1]->get_xcm() - links[0]->get_xcm();
+        yam1      = links[1]->get_ycm() - links[0]->get_ycm();
 
-        xa        = lks[2]->get_xcm() - lks[1]->get_xcm();
-        ya        = lks[2]->get_ycm() - lks[1]->get_ycm();
+        xa        = links[2]->get_xcm() - links[1]->get_xcm();
+        ya        = links[2]->get_ycm() - links[1]->get_ycm();
 
         Cam1am1 = xam1*xam1 + yam1*yam1;
         Caa     = xa  *xa   + ya  *ya;
@@ -549,8 +527,8 @@ vector<vector<double> *>* filament::fwd_bending_calc()
         else
         {
             //More than 2 actins--> more bending forces to calculate
-            xap1 = lks[3]->get_xcm() - lks[2]->get_xcm();
-            yap1 = lks[3]->get_ycm() - lks[2]->get_ycm();
+            xap1 = links[3]->get_xcm() - links[2]->get_xcm();
+            yap1 = links[3]->get_ycm() - links[2]->get_ycm();
 
             Cap1ap1 = xap1*xap1 + yap1*yap1;
             Caap1   = xap1*xa   + yap1*ya;
@@ -563,10 +541,10 @@ vector<vector<double> *>* filament::fwd_bending_calc()
                 coef2 =  k*theta_ap1 / sin(theta_ap1) * ( 1 / sqrt( Caa     * Cap1ap1 ) );
 
             //Enter loop if more than 3 actins. For 3 actin case, the loop is skipped
-            for (unsigned int j = 2; j < lks.size() - 2; j++){
+            for (unsigned int j = 2; j < links.size() - 2; j++){
 
-                xap2 = lks[j+2]->get_xcm() - lks[j+1]->get_xcm();
-                yap2 = lks[j+2]->get_ycm() - lks[j+1]->get_ycm();
+                xap2 = links[j+2]->get_xcm() - links[j+1]->get_xcm();
+                yap2 = links[j+2]->get_ycm() - links[j+1]->get_ycm();
 
                 Cap2ap2 = xap2*xap2 + yap2*yap2;
                 Cap1ap2 = xap1*xap2 + yap1*yap2;
@@ -673,7 +651,7 @@ vector<vector<double> *>* filament::fwd_bending_calc()
 //Update the monomer
 void filament::update_bending()
 {
-    if(lks.size() <= 2)
+    if(links.size() <= 2)
         return;
 
     vector<vector<double>* >* fwd_bending = this->fwd_bending_calc();
@@ -719,11 +697,11 @@ array<double,3> filament::endForces2centerForce(int j, double fx0, double fy0, d
     e = actins[j]->get_direction();
 
     /*
-    x0 =  lks[j]->get_xcm();
-    y0 =  lks[j]->get_ycm();
+    x0 =  links[j]->get_xcm();
+    y0 =  links[j]->get_ycm();
         
-    x1 = lks[j+1]->get_xcm();
-    y1 = lks[j+1]->get_ycm();
+    x1 = links[j+1]->get_xcm();
+    y1 = links[j+1]->get_ycm();
 */
     x0 = actins[j]->get_start()[0];
     y0 = actins[j]->get_start()[1];
@@ -780,7 +758,7 @@ double filament::get_bending_energy(){
         sum += theta*theta;
     }
     
-    return lks[0]->get_kb()*sum/2.0;
+    return links[0]->get_kb()*sum/2.0;
 
 }
 
@@ -791,13 +769,13 @@ double filament::get_stretching_energy(){
     
     double sum = 0, stretch;
 
-    for (unsigned int i = 0; i < lks.size(); i++)
+    for (unsigned int i = 0; i < links.size(); i++)
     {
-        stretch = lks[i]->get_stretch_force();
+        stretch = links[i]->get_stretch_force();
         sum += stretch*stretch;
     }
     
-    return sum/(2.0*lks[0]->get_length());
+    return sum/(2.0*links[0]->get_length());
 
 }
 
@@ -820,7 +798,7 @@ DLfilament::DLfilament(double startx, double starty, double startphi, int nactin
         frac_force, bdcnd), bending_fracture_force(bending_frac_force)
 {
     for (int j = 0; j < (int)actins.size() - 1; j++) {
-        midlks.push_back( new MidLink(ballRadius + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+        midlinks.push_back( new MidLink(ballRadius + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
     }
 }
 
@@ -834,7 +812,7 @@ DLfilament::DLfilament(vector<actin *> actinvec, double linkLength, double stret
     {
         double ballRadius = actins[0]->get_length();
         for (unsigned int j = 0; j < actins.size() - 1; j++) {
-            midlks.push_back( new MidLink(ballRadius + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
+            midlinks.push_back( new MidLink(ballRadius + linkLength, stretching_stiffness, bending_stiffness, this, j, j + 1) );  
         }
     }
 
@@ -842,23 +820,23 @@ DLfilament::DLfilament(vector<actin *> actinvec, double linkLength, double stret
 
 void DLfilament::set_bending_linear()
 {
-    for (unsigned int j = 0; j < midlks.size(); j++)
+    for (unsigned int j = 0; j < midlinks.size(); j++)
     {
-        midlks[j]->set_linear(true);
+        midlinks[j]->set_linear(true);
     }
 }
 
 vector<DLfilament *> DLfilament::update_bending()
 {
     vector<DLfilament *> newfilaments;
-    for (unsigned int i=0; i < midlks.size(); i++) {
-        midlks[i]->step();
-        if (fabs(midlks[i]->get_stretch_force()) > bending_fracture_force){
+    for (unsigned int i=0; i < midlinks.size(); i++) {
+        midlinks[i]->step();
+        if (fabs(midlinks[i]->get_stretch_force()) > bending_fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
         else{
-            midlks[i]->filament_update();
+            midlinks[i]->filament_update();
         }
     }
     return newfilaments;
@@ -867,15 +845,15 @@ vector<DLfilament *> DLfilament::update_bending()
 vector<DLfilament *> DLfilament::update_stretching()
 {
     vector<DLfilament *> newfilaments;
-    for (unsigned int i=0; i < lks.size(); i++) {
-        if (fabs(lks[i]->get_stretch_force()) > fracture_force){
+    for (unsigned int i=0; i < links.size(); i++) {
+        if (fabs(links[i]->get_stretch_force()) > fracture_force){
             
             newfilaments = this->fracture(i);
             break;
         }
         else{
-            lks[i]->step();
-            lks[i]->filament_update();
+            links[i]->step();
+            links[i]->filament_update();
         }
     }
     return newfilaments;
@@ -888,10 +866,10 @@ vector<DLfilament *> DLfilament::fracture(int node)
     cout<<"\n\tDEBUG: fracturing at node "<<node;
 
     newfilaments.push_back(
-            new DLfilament(this->get_actins(0,           node - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+            new DLfilament(this->get_actins(0,           node - 1), links[0]->get_length(), links[0]->get_kl(), links[0]->get_kb(), 
                 dt, temperature, fracture_force, bending_fracture_force, gamma, BC));
     newfilaments.push_back(
-            new DLfilament(this->get_actins(node, actins.size() - 1), lks[0]->get_length(), lks[0]->get_kl(), lks[0]->get_kb(), 
+            new DLfilament(this->get_actins(node, actins.size() - 1), links[0]->get_length(), links[0]->get_kl(), links[0]->get_kb(), 
                 dt, temperature, fracture_force, bending_fracture_force, gamma, BC));
 
     return newfilaments;
@@ -899,17 +877,17 @@ vector<DLfilament *> DLfilament::fracture(int node)
 }
 
 DLfilament::~DLfilament(){
-    int nr = actins.size(), nl = lks.size(), nml = midlks.size();
+    int nr = actins.size(), nl = links.size(), nml = midlinks.size();
     for (int i = 0; i < nr; i ++)
         delete actins[i];
     for (int i = 0; i < nl; i ++)
-        delete lks[i];
+        delete links[i];
     for (int i = 0; i < nml; i++)
-        delete midlks[i];
+        delete midlinks[i];
     
     actins.clear();
-    lks.clear();
-    midlks.clear();
+    links.clear();
+    midlinks.clear();
 }
 
 
