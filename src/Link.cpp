@@ -141,42 +141,34 @@ void Link::quad_update(){
     
     //quadrant numbers crossed by the actin in x-direction
     quad.clear();
-    vector<int> tmp;
-    int lower_limit, upper_limit, index;
+    int xlower, xupper, ylower, yupper;
     
     if(hx[0] <= hx[1])
     {
-        lower_limit = int(floor(hx[0]/fov[0]*nq[0]));
-        upper_limit = int(ceil(hx[1]/fov[0]*nq[0]));
+        xlower = int(floor(hx[0]/fov[0]*nq[0]));
+        xupper = int(ceil( hx[1]/fov[0]*nq[0]));
     }
     else
     {
-        lower_limit = int(floor(hx[1]/fov[0]*nq[0]));
-        upper_limit = int(ceil(hx[0]/fov[0]*nq[0]));
+        xlower = int(floor(hx[1]/fov[0]*nq[0]));
+        xupper = int(ceil( hx[0]/fov[0]*nq[0]));
     };
-    for(index = lower_limit; index < upper_limit; index++)
-        tmp.push_back(index);
     
-    quad.push_back(tmp);
-
-    //quadrant numbers crossed by the actin in y-direction
-    tmp.clear();
     if(hy[0] <= hy[1])
     {
-        lower_limit = int(floor(hy[0]/fov[1]*nq[1]));
-        upper_limit = int(ceil(hy[1]/fov[1]*nq[1]));
+        ylower = int(floor(hy[0]/fov[1]*nq[1]));
+        yupper = int(ceil( hy[1]/fov[1]*nq[1]));
     }
     else
     {
-        lower_limit = int(floor(hy[1]/fov[1]*nq[1]));
-        upper_limit = int(ceil(hy[0]/fov[1]*nq[1]));
+        ylower = int(floor(hy[1]/fov[1]*nq[1]));
+        yupper = int(ceil( hy[0]/fov[1]*nq[1]));
     };
     
-    for(index = lower_limit; index < upper_limit; index++)
-        tmp.push_back(index);
-    
-    quad.push_back(tmp);
-
+    for(xcoord = xlower; xcoord < xupper; xcoord++)
+        for(ycoord = ylower; ycoord < yupper; ycoord++)
+            quad.push_back({xcoord, ycoord});
+        
 }
 
 //shortest(perpendicular) distance between an arbitray point and the Link
@@ -237,7 +229,7 @@ double Link::get_int_angle(double xp, double yp)
     return angle;
 }
 
-vector<vector<int> > Link::get_quadrants()
+vector<array<int, 2> > Link::get_quadrants()
 {
     return quad;
 }

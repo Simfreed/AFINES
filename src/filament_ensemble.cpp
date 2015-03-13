@@ -33,31 +33,22 @@ template <class filament_type>
 void filament_ensemble<filament_type>::quad_update()
 {
     quad_fils.clear();
-    vector<vector<vector<int> > > all_tmp_quads;
-    vector<vector<int> > tmp_quads;
-    vector<int> index;
+    vector< vector< array<int, 2> > > filament_quads;
 
-    //cout<<"\nDEBUG:network.size() = "<<network.size();
-    for (unsigned int i=0; i<network.size(); i++) {
+    for (unsigned int i=0; i < network.size(); i++) { //Loop over filaments
         
-        all_tmp_quads = network[i]->get_quadrants(); //quadrants for every rod on the filament
+        filament_quads = network[i]->get_quadrants(); 
         
-        for (unsigned int j=0; j<all_tmp_quads.size(); j++){
+        for (unsigned int j=0; j < filament_quads.size(); j++){ //Loop over links
             
-            tmp_quads = all_tmp_quads[j]; //quadrants of the jth rod on the filament
-            index.push_back(i);
-            index.push_back(j);
-
-            for (unsigned int xindex=0; xindex<tmp_quads[0].size(); xindex++) {
-                for (unsigned int yindex=0; yindex<tmp_quads[1].size(); yindex++) {
-                    quad_fils[tmp_quads[0][xindex]][tmp_quads[1][yindex]].push_back(index);
-                }
+            for (unsigned int k = 0; k  < filament_quads[j].size(); k++){ //Loop over quadrants of a Link   
+                
+                quad_fils[ filament_quads[j][k] ] = {i, j};
+        
             }
-
-            index.clear();
-
-        }
+        }   
     }
+
 }
 
 template <class filament_type>
@@ -70,16 +61,15 @@ vector<filament_type *>* filament_ensemble<filament_type>::get_network()
 template <class filament_type>
 map<vector<int>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
 {
-    int nxx=int(floor(x/fov[0]*nq[0]));
-    int nyy=int(floor(y/fov[1]*nq[1]));
-    vector<int> index;
-    t_map.clear();
-    if(!quad_fils[nxx][nyy].empty())
+    array<int, 2> motor_quad = {int(floor(x/fov[0]*nq[0])), int(floor(y/fov[1]*nq[1]))}
+    array<int, 2> index;
+    map<array<int, 2>, double> t_map;
+    if(!quad_fils[motor_quad].empty())
     {
-        for(vector<vector<int> >::iterator it=quad_fils[nxx][nyy].begin(); it<quad_fils[nxx][nyy].end(); it++)
+        for(vector<array<int,2> >::iterator it=quad_fils[motor_quad].begin(); it<quad_fils[motor_quad].end(); it++)
         {   
             index = *it;
-            t_map[*it] = network[ index[0] ]->get_rod( index[1])->get_distance(x,y);
+            t_map[*it] = network[ index[0] ]->get_link( index[1] )->get_distance(x,y);
         }
     }
     return t_map;
@@ -92,51 +82,51 @@ array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int rod
 }
 
 template <class filament_type> 
-double filament_ensemble<filament_type>::get_xcm(int fil, int rod)
+double filament_ensemble<filament_type>::get_xcm(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_xcm();
+    return network[fil]->get_link(link)->get_xcm();
 }
 
 template <class filament_type> 
-double filament_ensemble<filament_type>::get_ycm(int fil, int rod)
+double filament_ensemble<filament_type>::get_ycm(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_ycm();
+    return network[fil]->get_link(link)->get_ycm();
 }
 
 template <class filament_type> 
-double filament_ensemble<filament_type>::get_angle(int fil, int rod)
+double filament_ensemble<filament_type>::get_angle(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_angle();
+    return network[fil]->get_link(link)->get_angle();
 }
 
 template <class filament_type> 
-double filament_ensemble<filament_type>::get_alength(int fil, int rod)
+double filament_ensemble<filament_type>::get_alength(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_length();
+    return network[fil]->get_link(link)->get_length();
 }
 
 template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_start(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_start(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_start();
+    return {network[fil]->get_link(link)->get_hx()[0] , network[fil]->get_link(link)->get_hy()[0]};
 }
 
 template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_end(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_end(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_end();
+    return {network[fil]->get_link(link)->get_hx()[1] , network[fil]->get_link(link)->get_hy()[1]};
 }
 
 template <class filament_type>
-array<double,3> filament_ensemble<filament_type>::get_forces(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_forces(int fil, int rod)
 {
-    return network[fil]->get_rod(rod)->get_forces();
+    return network[fil]->get_link(link)->get_forces();
 }
 
 template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_direction(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_direction(int fil, int link)
 {
-    return network[fil]->get_rod(rod)->get_direction();
+    return network[fil]->get_link(link)->get_direction();
 }
 
 template <class filament_type> 

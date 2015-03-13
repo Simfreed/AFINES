@@ -21,7 +21,6 @@ filament::filament(){
     temperature = 0;
     gamma = 0;
     fracture_force = 1000000;
-    viscosity = 0.5;
     BC = "REFLECTIVE";
 
 }
@@ -40,12 +39,11 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
     temperature = temp;
     gamma = 0;
     fracture_force = frac_force;
-    viscosity = visc;
     BC = bdcnd;
     kb = bending_stiffness;
 
     //the start of the polymer: 
-    actins.push_back(new actin( startx, starty, ballRadius, fov[0], fov[1], nq[0], nq[1], visc));
+    actins.push_back(new actin( startx, starty, ballRadius, fov[0], fov[1], nq[0], nq[1], viscosity));
     
     double  xcm, ycm, phi, variance;
     phi = startphi;
@@ -66,7 +64,7 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
             break;
         }else{
             // Add the segment
-            actins.push_back( new actin(xcm, ycm, phi, ballRadius, fov[0], fov[1], nq[0], nq[1], visc) );
+            actins.push_back( new actin(xcm, ycm, phi, ballRadius, fov[0], fov[1], nq[0], nq[1], viscosity) );
             links.push_back( new Link(linkLength, stretching_stiffness, this, j-1, j) );  
             
         } 
@@ -143,16 +141,14 @@ void filament::add_actin(actin * a, double linkLength, double stretching_stiffne
     
 }
 
-vector<vector<vector<int> > > filament::get_quadrants()
+vector<vector<array<int,2> > > > filament::get_quadrants()
 {
     //should return a map between actin and x, y coords of quadrant
-    vector<vector<vector<int> > > quads;
+    vector<vector<array<int,2> > > quads;
     
-    for (unsigned int i=0; i<links.size(); i++) {
-        
+    for (unsigned int i=0; i<links.size(); i++) 
         quads.push_back(links[i]->get_quadrants());
     
-    }
     return quads;
 }
 

@@ -29,11 +29,11 @@ class filament
 {
     public:
 
-        filament(double x0, double y0, double phi0, int nrod, double fovx, double fovy, int nx, int ny, 
+        filament(double x0, double y0, double phi0, int nactin, double fovx, double fovy, int nx, int ny, 
                 double vis, double deltat, double temp, bool isStraight,
-                double rodLength, double linkLength, double stretching, double bending, double fracture, string bc); 
+                double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
 
-        filament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        filament(vector<actin *> actinvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
                 double deltat, double temp, double fracture, double gamma, string bc);
        
         filament();
@@ -46,50 +46,44 @@ class filament
         
         void update_bending();
         
-        void update_bending_FD();
-        
         vector<filament *> update_stretching();
 
         void update_shear(); 
         
-        actin * get_rod(int i);
+        actin * get_actin(int i);
         
         Link * get_link(int i);
 
         int get_nlinks();
 
-        vector<vector<vector<int> > > get_quadrants();
+        vector<vector<array<int, 2> > > get_quadrants();
         
-        string write_rods();
+        string write_actins();
         
         string write_links();
         
         string to_string();
         
-        vector<actin *> get_rods(unsigned int first, unsigned int last);
+        vector<actin *> get_actins(unsigned int first, unsigned int last);
         
         vector<filament *> fracture(int node);
         
-        void update_forces(int index, double f1, double f2, double f3);
+        void update_forces(int index, double f1, double f2);
         
         bool operator==(const filament& that);
         
-        void add_rod(actin * a, double l0, double kl, double kb);
+        void add_actin(actin * a, double l0, double kl);
         
         void set_BC(string s);
 
         string get_BC();
        
-        vector<vector<double> *>* fwd_bending_calc();
+        void fwd_bending_update();
         
-        vector<vector<double> *>* bwd_bending_calc();
+        void bwd_bending_update();
+        
+        int get_nactins();
 
-        void update_bending_AT();
-
-        array<double,3> endForces2centerForce(int rod, double fx0, double fy0, double fx1, double fy1);
-        
-        int get_nrods();
-        
         double get_bending_energy();
 
         double get_stretching_energy();
@@ -98,15 +92,12 @@ class filament
     
     protected:
         
-        double gamma, temperature, dt, fracture_force, viscosity;
+        double kb, gamma, temperature, dt, fracture_force;
         
         array<double,2> fov;
         array<int,2> nq;
-
-        vector<actin *> rods;
-        
+        vector<actin *> actins;
         vector<Link *> lks;
-
         string BC;
 };
 
@@ -136,38 +127,6 @@ class NFfilament : public filament
         
         map<array<int,2>, double> get_J_matrix();
 
-};
-
-// use mid links to update bending
-
-class DLfilament : public filament
-{
-    public:
-        
-        DLfilament(double x0, double y0, double phi0, int nrod, double fovx, double fovy, int nx, int ny, 
-                double vis, double deltat, double temp, bool isStraight,
-                double rodLength, double linkLength, double stretching, double bending, double fracture, double bending_fracture, string bc); 
-
-        DLfilament(vector<actin *> rodvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
-                double deltat, double temp, double fracture, double bending_fracture, double gamma, string bc);
-
-        
-        DLfilament(const DLfilament& other);
-
-        void set_bending_linear();
-
-        vector<DLfilament *> update_bending();
-        
-        vector<DLfilament *> update_stretching();
-        
-        vector<DLfilament *> fracture(int node);
-            
-        ~DLfilament();
-
-    private:
-
-        vector<MidLink *> midlks;
-        double bending_fracture_force;
 };
 
 #endif

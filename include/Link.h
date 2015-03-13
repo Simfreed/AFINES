@@ -69,7 +69,7 @@ class Link
         
         array<double,2> get_intpoint(double xp, double yp);
         
-        vector<vector<int> > get_quadrants();
+        vector<array<int,2> > get_quadrants();
        
         void quad_update();
 
@@ -78,10 +78,11 @@ class Link
         double xcm, ycm, phi, l0, kl;
        
         array<double,2> hx, hy;
+        
         array<int, 2> aindex;
         
         filament *fil;
         
-        vector<vector<int> > quad; //vector of two vectors(x and y quadrants) of integers
+        vector< array<int,2> > quad; //vector of two vectors(x and y quadrants) of integers
 };
 #endif
