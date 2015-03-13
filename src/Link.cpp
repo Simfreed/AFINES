@@ -97,6 +97,10 @@ double Link::get_ycm(){
     return ycm;
 }
 
+double Link::get_angle(){
+    return phi;
+}
+
 std::string Link::write(){
     return std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
         + std::to_string(hy[1]-hy[0]) + "\n";
