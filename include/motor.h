@@ -70,7 +70,7 @@ class motor
 
     private:
 
-        double mphi,mld, mobility, onrate, stretch, vs, pos_temp, dm, fmax, mk, kon, koff, kend, dt, temperature;
+        double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov;
         

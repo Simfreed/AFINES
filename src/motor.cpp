@@ -19,7 +19,7 @@ motor<filament_ensemble_type>::motor(double mx, double my, double mang, double m
         double v0, double stiffness, double ron, double roff, double
         rend, double actin_len, double vis, string col) {
     vs=v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
-    dm=0.25;//actin_len/10; //binding distance
+    dm=0.25;//actin_len/10; //max binding distance
     mk=stiffness;//rng(10,100); 
     fmax=mk*dm*2;//rng(1,20);
     mld=mlen;
@@ -110,7 +110,8 @@ template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::attach(int hd)
 {
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
-    
+    double onrate;
+
     if(!dist.empty()){
         for (map<vector<int>,double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
@@ -188,8 +189,7 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
     }
     else
     {
-        pos_temp=pos_a_end[hd]+dt*vs;
-        move_end_detach(hd,pos_temp);
+        move_end_detach(hd, pos_a_end[hd]+dt*vs);
     }
 }
 
@@ -199,7 +199,6 @@ void motor<filament_ensemble_type>::step_twoheads()
 {
     array<double, 2> vm, fm, offrate;
     
-    stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
     //fm = vec(Fm).(-vec(u)) 
     fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[0],l_index[0])[0] +
               (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[0],l_index[0])[1]); 
@@ -216,24 +215,17 @@ void motor<filament_ensemble_type>::step_twoheads()
 
     if (event(offrate[0],dt)==1) {
         this->detach_head(0);
-        
-        pos_temp=pos_a_end[1]+dt*vs;
-        move_end_detach(1,pos_temp);
+        move_end_detach(1, pos_a_end[1]+dt*vs);
     }
 
     else if (event(offrate[1],dt)==1) {
         this->detach_head(1);
-
-        pos_temp=pos_a_end[0]+dt*vs;
-        move_end_detach(0,pos_temp);
+        move_end_detach(0,pos_a_end[0]+dt*vs);
     }
 
     else {
-
-        pos_temp=pos_a_end[0]+dt*vm[0];
-        move_end_detach(0,pos_temp);
-        pos_temp=pos_a_end[1]+dt*vm[1];
-        move_end_detach(1,pos_temp); 
+        move_end_detach(0,pos_a_end[0]+dt*vm[0]);
+        move_end_detach(1,pos_a_end[1]+dt*vm[1]); 
     }
 }
 
@@ -346,7 +338,6 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     
-    stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
 
 }
 
