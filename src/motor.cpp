@@ -15,12 +15,12 @@
 //motor class
 template <class filament_ensemble_type>
 motor<filament_ensemble_type>::motor(double mx, double my, double mang, double mlen, filament_ensemble_type * network, int state0, int state1, 
-        int findex0, int findex1, int rindex0, int rindex1, double fovx, double fovy, double delta_t, double temp,
+        int findex0, int findex1, int lindex0, int lindex1, double fovx, double fovy, double delta_t, double temp,
         double v0, double stiffness, double ron, double roff, double
-        rend, double actin_len, double vis, std::string col) {
+        rend, double actin_len, double vis, string col) {
     vs=v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
-    dm=0.25;//actin_len/10;
-    mk=stiffness;//rng(10,100);
+    dm=0.25;//actin_len/10; //binding distance
+    mk=stiffness;//rng(10,100); 
     fmax=mk*dm*2;//rng(1,20);
     mld=mlen;
     kon=ron;
@@ -29,32 +29,38 @@ motor<filament_ensemble_type>::motor(double mx, double my, double mang, double m
     mphi=mang;
     dt = delta_t;
     temperature = temp;
+    
     hx[0]=mx-0.5*mld*cos(mphi);
     hy[0]=my-0.5*mld*sin(mphi);
     hx[1]=hx[0]+mld*cos(mphi);
     hy[1]=hy[0]+mld*sin(mphi);
+    
     mobility=log(10)/(4*pi*vis*mld);
+    
     state[0]=state0;
     state[1]=state1;
-    f_index[0]=findex0;//   actin filament index for head in state[0]
-    f_index[1]=findex1;// actin index for head in state[1]
-    r_index[0]=rindex0;//   actin filament index for head in state[0]
-    r_index[1]=rindex1;// actin index for head in state[1]
+    
+    f_index[0]=findex0;// actin filament index for head in state[0]
+    f_index[1]=findex1;// actin filament index for head in state[1]
+    l_index[0]=lindex0;// link index for head in state[0]
+    l_index[1]=lindex1;// link index for head in state[1]
     
     actin_network=network;
-    //		pos_actin[0]=0; // I don't think this variable get's ACCESSED anywhere 
-    pos_a_end[0]=0; //distance from pointy end -- by default 0
+    
+    // pos_a_end = distance from pointy end -- by default 0
+    //      i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
+    pos_a_end[0]=0; 
     pos_a_end[1]=0;
 
     if (state0){
         pos_a_end[0] = dis_points(hx[0],hy[0],
-                actin_network->get_end(f_index[0], r_index[0])[0],
-                actin_network->get_end(f_index[0], r_index[0])[1]);
+                actin_network->get_end(f_index[0], l_index[0])[0],
+                actin_network->get_end(f_index[0], l_index[0])[1]);
     }
     if (state1){
         pos_a_end[1] = dis_points(hx[1],hy[1],
-                actin_network->get_end(f_index[1], r_index[1])[0],
-                actin_network->get_end(f_index[1], r_index[1])[1]);
+                actin_network->get_end(f_index[1], l_index[1])[0],
+                actin_network->get_end(f_index[1], l_index[1])[1]);
     }
     
     fov[0]=fovx;
@@ -87,7 +93,7 @@ array<double, 2> motor<filament_ensemble_type>::get_hy()
 }
 
 template <class filament_ensemble_type>
-std::string motor<filament_ensemble_type>::get_color()
+string motor<filament_ensemble_type>::get_color()
 {
     return color;
 }
@@ -103,21 +109,24 @@ double motor<filament_ensemble_type>::tension()
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::attach(int hd)
 {
-    dist.clear();
-    dist=actin_network->get_dist(hx[hd],hy[hd]);
+    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
+    
     if(!dist.empty()){
-        for (std::map<std::vector<int>,double>::iterator it=dist.begin(); it!=dist.end(); ++it)
+        for (map<vector<int>,double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
-            if (it->second <= dm && f_index[pr(hd)]!=(it->first).at(0) && r_index[pr(hd)] != (it->first).at(1)) {
+            if (it->second <= dm && f_index[pr(hd)]!=(it->first).at(0) && l_index[pr(hd)] != (it->first).at(1)) {
+                
                 onrate=kon*exp(-((it->second)*(it->second))/(dm*dm));
+                
                 if (event(onrate,dt)==1) {
+                    
                     //update state
                     state[hd] = 1;
                     f_index[hd] = (it->first).at(0);
-                    r_index[hd] = (it->first).at(1);
+                    l_index[hd] = (it->first).at(1);
+
                     //update head position
-                    
-                    array<double, 2> intpoint = actin_network->get_intpoints(f_index[hd], r_index[hd], hx[hd],hy[hd]);
+                    array<double, 2> intpoint = actin_network->get_intpoints(f_index[hd], l_index[hd], hx[hd],hy[hd]);
                     hx[hd] = intpoint[0];
                     hy[hd] = intpoint[1];
 
@@ -130,8 +139,8 @@ void motor<filament_ensemble_type>::attach(int hd)
                     }
 
                     pos_a_end[hd]=dis_points(hx[hd],hy[hd],
-                            actin_network->get_end(f_index[hd], r_index[hd])[0],
-                            actin_network->get_end(f_index[hd], r_index[hd])[1]);
+                            actin_network->get_end(f_index[hd], l_index[hd])[0],
+                            actin_network->get_end(f_index[hd], l_index[hd])[1]);
                     break;
                 }
             }
@@ -153,8 +162,8 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if (state[0]==0 || state[1]==0) {
-        int hd=state[0];//magically equivalent to 
-                        //int hd = (hd for which state[hd] = 0)
+        int hd=state[0];//cleverly equivalent to: 
+                        //  int hd = (hd for which state[hd] = 0)
 
         xm[hd]=hx[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*dt*hy[hd];
         ym[hd]=hy[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
@@ -181,8 +190,6 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
     {
         pos_temp=pos_a_end[hd]+dt*vs;
         move_end_detach(hd,pos_temp);
-
-
     }
 }
 
@@ -190,15 +197,19 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::step_twoheads()
 {
+    array<double, 2> vm, fm, offrate;
+    
     stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
     //fm = vec(Fm).(-vec(u)) 
-    fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[0],r_index[0])[0] +
-            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[0],r_index[0])[1]); 
-    vm[0]=velocity(vs,fm[0],fmax);
-    fm[1]=mk*(-(hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[1],r_index[1])[0] -
-            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[1],r_index[1])[1]);
+    fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[0],l_index[0])[0] +
+              (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[0],l_index[0])[1]); 
+    fm[1]=mk*(-(hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[1],l_index[1])[0] -
+            (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[1],l_index[1])[1]);
 
+    
+    vm[0]=velocity(vs,fm[0],fmax);
     vm[1]=velocity(vs,fm[1],fmax);
+    
     /*impose force-dependent bell's law on detachment rates*/
     offrate[0]=koff*exp(fabs(fm[0])/fmax);
     offrate[1]=koff*exp(fabs(fm[1])/fmax);
@@ -206,14 +217,13 @@ void motor<filament_ensemble_type>::step_twoheads()
     if (event(offrate[0],dt)==1) {
         this->detach_head(0);
         
-        pos_a_end[0]=0;
         pos_temp=pos_a_end[1]+dt*vs;
         move_end_detach(1,pos_temp);
     }
+
     else if (event(offrate[1],dt)==1) {
         this->detach_head(1);
 
-        pos_a_end[1]=0;
         pos_temp=pos_a_end[0]+dt*vs;
         move_end_detach(0,pos_temp);
     }
@@ -227,26 +237,26 @@ void motor<filament_ensemble_type>::step_twoheads()
     }
 }
 
-
+// Using the lever rule to propagate force as outlined in Nedelec F 2002
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::actin_update()
 {
     if (state[0]==1 && state[1]==1) {
-        stretch=dis_points(hx[0],hy[0],hx[1],hy[1])-mld;
-//        std::cout<<"DEBUG: actin_update: color = "<< color<< "\tstretch = "<<stretch<<"\n";
-        forcex[0]=-mk*(hx[0]-hx[1]+mld*cos(mphi));
-        forcex[1]=-forcex[0];
-        forcey[0]=-mk*(hy[0]-hy[1]+mld*sin(mphi));
-        forcey[1]=-forcey[0];
-        force_par[0]=forcex[0]*actin_network->get_direction(f_index[0],r_index[0])[0] + forcey[0]*actin_network->get_direction(f_index[0],r_index[0])[1];
-        force_perp[0]=-forcex[0]*actin_network->get_direction(f_index[0],r_index[0])[1] + forcey[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
-        force_par[1]=forcex[1]*actin_network->get_direction(f_index[1],r_index[1])[0] + forcey[1]*actin_network->get_direction(f_index[1],r_index[1])[1];
-        force_perp[1]=-forcex[1]*actin_network->get_direction(f_index[1],r_index[1])[1] + forcey[1]*actin_network->get_direction(f_index[1],r_index[1])[0];
 
-        torque[0]=cross(hx[0]-actin_network->get_xcm(f_index[0],r_index[0]),hy[0]-actin_network->get_ycm(f_index[0],r_index[0]),forcex[0],forcey[0]);
-        torque[1]=cross(hx[1]-actin_network->get_xcm(f_index[1],r_index[1]),hy[1]-actin_network->get_ycm(f_index[1],r_index[1]),forcex[1],forcey[1]);
-        actin_network->update_forces(f_index[0],r_index[0],force_par[0],force_perp[0],torque[0]);
-        actin_network->update_forces(f_index[1],r_index[1],force_par[1],force_perp[1],torque[1]);
+        array<double, 2> fx, fy, pos_ratio;
+        
+        fx[0]= -mk*(hx[0]-hx[1]+mld*cos(mphi));
+        fx[1]= -fx[0];
+        fy[0]= -mk*(hy[0]-hy[1]+mld*sin(mphi));
+        fy[1]= -fy[0];
+        pos_ratio[0] = pos_a_end[0]/actin_network->get_llength(f_index[0], l_index[0]);
+        pos_ratio[1] = pos_a_end[1]/actin_network->get_llength(f_index[1], l_index[1]);
+
+        actin_network->update_forces(f_index[0], l_index[0] + 1, fx[0] *    pos_ratio[0] ,  fy[0] *    pos_ratio[0]);
+        actin_network->update_forces(f_index[0], l_index[0]    , fx[0] * (1-pos_ratio[0]), fy[0] * (1-pos_ratio[0]));
+        actin_network->update_forces(f_index[1], l_index[1] + 1, fx[1] *    pos_ratio[1] , fy[1] *    pos_ratio[1]);
+        actin_network->update_forces(f_index[1], l_index[1]    , fx[1] * (1-pos_ratio[1]), fy[1] * (1-pos_ratio[1]));
+        
     }
     else
         return;
@@ -257,29 +267,28 @@ template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::update_shape()
 {
     if (state[0]==1 && state[1]==1) {
-        hx[0]=actin_network->get_end(f_index[0],r_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
-        hy[0]=actin_network->get_end(f_index[0],r_index[0])[1]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[1];
-        hx[1]=actin_network->get_end(f_index[1],r_index[1])[0]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[0];
-        hy[1]=actin_network->get_end(f_index[1],r_index[1])[1]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[1];
+        hx[0]=actin_network->get_end(f_index[0],l_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],l_index[0])[0];
+        hy[0]=actin_network->get_end(f_index[0],l_index[0])[1]-pos_a_end[0]*actin_network->get_direction(f_index[0],l_index[0])[1];
+        hx[1]=actin_network->get_end(f_index[1],l_index[1])[0]-pos_a_end[1]*actin_network->get_direction(f_index[1],l_index[1])[0];
+        hy[1]=actin_network->get_end(f_index[1],l_index[1])[1]-pos_a_end[1]*actin_network->get_direction(f_index[1],l_index[1])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==1 && state[1]==0)
     {
-        hx[0]=actin_network->get_end(f_index[0],r_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[0];
-        hy[0]=actin_network->get_end(f_index[0],r_index[0])[1]-pos_a_end[0]*actin_network->get_direction(f_index[0],r_index[0])[1];
+        hx[0]=actin_network->get_end(f_index[0],l_index[0])[0]-pos_a_end[0]*actin_network->get_direction(f_index[0],l_index[0])[0];
+        hy[0]=actin_network->get_end(f_index[0],l_index[0])[1]-pos_a_end[0]*actin_network->get_direction(f_index[0],l_index[0])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if(state[0]==0 && state[1]==1)
     {
-        hx[1]=actin_network->get_end(f_index[1],r_index[1])[0]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[0];
-        hy[1]=actin_network->get_end(f_index[1],r_index[1])[1]-pos_a_end[1]*actin_network->get_direction(f_index[1],r_index[1])[1];
+        hx[1]=actin_network->get_end(f_index[1],l_index[1])[0]-pos_a_end[1]*actin_network->get_direction(f_index[1],l_index[1])[0];
+        hy[1]=actin_network->get_end(f_index[1],l_index[1])[1]-pos_a_end[1]*actin_network->get_direction(f_index[1],l_index[1])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else
     {
         return;
     }
-
 
 }
 
@@ -288,7 +297,7 @@ void motor<filament_ensemble_type>::detach_head(int hd)
 {
     state[hd]=0;
     f_index[hd]=-1;
-    r_index[hd]=-1;
+    l_index[hd]=-1;
 
     pos_a_end[hd]=0;
     hx[hd]=hx[pr(hd)]-pow(-1,hd)*mld*cos(mphi);
@@ -299,43 +308,41 @@ void motor<filament_ensemble_type>::detach_head(int hd)
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 {
-    //cout<<"\nDEBUG:getting length of rod at ( "<<f_index[hd]<<" , "<<r_index[hd]<<" )";
-    double rod_length = actin_network->get_alength(f_index[hd],r_index[hd]);
-    if (pos >= rod_length) { 
+    double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
+    if (pos >= link_length) { // "passed" the link
         
-        if (r_index[hd] == 0){
+        if (l_index[hd] == 0){ // the barbed end of the filament
+            
             if (event(kend,dt)==1) {
  
                 this->detach_head(hd);
 
             }
             else {
-                hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
-                hy[hd]=actin_network->get_end(f_index[hd],r_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[1];
+
+                hx[hd]=actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
+                hy[hd]=actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
                 mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
+            
             }
         }
         else{ 
-            /*Move the motor to the next rod on the filament
+            /*Move the motor to the next link on the filament
              *At the projected new position along that filament
              */
             
-            double rod_angle = actin_network->get_angle(f_index[hd],r_index[hd]);
-
-            r_index[hd] = r_index[hd] - 1;
-            double new_rod_angle = actin_network->get_angle(f_index[hd],r_index[hd]);
-            
-            pos_a_end[hd] = (pos - rod_length)*cos(new_rod_angle - rod_angle);
-            hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
-            hy[hd]=actin_network->get_end(f_index[hd],r_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[1];
+            l_index[hd] = l_index[hd] - 1;
+            pos_a_end[hd] = pos - link_length;
+            hx[hd]=actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
+            hy[hd]=actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
             mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     
         }
     }
     else {
         pos_a_end[hd]=pos;
-        hx[hd]=actin_network->get_end(f_index[hd],r_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[0];
-        hy[hd]=actin_network->get_end(f_index[hd],r_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],r_index[hd])[1];
+        hx[hd]=actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
+        hy[hd]=actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     
@@ -343,13 +350,14 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 
 }
 
+//TODO: Implement periodic boundary conditions
 template <class filament_ensemble_type>
 inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
 {
     //Calculate the sheared simulation bounds (at this height)
     double xleft, xright;
-    xleft  = std::max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
-    xright = std::min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
+    xleft  = max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
+    xright = min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
     if (xleft < x1 && x1 < xright
             && xleft < x2 && x2 < xright
             && -fov[1]*0.5 < y1 && y1 < fov[1]*0.5 
@@ -390,8 +398,8 @@ array<int, 2> motor<filament_ensemble_type>::get_f_index(){
 }
 
 template <class filament_ensemble_type>
-array<int, 2> motor<filament_ensemble_type>::get_r_index(){
-    return r_index;
+array<int, 2> motor<filament_ensemble_type>::get_l_index(){
+    return l_index;
 }
 
 template <class filament_ensemble_type>
@@ -400,4 +408,3 @@ array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
 }
 
 template class motor<ATfilament_ensemble>;
-template class motor<DLfilament_ensemble>;

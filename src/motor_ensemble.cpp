@@ -149,14 +149,7 @@ template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::motor_write(ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
-        //double stretch=dis_points(n_motors[i]->get_hx()[0],n_motors[i]->get_hy()[0],n_motors[i]->get_hx()[1],n_motors[i]->get_hy()[1])-mld;
-        /*   if (stretch>3*0.25) {
-             continue;
-             }
-             else{
-             */   
         fout<<n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[0]<<"\t"<<n_motors[i]->get_hx()[1]-n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[1]-n_motors[i]->get_hy()[0]<<"\t"<<n_motors[i]->get_color()<<"\n";
-        //}
     } 
 }
 
@@ -180,5 +173,4 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
     gamma = g;
 }
 
-template class motor_ensemble<DLfilament_ensemble>;
 template class motor_ensemble<ATfilament_ensemble>;

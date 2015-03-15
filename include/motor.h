@@ -30,11 +30,11 @@ class motor
         motor(double mx, double my, double mang, double mlen, filament_ensemble_type* network, int state0, int state1, 
                 int findex0, int findex1, int rindex0, int rindex1, 
                 double fovx, double fovy, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
-                double rend, double actin_len, double vis, std::string col);
+                double rend, double actin_len, double vis, string col);
 
         ~motor();
 
-        std::string get_color();
+        string get_color();
 
         double tension();
 
@@ -52,7 +52,7 @@ class motor
         
         array<int,2> get_f_index();
         
-        array<int,2> get_r_index();
+        array<int,2> get_l_index();
         
         array<double,2> get_pos_a_end();
         
@@ -72,12 +72,13 @@ class motor
 
         double mphi,mld, mobility, onrate, stretch, vs, pos_temp, dm, fmax, mk, kon, koff, kend, dt, temperature;
         
-        array<double,2> hx, hy, xm, ym, fm, vm, offrate, forcex, forcey, torque, force_par, force_perp, pos_a_end, fov;
-        array<int,2> state, f_index, r_index;
+        array<double,2> hx, hy, xm, ym, pos_a_end, fov;
         
-        std::map<std::vector<int>, double> dist;
+        array<int,2> state, f_index, l_index;
         
-        std::string color;
+        map<vector<int>, double> dist;
+        
+        string color;
         
         filament_ensemble_type *actin_network;
         

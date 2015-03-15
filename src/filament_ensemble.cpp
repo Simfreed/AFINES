@@ -57,9 +57,12 @@ vector<filament_type *>* filament_ensemble<filament_type>::get_network()
     return &network;
 }
 
-//given motor quadrant, return the indices and the distances to all actin filaments in the neighboring quadrants 
+//given motor head position, return a map between  
+//  the INDICES (i.e., {i, j} where i is the filament index and j is the link index)
+//  and their corresponding DISTANCES to the link at that distance 
+//NOTE: currently only looks for Link's IN the motor head's quadrant (determined by floor[pos/(fov)*nq])
 template <class filament_type>
-map<vector<int>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
+map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
 {
     array<int, 2> motor_quad = {int(floor(x/fov[0]*nq[0])), int(floor(y/fov[1]*nq[1]))}
     array<int, 2> index;
@@ -76,9 +79,9 @@ map<vector<int>,double> filament_ensemble<filament_type>::get_dist(double x, dou
 }
 
 template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int rod, double xp, double yp)
+array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int link, double xp, double yp)
 {
-    return network[fil]->get_rod(rod)->get_intpoint(xp,yp);
+    return network[fil]->get_link(link)->get_intpoint(xp,yp);
 }
 
 template <class filament_type> 
@@ -100,7 +103,7 @@ double filament_ensemble<filament_type>::get_angle(int fil, int link)
 }
 
 template <class filament_type> 
-double filament_ensemble<filament_type>::get_alength(int fil, int link)
+double filament_ensemble<filament_type>::get_llength(int fil, int link)
 {
     return network[fil]->get_link(link)->get_length();
 }
@@ -211,9 +214,9 @@ void filament_ensemble<filament_type>::set_visc(double nu){
 }
 
 template <class filament_type> 
-void filament_ensemble<filament_type>::update_forces(int f_index, int r_index, double f1, double f2, double f3)
+void filament_ensemble<filament_type>::update_forces(int f_index, int a_index, double f1, double f2)
 {
-    network[f_index]->update_forces(r_index, f1,f2,f3);
+    network[f_index]->update_forces(a_index, f1,f2,f3);
 }
 
 template <class filament_type> 
@@ -231,7 +234,7 @@ void filament_ensemble<filament_type>::clear_broken(){
 ////////////////////////////////////////
 
 ATfilament_ensemble::ATfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp,
-        double len, double vis, int nrods, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+        double rad, double vis, int nrods, double link_len, vector<double *> pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
     view[0] = (fovx - 2*nrods*len)/fovx;
@@ -243,7 +246,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, double fovx, double fov
     nq[1]=ny;
     rho=density;
     visc=vis;
-    ld=len;//rng_n(len,1.0);
+    ld=rad;//rng_n(len,1.0);
     link_ld = link_len;
     npolymer=int(ceil(density*fov[0]*fov[1]) / nrods);
     dt = delta_t;
@@ -294,102 +297,16 @@ void ATfilament_ensemble::update_stretching(){
         if (newfilaments.size() > 0){ //fracture event occured
 
             cout<<"\n\tDEBUG: fracturing filament : "<<f;
-            //cout<<"\nDEBUG: this->get_xcm( "<<f<<" , 0 ) = "<<this->get_xcm(f,0); 
-            filament * broken = network[f];//store a pointer to the broken filament to delete it with
-            //network.erase(network.begin() + f);//remove that pointer from the vector of filaments
-            network[f] = newfilaments[0];//replace that pointer with one of the new filaments
-            //cout<<"\nDEBUG: this->get_xcm( "<<f<<" , 0 ) = "<<this->get_xcm(f,0); 
-            //network.push_back(newfilaments[0]);// add the new filaments
-            network.push_back(newfilaments[1]);//add the second filament to the top of the stack
+            filament * broken = network[f];     //store a pointer to the broken filament to delete it with
+            network[f] = newfilaments[0];       //replace that pointer with one of the new filaments
+            network.push_back(newfilaments[1]); //add the second filament to the top of the stack
             
-            broken_filaments.push_back(f);// record the index, for automatic motor detachment
-            delete broken;// delete the old filament
+            broken_filaments.push_back(f);      // record the index, for automatic motor detachment
+            delete broken;                      // delete the old filament
             
         }
 
     }
-}
-
-DLfilament_ensemble::DLfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp,
-        double len, double vis, int nrods, double link_len, vector<double *> pos_sets, double stretching, double bending, 
-        double frac_force, double bending_frac_force, string bc, double seed) {
-    
-    view[0] = (fovx - 2*nrods*len)/fovx;
-    view[1] = (fovy - 2*nrods*len)/fovy;
-
-    fov[0]=fovx;
-    fov[1]=fovy;
-    nq[0]=nx;
-    nq[1]=ny;
-    rho=density;
-    visc=vis;
-    ld=len;//rng_n(len,1.0);
-    link_ld = link_len;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nrods);
-    dt = delta_t;
-    temperature = temp;
-
-    if (seed == -1){
-        straight_filaments = true;
-    }else{
-        srand(seed);
-    }
-
-    int s = pos_sets.size();
-    
-    for (int i=0; i<npolymer; i++) {
-        if ( i < s ){
-            network.push_back(new DLfilament(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bending_frac_force, bc) );
-        }else{
-            network.push_back(new DLfilament(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), 
-                        rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi),
-                        nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bending_frac_force, bc) );
-        }
-    }
-}
-
-void DLfilament_ensemble::update_stretching(){
-
-    vector<DLfilament *> newfilaments;
-    for (unsigned int f = 0; f < network.size(); f++)
-    {
-        newfilaments = network[f]->update_stretching();
-        
-        if (newfilaments.size() > 0){ //fracture event occured
-            DLfilament * broken = network[f];
-            network.erase(network.begin() + f);
-            network.push_back(newfilaments[0]);
-            network.push_back(newfilaments[1]);
-            delete broken; 
-            break; //avoid infinite loops
-        }
-
-    }
-}
-
-void DLfilament_ensemble::update_bending(){
-
-    vector<DLfilament *> newfilaments;
-    for (unsigned int f = 0; f < network.size(); f++)
-    {
-        newfilaments = network[f]->update_bending();
-        
-        if (newfilaments.size() > 0){ //fracture event occured
-            network.erase(network.begin() + f);
-            network.push_back(newfilaments[0]);
-            network.push_back(newfilaments[1]);
-            break; //avoid infinite loops
-        }
-
-    }
-}
-
-void DLfilament_ensemble::set_bending_linear(){
-    for (unsigned int f = 0; f < network.size(); f++)
-        network[f]->set_bending_linear();
 }
 
 template class filament_ensemble<filament>;
-template class filament_ensemble<DLfilament>;

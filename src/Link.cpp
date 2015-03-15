@@ -101,6 +101,10 @@ double Link::get_angle(){
     return phi;
 }
 
+double Link::get_length(){
+    return dis_points(hx[0], hy[0], hx[1], hy[1]);
+}
+
 std::string Link::write(){
     return std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
         + std::to_string(hy[1]-hy[0]) + "\n";
@@ -234,3 +238,7 @@ vector<array<int, 2> > Link::get_quadrants()
     return quad;
 }
 
+array<double, 2> Link::get_direction()
+{
+    return {cos(phi), sin(phi)};
+}

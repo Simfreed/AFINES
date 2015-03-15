@@ -322,10 +322,10 @@ vector<filament *> filament::fracture(int node){
     vector<actin *> upper_half = this->get_actins(node, actins.size());
 
     newfilaments.push_back(
-            new filament(lower_half, links[0]->get_length(), links[0]->get_kl(), links[0]->get_kb(), 
+            new filament(lower_half, links[0]->get_length(), links[0]->get_kl(), kb, 
                 dt, temperature, fracture_force, gamma, BC));
     newfilaments.push_back(
-            new filament(upper_half, links[0]->get_length(), links[0]->get_kl(), links[0]->get_kb(), 
+            new filament(upper_half, links[0]->get_length(), links[0]->get_kl(), kb, 
                 dt, temperature, fracture_force, gamma, BC));
 
     int s = actinvec.size();

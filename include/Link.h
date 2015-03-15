@@ -72,6 +72,8 @@ class Link
         vector<array<int,2> > get_quadrants();
        
         void quad_update();
+        
+        array<double, 2> get_direction();
 
     protected:
 

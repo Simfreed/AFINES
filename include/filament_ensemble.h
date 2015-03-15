@@ -52,13 +52,13 @@ class filament_ensemble
         
         double get_int_direction(int fil, int link, double xp, double yp);
 
-        double get_xcm(int fil, int rod);
+        double get_xcm(int fil, int link);
         
-        double get_ycm(int fil, int rod);
+        double get_ycm(int fil, int link);
 
         double get_angle(int fil, int link);
 
-        double get_alength(int fil, int link);
+        double get_llength(int fil, int link);
         
         void update(double t);
 
