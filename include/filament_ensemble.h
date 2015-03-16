@@ -38,7 +38,7 @@ class filament_ensemble
 
         vector<filament_type *> * get_network();
 
-        map<vector<int>, double> get_dist(double x, double y);
+        map<array<int,2>, double> get_dist(double x, double y);
 
         array<double,2> get_direction(int fil, int link);
 
@@ -111,8 +111,8 @@ class ATfilament_ensemble:
 
     public:
         
-        ATfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp, 
-                double len, double vis, int nrod,
+        ATfilament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
+                double len, double vis, int nactin,
                 double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
         

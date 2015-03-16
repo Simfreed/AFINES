@@ -27,9 +27,9 @@ class motor
 {
     public:
 
-        motor(double mx, double my, double mang, double mlen, filament_ensemble_type* network, int state0, int state1, 
-                int findex0, int findex1, int rindex0, int rindex1, 
-                double fovx, double fovy, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
+        motor(array<double, 3> pos, double mlen, filament_ensemble_type* network, 
+                array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
+                array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
                 double rend, double actin_len, double vis, string col);
 
         ~motor();

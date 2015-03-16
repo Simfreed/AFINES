@@ -14,58 +14,54 @@
 
 //motor class
 template <class filament_ensemble_type>
-motor<filament_ensemble_type>::motor(double mx, double my, double mang, double mlen, filament_ensemble_type * network, int state0, int state1, 
-        int findex0, int findex1, int lindex0, int lindex1, double fovx, double fovy, double delta_t, double temp,
+motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filament_ensemble_type * network, 
+        array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> mylindex,
+        array<double, 2> myfov, double delta_t, double temp,
         double v0, double stiffness, double ron, double roff, double
         rend, double actin_len, double vis, string col) {
-    vs=v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
-    dm=0.25;//actin_len/10; //max binding distance
-    mk=stiffness;//rng(10,100); 
-    fmax=mk*dm*2;//rng(1,20);
-    mld=mlen;
-    kon=ron;
-    koff=roff;
-    kend=rend;
-    mphi=mang;
-    dt = delta_t;
-    temperature = temp;
     
-    hx[0]=mx-0.5*mld*cos(mphi);
-    hy[0]=my-0.5*mld*sin(mphi);
+    vs          = v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
+    dm          = 0.25;//actin_len/10; //max binding distance
+    mk          = stiffness;//rng(10,100); 
+    fmax        = mk*dm*2;//rng(1,20);
+    mld         = mlen;
+    kon         = ron;
+    koff        = roff;
+    kend        = rend;
+    mphi        = pos[2];
+    dt          = delta_t;
+    temperature = temp;
+    state       = mystate;
+    f_index     = myfindex; //filament index for each head
+    l_index     = mylindex; //link index for each head
+    fov         = myfov;
+    color       = col; 
+    
+    actin_network = network;
+    
+    hx[0]=pos[0]-0.5*mld*cos(mphi);
+    hy[0]=pos[1]-0.5*mld*sin(mphi);
     hx[1]=hx[0]+mld*cos(mphi);
     hy[1]=hy[0]+mld*sin(mphi);
     
     mobility=log(10)/(4*pi*vis*mld);
     
-    state[0]=state0;
-    state[1]=state1;
-    
-    f_index[0]=findex0;// actin filament index for head in state[0]
-    f_index[1]=findex1;// actin filament index for head in state[1]
-    l_index[0]=lindex0;// link index for head in state[0]
-    l_index[1]=lindex1;// link index for head in state[1]
-    
-    actin_network=network;
     
     // pos_a_end = distance from pointy end -- by default 0
     //      i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
-    pos_a_end[0]=0; 
-    pos_a_end[1]=0;
+    pos_a_end = {0, 0};
 
-    if (state0){
+    if (state[0]){
         pos_a_end[0] = dis_points(hx[0],hy[0],
                 actin_network->get_end(f_index[0], l_index[0])[0],
                 actin_network->get_end(f_index[0], l_index[0])[1]);
     }
-    if (state1){
+    if (state[1]){
         pos_a_end[1] = dis_points(hx[1],hy[1],
                 actin_network->get_end(f_index[1], l_index[1])[0],
                 actin_network->get_end(f_index[1], l_index[1])[1]);
     }
     
-    fov[0]=fovx;
-    fov[1]=fovy;
-    color = col; 
 
 }
 
@@ -111,9 +107,10 @@ void motor<filament_ensemble_type>::attach(int hd)
 {
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
     double onrate;
+    array<double, 2> intpoint;
 
     if(!dist.empty()){
-        for (map<vector<int>,double>::iterator it=dist.begin(); it!=dist.end(); ++it)
+        for (map<array<int, 2>, double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
             if (it->second <= dm && f_index[pr(hd)]!=(it->first).at(0) && l_index[pr(hd)] != (it->first).at(1)) {
                 
@@ -127,7 +124,7 @@ void motor<filament_ensemble_type>::attach(int hd)
                     l_index[hd] = (it->first).at(1);
 
                     //update head position
-                    array<double, 2> intpoint = actin_network->get_intpoints(f_index[hd], l_index[hd], hx[hd],hy[hd]);
+                    intpoint = actin_network->get_intpoints(f_index[hd], l_index[hd], hx[hd],hy[hd]);
                     hx[hd] = intpoint[0];
                     hy[hd] = intpoint[1];
 

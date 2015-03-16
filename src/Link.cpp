@@ -13,20 +13,18 @@
 
 Link::Link(){ }
 
-Link::Link(double len, double stretching_stiffness,
-        filament* f, int aindex0, int aindex1)
+Link::Link(double len, double stretching_stiffness, filament* f, 
+        array<int, 2> myaindex, array<double, 2> myfov, array<int, 2> mynq)
 {
-    kl              =   stretching_stiffness;
-    l0              =   len;
-    aindex[0]       =   aindex0;
-    aindex[1]       =   aindex1;
-    fil             =   f;
+    kl      = stretching_stiffness;
+    l0      = len;
+    fil     = f;
+    aindex  = myaindex;
+    fov     = myfov;
+    nq      = mynq;
 
-    // initialize the coordinates of the heads:
-    hx[0] = 0;
-    hx[1] = 0;
-    hy[0] = 0;
-    hy[1] = 0;
+    hx = {0,0};
+    hy = {0,0};
 
     this->step();
 }
@@ -50,10 +48,10 @@ void Link::set_aindex1(int i){
 // stepping kinetics
 void Link::step()
 {
-    hx[0] = fil->get_ball(aindex[0])->get_xcm();
-    hx[1] = fil->get_ball(aindex[1])->get_xcm();
-    hy[0] = fil->get_ball(aindex[0])->get_ycm();
-    hy[1] = fil->get_ball(aindex[1])->get_ycm();
+    hx[0] = fil->get_actin(aindex[0])->get_xcm();
+    hx[1] = fil->get_actin(aindex[1])->get_xcm();
+    hy[0] = fil->get_actin(aindex[0])->get_ycm();
+    hy[1] = fil->get_actin(aindex[1])->get_ycm();
 
     xcm = (hx[0]+hx[1])/2.0;
     ycm = (hy[0]+hy[1])/2.0;
@@ -169,8 +167,8 @@ void Link::quad_update(){
         yupper = int(ceil( hy[0]/fov[1]*nq[1]));
     };
     
-    for(xcoord = xlower; xcoord < xupper; xcoord++)
-        for(ycoord = ylower; ycoord < yupper; ycoord++)
+    for(int xcoord = xlower; xcoord < xupper; xcoord++)
+        for(int ycoord = ylower; ycoord < yupper; ycoord++)
             quad.push_back({xcoord, ycoord});
         
 }

@@ -145,15 +145,16 @@ int main(int argc, char* argv[]){
         store(parse_config_file(ifs, config_file_options), vm);
         notify(vm);
     }
-    double xgrid, ygrid; 
+    
+    int xgrid, ygrid; 
     // DERIVED QUANTITIES :
     if(a_motor_density == 0 && p_motor_density==0){
         xgrid = 0;
         ygrid = 0;
     }
     else{
-        xgrid  = 2*xrange;
-        ygrid  = 2*yrange;
+        xgrid  = (int) 2*xrange;
+        ygrid  = (int) 2*yrange;
     }
 
     if (polymer_bending_modulus < 0){ //This is a flag for using the temperature for the bending modulus
@@ -175,7 +176,7 @@ int main(int argc, char* argv[]){
     srand(seed);
             
     
-    afile  = dir + "/txt_stack/rods.txt";
+    afile  = dir + "/txt_stack/actins.txt";
     lfile  = dir + "/txt_stack/links.txt";
     amfile = dir + "/txt_stack/amotors.txt";
     pmfile = dir + "/txt_stack/pmotors.txt";
@@ -188,18 +189,18 @@ int main(int argc, char* argv[]){
     // Create Network Objects
     cout<<"\nCreating actin network..";
 	
-    ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, xrange, yrange, xgrid, ygrid, dt, 
+    ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
                                         fracture_force, bnd_cnd, seed); 
 
     cout<<"\nAdding active motors...";
-    motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, xrange, yrange, dt, temperature, 
+    motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                                              a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, xrange, yrange, dt, temperature, 
+    motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
@@ -215,7 +216,7 @@ int main(int argc, char* argv[]){
     }
 
     file_a << time_str;
-    net->write_rods(file_a);
+    net->write_actins(file_a);
     file_l << time_str;
     net->write_links(file_l);
     file_am << time_str;
@@ -254,7 +255,7 @@ int main(int argc, char* argv[]){
 	        
             time_str = "t = "+to_string(t)+"\n";
             file_a << time_str;
-            net->write_rods(file_a);
+            net->write_actins(file_a);
             file_l << time_str;
             net->write_links(file_l);
             file_am << time_str;

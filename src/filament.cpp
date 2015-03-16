@@ -25,16 +25,13 @@ filament::filament(){
 
 }
 
-filament::filament(double startx, double starty, double startphi, int nactin, double fovx, double fovy, int nqx, int nqy, 
-        double visc, double deltat, double temp, bool isStraight,
-        double ballRadius, double linkLength, double stretching_stiffness, double bending_stiffness,
-        double frac_force, string bdcnd)
+filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
+        double deltat, double temp, bool isStraight, double actinRadius, double linkLength, double stretching_stiffness,
+        double bending_stiffness, double frac_force, string bdcnd)
 {
- 
-    fov[0] = fovx;
-    fov[1] = fovy;
-    nq[0] = nqx;
-    nq[1] = nqy;
+    
+    fov = myfov;
+    nq = mynq;
     dt = deltat;
     temperature = temp;
     gamma = 0;
@@ -42,11 +39,10 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
     BC = bdcnd;
     kb = bending_stiffness;
 
+    double xcm, ycm, phi, variance;
     //the start of the polymer: 
-    actins.push_back(new actin( startx, starty, ballRadius, fov[0], fov[1], nq[0], nq[1], viscosity));
-    
-    double  xcm, ycm, phi, variance;
-    phi = startphi;
+    actins.push_back(new actin( startpos[0], startpos[1], actinRadius, visc));
+    phi = startpos[2];
     
     if (temp != 0) variance = temp/(bending_stiffness * linkLength * linkLength);
     else variance = 1;
@@ -57,15 +53,15 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
         ycm = actins.back()->get_ycm() + linkLength*sin(phi);
 
         // Check that this monomer is in the field of view; if not stop building the polymer
-        if (       xcm > (0.5*(fov[0] - ballRadius)) || xcm < (-0.5*(fov[0] - ballRadius)) 
-                || ycm > (0.5*(fov[1] - ballRadius)) || ycm < (-0.5*(fov[1] - ballRadius))      )
+        if (       xcm > (0.5*(fov[0] - actinRadius)) || xcm < (-0.5*(fov[0] - actinRadius)) 
+                || ycm > (0.5*(fov[1] - actinRadius)) || ycm < (-0.5*(fov[1] - actinRadius))      )
         {
             cout<<"DEBUG:"<<j+1<<"th segment of filament outside field of view; stopped building filament\n";
             break;
         }else{
             // Add the segment
-            actins.push_back( new actin(xcm, ycm, phi, ballRadius, fov[0], fov[1], nq[0], nq[1], viscosity) );
-            links.push_back( new Link(linkLength, stretching_stiffness, this, j-1, j) );  
+            actins.push_back( new actin(xcm, ycm, actinRadius, visc) );
+            links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1, j}, fov, nq) );  
             
         } 
         
@@ -80,7 +76,8 @@ filament::filament(double startx, double starty, double startphi, int nactin, do
    
 }
 
-filament::filament(vector<actin *> actinvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, 
+        double stretching_stiffness, double bending_stiffness, 
         double deltat, double temp, double frac_force, double g, string bdcnd)
 {
     
@@ -90,27 +87,18 @@ filament::filament(vector<actin *> actinvec, double linkLength, double stretchin
     gamma = g; 
     BC = bdcnd;
     kb = bending_stiffness;
+    fov = myfov;
+    nq = mynq;
 
     if (actinvec.size() > 0)
     {
-        fov[0] = actinvec[0]->get_fov()[0];
-        fov[1] = actinvec[0]->get_fov()[1];
-        nq[0] = actinvec[0]->get_nq()[0];
-        nq[1] = actinvec[0]->get_nq()[1];
-
         actins.push_back(new actin(*(actinvec[0])));
     }
-    else{
-        fov[0] = 0;
-        fov[1] = 0;
-        nq[0] = 0;
-        nq[1] = 0;
-    }
-
+    
     //Link em up
     for (unsigned int j = 1; j < actinvec.size(); j++) {
         
-        links.push_back( new Link(linkLength, stretching_stiffness, bending_stiffness, this, j-1, j) );  
+        links.push_back( new Link(linkLength, stretching_stiffness, this, {(int)j-1, (int)j}, fov, nq) );  
         actins.push_back(new actin(*(actinvec[j])));
     
     }
@@ -136,12 +124,13 @@ void filament::add_actin(actin * a, double linkLength, double stretching_stiffne
     
     actins.push_back(new actin(*a));
     
-    if (actins.size() > 1)
-        links.push_back( new Link(linkLength, stretching_stiffness, this, actins.size()-1,  actins.size() ) );  
-    
+    if (actins.size() > 1){
+        int j = (int) actins.size();
+        links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1,  j}, fov, nq ) );  
+    }
 }
 
-vector<vector<array<int,2> > > > filament::get_quadrants()
+vector<vector<array<int,2> > > filament::get_quadrants()
 {
     //should return a map between actin and x, y coords of quadrant
     vector<vector<array<int,2> > > quads;
@@ -154,8 +143,7 @@ vector<vector<array<int,2> > > > filament::get_quadrants()
 
 void filament::update(double t)
 {
-    double vpar, vperp, vx, vy, omega, alength, xnew, ynew, phinew, a_ends[4]; 
-    double xleft = -fov[0]*0.5, xright=fov[0]*0.5;
+    double vx, vy, xnew, ynew;
     bool recenter_filament = false;
     double xleft  = -fov[0] * 0.5;
     double xright =  fov[0] * 0.5;
@@ -173,8 +161,8 @@ void filament::update(double t)
 
         //Calculate the sheared simulation bounds (at this height)
         if (gamma != 0){
-            xleft  = -fov[0] * 0.5 + gamma * ynew[1] * t;
-            xright =  fov[0] * 0.5 + gamma * ynew[1] * t;
+            xleft  = -fov[0] * 0.5 + gamma * ynew * t;
+            xright =  fov[0] * 0.5 + gamma * ynew * t;
         }
 
         if(this->get_BC() == "REFLECTIVE")
@@ -204,7 +192,6 @@ void filament::update(double t)
         
         actins[i]->set_xcm(xnew);
         actins[i]->set_ycm(ynew);
-        actins[i]->update(); //updates all derived quantities (e.g., endpoints, forces = 0, etc.)
     }
     
     if (recenter_filament && actins.size() > 0){
@@ -217,7 +204,6 @@ void filament::update(double t)
             
             actins[i]->set_xcm(xnew);
             actins[i]->set_ycm(ynew);
-            actins[i]->update();
        
         }
     }
@@ -238,7 +224,7 @@ vector<filament *> filament::update_stretching()
             break;
         }
         else 
-            links[i]->filament_update;
+            links[i]->filament_update();
     }
     
     return newfilaments;
@@ -322,15 +308,14 @@ vector<filament *> filament::fracture(int node){
     vector<actin *> upper_half = this->get_actins(node, actins.size());
 
     newfilaments.push_back(
-            new filament(lower_half, links[0]->get_length(), links[0]->get_kl(), kb, 
+            new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
                 dt, temperature, fracture_force, gamma, BC));
     newfilaments.push_back(
-            new filament(upper_half, links[0]->get_length(), links[0]->get_kl(), kb, 
+            new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
                 dt, temperature, fracture_force, gamma, BC));
 
-    int s = actinvec.size();
     for (int i = 0; i < node; i++) delete lower_half[i];
-    for (int i = node; i < actins.size(); i++) delete upper_half[i];
+    for (unsigned int i = node; i < actins.size(); i++) delete upper_half[i];
     
     lower_half.clear();
     upper_half.clear();
@@ -483,7 +468,7 @@ void filament::fwd_bending_update()
                 if (fabs(forcey) < eps)
                     forcey = 0;
                 
-                actins[i]->update_force(forcex, forcey);
+                actins[j]->update_force(forcex, forcey);
 
                 //increment all variables for next iteration:
                 xam1 = xa;

@@ -29,7 +29,7 @@ class Link
     public:
         Link();
         
-        Link(double len, double stiffness, double bending_stiffness, filament* f, int aindex0, int aindex1);
+        Link(double len, double stiffness, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
         
         virtual ~Link();
 
@@ -40,6 +40,10 @@ class Link
         double get_kl();
         
         double get_length();
+       
+        double get_angle();
+
+        double get_l0();
         
         double get_xcm();
         
@@ -79,9 +83,9 @@ class Link
 
         double xcm, ycm, phi, l0, kl;
        
-        array<double,2> hx, hy;
+        array<double,2> fov, hx, hy;
         
-        array<int, 2> aindex;
+        array<int, 2> nq, aindex;
         
         filament *fil;
         

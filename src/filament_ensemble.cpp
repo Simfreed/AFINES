@@ -43,7 +43,7 @@ void filament_ensemble<filament_type>::quad_update()
             
             for (unsigned int k = 0; k  < filament_quads[j].size(); k++){ //Loop over quadrants of a Link   
                 
-                quad_fils[ filament_quads[j][k] ] = {i, j};
+                quad_fils[ filament_quads[j][k] ].push_back({(int)i, (int)j});
         
             }
         }   
@@ -64,16 +64,14 @@ vector<filament_type *>* filament_ensemble<filament_type>::get_network()
 template <class filament_type>
 map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
 {
-    array<int, 2> motor_quad = {int(floor(x/fov[0]*nq[0])), int(floor(y/fov[1]*nq[1]))}
+    array<int, 2> motor_quad = {int(floor(x/fov[0]*nq[0])), int(floor(y/fov[1]*nq[1]))};
     array<int, 2> index;
     map<array<int, 2>, double> t_map;
     if(!quad_fils[motor_quad].empty())
     {
-        for(vector<array<int,2> >::iterator it=quad_fils[motor_quad].begin(); it<quad_fils[motor_quad].end(); it++)
-        {   
-            index = *it;
-            t_map[*it] = network[ index[0] ]->get_link( index[1] )->get_distance(x,y);
-        }
+        for (unsigned int j = 0; j < quad_fils[motor_quad].size(); j++)
+            t_map[quad_fils[motor_quad][j]] = network[quad_fils[motor_quad][j][0]]->get_link(quad_fils[motor_quad][j][1])->get_distance(x,y);
+    
     }
     return t_map;
 }
@@ -121,9 +119,9 @@ array<double,2> filament_ensemble<filament_type>::get_end(int fil, int link)
 }
 
 template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_forces(int fil, int rod)
+array<double,2> filament_ensemble<filament_type>::get_forces(int fil, int actin)
 {
-    return network[fil]->get_link(link)->get_forces();
+    return network[fil]->get_actin(actin)->get_forces();
 }
 
 template <class filament_type>
@@ -149,10 +147,10 @@ void filament_ensemble<filament_type>::update(double t)
 }
 
 template <class filament_type> 
-void filament_ensemble<filament_type>::write_rods(ofstream& fout)
+void filament_ensemble<filament_type>::write_actins(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network[i]->write_rods();
+        fout<<network[i]->write_actins();
     } 
 }
 
@@ -185,9 +183,9 @@ void filament_ensemble<filament_type>::update_shear(){
 }
 
 template <class filament_type> 
-bool filament_ensemble<filament_type>::is_polymer_start(int fil, int rod){
+bool filament_ensemble<filament_type>::is_polymer_start(int fil, int actin){
 
-    return !(rod);
+    return !(actin);
 
 }
 
@@ -216,7 +214,7 @@ void filament_ensemble<filament_type>::set_visc(double nu){
 template <class filament_type> 
 void filament_ensemble<filament_type>::update_forces(int f_index, int a_index, double f1, double f2)
 {
-    network[f_index]->update_forces(a_index, f1,f2,f3);
+    network[f_index]->update_forces(a_index, f1,f2);
 }
 
 template <class filament_type> 
@@ -233,22 +231,21 @@ void filament_ensemble<filament_type>::clear_broken(){
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
 
-ATfilament_ensemble::ATfilament_ensemble(double density, double fovx, double fovy, int nx, int ny, double delta_t, double temp,
-        double rad, double vis, int nrods, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+        double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
-    view[0] = (fovx - 2*nrods*len)/fovx;
-    view[1] = (fovy - 2*nrods*len)/fovy;
+    fov = myfov;
+    nq = mynq;
 
-    fov[0]=fovx;
-    fov[1]=fovy;
-    nq[0]=nx;
-    nq[1]=ny;
+    view[0] = (fov[0] - 2*nactins*link_len)/fov[0];
+    view[1] = (fov[1] - 2*nactins*link_len)/fov[1];
+
     rho=density;
     visc=vis;
     ld=rad;//rng_n(len,1.0);
     link_ld = link_len;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nrods);
+    npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
 
@@ -259,20 +256,21 @@ ATfilament_ensemble::ATfilament_ensemble(double density, double fovx, double fov
     }
 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
-    cout<<"DEBUG: Number of monomers per filament:"<<nrods<<"\n"; 
+    cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
     cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
     
     int s = pos_sets.size();
     
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new filament(pos_sets[i][0], pos_sets[i][1], pos_sets[i][2], nrods, fov[0], fov[1], nq[0], nq[1],
+            network.push_back(new filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }else{
-            network.push_back(new filament(rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), 
-                        rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), rng(0, 2*pi),
-                        nrods, fov[0], fov[1], nq[0], nq[1],
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+            network.push_back(new filament(
+                        {rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), 
+                         rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), 
+                         rng(0, 2*pi)},
+                        nactins, fov, nq, visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }
     }
 }

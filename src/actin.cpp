@@ -14,7 +14,7 @@
 //actin filament class
 actin::actin(){}
 
-actin::actin(double xcm, double ycm, double len, double fovx, double fovy, int nx, int ny, double vis)
+actin::actin(double xcm, double ycm, double len, double vis)
 {
     //now i will make these spherical
     x=xcm;
@@ -22,16 +22,8 @@ actin::actin(double xcm, double ycm, double len, double fovx, double fovy, int n
     ld=len; //radius
     a_vis=vis;
     friction = 4*pi*a_vis*ld;
-    
-    //fov = new array<double, 2>();
-    //nq = new array<int, 2>();
-    fov[0] = fovx;
-    fov[1] = fovy;
-    nq[0]  = nx;
-    nq[1]  = ny;
-    
-    forces[0] = 0;
-    forces[1] = 0;
+   
+    forces = {0,0};
 }
 
 actin::actin(const actin& other){
@@ -42,15 +34,8 @@ actin::actin(const actin& other){
     ld = other.ld;
     a_vis = other.a_vis;
     friction = other.friction;
+    forces = other.forces;
 
-    fov[0] = other.fov[0];
-    fov[1] = other.fov[1];
-    nq[0] = other.nq[0];
-    nq[1] = other.nq[1];
-
-    forces[0] = other.forces[0];
-    forces[1] = other.forces[1];
-    
 }
 
 actin::~actin(){ 
@@ -62,15 +47,6 @@ array<double,2> actin::get_forces()
 {
     return forces;
 }
-
-array<double,2> actin::get_fov(){
-    return fov;
-}
-
-array<int, 2> actin::get_nq(){
-    return nq;
-}
-
 
 double actin::get_length()
 {

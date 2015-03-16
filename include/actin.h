@@ -29,7 +29,7 @@ class actin
 
         actin();
         
-        actin(double xcm, double ycm, double len, double fovx, double fovy, int nx, int ny, double vis); 
+        actin(double xcm, double ycm, double len, double vis); 
         
         actin(const actin& other);
         
@@ -45,10 +45,6 @@ class actin
         
         void update_force(double f1, double f2);
 
-        array<double,2> get_fov();
-
-        array<int,2> get_nq();
-        
         array<double,2> get_forces();
 
         double get_friction();
@@ -70,10 +66,6 @@ class actin
         
         double x, y, ld, a_vis, friction;
 
-        array<double,2> fov; 
-        
-        array<int,2> nq;
-        
         array<double, 2> forces;
         
 };

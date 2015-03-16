@@ -27,8 +27,8 @@ class motor_ensemble
 {
     public:
 
-        motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, double mlen, filament_ensemble_type* network, double v0,
-                double stiffness, double ron, double roff, double rend, double actin_len, double vis, std::vector<double *> positions);
+        motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, double mlen, filament_ensemble_type* network, double v0,
+                double stiffness, double ron, double roff, double rend, double actin_len, double vis, vector<double *> positions);
 
         ~motor_ensemble();
 
@@ -38,9 +38,9 @@ class motor_ensemble
 
         void reshape();
 
-        void motor_write(std::ofstream& fout);
+        void motor_write(ofstream& fout);
 
-        void motor_tension(std::ofstream& fout);
+        void motor_tension(ofstream& fout);
 
         void add_motor(motor<filament_ensemble_type> * m);
 
@@ -54,8 +54,8 @@ class motor_ensemble
         array<double, 2> fov;
         array<int, 2> s;
         filament_ensemble_type *f_network;
-        std::vector<motor<filament_ensemble_type> *> n_motors;  
-        std::string color;
+        vector<motor<filament_ensemble_type> *> n_motors;  
+        string color;
 };
 
 #endif

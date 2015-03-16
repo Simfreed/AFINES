@@ -29,11 +29,11 @@ class filament
 {
     public:
 
-        filament(double x0, double y0, double phi0, int nactin, double fovx, double fovy, int nx, int ny, 
+        filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
                 double vis, double deltat, double temp, bool isStraight,
                 double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
 
-        filament(vector<actin *> actinvec, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double bending_stiffness, 
                 double deltat, double temp, double fracture, double gamma, string bc);
        
         filament();
@@ -97,7 +97,7 @@ class filament
         array<double,2> fov;
         array<int,2> nq;
         vector<actin *> actins;
-        vector<Link *> lks;
+        vector<Link *> links;
         string BC;
 };
 

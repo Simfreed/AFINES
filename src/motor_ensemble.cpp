@@ -14,18 +14,16 @@
 
 //motor_ensemble class
 template <class filament_ensemble_type>
-motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, double fovx, double fovy, double delta_t, double temp, 
+motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
         double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
         double actin_len, double vis, vector<double *> positions) {
     
-    fov[0]=fovx;
-    fov[1]=fovy;
+    fov = myfov;
     mrho=mdensity;
-    mld=mlen;
+    mld =mlen;
     nm=int(ceil(mrho*fov[0]*fov[1]));
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
     f_network=network;
-    //cout<<"\nDEBUG: pointer to network = "<<f_network;
     alpha=0.8;
     gamma = 0;
 
@@ -42,13 +40,13 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, double f
             motory = positions[i][1];
             mang   = positions[i][2];
         }else{
-            motorx = rng(-0.5*(fovx*alpha-mld),0.5*(fovx*alpha-mld));
-            motory = rng(-0.5*(fovy*alpha-mld),0.5*(fovy*alpha-mld));
+            motorx = rng(-0.5*(fov[0]*alpha-mld),0.5*(fov[0]*alpha-mld));
+            motory = rng(-0.5*(fov[1]*alpha-mld),0.5*(fov[1]*alpha-mld));
             mang   = rng(0,2*pi);
         }
 
-        n_motors.push_back(new motor<filament_ensemble_type>(motorx,motory,mang,mld,f_network,0,0,-1,-1,-1,-1,fov[0],fov[1],delta_t, temp, 
-                    v0,stiffness,ron,roff,rend,actin_len,vis,color));
+        n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+                    v0, stiffness, ron, roff, rend, actin_len, vis, color));
     }
 }
 
