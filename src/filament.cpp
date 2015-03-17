@@ -96,13 +96,14 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     }
     
     //Link em up
-    for (unsigned int j = 1; j < actinvec.size(); j++) {
-        
-        links.push_back( new Link(linkLength, stretching_stiffness, this, {(int)j-1, (int)j}, fov, nq) );  
-        actins.push_back(new actin(*(actinvec[j])));
-    
-    }
+    if (actinvec.size() > 1){
+        for (unsigned int j = 1; j < actinvec.size(); j++) {
 
+            actins.push_back(new actin(*(actinvec[j])));
+            links.push_back( new Link(linkLength, stretching_stiffness, this, {(int)j-1, (int)j}, fov, nq) );  
+
+        }
+    }
 }
 
 filament::~filament(){
@@ -304,18 +305,23 @@ vector<filament *> filament::fracture(int node){
     vector<filament *> newfilaments;
     cout<<"\n\tDEBUG: fracturing at node "<<node;
     
-    vector<actin *> lower_half = this->get_actins(0, node);
-    vector<actin *> upper_half = this->get_actins(node, actins.size());
+    if(links.size() == 0)
+        return newfilaments;
 
-    newfilaments.push_back(
-            new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
-                dt, temperature, fracture_force, gamma, BC));
-    newfilaments.push_back(
-            new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
-                dt, temperature, fracture_force, gamma, BC));
+    vector<actin *> lower_half = this->get_actins(0, node+1);
+    vector<actin *> upper_half = this->get_actins(node+1, actins.size());
 
-    for (int i = 0; i < node; i++) delete lower_half[i];
-    for (unsigned int i = node; i < actins.size(); i++) delete upper_half[i];
+    if (lower_half.size() > 0)
+        newfilaments.push_back(
+                new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
+                    dt, temperature, fracture_force, gamma, BC));
+    if (upper_half.size() > 0)
+        newfilaments.push_back(
+                new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
+                    dt, temperature, fracture_force, gamma, BC));
+
+    for (int i = 0; i < (int)(lower_half.size()); i++) delete lower_half[i];
+    for (int i = 0; i < (int)(upper_half.size()); i++) delete upper_half[i];
     
     lower_half.clear();
     upper_half.clear();

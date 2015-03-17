@@ -16,7 +16,7 @@
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
         double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
-        double actin_len, double vis, vector<double *> positions) {
+        double actin_len, double vis, vector<double *> positions, string BC) {
     
     fov = myfov;
     mrho=mdensity;
@@ -27,12 +27,6 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
     alpha=0.8;
     gamma = 0;
 
-    if (v0 == 0){
-        color = "0.1"; //purple
-    }
-    else
-        color = "0.5";//"green"; 
-    
     for (int i=0; i< nm; i++) {
         
         if ((unsigned int)i < positions.size()){
@@ -46,7 +40,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
         }
 
         n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
-                    v0, stiffness, ron, roff, rend, actin_len, vis, color));
+                    v0, stiffness, ron, roff, rend, actin_len, vis, BC));
     }
 }
 
@@ -147,7 +141,7 @@ template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::motor_write(ofstream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
-        fout<<n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[0]<<"\t"<<n_motors[i]->get_hx()[1]-n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[1]-n_motors[i]->get_hy()[0]<<"\t"<<n_motors[i]->get_color()<<"\n";
+        fout<<n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[0]<<"\t"<<n_motors[i]->get_hx()[1]-n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[1]-n_motors[i]->get_hy()[0]<<"\n";
     } 
 }
 

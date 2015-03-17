@@ -71,8 +71,8 @@ void Link::filament_update()
     double force_stretch = this->get_stretch_force();
     double fx0, fy0, fx1, fy1;
     
-    fx0 =  -force_stretch * cos(phi); 
-    fy0 =  -force_stretch * sin(phi); 
+    fx0 =  force_stretch * cos(phi); 
+    fy0 =  force_stretch * sin(phi); 
     fx1 =  -fx0;
     fy1 =  -fy0;
     fil->update_forces(aindex[0], fx0, fy0);

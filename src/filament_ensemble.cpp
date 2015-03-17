@@ -65,7 +65,6 @@ template <class filament_type>
 map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
 {
     array<int, 2> motor_quad = {int(floor(x/fov[0]*nq[0])), int(floor(y/fov[1]*nq[1]))};
-    array<int, 2> index;
     map<array<int, 2>, double> t_map;
     if(!quad_fils[motor_quad].empty())
     {
@@ -297,8 +296,9 @@ void ATfilament_ensemble::update_stretching(){
             cout<<"\n\tDEBUG: fracturing filament : "<<f;
             filament * broken = network[f];     //store a pointer to the broken filament to delete it with
             network[f] = newfilaments[0];       //replace that pointer with one of the new filaments
-            network.push_back(newfilaments[1]); //add the second filament to the top of the stack
             
+            if (newfilaments.size() == 2) network.push_back(newfilaments[1]); //add the second filament to the top of the stack
+        
             broken_filaments.push_back(f);      // record the index, for automatic motor detachment
             delete broken;                      // delete the old filament
             

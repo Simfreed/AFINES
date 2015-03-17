@@ -79,11 +79,11 @@ int main(int argc, char* argv[]){
        
         ("viscosity", po::value<double>(&viscosity)->default_value(0.5), "Implicity viscosity to determine friction [um^2 / s]")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
-        ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("NONE"), "boundary conditions")
+        ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("REFLECTIVE"), "boundary conditions")
         
         ("nmonomer", po::value<double>(&nmonomer)->default_value(1), "number of monomers per filament")
         ("npolymer", po::value<double>(&npolymer)->default_value(3), "number of polymers in the network")
-        ("actin_length", po::value<double>(&actin_length)->default_value(10), "Length of a single actin monomer")
+        ("actin_length", po::value<double>(&actin_length)->default_value(0.5), "Length of a single actin monomer")
         ("actin_pos_str", po::value<string> (&actin_pos_str)->default_value(""), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
         
         ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / area")
@@ -100,11 +100,11 @@ int main(int argc, char* argv[]){
         ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0),"passive motor off rate at filament end")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(50),"passive motor spring stiffness (pN/um)")
         
-        ("link_length", po::value<double>(&link_length)->default_value(0.01), "Length of links connecting monomers")
+        ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
-        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
         
@@ -198,11 +198,11 @@ int main(int argc, char* argv[]){
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
-                                             a_m_kend, actin_length, viscosity, a_motor_position_ptrs);
+                                             a_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
     cout<<"Adding passive motors (crosslinkers) ...\n";
     motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
-                                             p_m_kend, actin_length, viscosity, a_motor_position_ptrs);
+                                             p_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     //cout<<"\nDEBUG: pointer to network = "<<net;
 

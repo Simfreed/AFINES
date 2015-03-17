@@ -18,7 +18,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
         array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> mylindex,
         array<double, 2> myfov, double delta_t, double temp,
         double v0, double stiffness, double ron, double roff, double
-        rend, double actin_len, double vis, string col) {
+        rend, double actin_len, double vis, string bc) {
     
     vs          = v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
     dm          = 0.25;//actin_len/10; //max binding distance
@@ -35,7 +35,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //link index for each head
     fov         = myfov;
-    color       = col; 
+    BC          = bc; 
     
     actin_network = network;
     
@@ -89,9 +89,9 @@ array<double, 2> motor<filament_ensemble_type>::get_hy()
 }
 
 template <class filament_ensemble_type>
-string motor<filament_ensemble_type>::get_color()
+string motor<filament_ensemble_type>::get_BC()
 {
-    return color;
+    return BC;
 }
 
 template <class filament_ensemble_type>
@@ -156,7 +156,8 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
         xm[1]=hx[1]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[1];
         ym[0]=hy[0]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
         ym[1]=hy[1]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
-        reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
+        if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
+        if (BC == "PERIODIC")  periodic(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else if (state[0]==0 || state[1]==0) {
@@ -167,7 +168,8 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
         ym[hd]=hy[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
         xm[pr(hd)]=hx[pr(hd)];
         ym[pr(hd)]=hy[pr(hd)];
-        reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
+        if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
+        if (BC == "PERIODIC")  periodic(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
     }
     else {
@@ -338,18 +340,18 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 
 }
 
-//TODO: Implement periodic boundary conditions
 template <class filament_ensemble_type>
 inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
 {
     //Calculate the sheared simulation bounds (at this height)
-    double xleft, xright;
-    xleft  = max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
-    xright = min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
-    if (xleft < x1 && x1 < xright
-            && xleft < x2 && x2 < xright
-            && -fov[1]*0.5 < y1 && y1 < fov[1]*0.5 
-            && -fov[1]*0.5 < y2 && y2 < fov[1]*0.5) {
+    double xleft, xright, yleft, yright;
+    xleft  =  max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
+    xright =  min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
+    yleft  = -fov[1]*0.5;
+    yright =  fov[1]*0.5;
+    
+    if (    xleft < x1 && x1 < xright &&  xleft < x2 && x2 < xright
+        &&  yleft < y1 && y1 < yright &&  yleft < y2 && y2 < yright) {
         hx[0]=x1;
         hx[1]=x2;
         hy[0]=y1;
@@ -358,7 +360,7 @@ inline void motor<filament_ensemble_type>::reflect(double t, double gamma, doubl
     else if (x1>=xright || x1<=xleft)
     {
         hx[1]=x2;
-        hy[0]=y1;
+        hy[0]=y1; 
         hy[1]=y2;   
     }
     else if (x2>=xright || x2<=xleft)
@@ -377,6 +379,57 @@ inline void motor<filament_ensemble_type>::reflect(double t, double gamma, doubl
         hx[0]=x1;
         hx[1]=x2;
         hy[0]=y1;
+    }
+}
+
+//TODO: Implement harmonic boundary conditions
+template <class filament_ensemble_type>
+inline void motor<filament_ensemble_type>::periodic(double t, double gamma, double x1, double x2, double y1, double y2)
+{
+    //Calculate the sheared simulation bounds (at this height)
+    double xleft, xright, yleft, yright;
+    xleft  =  max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
+    xright =  min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
+    yleft  = -fov[1]*0.5;
+    yright =  fov[1]*0.5;
+    
+    if (    xleft < x1 && x1 < xright &&  xleft < x2 && x2 < xright
+        &&  yleft < y1 && y1 < yright &&  yleft < y2 && y2 < yright) {
+        hx[0]=x1;
+        hx[1]=x2;
+        hy[0]=y1;
+        hy[1]=y2;
+    }
+    else if (x1>=xright || x1<=xleft)
+    {
+        if( x1 >= xright) hx[0]=x1 - fov[0];
+        if( x1 <= xleft ) hx[0]=x1 + fov[0];
+        hx[1]=x2;
+        hy[0]=y1; 
+        hy[1]=y2;   
+    }
+    else if (x2>=xright || x2<=xleft)
+    {
+        hx[0]=x1;
+        if( x2 >= xright) hx[1]=x2 - fov[0];
+        if( x2 <= xleft ) hx[1]=x2 + fov[0];
+        hy[0]=y1;
+        hy[1]=y2;
+    }
+    else if(y1>=yright || y1<=yleft)
+    {
+        hx[0]=x1;
+        hx[1]=x2;
+        if( y1 >= yright) hy[0]=y1 - fov[1];
+        if( y1 <= yleft ) hy[0]=y1 + fov[1];
+        hy[1]=y2;
+    }
+    else{
+        hx[0]=x1;
+        hx[1]=x2;
+        hy[0]=y1;
+        if( y2 >= yright) hy[1]=y2 - fov[1];
+        if( y2 <= yleft ) hy[1]=y2 + fov[1];
     }
 }
 
