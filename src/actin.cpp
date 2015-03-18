@@ -91,7 +91,7 @@ bool actin::operator==(const actin& that)
 
 string actin::write()
 {
-    return std::to_string(x) + "\t" + std::to_string(y);
+    return std::to_string(x) + "\t" + std::to_string(y) + "\n";
 }
 
 string actin::to_string()
