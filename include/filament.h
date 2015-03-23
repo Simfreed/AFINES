@@ -29,6 +29,9 @@ class filament
 {
     public:
 
+        filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
+                double frac, double bending_stiffness, string bndcnd);
+        
         filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
                 double vis, double deltat, double temp, bool isStraight,
                 double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 

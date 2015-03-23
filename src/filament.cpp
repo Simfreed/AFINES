@@ -25,6 +25,19 @@ filament::filament(){
 
 }
 
+filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
+        double frac, double bending_stiffness, string bndcnd)
+{
+    fov             = myfov;
+    nq              = mynq;
+    dt              = deltat;
+    temperature     = temp;
+    gamma           = shear;
+    fracture_force  = frac;
+    kb              = bending_stiffness;
+    BC              = bndcnd;
+}
+
 filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
         double deltat, double temp, bool isStraight, double actinRadius, double linkLength, double stretching_stiffness,
         double bending_stiffness, double frac_force, string bdcnd)
@@ -126,7 +139,7 @@ void filament::add_actin(actin * a, double linkLength, double stretching_stiffne
     actins.push_back(new actin(*a));
     
     if (actins.size() > 1){
-        int j = (int) actins.size();
+        int j = (int) actins.size() - 1;
         links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1,  j}, fov, nq ) );  
     }
 }
@@ -193,6 +206,7 @@ void filament::update(double t)
         
         actins[i]->set_xcm(xnew);
         actins[i]->set_ycm(ynew);
+        actins[i]->reset_force(); 
     }
     
     if (recenter_filament && actins.size() > 0){
@@ -205,7 +219,7 @@ void filament::update(double t)
             
             actins[i]->set_xcm(xnew);
             actins[i]->set_ycm(ynew);
-       
+            actins[i]->reset_force(); 
         }
     }
 
@@ -332,6 +346,9 @@ vector<filament *> filament::fracture(int node){
 
 bool filament::operator==(const filament& that){
     
+    if (actins.size() != that.actins.size() || links.size() != that.links.size())
+        return false;
+
     for (unsigned int i = 0; i < actins.size(); i++)
         if (!(*(actins[i]) == *(that.actins[i])))
             return false;
@@ -411,7 +428,7 @@ void filament::fwd_bending_update()
             coef1 = -kb*theta_a   / sin(theta_a)   * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
 
         //2 actins --> bending force on last link; only has one term
-        if (actins.size() == 2)
+        if (actins.size() == 3)
         {
 
             fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
@@ -544,7 +561,7 @@ void filament::fwd_bending_update()
 //wrapper, for fwd_bending_update (and bwd bending update if I ever make it)
 void filament::update_bending()
 {
-    if(links.size() > 2)
+    if(links.size() > 1)
         this->fwd_bending_update();
 
 }

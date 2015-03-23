@@ -59,6 +59,12 @@ void actin::update_force(double f1, double f2)
     forces[1]+=f2;
 }
 
+void actin::reset_force()
+{
+    forces[0] = 0;
+    forces[1] = 0;
+}
+
 double actin::get_xcm()
 {
     return x;
@@ -82,10 +88,10 @@ void actin::set_ycm(double ycm)
 bool actin::operator==(const actin& that) 
 {
     double err = eps; 
-    return (close(x , that.x , err) && close(y , that.y , err) &&
-            close(ld , that.ld , err) &&
-            close(a_vis , that.a_vis , err) && close(forces[0] , that.forces[0] , err) &&
-            close(forces[1] , that.forces[1] , err)
+    return (close( this->x , that.x , err) && close( this->y , that.y , err) &&
+            close( this->ld , that.ld , err) &&
+            close( this->a_vis , that.a_vis , err) && close( this->forces[0] , that.forces[0] , err) &&
+            close( this->forces[1] , that.forces[1] , err)
            );
 }
 
