@@ -44,6 +44,8 @@ class actin
         double get_ycm();
         
         void update_force(double f1, double f2);
+        
+        void reset_force();
 
         array<double,2> get_forces();
 

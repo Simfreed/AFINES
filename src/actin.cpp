@@ -55,8 +55,13 @@ double actin::get_length()
 
 void actin::update_force(double f1, double f2)
 {
-    forces[0]+=f1;
-    forces[1]+=f2;
+    if(f1 == f1 && f2 == f2 && std::isfinite(f1) && std::isfinite(f2)){
+        forces[0]+=f1;
+        forces[1]+=f2;
+    }else{
+        cout<<"\nENCOUNTERED INFINITE FORCE; PROGRAM ABORTING\n";
+        abort();
+    }
 }
 
 void actin::reset_force()
@@ -97,7 +102,7 @@ bool actin::operator==(const actin& that)
 
 string actin::write()
 {
-    return std::to_string(x) + "\t" + std::to_string(y) + "\n";
+    return std::to_string(x) + "\t" + std::to_string(y) + "\t" + std::to_string(ld)+ + "\n";
 }
 
 string actin::to_string()

@@ -344,7 +344,7 @@ template <class filament_ensemble_type>
 inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
 {
     //Calculate the sheared simulation bounds (at this height)
-    double xleft, xright, yleft, yright;
+    double xleft = 0, xright = 0, yleft, yright;
     xleft  =  max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
     xright =  min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
     yleft  = -fov[1]*0.5;

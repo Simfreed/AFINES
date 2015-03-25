@@ -88,6 +88,10 @@ class filament_ensemble
 
         void clear_broken();
         
+        void print_filament_thermo();
+
+        void print_network_thermo();
+
     protected:
 
         double dt, temperature, rho, ld, link_ld, visc, gamma;

@@ -229,7 +229,9 @@ int main(int argc, char* argv[]){
         //print time count
 		if (count%n_bw_stdout==0) {
 			cout<<"\nTime counts: "<<count;
-		}
+		    net->print_filament_thermo();
+            net->print_network_thermo();
+        }
 
         //update network
         if (shear_rate != 0)

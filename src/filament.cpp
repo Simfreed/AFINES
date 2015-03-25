@@ -22,7 +22,7 @@ filament::filament(){
     gamma = 0;
     fracture_force = 1000000;
     BC = "REFLECTIVE";
-
+    kinetic_energy = 0;
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -36,6 +36,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     fracture_force  = frac;
     kb              = bending_stiffness;
     BC              = bndcnd;
+    kinetic_energy  = 0;
 }
 
 filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
@@ -51,6 +52,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     fracture_force = frac_force;
     BC = bdcnd;
     kb = bending_stiffness;
+    kinetic_energy  = 0;
 
     double xcm, ycm, phi, variance;
     //the start of the polymer: 
@@ -157,21 +159,26 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 
 void filament::update(double t)
 {
-    double vx, vy, xnew, ynew;
+    double vx, vy, xnew, ynew, fric;
     bool recenter_filament = false;
     double xleft  = -fov[0] * 0.5;
     double xright =  fov[0] * 0.5;
     double yleft  = -fov[1] * 0.5;
     double yright =  fov[1] * 0.5;
-
+    kinetic_energy = 0;    
     for (unsigned int i = 0; i < actins.size(); i++){
         
-        double fric = actins[i]->get_friction();
+        fric = actins[i]->get_friction();
+        
         vx  = (actins[i]->get_forces()[0])/fric  + sqrt(2*temperature/(dt*fric))*rng_n(0,1);
         vy  = (actins[i]->get_forces()[1])/fric  + sqrt(2*temperature/(dt*fric))*rng_n(0,1);
-
+        
+        kinetic_energy += sqrt(vx*vx + vy*vy);
+        
         xnew = actins[i]->get_xcm()+dt*vx;
         ynew = actins[i]->get_ycm()+dt*vy;
+        
+        //if (ynew!=ynew) cout<<"\nDEBUG: WARNING, YNEW IS INF";
 
         //Calculate the sheared simulation bounds (at this height)
         if (gamma != 0){
@@ -575,6 +582,8 @@ double filament::get_bending_energy(){
     
     double sum = 0, theta;
 
+    if (links.size() < 2) return 0;
+
     for (unsigned int i = 0; i < links.size() - 1; i++)
     {
         theta = links[i+1]->get_angle() - links[i]->get_angle();
@@ -587,7 +596,7 @@ double filament::get_bending_energy(){
 
 double filament::get_stretching_energy(){
     
-    if(actins.size() == 0){
+    if(links.size() == 0){
         return 0;
     }
     
@@ -603,7 +612,23 @@ double filament::get_stretching_energy(){
 
 }
 
-double filament::get_total_energy()
+double filament::get_kinetic_energy()
+{
+    return kinetic_energy;
+}
+
+double filament::get_potential_energy()
 {
     return this->get_stretching_energy() + this->get_bending_energy();
+}
+
+double filament::get_total_energy()
+{
+    return this->get_potential_energy() + this->get_kinetic_energy();
+}
+
+void filament::print_thermo()
+{
+    cout<<"\tKE = "<<this->get_kinetic_energy()<<"\tPE = "<<this->get_potential_energy()<<\
+        "\tTE = "<<this->get_total_energy();
 }

@@ -182,6 +182,29 @@ void filament_ensemble<filament_type>::update_shear(){
 }
 
 template <class filament_type> 
+void filament_ensemble<filament_type>::print_filament_thermo(){
+    
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        cout<<"\nF"<<f<<"\t:";
+        network[f]->print_thermo();
+    }
+
+}
+
+template <class filament_type> 
+void filament_ensemble<filament_type>::print_network_thermo(){
+    double KE, PE, TE;
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        KE += network[f]->get_kinetic_energy();
+        PE += network[f]->get_potential_energy();
+        TE += network[f]->get_total_energy();
+    }
+    cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPE = "<<PE<<"\tTE = "<<TE;
+}
+
+template <class filament_type> 
 bool filament_ensemble<filament_type>::is_polymer_start(int fil, int actin){
 
     return !(actin);
@@ -237,8 +260,8 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     fov = myfov;
     nq = mynq;
 
-    view[0] = (fov[0] - 2*nactins*link_len)/fov[0];
-    view[1] = (fov[1] - 2*nactins*link_len)/fov[1];
+    view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
 
     rho=density;
     visc=vis;
@@ -259,17 +282,16 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
     
     int s = pos_sets.size();
-    
+    double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }else{
-            network.push_back(new filament(
-                        {rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])), 
-                         rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1])), 
-                         rng(0, 2*pi)},
-                        nactins, fov, nq, visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+            x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
+            y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
+            phi0 =  rng(0, 2*pi);
+            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }
     }
 }

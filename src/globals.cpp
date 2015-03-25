@@ -38,12 +38,12 @@ double rng_exp(double mean)
 
 double rng_n(double mean, double var)
 {
-    double U, V, Z;
+    double U = 0, V, Z;
     
-    U = rng(0,1);//(rand() + 1.) / (RAND_MAX + 2.);
-    V = rng(0,1);//rand() / (RAND_MAX + 1.);
+    while(U==0) U = rng(0,1);
+    V = rng(0,1);
     Z = sqrt(-2 * log(U)) * sin(2 * pi * V);
-//    cout<<"\nDEBUG: (U, V, Z) = ( "<<U<<" , "<<V<<" , "<<Z<<" )";
+    
     return mean+var*Z;
 }
 

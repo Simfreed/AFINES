@@ -91,11 +91,17 @@ class filament
 
         double get_stretching_energy();
 
+        double get_kinetic_energy();
+        
+        double get_potential_energy();
+        
         double get_total_energy();
     
+        void print_thermo();
+
     protected:
         
-        double kb, gamma, temperature, dt, fracture_force;
+        double kb, gamma, temperature, dt, fracture_force, kinetic_energy;
         
         array<double,2> fov;
         array<int,2> nq;

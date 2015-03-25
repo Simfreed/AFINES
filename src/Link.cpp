@@ -61,13 +61,11 @@ void Link::step()
 
 double Link::get_stretch_force(){
     //cout<<"\nDEBUG:Stretch force = "<<kl*(dis_points(hx[0],hy[0],hx[1],hy[1])-l0);
-    if (kl!=kl) cout<<"\nDEBUG: kl is inf";
     return kl * (dis_points(hx[0],hy[0],hx[1],hy[1])-l0);
 }
 
 void Link::filament_update()
 {
-
     double force_stretch = this->get_stretch_force();
     double fx0, fy0, fx1, fy1;
     
