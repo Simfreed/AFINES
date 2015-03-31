@@ -131,9 +131,10 @@ class ATfilament_ensemble:
 };
 
 class baoab_filament_ensemble:
-    public filament_ensemble<filament>
+    public filament_ensemble<baoab_filament>
 {
-    public
+    public:
+
         baoab_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
                 double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
@@ -143,4 +144,16 @@ class baoab_filament_ensemble:
 
 }
 
+class lammps_filament_ensemble:
+    public filament_ensemble<lammps_filament>
+{
+    public:
+
+        lammps_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
+                double len, double vis, int nactin,
+                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                string bc, double seed);
+
+        void set_mass(double m);
+}
 #endif

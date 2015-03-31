@@ -125,12 +125,31 @@ class baoab_filament : public filament
                 double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
 
        ~baoab_filament();
-    
+        
+       void update_velocities_B(double t);
+
+       void update_velocities_O();
+
     protected:
         
         vector<double> vx, vy;
 
 }
+
+class lammps_filament : public filament
+{
+
+    lammps_filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
+            double vis, double deltat, double temp, bool isStraight,
+            double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
+
+    ~lammps_filament();
+
+    void set_mass(double m);
+
+    protected:
+        double mass;
+}       
 
 // Filament class that is closer to the Nedelec and Foethke model than the above one
 

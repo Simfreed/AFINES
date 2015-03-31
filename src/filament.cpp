@@ -633,89 +633,90 @@ void filament::print_thermo()
         "\tTE = "<<this->get_total_energy();
 }
 
+/* BAOAB
+ * vx = vx + Fx * dt /2
+ * vy = vy + Fy * dt /2
+ *
+ * x = x + vx * dt /2
+ * y = y + vy * dt /2
+ *
+ * vx = sqrt( temperature ) * rng_n(0,1)
+ * vy = sqrt( temperature ) * rng_n(0,1)
+ *
+ * x = x + vx * dt /2
+ * y = y + vy * dt /2
+ *
+ * vx = vx + Fx * dt /2
+ * vy = vy + Fy * dt /2
+ */
 
-void baoab_filament::update_positions(double t)
+void baoab_filament::update_velocities_B(double t)
 {
-    double xnew, ynew, fric, T;
-    bool recenter_filament = false;
-    double xleft  = -fov[0] * 0.5;
-    double xright =  fov[0] * 0.5;
-    double yleft  = -fov[1] * 0.5;
-    double yright =  fov[1] * 0.5;
     kinetic_energy = 0;  
 
-    if (t < dt*100000) T = 0;
+    if (t < dt*1000000) T = 0;
     else T = temperature;
     
     for (unsigned int i = 0; i < actins.size(); i++){
         
         fric = actins[i]->get_friction();
         
-        vx[i] += (actins[i]->get_forces()[0])*dt/2; // /fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
-        vy[i] += (actins[i]->get_forces()[1])*dt/2; // /fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
+        vx[i]  += (actins[i]->get_forces()[0])*dt/2;
+        vy[i]  += (actins[i]->get_forces()[1])*dt/2;
+        kinetic_energy += vx*vx + vy*vy;
+    
+    }
+}
+
+void baoab_filament::update_positions(double t)
+{
+    array<double, 2> newpos;
+    dt = dt/2;
+    
+    for (unsigned int i = 0; i < actins.size(); i++){
+        newpos = boundary_check(i, t, vx[i], vy[i]); 
+        actins[i]->set_xcm(newpos[0]);
+        actins[i]->set_ycm(newpos[1]);
+        actins[i]->reset_force(); 
+    }
+    dt = 2*dt;
+    
+}
+
+void baoab_filament::update_velocities_O()
+{
+    for (unsigned int i = 0; i < actins.size(); i++){
+        vx[i] = sqrt(temperature) * rng_n(0, 1);
+        vy[i] = sqrt(temperature) * rng_n(0, 1);
+    }
+}
+
+void lammps_filament::set_mass(double m)
+{
+    mass = m;
+}
+
+void lammps_filament::update_positions(double t)
+{
+    double damp;
+    array<double, 2> newpos;
+    
+    for (unsigned int i = 0; i < actins.size(); i++){
+
+        damp = 1/actins[i]->get_friction(); // ??????? //
+        
+        vx  = (actins[i]->get_forces()[0])*damp/mass  + sqrt(2 * T * mass/(dt*damp))*rng_n(0,1);
+        vy  = (actins[i]->get_forces()[1])*damp/mass  + sqrt(2 * T * mass/(dt*damp))*rng_n(0,1);
         
         kinetic_energy += vx*vx + vy*vy;
         
-        xnew = actins[i]->get_xcm() + vx[i] * dt/2;
-        ynew = actins[i]->get_ycm() + vy[i] * dt/2;
-
-     
-        coords_new = boundary_check({xnew, ynew}, dt);
-    }
-        xnew = actins[i]->get_xcm()+dt*vx;
-        ynew = actins[i]->get_ycm()+dt*vy;
+        newpos = boundary_check(i, t, vx, vy); 
         
-        //if (ynew!=ynew) cout<<"\nDEBUG: WARNING, YNEW IS INF";
-
-        //Calculate the sheared simulation bounds (at this height)
-        if (gamma != 0){
-            xleft  = -fov[0] * 0.5 + gamma * ynew * t;
-            xright =  fov[0] * 0.5 + gamma * ynew * t;
-        }
-
-        if(this->get_BC() == "REFLECTIVE")
-        {
-            if (xnew <= xleft || xnew >= xright) vx=-vx;
-            if (ynew <= yleft || ynew >= yright) vy=-vy;
-            
-            xnew=actins[i]->get_xcm()+dt*vx;
-            ynew=actins[i]->get_ycm()+dt*vy;
-        
-        }
-        else if(this->get_BC() == "PERIODIC")
-        {
-            if (xnew < xleft) xnew += fov[0];
-            else if (xnew > xright) xnew -= fov[0];
-         
-            
-            if (ynew < yleft) ynew += fov[1];
-            else if(ynew > yright) ynew -= fov[1];
-
-        }
-        
-        else if(this->get_BC() == "NONE")
-        {
-            recenter_filament = true;
-        }
-        
-        actins[i]->set_xcm(xnew);
-        actins[i]->set_ycm(ynew);
+        actins[i]->set_xcm(newpos[0]);
+        actins[i]->set_ycm(newpos[1]);
         actins[i]->reset_force(); 
     }
     
-    if (recenter_filament && actins.size() > 0){
-        double midx = actins[floor(actins.size()/2)]->get_xcm();
-        double midy = actins[floor(actins.size()/2)]->get_ycm();
-        for (unsigned int i = 0; i < actins.size(); i++){
-            
-            xnew = actins[i]->get_xcm()-midx;
-            
-            ynew = actins[i]->get_ycm()-midy;
-
-            actins[i]->set_xcm(xnew);
-            actins[i]->set_ycm(ynew);
-            actins[i]->reset_force(); 
-        }
-    }
-
 }
+
+
