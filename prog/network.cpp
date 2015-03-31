@@ -52,8 +52,8 @@ int main(int argc, char* argv[]){
     
     string config_file;                                                // Input configuration
     
-    string   dir,    afile,  amfile,  pmfile,  lfile;                  // Output
-    ofstream o_file, file_a, file_am, file_pm, file_l;
+    string   dir,    afile,  amfile,  pmfile,  lfile, thfile;                  // Output
+    ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
 
     double shear_rate;                                                      //External Force
 
@@ -180,11 +180,13 @@ int main(int argc, char* argv[]){
     lfile  = dir + "/txt_stack/links.txt";
     amfile = dir + "/txt_stack/amotors.txt";
     pmfile = dir + "/txt_stack/pmotors.txt";
+    thfile = dir + "/data/thermo.txt";
+
     file_a.open(afile.c_str());
     file_l.open(lfile.c_str());
     file_am.open(amfile.c_str());
     file_pm.open(pmfile.c_str());
-		    
+	file_th.open(thfile.c_str());
 
     // Create Network Objects
     cout<<"\nCreating actin network..";
@@ -223,7 +225,9 @@ int main(int argc, char* argv[]){
     myosins->motor_write(file_am);
     file_pm << time_str;
     crosslks->motor_write(file_pm);
-   
+    file_th << time_str;
+    net->write_thermo(file_th);
+
     //Run the simulation
     while (t<=tfinal) {
         //print time count
@@ -239,7 +243,7 @@ int main(int argc, char* argv[]){
         
         net->update_stretching();
         net->update_bending();
-        net->update(t);
+        net->update_positions(t);
         net->quad_update();
         
         //update motors and cross linkers
@@ -264,6 +268,8 @@ int main(int argc, char* argv[]){
             myosins->motor_write(file_am);
             file_pm << time_str;
             crosslks->motor_write(file_pm);
+            file_th << time_str;
+            net->write_thermo(file_th);
             
 		}
         
@@ -273,7 +279,7 @@ int main(int argc, char* argv[]){
     file_l.close();
     file_am.close();
     file_pm.close();
-    
+    file_th.close(); 
     //Delete all objects created
     cout<<"\nHere's where I think I delete things\n";
     

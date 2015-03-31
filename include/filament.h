@@ -45,13 +45,17 @@ class filament
     
         void set_shear(double g);
 
-        void update(double t);
+        void update_shear(); 
+        
+        vector<filament *> update_stretching();
         
         void update_bending();
         
-        vector<filament *> update_stretching();
-
-        void update_shear(); 
+        void update_positions(double t);
+        
+        array<double, 2> boundary_check(int i, double t, double vx, double vy);
+        
+        void update(double t);
         
         actin * get_actin(int i);
         
@@ -66,6 +70,8 @@ class filament
         string write_links();
         
         string to_string();
+        
+        string write_thermo();
         
         vector<actin *> get_actins(unsigned int first, unsigned int last);
         
@@ -109,6 +115,22 @@ class filament
         vector<Link *> links;
         string BC;
 };
+
+class baoab_filament : public filament
+{
+
+        
+        baoab_filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
+                double vis, double deltat, double temp, bool isStraight,
+                double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
+
+       ~baoab_filament();
+    
+    protected:
+        
+        vector<double> vx, vy;
+
+}
 
 // Filament class that is closer to the Nedelec and Foethke model than the above one
 

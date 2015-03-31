@@ -12,7 +12,7 @@
     
         void set_shear(double g);
 
-        void update(double t);
+        void update_positions(double t);
         
         
         vector<filament *> update_stretching();
@@ -301,9 +301,9 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     BOOST_CHECK_MESSAGE(*(newfils2[1]) == *f2b, "\n" + newfils2[1]->to_string() + "\ndoes not equal\n" + f2b->to_string());
  
     // Try updating all new filaments
-    f->update(1);
-    newfils[0]->update(1);
-    newfils[1]->update(1);
+    f->update_positions(1);
+    newfils[0]->update_positions(1);
+    newfils[1]->update_positions(1);
 
     delete f;
     delete f1;
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
         if (newfils.size()>0)
             break;
         //f->update_bending();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_stretching_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nbeads not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
         if (newfils.size()>0)
             break;
         //f->update_bending();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_stretching_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nbeads not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE( stretching_test_three_beads )
         //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_stretching_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nEnergy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -501,7 +501,7 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads )
         if (newfils.size()>0)
             break;
         f->update_bending();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_bending_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nBending energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
         if (newfils.size()>0)
             break;
         f->update_bending();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -610,7 +610,7 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
         //cout<<"\nTotal energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nTotal Energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -652,7 +652,7 @@ BOOST_AUTO_TEST_CASE( bending_test_two_rods_known_negative_angle )
         if (newfils.size()>0)
             break;
         f->update_bending();
-        f->update(t);
+        f->update_positions(t);
         a1 = f->get_actin(1)->get_angle() - f->get_actin(0)->get_angle();
         BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "\nAngles not getting smaller at time " + to_string(t));
         a0 = a1;
@@ -705,7 +705,7 @@ BOOST_AUTO_TEST_CASE( bending_test_two_rods_random_angle )
             //cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         a1 = f->get_actin(1)->get_angle() - f->get_actin(0)->get_angle();
         BOOST_CHECK_MESSAGE(fabs(a1) <= fabs(a0), "\nAngles not getting smaller at time " + to_string(t));
         a0 = a1;
@@ -744,7 +744,7 @@ BOOST_AUTO_TEST_CASE( bending_test_three_rods_known_angle )
             //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_bending_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nEnergy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -792,7 +792,7 @@ BOOST_AUTO_TEST_CASE(bending_test_12_rods)
         //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_bending_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nEnergy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -837,7 +837,7 @@ BOOST_AUTO_TEST_CASE(bending_test_12_rods_nonzero_temp)
         //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_bending_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nEnergy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -882,7 +882,7 @@ BOOST_AUTO_TEST_CASE(energy_test_2_rods)
         //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nTotal Energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -927,7 +927,7 @@ BOOST_AUTO_TEST_CASE(energy_test_3_rods)
         //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending();
         newfils = f->update_stretching();
-        f->update(t);
+        f->update_positions(t);
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nTotal Energy not getting smaller at time " + to_string(t));
         e0 = e1;

@@ -157,78 +157,71 @@ vector<vector<array<int,2> > > filament::get_quadrants()
     return quads;
 }
 
-void filament::update(double t)
+void filament::update_positions(double t)
 {
-    double vx, vy, xnew, ynew, fric;
-    bool recenter_filament = false;
-    double xleft  = -fov[0] * 0.5;
-    double xright =  fov[0] * 0.5;
-    double yleft  = -fov[1] * 0.5;
-    double yright =  fov[1] * 0.5;
-    kinetic_energy = 0;    
+    double vx, vy, fric, T;
+    array<double, 2> newpos;
+    kinetic_energy = 0;  
+
+    if (t < dt*1000000) T = 0;
+    else T = temperature;
+    
     for (unsigned int i = 0; i < actins.size(); i++){
         
         fric = actins[i]->get_friction();
         
-        vx  = (actins[i]->get_forces()[0])/fric  + sqrt(2*temperature/(dt*fric))*rng_n(0,1);
-        vy  = (actins[i]->get_forces()[1])/fric  + sqrt(2*temperature/(dt*fric))*rng_n(0,1);
+        vx  = (actins[i]->get_forces()[0])/fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
+        vy  = (actins[i]->get_forces()[1])/fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
         
-        kinetic_energy += sqrt(vx*vx + vy*vy);
+        kinetic_energy += vx*vx + vy*vy;
         
-        xnew = actins[i]->get_xcm()+dt*vx;
-        ynew = actins[i]->get_ycm()+dt*vy;
+        newpos = boundary_check(i, t, vx, vy); 
         
-        //if (ynew!=ynew) cout<<"\nDEBUG: WARNING, YNEW IS INF";
-
-        //Calculate the sheared simulation bounds (at this height)
-        if (gamma != 0){
-            xleft  = -fov[0] * 0.5 + gamma * ynew * t;
-            xright =  fov[0] * 0.5 + gamma * ynew * t;
-        }
-
-        if(this->get_BC() == "REFLECTIVE")
-        {
-            if (xnew <= xleft || xnew >= xright) vx=-vx;
-            if (ynew <= yleft || ynew >= yright) vy=-vy;
-            
-            xnew=actins[i]->get_xcm()+dt*vx;
-            ynew=actins[i]->get_ycm()+dt*vy;
-        
-        }
-        else if(this->get_BC() == "PERIODIC")
-        {
-            if (xnew < xleft) xnew += fov[0];
-            else if (xnew > xright) xnew -= fov[0];
-         
-            
-            if (ynew < yleft) ynew += fov[1];
-            else if(ynew > yright) ynew -= fov[1];
-
-        }
-        
-        else if(this->get_BC() == "NONE")
-        {
-            recenter_filament = true;
-        }
-        
-        actins[i]->set_xcm(xnew);
-        actins[i]->set_ycm(ynew);
+        actins[i]->set_xcm(newpos[0]);
+        actins[i]->set_ycm(newpos[1]);
         actins[i]->reset_force(); 
     }
     
-    if (recenter_filament && actins.size() > 0){
-        double midx = actins[floor(actins.size()/2)]->get_xcm();
-        double midy = actins[floor(actins.size()/2)]->get_ycm();
-        for (unsigned int i = 0; i < actins.size(); i++){
-            
-            xnew = actins[i]->get_xcm()-midx;
-            ynew = actins[i]->get_ycm()-midy;
-            
-            actins[i]->set_xcm(xnew);
-            actins[i]->set_ycm(ynew);
-            actins[i]->reset_force(); 
-        }
+}
+
+double<array, 2> filament::boundary_check(int i, double t, double vx, double vy)
+{
+    double xnew = actins[i]->get_xcm()+dt*vx;
+    double ynew = actins[i]->get_ycm()+dt*vy;
+        
+    //Calculate the sheared simulation bounds (at this height)
+    double xleft  = -fov[0] * 0.5 + gamma * ynew * t; //sheared simulation bounds
+    double xright =  fov[0] * 0.5 + gamma * ynew * t;
+    double yleft  = -fov[1] * 0.5;
+    double yright =  fov[1] * 0.5;
+
+    if(BC == "REFLECTIVE")
+    {
+        if (xnew <= xleft || xnew >= xright) vx=-vx;
+        if (ynew <= yleft || ynew >= yright) vy=-vy;
+
+        xnew=actins[i]->get_xcm()+dt*vx;
+        ynew=actins[i]->get_ycm()+dt*vy;
+
     }
+    else if(BC == "PERIODIC")
+    {
+        if (xnew < xleft)       xnew += fov[0];
+        else if (xnew > xright) xnew -= fov[0];
+
+
+        if (ynew < yleft)      ynew += fov[1];
+        else if(ynew > yright) ynew -= fov[1];
+
+    }
+
+    else if(BC == "NONE")
+    {
+        xnew -= actins[floor(actins.size()/2)]->get_xcm();
+        ynew -= actins[floor(actins.size()/2)]->get_ycm();
+    }
+    
+    return {xnew, ynew};
 
 }
 
@@ -306,6 +299,13 @@ string filament::write_links(){
     }
 
     return all_links;
+}
+
+string filament::write_thermo()
+{
+    return std::to_string(this->get_kinetic_energy()) + \
+        "\t" + std::to_string(this->get_potential_energy()) + \
+        "\t" + std::to_string(this->get_total_energy()) + "\n";
 }
 
 vector<actin *> filament::get_actins(unsigned int first, unsigned int last)
@@ -631,4 +631,91 @@ void filament::print_thermo()
 {
     cout<<"\tKE = "<<this->get_kinetic_energy()<<"\tPE = "<<this->get_potential_energy()<<\
         "\tTE = "<<this->get_total_energy();
+}
+
+
+void baoab_filament::update_positions(double t)
+{
+    double xnew, ynew, fric, T;
+    bool recenter_filament = false;
+    double xleft  = -fov[0] * 0.5;
+    double xright =  fov[0] * 0.5;
+    double yleft  = -fov[1] * 0.5;
+    double yright =  fov[1] * 0.5;
+    kinetic_energy = 0;  
+
+    if (t < dt*100000) T = 0;
+    else T = temperature;
+    
+    for (unsigned int i = 0; i < actins.size(); i++){
+        
+        fric = actins[i]->get_friction();
+        
+        vx[i] += (actins[i]->get_forces()[0])*dt/2; // /fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
+        vy[i] += (actins[i]->get_forces()[1])*dt/2; // /fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
+        
+        kinetic_energy += vx*vx + vy*vy;
+        
+        xnew = actins[i]->get_xcm() + vx[i] * dt/2;
+        ynew = actins[i]->get_ycm() + vy[i] * dt/2;
+
+     
+        coords_new = boundary_check({xnew, ynew}, dt);
+    }
+        xnew = actins[i]->get_xcm()+dt*vx;
+        ynew = actins[i]->get_ycm()+dt*vy;
+        
+        //if (ynew!=ynew) cout<<"\nDEBUG: WARNING, YNEW IS INF";
+
+        //Calculate the sheared simulation bounds (at this height)
+        if (gamma != 0){
+            xleft  = -fov[0] * 0.5 + gamma * ynew * t;
+            xright =  fov[0] * 0.5 + gamma * ynew * t;
+        }
+
+        if(this->get_BC() == "REFLECTIVE")
+        {
+            if (xnew <= xleft || xnew >= xright) vx=-vx;
+            if (ynew <= yleft || ynew >= yright) vy=-vy;
+            
+            xnew=actins[i]->get_xcm()+dt*vx;
+            ynew=actins[i]->get_ycm()+dt*vy;
+        
+        }
+        else if(this->get_BC() == "PERIODIC")
+        {
+            if (xnew < xleft) xnew += fov[0];
+            else if (xnew > xright) xnew -= fov[0];
+         
+            
+            if (ynew < yleft) ynew += fov[1];
+            else if(ynew > yright) ynew -= fov[1];
+
+        }
+        
+        else if(this->get_BC() == "NONE")
+        {
+            recenter_filament = true;
+        }
+        
+        actins[i]->set_xcm(xnew);
+        actins[i]->set_ycm(ynew);
+        actins[i]->reset_force(); 
+    }
+    
+    if (recenter_filament && actins.size() > 0){
+        double midx = actins[floor(actins.size()/2)]->get_xcm();
+        double midy = actins[floor(actins.size()/2)]->get_ycm();
+        for (unsigned int i = 0; i < actins.size(); i++){
+            
+            xnew = actins[i]->get_xcm()-midx;
+            
+            ynew = actins[i]->get_ycm()-midy;
+
+            actins[i]->set_xcm(xnew);
+            actins[i]->set_ycm(ynew);
+            actins[i]->reset_force(); 
+        }
+    }
+
 }
