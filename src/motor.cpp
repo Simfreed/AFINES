@@ -449,3 +449,5 @@ array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
 }
 
 template class motor<ATfilament_ensemble>;
+template class motor<baoab_filament_ensemble>;
+template class motor<lammps_filament_ensemble>;

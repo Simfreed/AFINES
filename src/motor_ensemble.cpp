@@ -166,3 +166,5 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
 }
 
 template class motor_ensemble<ATfilament_ensemble>;
+template class motor_ensemble<lammps_filament_ensemble>;
+template class motor_ensemble<baoab_filament_ensemble>;

@@ -119,37 +119,70 @@ class filament
 class baoab_filament : public filament
 {
 
+    //using filament::filament;
+    public: 
         
         baoab_filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
                 double vis, double deltat, double temp, bool isStraight,
                 double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
 
-       ~baoab_filament();
+        baoab_filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double bending_stiffness, 
+                double deltat, double temp, double fracture, double gamma, string bc);
         
-       void update_velocities_B(double t);
+        ~baoab_filament();
 
-       void update_velocities_O();
+        void update_velocities_O(double t);
 
-    protected:
+        void update_velocities_B();
+
+        void update_positions(double t);
         
-        vector<double> vx, vy;
-
-}
+        vector<baoab_filament *> update_stretching();
+        
+        vector<baoab_filament *> fracture(int node);
+        
+        bool operator==(const baoab_filament& that);
+};
 
 class lammps_filament : public filament
 {
 
-    lammps_filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
-            double vis, double deltat, double temp, bool isStraight,
-            double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
+    //using filament::filament;
+    public:
+       
+        lammps_filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
+                double vis, double deltat, double temp, bool isStraight,
+                double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
 
-    ~lammps_filament();
+        lammps_filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double bending_stiffness, 
+                double deltat, double temp, double fracture, double gamma, string bc);
+        
+        lammps_filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
+                double frac, double bending_stiffness, string bndcnd);
+       
+        lammps_filament();
+        
+        ~lammps_filament();
+        
+        void set_mass(double m);
 
-    void set_mass(double m);
+        void set_damp(double d);
 
+        void update_brownian();
+
+        void update_drag();
+
+        void update_positions(double t);
+        
+        vector<lammps_filament *> update_stretching();
+    
+        vector<lammps_filament *> fracture(int node);
+
+        bool operator==(const lammps_filament& that);
+    
     protected:
-        double mass;
-}       
+        double mass, damp;
+};       
 
 // Filament class that is closer to the Nedelec and Foethke model than the above one
 

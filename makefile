@@ -56,6 +56,9 @@ motor_ensemble_tester: $(OBJECTS)
 filament_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/filament_test.cpp $(INC) $(LIB) -o bin/filament_tester
 
+lammps_filament_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/lammps_filament_test.cpp $(INC) $(LIB) -o bin/lammps_filament_tester
+
 DLfilament_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/DLfilament_test.cpp $(INC) $(LIB) -o bin/DLfilament_tester
 

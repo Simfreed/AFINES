@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
         ("nframes", po::value<int>(&nframes)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
         ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
        
-        ("viscosity", po::value<double>(&viscosity)->default_value(0.5), "Implicity viscosity to determine friction [um^2 / s]")
+        ("viscosity", po::value<double>(&viscosity)->default_value(1), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 1 for water")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
         ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("REFLECTIVE"), "boundary conditions")
         
@@ -191,18 +191,18 @@ int main(int argc, char* argv[]){
     // Create Network Objects
     cout<<"\nCreating actin network..";
 	
-    ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
+    lammps_filament_ensemble * net = new lammps_filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
                                         temperature, actin_length, viscosity, nmonomer, link_length, 
                                         actin_position_ptrs, 
                                         link_stretching_stiffness, link_bending_stiffness,
                                         fracture_force, bnd_cnd, seed); 
 
     cout<<"\nAdding active motors...";
-    motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
+    motor_ensemble<lammps_filament_ensemble> * myosins = new motor_ensemble<lammps_filament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
                                              a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                                              a_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
+    motor_ensemble<lammps_filament_ensemble> * crosslks = new motor_ensemble<lammps_filament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
                                              p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
                                              p_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
@@ -241,11 +241,13 @@ int main(int argc, char* argv[]){
         if (shear_rate != 0)
             net->update_shear();
         
-        net->update_stretching();
+        /*net->update_stretching();
         net->update_bending();
         net->update_positions(t);
         net->quad_update();
-        
+        */
+        net->update(t);//updates all forces, velocities and positions of filaments
+
         //update motors and cross linkers
         crosslks->motor_walk(t);
         myosins->motor_walk(t);

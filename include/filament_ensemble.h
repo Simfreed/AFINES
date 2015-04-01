@@ -48,7 +48,7 @@ class filament_ensemble
         
         array<double,2> get_end(int fil, int link);
         
-        array<double,2> get_forces(int fil, int actin);
+        array<double,2> get_force(int fil, int actin);
         
         double get_int_direction(int fil, int link, double xp, double yp);
 
@@ -64,8 +64,6 @@ class filament_ensemble
         
         void update_positions(double t);
 
-        void update(double t);
-        
         void update_forces(int fil, int actin, double f2, double f3);
 
         void write_actins(ofstream& fout);
@@ -96,6 +94,12 @@ class filament_ensemble
 
         void print_network_thermo();
 
+        void update_stretching();
+        
+        void update_bending();
+        
+        void update(double t);
+        
     protected:
 
         double dt, temperature, rho, ld, link_ld, visc, gamma;
@@ -124,10 +128,6 @@ class ATfilament_ensemble:
                 double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
         
-        void update_stretching();
-        
-        void update_bending();
-        
 };
 
 class baoab_filament_ensemble:
@@ -140,9 +140,13 @@ class baoab_filament_ensemble:
                 double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
 
-        void update();
+        void update_velocities_B();
 
-}
+        void update_velocities_O(double t);
+
+        void update(double t);
+
+};
 
 class lammps_filament_ensemble:
     public filament_ensemble<lammps_filament>
@@ -155,5 +159,12 @@ class lammps_filament_ensemble:
                 string bc, double seed);
 
         void set_mass(double m);
-}
+
+        void update_drag();
+
+        void update_brownian();
+
+        void update(double t);
+};
+
 #endif

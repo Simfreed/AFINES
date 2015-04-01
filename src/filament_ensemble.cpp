@@ -19,14 +19,14 @@ filament_ensemble<filament_type>::filament_ensemble(){}
 
 template <class filament_type> 
 filament_ensemble<filament_type>::~filament_ensemble(){ 
-    cout<<"DELETING filament_ensemble\n";
+    cout<<"DELETING FILAMENT_ENSEMBLE\n";
     
     int s = network.size();
     for (int i = 0; i < s; i++){
         delete network[i];
     }
     
-    network.clear();
+    //network.clear();
 };
 
 template <class filament_type> 
@@ -118,9 +118,9 @@ array<double,2> filament_ensemble<filament_type>::get_end(int fil, int link)
 }
 
 template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_forces(int fil, int actin)
+array<double,2> filament_ensemble<filament_type>::get_force(int fil, int actin)
 {
-    return network[fil]->get_actin(actin)->get_forces();
+    return network[fil]->get_actin(actin)->get_force();
 }
 
 template <class filament_type>
@@ -200,7 +200,7 @@ void filament_ensemble<filament_type>::print_filament_thermo(){
 
 template <class filament_type> 
 void filament_ensemble<filament_type>::print_network_thermo(){
-    double KE, PE, TE;
+    double KE=0, PE=0, TE=0;
     for (unsigned int f = 0; f < network.size(); f++)
     {
         KE += network[f]->get_kinetic_energy();
@@ -256,6 +256,52 @@ void filament_ensemble<filament_type>::clear_broken(){
     broken_filaments.clear();
 }
 
+// Update bending forces between monomers
+template <class filament_type>
+void filament_ensemble<filament_type>::update_bending(){
+    
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->update_bending();
+    }
+}
+
+template <class filament_type>
+void filament_ensemble<filament_type>::update_stretching(){
+    
+    vector<filament_type *> newfilaments;
+    int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
+    for (int f = 0; f < s; f++)
+    {
+        newfilaments = network[f]->update_stretching();
+        
+        if (newfilaments.size() > 0){ //fracture event occured
+
+            cout<<"\n\tDEBUG: fracturing filament : "<<f;
+            filament * broken = network[f];     //store a pointer to the broken filament to delete it with
+            network[f] = newfilaments[0];       //replace that pointer with one of the new filaments
+            
+            if (newfilaments.size() == 2) network.push_back(newfilaments[1]); //add the second filament to the top of the stack
+        
+            broken_filaments.push_back(f);      // record the index, for automatic motor detachment
+            delete broken;                      // delete the old filament
+            
+        }
+
+    }
+}
+
+template <class filament_type>
+void filament_ensemble<filament_type>::update(double t){
+    
+    this->update_shear();
+    this->update_stretching();
+    this->update_bending();
+    this->update_positions(t);
+    this->quad_update();
+
+}
+
 ////////////////////////////////////////
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
@@ -303,49 +349,6 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     }
 }
 
-// Update bending forces between monomers
-void ATfilament_ensemble::update_bending(){
-    
-    for (unsigned int f = 0; f < network.size(); f++)
-    {
-        network[f]->update_bending();
-    }
-}
-
-void ATfilament_ensemble::update_stretching(){
-    
-    vector<filament *> newfilaments;
-    int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
-    for (int f = 0; f < s; f++)
-    {
-        newfilaments = network[f]->update_stretching();
-        
-        if (newfilaments.size() > 0){ //fracture event occured
-
-            cout<<"\n\tDEBUG: fracturing filament : "<<f;
-            filament * broken = network[f];     //store a pointer to the broken filament to delete it with
-            network[f] = newfilaments[0];       //replace that pointer with one of the new filaments
-            
-            if (newfilaments.size() == 2) network.push_back(newfilaments[1]); //add the second filament to the top of the stack
-        
-            broken_filaments.push_back(f);      // record the index, for automatic motor detachment
-            delete broken;                      // delete the old filament
-            
-        }
-
-    }
-}
-
-void ATfilament_ensemble::update(double t){
-    
-    this->update_shear();
-    this->update_stretching();
-    this->update_bending();
-    this->update_positions(t);
-    this->quad_update();
-
-}
-
 baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
@@ -390,10 +393,10 @@ baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2>
     }
 }
 
-void baoab_filament_ensemble::update_velocities_B(double t)
+void baoab_filament_ensemble::update_velocities_B()
 {
     for (unsigned int f = 0; f < network.size(); f++) 
-        network[f]->update_velocities_B(t);
+        network[f]->update_velocities_B();
 }
     
 void baoab_filament_ensemble::update_velocities_O(double t)
@@ -405,14 +408,14 @@ void baoab_filament_ensemble::update_velocities_O(double t)
 void baoab_filament_ensemble::update(double t)
 {
 
-    this->update_velocities_B(t);
+    this->update_velocities_B();
     this->update_positions(t);
 
     this->update_shear();
     this->update_stretching();
     this->update_bending();
     
-    this->update_velocities_O();
+    this->update_velocities_O(t);
     this->update_positions(t);
     this->update_velocities_B();
     
@@ -462,6 +465,8 @@ lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,
                         ld, link_ld, stretching, bending, frac_force, bc) );
         }
     }
+    double mass_density = 2.6e-14; //miligram / micron
+    this->set_mass(mass_density*link_len); 
 }
 
 void lammps_filament_ensemble::set_mass(double m)
@@ -470,6 +475,32 @@ void lammps_filament_ensemble::set_mass(double m)
         network[f]->set_mass(m);
 }
 
+void lammps_filament_ensemble::update_brownian()
+{
+    for (unsigned int f = 0; f < network.size(); f++) 
+        network[f]->update_brownian();
+}
+
+void lammps_filament_ensemble::update_drag()
+{
+    for (unsigned int f = 0; f < network.size(); f++) 
+        network[f]->update_drag();
+}
+
+void lammps_filament_ensemble::update(double t){
+    
+    this->update_shear();
+    this->update_stretching();
+    this->update_bending();
+    
+    if (t > dt*100000) this->update_brownian();
+    this->update_drag();
+    
+    this->update_positions(t);
+    this->quad_update();
+
+}
+
 template class filament_ensemble<filament>;
-template class filament_ensmeble<baoab_filament>;
+template class filament_ensemble<baoab_filament>;
 template class filament_ensemble<lammps_filament>;

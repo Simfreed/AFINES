@@ -123,6 +123,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
 
 filament::~filament(){
     
+    cout<<"DELETING FILAMENT\n";
     int nr = actins.size(), nl = links.size();
     for (int i = 0; i < nr; i ++)
     {    
@@ -159,7 +160,7 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 
 void filament::update_positions(double t)
 {
-    double vx, vy, fric, T;
+    double vx, vy, gamma, T;
     array<double, 2> newpos;
     kinetic_energy = 0;  
 
@@ -168,10 +169,10 @@ void filament::update_positions(double t)
     
     for (unsigned int i = 0; i < actins.size(); i++){
         
-        fric = actins[i]->get_friction();
+        gamma = actins[i]->get_friction();
         
-        vx  = (actins[i]->get_forces()[0])/fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
-        vy  = (actins[i]->get_forces()[1])/fric  + sqrt(2*T/(dt*fric))*rng_n(0,1);
+        vx  = (actins[i]->get_force()[0])/gamma  + sqrt(2*T/(dt*gamma))*rng_n(0,1);
+        vy  = (actins[i]->get_force()[1])/gamma  + sqrt(2*T/(dt*gamma))*rng_n(0,1);
         
         kinetic_energy += vx*vx + vy*vy;
         
@@ -184,7 +185,7 @@ void filament::update_positions(double t)
     
 }
 
-double<array, 2> filament::boundary_check(int i, double t, double vx, double vy)
+array<double, 2> filament::boundary_check(int i, double t, double vx, double vy)
 {
     double xnew = actins[i]->get_xcm()+dt*vx;
     double ynew = actins[i]->get_ycm()+dt*vy;
@@ -632,91 +633,3 @@ void filament::print_thermo()
     cout<<"\tKE = "<<this->get_kinetic_energy()<<"\tPE = "<<this->get_potential_energy()<<\
         "\tTE = "<<this->get_total_energy();
 }
-
-/* BAOAB
- * vx = vx + Fx * dt /2
- * vy = vy + Fy * dt /2
- *
- * x = x + vx * dt /2
- * y = y + vy * dt /2
- *
- * vx = sqrt( temperature ) * rng_n(0,1)
- * vy = sqrt( temperature ) * rng_n(0,1)
- *
- * x = x + vx * dt /2
- * y = y + vy * dt /2
- *
- * vx = vx + Fx * dt /2
- * vy = vy + Fy * dt /2
- */
-
-void baoab_filament::update_velocities_B(double t)
-{
-    kinetic_energy = 0;  
-
-    if (t < dt*1000000) T = 0;
-    else T = temperature;
-    
-    for (unsigned int i = 0; i < actins.size(); i++){
-        
-        fric = actins[i]->get_friction();
-        
-        vx[i]  += (actins[i]->get_forces()[0])*dt/2;
-        vy[i]  += (actins[i]->get_forces()[1])*dt/2;
-        kinetic_energy += vx*vx + vy*vy;
-    
-    }
-}
-
-void baoab_filament::update_positions(double t)
-{
-    array<double, 2> newpos;
-    dt = dt/2;
-    
-    for (unsigned int i = 0; i < actins.size(); i++){
-        newpos = boundary_check(i, t, vx[i], vy[i]); 
-        actins[i]->set_xcm(newpos[0]);
-        actins[i]->set_ycm(newpos[1]);
-        actins[i]->reset_force(); 
-    }
-    dt = 2*dt;
-    
-}
-
-void baoab_filament::update_velocities_O()
-{
-    for (unsigned int i = 0; i < actins.size(); i++){
-        vx[i] = sqrt(temperature) * rng_n(0, 1);
-        vy[i] = sqrt(temperature) * rng_n(0, 1);
-    }
-}
-
-void lammps_filament::set_mass(double m)
-{
-    mass = m;
-}
-
-void lammps_filament::update_positions(double t)
-{
-    double damp;
-    array<double, 2> newpos;
-    
-    for (unsigned int i = 0; i < actins.size(); i++){
-
-        damp = 1/actins[i]->get_friction(); // ??????? //
-        
-        vx  = (actins[i]->get_forces()[0])*damp/mass  + sqrt(2 * T * mass/(dt*damp))*rng_n(0,1);
-        vy  = (actins[i]->get_forces()[1])*damp/mass  + sqrt(2 * T * mass/(dt*damp))*rng_n(0,1);
-        
-        kinetic_energy += vx*vx + vy*vy;
-        
-        newpos = boundary_check(i, t, vx, vy); 
-        
-        actins[i]->set_xcm(newpos[0]);
-        actins[i]->set_ycm(newpos[1]);
-        actins[i]->reset_force(); 
-    }
-    
-}
-
-

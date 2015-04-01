@@ -23,7 +23,8 @@ actin::actin(double xcm, double ycm, double len, double vis)
     a_vis=vis;
     friction = 4*pi*a_vis*ld;
    
-    forces = {0,0};
+    force = {0,0};
+    velocity = {0,0};
 }
 
 actin::actin(const actin& other){
@@ -34,8 +35,8 @@ actin::actin(const actin& other){
     ld = other.ld;
     a_vis = other.a_vis;
     friction = other.friction;
-    forces = other.forces;
-
+    force = other.force;
+    velocity = other.velocity;
 }
 
 actin::~actin(){ 
@@ -43,9 +44,19 @@ actin::~actin(){
 };
 
 
-array<double,2> actin::get_forces()
+array<double,2> actin::get_force()
 {
-    return forces;
+    return force;
+}
+
+array<double,2> actin::get_velocity()
+{
+    return velocity;
+}
+
+double actin::get_vsquared()
+{
+    return velocity[0]*velocity[0] + velocity[1]*velocity[1];
 }
 
 double actin::get_length()
@@ -53,21 +64,33 @@ double actin::get_length()
     return ld;
 }
 
+void actin::update_velocity(double v1, double v2)
+{
+    velocity[0]+=v1;
+    velocity[1]+=v2;
+}
+
 void actin::update_force(double f1, double f2)
 {
     if(f1 == f1 && f2 == f2 && std::isfinite(f1) && std::isfinite(f2)){
-        forces[0]+=f1;
-        forces[1]+=f2;
+        force[0]+=f1;
+        force[1]+=f2;
     }else{
         cout<<"\nENCOUNTERED INFINITE FORCE; PROGRAM ABORTING\n";
         abort();
     }
 }
 
+void actin::reset_velocity()
+{
+    velocity[0] = 0;
+    velocity[1] = 0;
+}
+
 void actin::reset_force()
 {
-    forces[0] = 0;
-    forces[1] = 0;
+    force[0] = 0;
+    force[1] = 0;
 }
 
 double actin::get_xcm()
@@ -95,8 +118,8 @@ bool actin::operator==(const actin& that)
     double err = eps; 
     return (close( this->x , that.x , err) && close( this->y , that.y , err) &&
             close( this->ld , that.ld , err) &&
-            close( this->a_vis , that.a_vis , err) && close( this->forces[0] , that.forces[0] , err) &&
-            close( this->forces[1] , that.forces[1] , err)
+            close( this->a_vis , that.a_vis , err) && close( this->force[0] , that.force[0] , err) &&
+            close( this->force[1] , that.force[1] , err)
            );
 }
 
@@ -109,7 +132,7 @@ string actin::to_string()
 {
     return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) +
            "\tld : " + std::to_string(ld) + "\ta_vis : "+ std::to_string(a_vis) + 
-           "\tforces[0] : " + std::to_string(forces[0]) + "\tforces[1] : "+ std::to_string(forces[1]) + "\n";
+           "\tforce[0] : " + std::to_string(force[0]) + "\tforce[1] : "+ std::to_string(force[1]) + "\n";
  
 }
 
