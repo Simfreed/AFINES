@@ -39,7 +39,6 @@ int main(int argc, char* argv[]){
     string actin_pos_str;
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
-    double bending_correction_factor = 1;
     bool use_linear_bending;
 
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]){
             p_motor_v=0, p_m_kon, p_m_kend, p_m_koff; 
     string p_motor_pos_str;
     
-    string config_file;                                                // Input configuration
+    string config_file, filament_type;                                                // Input configuration
     
     string   dir,    afile,  amfile,  pmfile,  lfile, thfile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
@@ -110,6 +109,10 @@ int main(int argc, char* argv[]){
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
         ("seed", po::value<int>(&seed)->default_value(time(NULL)), "Random number generator seed")
+        ("filament_type", po::value<string>(&filament_type)->default_value("BAOAB"), "type of filament / integrator to use.\
+                                                                            Options: (1) BD = Ermak Yeh Brownian Dynamics\
+                                                                                     (2) BAOAB = Charlie's Overdamped BAOAB\
+                                                                                     (3) LLF = Langevin Leap Frog")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -162,16 +165,17 @@ int main(int argc, char* argv[]){
     }
 
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
-    double link_bending_stiffness    = bending_correction_factor * polymer_bending_modulus * pow(1.0/actin_length,3);
+    
+    double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/link_length , 1);
     
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
 
     vector<double *> actin_position_ptrs, a_motor_position_ptrs;
     if (actin_pos_str.size() > 0)
-        actin_position_ptrs = str2ptrvec(actin_pos_str, ";", ",");
+        actin_position_ptrs = str2ptrvec(actin_pos_str, ":", ",");
     if (a_motor_pos_str.size() > 0)
-        a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ";", ",");
+        a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ":", ",");
     
     srand(seed);
             
@@ -188,23 +192,23 @@ int main(int argc, char* argv[]){
     file_pm.open(pmfile.c_str());
 	file_th.open(thfile.c_str());
 
+
     // Create Network Objects
     cout<<"\nCreating actin network..";
-	
-    lammps_filament_ensemble * net = new lammps_filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
-                                        temperature, actin_length, viscosity, nmonomer, link_length, 
-                                        actin_position_ptrs, 
-                                        link_stretching_stiffness, link_bending_stiffness,
-                                        fracture_force, bnd_cnd, seed); 
+    ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
+            temperature, actin_length, viscosity, nmonomer, link_length, 
+            actin_position_ptrs, 
+            link_stretching_stiffness, link_bending_stiffness,
+            fracture_force, bnd_cnd, seed); 
 
     cout<<"\nAdding active motors...";
-    motor_ensemble<lammps_filament_ensemble> * myosins = new motor_ensemble<lammps_filament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
-                                             a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
-                                             a_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
+    motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
+            a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
+            a_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble<lammps_filament_ensemble> * crosslks = new motor_ensemble<lammps_filament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
-                                             p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
-                                             p_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
+    motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
+            p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
+            p_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     //cout<<"\nDEBUG: pointer to network = "<<net;
 

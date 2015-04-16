@@ -160,12 +160,11 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 
 void filament::update_positions(double t)
 {
-    double vx, vy, gamma, T;
+    double vx, vy, gamma, T = temperature;
     array<double, 2> newpos;
     kinetic_energy = 0;  
 
-    if (t < dt*1000000) T = 0;
-    else T = temperature;
+    //if (t < dt*100000) T = 0;
     
     for (unsigned int i = 0; i < actins.size(); i++){
         
@@ -633,3 +632,102 @@ void filament::print_thermo()
     cout<<"\tKE = "<<this->get_kinetic_energy()<<"\tPE = "<<this->get_potential_energy()<<\
         "\tTE = "<<this->get_total_energy();
 }
+/*
+void filament::lammps_bending_compute()
+{
+  int i1,i2,i3,n,type;
+  double delx1,dely1,delz1,delx2,dely2,delz2;
+  double eangle;
+  array<double, 3> f1, f3;
+  double dtheta,tk;
+  double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
+
+  eangle = 0.0;
+  
+  double **x = atom->x;
+  double **f = atom->f;
+  int **anglelist = neighbor->anglelist;
+  int nanglelist = neighbor->nanglelist;
+  int nlocal = atom->nlocal;
+  int newton_bond = force->newton_bond;
+
+  for (n = 0; n < actins.size()-2; n++) {
+    i1 = n;
+    i2 = n+1;
+    i3 = anglelist[n][2];
+    type = anglelist[n][3];
+
+    // 1st bond
+
+    delx1 = x[i1][0] - x[i2][0];
+    dely1 = x[i1][1] - x[i2][1];
+    delz1 = x[i1][2] - x[i2][2];
+
+    rsq1 = delx1*delx1 + dely1*dely1 + delz1*delz1;
+    r1 = sqrt(rsq1);
+
+    // 2nd bond
+
+    delx2 = x[i3][0] - x[i2][0];
+    dely2 = x[i3][1] - x[i2][1];
+    delz2 = x[i3][2] - x[i2][2];
+
+    rsq2 = delx2*delx2 + dely2*dely2 + delz2*delz2;
+    r2 = sqrt(rsq2);
+
+    // angle (cos and sin)
+
+    c = delx1*delx2 + dely1*dely2 + delz1*delz2;
+    c /= r1*r2;
+
+    if (c > 1.0) c = 1.0;
+    if (c < -1.0) c = -1.0;
+
+    s = sqrt(1.0 - c*c);
+    if (s < SMALL) s = SMALL;
+    s = 1.0/s;
+
+    // force & energy
+
+    dtheta = acos(c) - theta0[type];
+    tk = k[type] * dtheta;
+
+    if (eflag) eangle = tk*dtheta;
+
+    a = -2.0 * tk * s;
+    a11 = a*c / rsq1;
+    a12 = -a / (r1*r2);
+    a22 = a*c / rsq2;
+
+    f1[0] = a11*delx1 + a12*delx2;
+    f1[1] = a11*dely1 + a12*dely2;
+    f1[2] = a11*delz1 + a12*delz2;
+    f3[0] = a22*delx2 + a12*delx1;
+    f3[1] = a22*dely2 + a12*dely1;
+    f3[2] = a22*delz2 + a12*delz1;
+
+    // apply force to each of 3 atoms
+
+    if (newton_bond || i1 < nlocal) {
+      f[i1][0] += f1[0];
+      f[i1][1] += f1[1];
+      f[i1][2] += f1[2];
+    }
+
+    if (newton_bond || i2 < nlocal) {
+      f[i2][0] -= f1[0] + f3[0];
+      f[i2][1] -= f1[1] + f3[1];
+      f[i2][2] -= f1[2] + f3[2];
+    }
+
+    if (newton_bond || i3 < nlocal) {
+      f[i3][0] += f3[0];
+      f[i3][1] += f3[1];
+      f[i3][2] += f3[2];
+    }
+
+    if (evflag) ev_tally(i1,i2,i3,nlocal,newton_bond,eangle,f1,f3,
+                         delx1,dely1,delz1,delx2,dely2,delz2);
+  }
+}
+*/

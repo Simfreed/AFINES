@@ -1,14 +1,13 @@
 #include "motor.h"
-#include "actin_ensemble.h"
-#include "link_ensemble.h"
+#include "filament_ensemble.h"
 #include "globals.h"
 #define BOOST_TEST_MODULE motor_test
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
-    actin_ensemble ae = actin_ensemble();
-    motor m = motor(1, 1, 3.1415926535897/2, 1, &ae, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "blue");
+    ATfilament_ensemble f = ATfilament_ensemble();
+    motor m = motor({1, 1, 3.1416/2}, 1, &f, {0, 0}, {0, 0}, {0, 0}, {0, 0}, 0, 0, 0, 0, 0, 0, 0, 0, "REFLECTIVE");
     double tol = 0.001;
 
     BOOST_CHECK_CLOSE( m.get_hx()[0],  1, tol);                   // 1 //

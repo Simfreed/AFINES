@@ -62,6 +62,12 @@ class filament_ensemble
         
         void update_shear();
         
+        void update_stretching();
+        
+        void update_bending();
+        
+        void update_int_forces();
+
         void update_positions(double t);
 
         void update_forces(int fil, int actin, double f2, double f3);
@@ -94,15 +100,11 @@ class filament_ensemble
 
         void print_network_thermo();
 
-        void update_stretching();
-        
-        void update_bending();
-        
         void update(double t);
         
     protected:
 
-        double dt, temperature, rho, ld, link_ld, visc, gamma;
+        double dt, temperature, rho, ld, link_ld, visc, gamma, min_time;
         
         int npolymer, nmon;
         
@@ -167,4 +169,23 @@ class lammps_filament_ensemble:
         void update(double t);
 };
 
+class langevin_leapfrog_filament_ensemble:
+    public filament_ensemble<langevin_leapfrog_filament>
+{
+    public:
+
+        langevin_leapfrog_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
+                double len, double vis, int nactin,
+                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                string bc, double seed);
+
+        void set_mass(double m);
+
+        void update_velocities(double t);
+
+        void update_positions(double t);
+
+        void update(double t);
+    
+};
 #endif

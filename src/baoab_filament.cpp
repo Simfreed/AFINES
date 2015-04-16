@@ -20,13 +20,26 @@ baoab_filament::~baoab_filament(){
 
 baoab_filament::baoab_filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, 
         double stretching_stiffness, double bending_stiffness, 
-        double deltat, double temp, double frac_force, double g, string bdcnd) : filament(actinvec, myfov, mynq, linkLength, stretching_stiffness, bending_stiffness, deltat, temp, frac_force, g, bdcnd){ }
-
+        double deltat, double temp, double frac_force, double g, string bdcnd) : filament(actinvec, myfov, mynq, linkLength, stretching_stiffness, bending_stiffness, deltat, temp, frac_force, g, bdcnd)
+{ 
+    mass = actin_mass_density*linkLength;
+    double fric_coef = 0;
+    if (actins.size() > 0) fric_coef = actins[0]->get_friction() / mass;
+    a = exp(-fric_coef * dt);
+    b = sqrt(1-a*a);
+}
 baoab_filament::baoab_filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
         double deltat, double temp, bool isStraight, double actinRadius, double linkLength, double stretching_stiffness,
         double bending_stiffness, double frac_force, string bdcnd):
     filament(startpos, nactin, myfov, mynq, visc, deltat, temp, isStraight, actinRadius, linkLength, stretching_stiffness, bending_stiffness,
-            frac_force, bdcnd) { }
+            frac_force, bdcnd)  
+{ 
+    mass = actin_mass_density*linkLength;
+    double fric_coef = 0;
+    if (actins.size() > 0) fric_coef = actins[0]->get_friction() / mass;
+    a = exp(-fric_coef * dt);
+    b = sqrt(1-a*a);
+}
 
 /* BAOAB
  * vx = vx + Fx * dt /2
@@ -48,15 +61,14 @@ baoab_filament::baoab_filament(array<double, 3> startpos, int nactin, array<doub
 void baoab_filament::update_velocities_B()
 {
     kinetic_energy = 0;  
-    
     for (unsigned int i = 0; i < actins.size(); i++){
-        
-        actins[i]->update_velocity((actins[i]->get_force()[0])*dt/2, 
-                                   (actins[i]->get_force()[1])*dt/2);
+        actins[i]->update_velocity((actins[i]->get_force()[0])*dt/(2*mass), 
+                                   (actins[i]->get_force()[1])*dt/(2*mass));
         
         kinetic_energy += actins[i]->get_vsquared();
     
     }
+    kinetic_energy *= mass*actins.size()/2;
 }
 
 void baoab_filament::update_positions(double t)
@@ -76,14 +88,15 @@ void baoab_filament::update_positions(double t)
 
 void baoab_filament::update_velocities_O(double t)
 {
-    double T;
-
-    if (t < dt*1000000) T = 0;
-    else T = temperature;
+    double T=temperature;
+    array<double, 2> v;
+    //if (t < dt*100000) T = 0;
     
     for (unsigned int i = 0; i < actins.size(); i++){
+        v = actins[i]->get_velocity();
         actins[i]->reset_velocity();
-        actins[i]->update_velocity(sqrt(T) * rng_n(0, 1), sqrt(T) * rng_n(0, 1));
+        actins[i]->update_velocity(a * v[0] + b * sqrt(T/mass) * rng_n(0, 1), 
+                                   a * v[1] + b * sqrt(T/mass) * rng_n(0, 1));
     }
 }
 

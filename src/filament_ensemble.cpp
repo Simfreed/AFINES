@@ -292,11 +292,18 @@ void filament_ensemble<filament_type>::update_stretching(){
 }
 
 template <class filament_type>
-void filament_ensemble<filament_type>::update(double t){
-    
+void filament_ensemble<filament_type>::update_int_forces()
+{
     this->update_shear();
     this->update_stretching();
     this->update_bending();
+}
+
+/* Overdamped Langevin Dynamics Integrator (Ermak and Yeh, 1974) */
+template <class filament_type>
+void filament_ensemble<filament_type>::update(double t){
+    
+    this->update_int_forces();
     this->update_positions(t);
     this->quad_update();
 
@@ -408,16 +415,12 @@ void baoab_filament_ensemble::update_velocities_O(double t)
 void baoab_filament_ensemble::update(double t)
 {
 
-    this->update_velocities_B();
-    this->update_positions(t);
-
-    this->update_shear();
-    this->update_stretching();
-    this->update_bending();
-    
-    this->update_velocities_O(t);
-    this->update_positions(t);
-    this->update_velocities_B();
+    this->update_velocities_B();        /*B*/
+    this->update_positions(t);          /*A*/
+    this->update_velocities_O(t);       /*O*/
+    this->update_positions(t);          /*A*/ 
+    this->update_int_forces();
+    this->update_velocities_B();        /*B*/
     
     this->quad_update();
 
@@ -465,8 +468,6 @@ lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,
                         ld, link_ld, stretching, bending, frac_force, bc) );
         }
     }
-    double mass_density = 2.6e-14; //miligram / micron
-    this->set_mass(mass_density*link_len); 
 }
 
 void lammps_filament_ensemble::set_mass(double m)
@@ -489,10 +490,7 @@ void lammps_filament_ensemble::update_drag()
 
 void lammps_filament_ensemble::update(double t){
     
-    this->update_shear();
-    this->update_stretching();
-    this->update_bending();
-    
+    this->update_int_forces();    
     if (t > dt*100000) this->update_brownian();
     this->update_drag();
     
@@ -500,7 +498,83 @@ void lammps_filament_ensemble::update(double t){
     this->quad_update();
 
 }
+///////////////////////////////////////
+///LANGEVIN LEAP FROG IMPLEMENTATION///
+///////////////////////////////////////
+langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+        double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+        double frac_force, string bc, double seed) {
+    
+    fov = myfov;
+    nq = mynq;
+
+    view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
+
+    rho=density;
+    visc=vis;
+    ld=rad;//rng_n(len,1.0);
+    link_ld = link_len;
+    npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
+    dt = delta_t;
+    temperature = temp;
+
+    if (seed == -1){
+        straight_filaments = true;
+    }else{
+        srand(seed);
+    }
+
+    cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
+    cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
+    
+    int s = pos_sets.size();
+    double x0, y0, phi0;
+    for (int i=0; i<npolymer; i++) {
+        if ( i < s ){
+            network.push_back(new langevin_leapfrog_filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
+                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+        }else{
+            x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
+            y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
+            phi0 =  rng(0, 2*pi);
+            network.push_back(new langevin_leapfrog_filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, 
+                        ld, link_ld, stretching, bending, frac_force, bc) );
+        }
+    }
+    min_time = 0; //1e6*dt;
+}
+
+void langevin_leapfrog_filament_ensemble::update_velocities(double t)
+{
+    for (unsigned int f = 0; f < network.size(); f++){
+        network[f]->reset_velocity();
+        if (t>min_time) network[f]->update_velocity_brownian();
+        network[f]->update_velocity_drag();
+        network[f]->update_velocity_int_forces();
+    }
+}
+
+void langevin_leapfrog_filament_ensemble::update_positions(double t)
+{
+    for (unsigned int f = 0; f < network.size(); f++)
+        network[f]->update_positions(t);
+}
+
+/*Izaguirre, Sweet, Pande, 2010 (Seen in Chodera...Pande, 2011)*/
+void langevin_leapfrog_filament_ensemble::update(double t){
+    
+    this->update_velocities(t);
+    this->update_positions(t);
+    this->update_int_forces();
+    this->update_velocities(t);
+    
+    this->quad_update();
+
+}
 
 template class filament_ensemble<filament>;
 template class filament_ensemble<baoab_filament>;
 template class filament_ensemble<lammps_filament>;
+template class filament_ensemble<langevin_leapfrog_filament>;

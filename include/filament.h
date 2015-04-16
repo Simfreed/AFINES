@@ -142,6 +142,9 @@ class baoab_filament : public filament
         vector<baoab_filament *> fracture(int node);
         
         bool operator==(const baoab_filament& that);
+
+    protected:
+        double a, b, mass;
 };
 
 class lammps_filament : public filament
@@ -166,8 +169,6 @@ class lammps_filament : public filament
         
         void set_mass(double m);
 
-        void set_damp(double d);
-
         void update_brownian();
 
         void update_drag();
@@ -181,9 +182,50 @@ class lammps_filament : public filament
         bool operator==(const lammps_filament& that);
     
     protected:
-        double mass, damp;
+        double mass;
 };       
 
+class langevin_leapfrog_filament : public filament
+{
+
+    //using filament::filament;
+    public:
+       
+        langevin_leapfrog_filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
+                double vis, double deltat, double temp, bool isStraight,
+                double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
+
+        langevin_leapfrog_filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double bending_stiffness, 
+                double deltat, double temp, double fracture, double gamma, string bc);
+        
+        langevin_leapfrog_filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
+                double frac, double bending_stiffness, string bndcnd);
+       
+        langevin_leapfrog_filament();
+        
+        ~langevin_leapfrog_filament();
+        
+        void set_mass(double m);
+
+        void reset_velocity();
+
+        void update_velocity_brownian();
+
+        void update_velocity_drag();
+
+        void update_velocity_int_forces();
+        
+        void update_positions(double t);
+        
+        vector<langevin_leapfrog_filament *> update_stretching();
+    
+        vector<langevin_leapfrog_filament *> fracture(int node);
+
+        bool operator==(const langevin_leapfrog_filament& that);
+    
+    protected:
+        double mass, a, b, c;
+};       
 // Filament class that is closer to the Nedelec and Foethke model than the above one
 
 class NFfilament : public filament

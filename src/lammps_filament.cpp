@@ -21,13 +21,19 @@ lammps_filament::~lammps_filament(){
 
 lammps_filament::lammps_filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, 
         double stretching_stiffness, double bending_stiffness, 
-        double deltat, double temp, double frac_force, double g, string bdcnd) : filament(actinvec, myfov, mynq, linkLength, stretching_stiffness, bending_stiffness, deltat, temp, frac_force, g, bdcnd){ mass = 0;}
+        double deltat, double temp, double frac_force, double g, string bdcnd) : filament(actinvec, myfov, mynq, linkLength, stretching_stiffness, bending_stiffness, deltat, temp, frac_force, g, bdcnd)
+{ 
+    mass = actin_mass_density*linkLength;
+}
 
 lammps_filament::lammps_filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
         double deltat, double temp, bool isStraight, double actinRadius, double linkLength, double stretching_stiffness,
         double bending_stiffness, double frac_force, string bdcnd):
     filament(startpos, nactin, myfov, mynq, visc, deltat, temp, isStraight, actinRadius, linkLength, stretching_stiffness, bending_stiffness,
-            frac_force, bdcnd) { mass = 0; }
+            frac_force, bdcnd) 
+{ 
+    mass = actin_mass_density*linkLength;
+}
 
 lammps_filament::lammps_filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
             double frac, double bending_stiffness, string bndcnd):

@@ -41,6 +41,7 @@ const double pi = 3.14159265358979323;
 const double maxSmallAngle = pi/12; //Small angles DEFINED as such that sin(t) = t to 2 SigFigs
 const double eps = 1e-10;
 const double temperature = 0.004;
+const double actin_mass_density = 2.6e-14; //miligram / micron
 /*generic functions to be used below*/
 
 double rng(double start, double end);

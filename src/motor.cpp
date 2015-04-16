@@ -197,7 +197,7 @@ template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::step_twoheads()
 {
     array<double, 2> vm, fm, offrate;
-    
+        
     //fm = vec(Fm).(-vec(u)) 
     fm[0]=mk*((hx[0]-hx[1]+mld*cos(mphi))*actin_network->get_direction(f_index[0],l_index[0])[0] +
               (hy[0]-hy[1]+mld*sin(mphi))*actin_network->get_direction(f_index[0],l_index[0])[1]); 
@@ -451,3 +451,4 @@ array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
 template class motor<ATfilament_ensemble>;
 template class motor<baoab_filament_ensemble>;
 template class motor<lammps_filament_ensemble>;
+template class motor<langevin_leapfrog_filament_ensemble>;
