@@ -127,7 +127,7 @@ class ATfilament_ensemble:
         
         ATfilament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
-                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
         
 };
@@ -139,7 +139,7 @@ class baoab_filament_ensemble:
 
         baoab_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
-                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
 
         void update_velocities_B();
@@ -157,7 +157,7 @@ class lammps_filament_ensemble:
 
         lammps_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
-                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
 
         void set_mass(double m);
@@ -176,7 +176,7 @@ class langevin_leapfrog_filament_ensemble:
 
         langevin_leapfrog_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
-                double link_len, vector<double *> pos_sets, double stretching, double bending, double frac_force, 
+                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
 
         void set_mass(double m);

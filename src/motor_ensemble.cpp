@@ -16,7 +16,7 @@
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
         double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
-        double actin_len, double vis, vector<double *> positions, string BC) {
+        double actin_len, double vis, vector<array<double,3> > positions, string BC) {
     
     fov = myfov;
     mrho=mdensity;

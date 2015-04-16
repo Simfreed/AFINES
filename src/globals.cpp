@@ -88,7 +88,7 @@ double dot(double x1, double y1, double x2, double y2)
     return x1*x2+y1*y2;
 }
 
-double mean(std::vector<double> vals)
+double mean(vector<double> vals)
 {
     double sum = 0;
     for (unsigned int i = 0; i < vals.size(); i++){
@@ -98,7 +98,7 @@ double mean(std::vector<double> vals)
 
 }
 
-double var(std::vector<double> vals)
+double var(vector<double> vals)
 {
     double m = mean(vals), sum = 0;
     for (unsigned int i = 0; i < vals.size(); i++){
@@ -107,7 +107,7 @@ double var(std::vector<double> vals)
     return sum / vals.size();
 }
 
-double mode_var(std::vector<double> vals, double m)
+double mode_var(vector<double> vals, double m)
 {
     double sum = 0;
     for (unsigned int i = 0; i < vals.size(); i++){
@@ -116,9 +116,9 @@ double mode_var(std::vector<double> vals, double m)
     return sum / vals.size();
 }
 
-std::vector<double> sum_vecs(std::vector<double> v1, std::vector<double> v2)
+vector<double> sum_vecs(vector<double> v1, vector<double> v2)
 {
-    std::vector<double> s;
+    vector<double> s;
     if (v1.empty())
         s = v2;
     else if( v2.empty())
@@ -151,9 +151,9 @@ bool close(double actual, double expected, double err)
  * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] if dim = 3
  */
 
-std::vector<double *> vec2ptrvec(std::vector<double> v, int dim)
+vector<double *> vec2ptrvec(vector<double> v, int dim)
 {
-    std::vector<double *> out;
+    vector<double *> out;
     double * pos;
     for (unsigned int i = 0; i < v.size(); i+=dim)
     {
@@ -173,10 +173,10 @@ std::vector<double *> vec2ptrvec(std::vector<double> v, int dim)
  * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] 
  */
 
-std::vector<double *> str2ptrvec(std::string pos_str, std::string pos_dlm, std::string coord_dlm)
+vector<double *> str2ptrvec(string pos_str, string pos_dlm, string coord_dlm)
 {
-    std::vector<std::string> posn, posns, coords;           
-    std::vector<double *> out;
+    vector<string> posn, posns, coords;           
+    vector<double *> out;
     double * pos;
 
     boost::split(posns, pos_str, boost::is_any_of(pos_dlm));
@@ -189,6 +189,26 @@ std::vector<double *> str2ptrvec(std::string pos_str, std::string pos_dlm, std::
         for(unsigned int j=0; j < coords.size(); j++){
             pos[j] = (double) atof(coords[j].data());
         }
+        out.push_back(pos);
+    }
+
+    return out;
+}
+
+vector<array<double,3> > str2arrvec(string pos_str, string pos_dlm, string coord_dlm)
+{
+    vector<string> posn, posns, coords;           
+    vector<array<double,3> > out;
+    array<double,3> pos;
+
+    boost::split(posns, pos_str, boost::is_any_of(pos_dlm));
+
+    for(unsigned int i=0; i < posns.size(); i++){
+        
+        boost::split(coords, posns[i], boost::is_any_of(coord_dlm));
+        
+        for(unsigned int j=0; j < 3; j++) pos[j] = (double) atof(coords[j].data());
+        
         out.push_back(pos);
     }
 

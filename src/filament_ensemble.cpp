@@ -314,7 +314,7 @@ void filament_ensemble<filament_type>::update(double t){
 ////////////////////////////////////////
 
 ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+        double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
@@ -345,7 +345,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
+            network.push_back(new filament(pos_sets[i], nactins, fov, nq,
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
@@ -357,7 +357,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
 }
 
 baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+        double rad, double vis, int nactins, double link_len, vector<array<double,3> > pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
@@ -388,7 +388,7 @@ baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2>
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new baoab_filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
+            network.push_back(new baoab_filament(pos_sets[i], nactins, fov, nq,
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
@@ -427,7 +427,7 @@ void baoab_filament_ensemble::update(double t)
 }
 
 lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+        double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
@@ -458,7 +458,7 @@ lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new lammps_filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
+            network.push_back(new lammps_filament(pos_sets[i], nactins, fov, nq,
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
@@ -502,7 +502,7 @@ void lammps_filament_ensemble::update(double t){
 ///LANGEVIN LEAP FROG IMPLEMENTATION///
 ///////////////////////////////////////
 langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nactins, double link_len, vector<double *> pos_sets, double stretching, double bending, 
+        double rad, double vis, int nactins, double link_len, vector<array<double,3> > pos_sets, double stretching, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
@@ -533,7 +533,7 @@ langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double 
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new langevin_leapfrog_filament({pos_sets[i][0], pos_sets[i][1], pos_sets[i][2]}, nactins, fov, nq,
+            network.push_back(new langevin_leapfrog_filament(pos_sets[i], nactins, fov, nq,
                         visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 

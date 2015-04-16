@@ -171,11 +171,11 @@ int main(int argc, char* argv[]){
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
 
-    vector<double *> actin_position_ptrs, a_motor_position_ptrs;
+    vector<array<double,3> > actin_position_arrs, a_motor_position_arrs;
     if (actin_pos_str.size() > 0)
-        actin_position_ptrs = str2ptrvec(actin_pos_str, ":", ",");
+        actin_position_arrs   = str2arrvec(actin_pos_str, ":", ",");
     if (a_motor_pos_str.size() > 0)
-        a_motor_position_ptrs = str2ptrvec(a_motor_pos_str, ":", ",");
+        a_motor_position_arrs = str2arrvec(a_motor_pos_str, ":", ",");
     
     srand(seed);
             
@@ -197,18 +197,18 @@ int main(int argc, char* argv[]){
     cout<<"\nCreating actin network..";
     ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
             temperature, actin_length, viscosity, nmonomer, link_length, 
-            actin_position_ptrs, 
+            actin_position_arrs, 
             link_stretching_stiffness, link_bending_stiffness,
             fracture_force, bnd_cnd, seed); 
 
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
             a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
-            a_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
+            a_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
     cout<<"Adding passive motors (crosslinkers) ...\n";
     motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
             p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
-            p_m_kend, actin_length, viscosity, a_motor_position_ptrs, bnd_cnd);
+            p_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     //cout<<"\nDEBUG: pointer to network = "<<net;
 
@@ -293,11 +293,6 @@ int main(int argc, char* argv[]){
     delete myosins;
     delete crosslks;
     delete net;
-   
-    int as = actin_position_ptrs.size();
-    for (int i = 0; i < as; i++) delete [] actin_position_ptrs[i];
-    int ms = a_motor_position_ptrs.size();
-    for (int i = 0; i < ms; i++) delete [] a_motor_position_ptrs[i];
     
     // Write the output configuration file
     string output_file                         =   dir + "/data/output.txt";
