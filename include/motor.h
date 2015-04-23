@@ -18,8 +18,7 @@
 
 //=====================================
 //included dependences
-#include "map"
-#include "string"
+#include "globals.h"
 
 //motor class
 template <class filament_ensemble_type>

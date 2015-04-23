@@ -87,6 +87,8 @@ class filament
 
         string get_BC();
        
+        inline double angle_between_links(int i, int j);
+
         void fwd_bending_update();
         
         void bwd_bending_update();

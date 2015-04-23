@@ -214,3 +214,8 @@ vector<array<double,3> > str2arrvec(string pos_str, string pos_dlm, string coord
 
     return out;
 }
+
+void intarray_printer(array<int, 2> a)
+{
+    cout<<"\n{ " <<a[0]<<" , "<<a[1]<<" }";
+}

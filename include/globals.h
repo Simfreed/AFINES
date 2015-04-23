@@ -18,7 +18,7 @@
 
 //=====================================
 //included dependences
-#include <iostream>
+#include <iostream> //std::cout
 #include <boost/algorithm/string.hpp>
 //#include "iomanip"
 #include <math.h>
@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <array>
 #include <map>
+#include <algorithm> //std::for_each
 
 using namespace std;
 
@@ -64,4 +65,5 @@ vector<array<double,3> > str2arrvec(string, string, string);
 
 map<array<int, 2>, double> transpose(map<array<int, 2>, double> mat);
 map<array<int, 2>, double> invert_block_diagonal(map<array<int, 2>, double> mat);
+void intarray_printer(array<int,2> a);
 #endif

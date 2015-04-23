@@ -151,10 +151,14 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 {
     //should return a map between actin and x, y coords of quadrant
     vector<vector<array<int,2> > > quads;
-    
-    for (unsigned int i=0; i<links.size(); i++) 
+    vector<array<int, 2> > l_quads;
+    for (unsigned int i=0; i<links.size(); i++){ 
+        links[i]->quad_update();
+        //cout<<"\nDEBUG links[i]->get_quadrants";
+        //l_quads = links[i]->get_quadrants();
+        //for_each(l_quads.begin(), l_quads.end(), intarray_printer);
         quads.push_back(links[i]->get_quadrants());
-    
+    }
     return quads;
 }
 
@@ -394,7 +398,12 @@ string filament::get_BC(){
 void filament::set_BC(string s){
     this->BC = s;
 }
-    
+
+inline double filament::angle_between_links(int i, int j){
+    theta = links[i]->get_angle() - links[j]->get_angle();
+    return theta - 2*pi*floor(theta/(2*pi)+0.5); // Keep angles between -Pi and Pi
+}
+
 void filament::fwd_bending_update()
 {
     //Calculate the force at each Link position as outlined by 
@@ -427,7 +436,7 @@ void filament::fwd_bending_update()
         Caa     = xa  *xa   + ya  *ya;
         Caam1   = xam1*xa   + yam1*ya;
 
-        theta_a   = links[1]->get_angle() - links[0]->get_angle();
+        theta_a   = angle_between_links(1,0); //links[1]->get_angle() - links[0]->get_angle();
 
         if( fabs(theta_a) < maxSmallAngle )
             coef1 = -kb * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
@@ -459,8 +468,8 @@ void filament::fwd_bending_update()
             Cap1ap1 = xap1*xap1 + yap1*yap1;
             Caap1   = xap1*xa   + yap1*ya;
 
-            theta_ap1 = links[2]->get_angle() - links[1]->get_angle();
-
+            theta_ap1 = angle_between_links(2,1); //links[2]->get_angle() - links[1]->get_angle();
+            
             if ( fabs(theta_ap1) < maxSmallAngle )
                 coef2 =  kb * ( 1 / sqrt( Caa     * Cap1ap1 ) );
             else
@@ -475,7 +484,7 @@ void filament::fwd_bending_update()
                 Cap2ap2 = xap2*xap2 + yap2*yap2;
                 Cap1ap2 = xap1*xap2 + yap1*yap2;
 
-                theta_ap2 = links[j+1]->get_angle() - links[j]->get_angle();
+                theta_ap2 = angle_between_links(j+1,j); //links[j+1]->get_angle() - links[j]->get_angle();
                 
                 if ( fabs(theta_ap2) < maxSmallAngle )
                     coef3 = -kb * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
@@ -560,6 +569,174 @@ void filament::fwd_bending_update()
                 fy1 = 0;
             
             actins[ actins.size() - 1 ]->update_force(fx1, fy1);
+        }
+    }
+}
+
+void filament::bwd_bending_update()
+{
+    
+    //same thing as fwd_bending_update, but starting from the other end of the filament
+    double xam1, xa, xap1, xap2;
+    double yam1, ya, yap1, yap2;
+    double Cam1am1, Caa, Cap1ap1, Cap2ap2, Caam1, Caap1, Cap1ap2;
+    double theta_a, theta_ap1, theta_ap2;
+    double coef1, coef2, coef3;
+    double fx1, fx2, fx3, fy1, fy2, fy3;
+    
+    double forcex, forcey;
+    //initialize all NODE forces to be 0
+   
+    int zero = actin.size() - 1, one = actins.size() - 2, two = actins.size()-3, three = actins.size() - 4;
+    //single actin --> no bending energy 
+    if (actins.size() > 2)
+    { 
+        //First two actins won't have any bending forces: 
+        
+        // More than 1 actin--> bending forces to calculate
+        xam1      = actins[one]->get_xcm() - actins[zero]->get_xcm();
+        yam1      = actins[one]->get_ycm() - actins[zero]->get_ycm();
+
+        xa        = actins[two]->get_xcm() - actins[one]->get_xcm();
+        ya        = actins[two]->get_ycm() - actins[one]->get_ycm();
+
+        Cam1am1 = xam1*xam1 + yam1*yam1;
+        Caa     = xa  *xa   + ya  *ya;
+        Caam1   = xam1*xa   + yam1*ya;
+
+        theta_a   = angle_between_links(one, zero); //links[one]->get_angle() - links[zero]->get_angle();
+
+        if( fabs(theta_a) < maxSmallAngle )
+            coef1 = -kb * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
+        else
+            coef1 = -kb*theta_a   / sin(theta_a)   * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
+
+        //2 actins --> bending force on last link; only has one term
+        if (actins.size() == 3)
+        {
+
+            fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+            fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+            //cout<<"\nDEBUG: magnitude of bending forces at actins: ( "<<fx1<<" , "<<fy1<<" )";
+            
+            if (fabs(fx1) < eps)
+                fx1 = 0;
+            if (fabs(fy1) < eps)
+                fy1 = 0;
+
+            actins[two]->update_force(fx1, fy1);
+
+        }
+        else
+        {
+            //More than 2 actins--> more bending forces to calculate
+            xap1 = actins[three]->get_xcm() - actins[two]->get_xcm();
+            yap1 = actins[three]->get_ycm() - actins[two]->get_ycm();
+
+            Cap1ap1 = xap1*xap1 + yap1*yap1;
+            Caap1   = xap1*xa   + yap1*ya;
+
+            theta_ap1 = angle_between_links(two, one); //links[two]->get_angle() - links[one]->get_angle();
+
+            if ( fabs(theta_ap1) < maxSmallAngle )
+                coef2 =  kb * ( 1 / sqrt( Caa     * Cap1ap1 ) );
+            else
+                coef2 =  kb*theta_ap1 / sin(theta_ap1) * ( 1 / sqrt( Caa     * Cap1ap1 ) );
+
+            //Enter loop if more than 3 actins. For 3 actin case, the loop is skipped
+            for (unsigned int j = two; j > 1; j--){
+
+                xap2 = actins[j-2]->get_xcm() - actins[j-1]->get_xcm();
+                yap2 = actins[j-2]->get_ycm() - actins[j-1]->get_ycm();
+
+                Cap2ap2 = xap2*xap2 + yap2*yap2;
+                Cap1ap2 = xap1*xap2 + yap1*yap2;
+
+                theta_ap2 = angle_between_links(j-1, j); //links[j-1]->get_angle() - links[j]->get_angle();
+                
+                if ( fabs(theta_ap2) < maxSmallAngle )
+                    coef3 = -kb * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
+                else
+                    coef3 = -kb*theta_ap2 / sin(theta_ap2) * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
+                
+                fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+                fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+
+                fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * xap1 - (1 + Caap1/Caa) * xa ); 
+                fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * yap1 - (1 + Caap1/Caa) * ya ); 
+
+                fx3 = coef3 * ( xap2 - Cap1ap2/Cap1ap1 * xap1);
+                fy3 = coef3 * ( yap2 - Cap1ap2/Cap1ap1 * yap1);
+
+                forcex = fx1 + fx2 + fx3;
+                forcey = fy1 + fy2 + fy3;
+                if (fabs(forcex) < eps)
+                    forcex = 0;
+                if (fabs(forcey) < eps)
+                    forcey = 0;
+                
+                actins[j]->update_force(forcex, forcey);
+
+                //increment all variables for next iteration:
+                xam1 = xa;
+                xa   = xap1;
+                xap1 = xap2;
+
+                yam1 = ya;
+                ya   = yap1;
+                yap1 = yap2;
+
+                Cam1am1 = Caa;
+                Caa     = Cap1ap1;
+                Cap1ap1 = Cap2ap2;
+
+                Caam1 = Caap1;
+                Caap1 = Cap1ap2;
+
+                coef1 = -1*coef2;
+                coef2 = -1*coef3;
+
+            }
+
+            //LAST TWO actinS ON THE FILAMENT:
+            fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+            fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+            fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * xap1 - (1 + Caap1/Caa) * xa ); 
+            fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * yap1 - (1 + Caap1/Caa) * ya ); 
+            
+            //cout<<"\nDEBUG: 2nd to last actin: (fx1, fy1) + (fx2, fy2) = ( "<<fx1<< " , "<<fy1<<" ) + ( "<<fx2<<" , " <<fy2<<" )";
+            
+            forcex = fx1 + fx2;
+            forcey = fy1 + fy2;
+            if (fabs(forcex) < eps)
+                forcex = 0;
+            if (fabs(forcey) < eps)
+                forcey = 0;
+            
+            actins[1]->update_force(forcex, forcey);
+
+            /*INCREMENT*/
+            xam1 = xa;
+            xa   = xap1;
+
+            yam1 = ya;
+            ya   = yap1;
+
+            Caa   = Cap1ap1;
+            Caam1 = Caap1;
+
+            coef1 = -1*coef2;
+
+            fx1 = coef1 * ( Caam1/Caa * xa - xam1 );
+            fy1 = coef1 * ( Caam1/Caa * ya - yam1 );
+            //cout<<"\nDEBUG: Last actin: (fx1, fy1) = ( "<<fx1<< " , "<<fy1<<" )";
+
+            if (fabs(fx1) < eps)
+                fx1 = 0;
+            if (fabs(fy1) < eps)
+                fy1 = 0;
+            
+            actins[0]->update_force(fx1, fy1);
         }
     }
 }

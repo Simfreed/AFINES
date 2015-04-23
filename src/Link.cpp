@@ -146,25 +146,24 @@ void Link::quad_update(){
     if(hx[0] <= hx[1])
     {
         xlower = int(floor(hx[0]/fov[0]*nq[0]));
-        xupper = int(ceil( hx[1]/fov[0]*nq[0]));
+        xupper = max(int(ceil( hx[1]/fov[0]*nq[0])), xlower + 1);
     }
     else
     {
         xlower = int(floor(hx[1]/fov[0]*nq[0]));
-        xupper = int(ceil( hx[0]/fov[0]*nq[0]));
+        xupper = max(int(ceil( hx[0]/fov[0]*nq[0])), xlower + 1);
     };
     
     if(hy[0] <= hy[1])
     {
         ylower = int(floor(hy[0]/fov[1]*nq[1]));
-        yupper = int(ceil( hy[1]/fov[1]*nq[1]));
+        yupper = max(int(ceil( hy[1]/fov[1]*nq[1])), ylower + 1);
     }
     else
     {
         ylower = int(floor(hy[1]/fov[1]*nq[1]));
-        yupper = int(ceil( hy[0]/fov[1]*nq[1]));
+        yupper = max(int(ceil( hy[0]/fov[1]*nq[1])), ylower + 1);
     };
-    
     for(int xcoord = xlower; xcoord < xupper; xcoord++)
         for(int ycoord = ylower; ycoord < yupper; ycoord++)
             quad.push_back({xcoord, ycoord});

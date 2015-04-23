@@ -110,6 +110,7 @@ void motor<filament_ensemble_type>::attach(int hd)
     array<double, 2> intpoint;
 
     if(!dist.empty()){
+        cout<<"\nDEBUG: distance array is size "<<dist.size();
         for (map<array<int, 2>, double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
             if (it->second <= dm && f_index[pr(hd)]!=(it->first).at(0) && l_index[pr(hd)] != (it->first).at(1)) {
