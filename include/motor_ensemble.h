@@ -32,13 +32,15 @@ class motor_ensemble
 
         ~motor_ensemble();
 
+        int get_nmotors();
+
         void check_broken_filaments();
 
         void motor_walk(double t);
 
         void reshape();
 
-        void motor_write(ofstream& fout);
+        void motor_write(ostream& fout);
 
         void motor_tension(ofstream& fout);
 

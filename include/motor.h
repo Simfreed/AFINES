@@ -73,7 +73,7 @@ class motor
 
         double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature;
         
-        array<double,2> hx, hy, xm, ym, pos_a_end, fov;
+        array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y;
         
         array<int,2> state, f_index, l_index;
         

@@ -113,6 +113,7 @@ class filament
         
         array<double,2> fov;
         array<int,2> nq;
+        vector<array<double, 2> > prv_rnds;
         vector<actin *> actins;
         vector<Link *> links;
         string BC;

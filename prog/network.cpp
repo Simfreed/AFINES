@@ -42,7 +42,6 @@ int main(int argc, char* argv[]){
     bool use_linear_bending;
 
     double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
-            
     string a_motor_pos_str; 
     
     double p_motor_length=0.5, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
@@ -88,11 +87,13 @@ int main(int argc, char* argv[]){
         ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / area")
         ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.001), "number of passive motors / area")
         ("a_motor_pos_str", po::value<string> (&a_motor_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
+        ("p_motor_pos_str", po::value<string> (&p_motor_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
         ("a_m_kon", po::value<double>(&a_m_kon)->default_value(90.0),"active motor on rate")
         ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1),"active motor off rate")
         ("a_m_kend", po::value<double>(&a_m_kend)->default_value(5),"active motor off rate at filament end")
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(50),"active motor spring stiffness (pN/um)")
+        ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor spring stiffness (um/s)")
         
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(90),"passive motor on rate")
         ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0),"passive motor off rate")
@@ -171,11 +172,13 @@ int main(int argc, char* argv[]){
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
 
-    vector<array<double,3> > actin_position_arrs, a_motor_position_arrs;
+    vector<array<double,3> > actin_position_arrs, a_motor_position_arrs, p_motor_position_arrs;
     if (actin_pos_str.size() > 0)
         actin_position_arrs   = str2arrvec(actin_pos_str, ":", ",");
     if (a_motor_pos_str.size() > 0)
         a_motor_position_arrs = str2arrvec(a_motor_pos_str, ":", ",");
+    if (p_motor_pos_str.size() > 0)
+        p_motor_position_arrs = str2arrvec(p_motor_pos_str, ":", ",");
     
     srand(seed);
             
@@ -208,11 +211,11 @@ int main(int argc, char* argv[]){
     cout<<"Adding passive motors (crosslinkers) ...\n";
     motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
             p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
-            p_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
+            p_m_kend, actin_length, viscosity, p_motor_position_arrs, bnd_cnd);
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     //cout<<"\nDEBUG: pointer to network = "<<net;
 
-    string time_str = "t = 0\n";
+    string time_str = "t = 0";
     if (shear_rate != 0)
         net->set_shear_rate(shear_rate);
     
@@ -221,23 +224,24 @@ int main(int argc, char* argv[]){
         cout<<"\nusing linear bending\n";
     }
 
-    file_a << time_str;
+    file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
     net->write_actins(file_a);
-    file_l << time_str;
+    file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
     net->write_links(file_l);
-    file_am << time_str;
+    file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
     myosins->motor_write(file_am);
-    file_pm << time_str;
+    file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
     crosslks->motor_write(file_pm);
     file_th << time_str;
     net->write_thermo(file_th);
 
+//ostream* fp = &cout
     //Run the simulation
     while (t<=tfinal) {
         //print time count
 		if (count%n_bw_stdout==0) {
 			cout<<"\nTime counts: "<<count;
-		    net->print_filament_thermo();
+		    //net->print_filament_thermo();
             net->print_network_thermo();
         }
 
@@ -245,11 +249,6 @@ int main(int argc, char* argv[]){
         if (shear_rate != 0)
             net->update_shear();
         
-        /*net->update_stretching();
-        net->update_bending();
-        net->update_positions(t);
-        net->quad_update();
-        */
         net->update(t);//updates all forces, velocities and positions of filaments
 
         //update motors and cross linkers
@@ -265,18 +264,22 @@ int main(int argc, char* argv[]){
         //print to file
 	    if (count%n_bw_print==0) {
 	        
-            time_str = "t = "+to_string(t)+"\n";
-            file_a << time_str;
-            net->write_actins(file_a);
-            file_l << time_str;
-            net->write_links(file_l);
-            file_am << time_str;
-            myosins->motor_write(file_am);
-            file_pm << time_str;
-            crosslks->motor_write(file_pm);
-            file_th << time_str;
-            net->write_thermo(file_th);
+            time_str = "\nt = "+to_string(t);
             
+            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
+            net->write_actins(file_a);
+            
+            file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
+            net->write_links(file_l);
+            
+            file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
+            myosins->motor_write(file_am);
+            
+            file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
+            crosslks->motor_write(file_pm);
+            
+            file_th<< time_str;
+            net->write_thermo(file_th);
 		}
         
     }

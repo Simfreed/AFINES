@@ -37,6 +37,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     kb              = bending_stiffness;
     BC              = bndcnd;
     kinetic_energy  = 0;
+
 }
 
 filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
@@ -57,6 +58,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     double xcm, ycm, phi, variance;
     //the start of the polymer: 
     actins.push_back(new actin( startpos[0], startpos[1], actinRadius, visc));
+    prv_rnds.push_back({0,0});
     phi = startpos[2];
     
     if (temp != 0) variance = temp/(bending_stiffness * linkLength * linkLength);
@@ -76,6 +78,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
         }else{
             // Add the segment
             actins.push_back( new actin(xcm, ycm, actinRadius, visc) );
+            prv_rnds.push_back({0,0});
             links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1, j}, fov, nq) );  
             
         } 
@@ -88,6 +91,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
         }
 
     }
+
    
 }
 
@@ -108,6 +112,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     if (actinvec.size() > 0)
     {
         actins.push_back(new actin(*(actinvec[0])));
+        prv_rnds.push_back({0,0});
     }
     
     //Link em up
@@ -116,9 +121,11 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
 
             actins.push_back(new actin(*(actinvec[j])));
             links.push_back( new Link(linkLength, stretching_stiffness, this, {(int)j-1, (int)j}, fov, nq) );  
-
+            prv_rnds.push_back({0,0});
+            
         }
     }
+
 }
 
 filament::~filament(){
@@ -135,12 +142,13 @@ filament::~filament(){
     
     actins.clear();
     links.clear();
+    prv_rnds.clear();
 }
 
 void filament::add_actin(actin * a, double linkLength, double stretching_stiffness){
     
     actins.push_back(new actin(*a));
-    
+    prv_rnds.push_back({0,0});    
     if (actins.size() > 1){
         int j = (int) actins.size() - 1;
         links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1,  j}, fov, nq ) );  
@@ -165,17 +173,21 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 void filament::update_positions(double t)
 {
     double vx, vy, gamma, T = temperature;
+    array<double, 2> new_rnds;
     array<double, 2> newpos;
     kinetic_energy = 0;  
-
     //if (t < dt*100000) T = 0;
     
     for (unsigned int i = 0; i < actins.size(); i++){
         
         gamma = actins[i]->get_friction();
-        
-        vx  = (actins[i]->get_force()[0])/gamma  + sqrt(2*T/(dt*gamma))*rng_n(0,1);
-        vy  = (actins[i]->get_force()[1])/gamma  + sqrt(2*T/(dt*gamma))*rng_n(0,1);
+       
+        new_rnds = {rng_n(0,1), rng_n(0,1)};
+
+        vx  = (actins[i]->get_force()[0])/gamma  + sqrt(T/(2*dt*gamma))*(new_rnds[0] + prv_rnds[i][0]);
+        vy  = (actins[i]->get_force()[1])/gamma  + sqrt(T/(2*dt*gamma))*(new_rnds[1] + prv_rnds[i][1]);
+
+        prv_rnds[i] = new_rnds;
         
         kinetic_energy += vx*vx + vy*vy;
         
@@ -185,7 +197,6 @@ void filament::update_positions(double t)
         actins[i]->set_ycm(newpos[1]);
         actins[i]->reset_force(); 
     }
-    
 }
 
 array<double, 2> filament::boundary_check(int i, double t, double vx, double vy)
@@ -400,7 +411,7 @@ void filament::set_BC(string s){
 }
 
 inline double filament::angle_between_links(int i, int j){
-    theta = links[i]->get_angle() - links[j]->get_angle();
+    double theta = links[i]->get_angle() - links[j]->get_angle();
     return theta - 2*pi*floor(theta/(2*pi)+0.5); // Keep angles between -Pi and Pi
 }
 
@@ -587,7 +598,7 @@ void filament::bwd_bending_update()
     double forcex, forcey;
     //initialize all NODE forces to be 0
    
-    int zero = actin.size() - 1, one = actins.size() - 2, two = actins.size()-3, three = actins.size() - 4;
+    int zero = actins.size() - 1, one = actins.size() - 2, two = actins.size()-3, three = actins.size() - 4;
     //single actin --> no bending energy 
     if (actins.size() > 2)
     { 
@@ -604,7 +615,7 @@ void filament::bwd_bending_update()
         Caa     = xa  *xa   + ya  *ya;
         Caam1   = xam1*xa   + yam1*ya;
 
-        theta_a   = angle_between_links(one, zero); //links[one]->get_angle() - links[zero]->get_angle();
+        theta_a   = angle_between_links(two, one); //links[one]->get_angle() - links[zero]->get_angle();
 
         if( fabs(theta_a) < maxSmallAngle )
             coef1 = -kb * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
@@ -636,7 +647,7 @@ void filament::bwd_bending_update()
             Cap1ap1 = xap1*xap1 + yap1*yap1;
             Caap1   = xap1*xa   + yap1*ya;
 
-            theta_ap1 = angle_between_links(two, one); //links[two]->get_angle() - links[one]->get_angle();
+            theta_ap1 = angle_between_links(three, two); //links[two]->get_angle() - links[one]->get_angle();
 
             if ( fabs(theta_ap1) < maxSmallAngle )
                 coef2 =  kb * ( 1 / sqrt( Caa     * Cap1ap1 ) );
@@ -652,7 +663,7 @@ void filament::bwd_bending_update()
                 Cap2ap2 = xap2*xap2 + yap2*yap2;
                 Cap1ap2 = xap1*xap2 + yap1*yap2;
 
-                theta_ap2 = angle_between_links(j-1, j); //links[j-1]->get_angle() - links[j]->get_angle();
+                theta_ap2 = angle_between_links(j-2, j-1); //links[j-1]->get_angle() - links[j]->get_angle();
                 
                 if ( fabs(theta_ap2) < maxSmallAngle )
                     coef3 = -kb * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
@@ -745,11 +756,11 @@ void filament::bwd_bending_update()
 //wrapper, for fwd_bending_update (and bwd bending update if I ever make it)
 void filament::update_bending()
 {
-    if(links.size() > 1)
+    if(links.size() > 1){
         this->fwd_bending_update();
-
+        this->bwd_bending_update();
+    }
 }
-
 
 int filament::get_nactins(){
     return actins.size();
@@ -763,7 +774,7 @@ double filament::get_bending_energy(){
 
     for (unsigned int i = 0; i < links.size() - 1; i++)
     {
-        theta = links[i+1]->get_angle() - links[i]->get_angle();
+        theta = angle_between_links(i+1, i);//links[i+1]->get_angle() - links[i]->get_angle();
         sum += theta*theta;
     }
     

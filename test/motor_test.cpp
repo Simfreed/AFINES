@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE( attach )
     pos_sets.push_back({0,0,0});
     //pos_sets.push_back({-2,3,pi});
     ATfilament_ensemble * f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, bending, frac_force, bc, seed);
-
+    f->quad_update(); 
     //MOTOR
     double mx = 2.35, my = 0.5, mang = pi/2, mlen = 1;
     motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>({mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, kon, koff, kend, actin_rad, vis, bc);

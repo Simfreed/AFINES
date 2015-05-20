@@ -44,7 +44,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     hx[1]=hx[0]+mld*cos(mphi);
     hy[1]=hy[0]+mld*sin(mphi);
     
-    mobility=log(10)/(4*pi*vis*mld);
+    mobility=1./(4*pi*vis*mld);//log(10)/(4*pi*vis*mld);
     
     
     // pos_a_end = distance from pointy end -- by default 0
@@ -62,6 +62,9 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
                 actin_network->get_end(f_index[1], l_index[1])[1]);
     }
     
+    
+    prv_rnd_x = {0,0};
+    prv_rnd_y = {0,0};
 
 }
 
@@ -110,15 +113,13 @@ void motor<filament_ensemble_type>::attach(int hd)
     array<double, 2> intpoint;
 
     if(!dist.empty()){
-        cout<<"\nDEBUG: distance array is size "<<dist.size();
         for (map<array<int, 2>, double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
-            if (it->second <= dm && f_index[pr(hd)]!=(it->first).at(0) && l_index[pr(hd)] != (it->first).at(1)) {
-                
+            if (it->second <= dm && !(f_index[pr(hd)]==(it->first).at(0) && l_index[pr(hd)]==(it->first).at(1))) {
+                                
                 onrate=kon*exp(-((it->second)*(it->second))/(dm*dm));
                 
                 if (event(onrate,dt)==1) {
-                    
                     //update state
                     state[hd] = 1;
                     f_index[hd] = (it->first).at(0);
@@ -151,27 +152,36 @@ void motor<filament_ensemble_type>::attach(int hd)
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::brownian(double t, double gamma)
 {
-    if (state[0]==0 && state[1]==0) {
 
-        xm[0]=hx[0]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[0];
-        xm[1]=hx[1]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) + mk*dt*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[1];
-        ym[0]=hy[0]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
-        ym[1]=hy[1]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) + mk*dt*(hy[0]-hy[1]+mld*sin(mphi));
+    if (state[0]==0 && state[1]==0) {
+        
+        array<double, 2> new_rnd_x, new_rnd_y;
+        new_rnd_x = {rng_n(0,1), rng_n(0,1)};
+        new_rnd_y = {rng_n(0,1), rng_n(0,1)};
+
+        xm[0]=hx[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[0] + prv_rnd_x[0]) - mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[0];
+        xm[1]=hx[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[1] + prv_rnd_x[1]) + mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[1];
+        ym[0]=hy[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_y[0] + prv_rnd_y[0]) - mk*dt*mobility*(hy[0]-hy[1]+mld*sin(mphi));
+        ym[1]=hy[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_y[1] + prv_rnd_y[1]) + mk*dt*mobility*(hy[0]-hy[1]+mld*sin(mphi));
         if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         if (BC == "PERIODIC")  periodic(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
+        prv_rnd_x = new_rnd_x;
+        prv_rnd_y = new_rnd_y;
     }
     else if (state[0]==0 || state[1]==0) {
         int hd=state[0];//cleverly equivalent to: 
                         //  int hd = (hd for which state[hd] = 0)
-
-        xm[hd]=hx[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*dt*hy[hd];
-        ym[hd]=hy[hd]+sqrt(dt*mobility*2*temperature)*rng_n(0,1) - mk*dt*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
+        double new_rnd_x = rng_n(0,1), new_rnd_y = rng_n(0,1);
+        xm[hd]=hx[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_x[hd] + new_rnd_x) - mk*dt*mobility*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*dt*hy[hd];
+        ym[hd]=hy[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_y[hd] + new_rnd_y) - mk*dt*mobility*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
         xm[pr(hd)]=hx[pr(hd)];
         ym[pr(hd)]=hy[pr(hd)];
         if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         if (BC == "PERIODIC")  periodic(t, gamma, xm[0],xm[1],ym[0],ym[1]);
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
+        prv_rnd_x[hd] = new_rnd_x;
+        prv_rnd_y[hd] = new_rnd_y;
     }
     else {
         return;
@@ -244,11 +254,10 @@ void motor<filament_ensemble_type>::actin_update()
         pos_ratio[0] = pos_a_end[0]/actin_network->get_llength(f_index[0], l_index[0]);
         pos_ratio[1] = pos_a_end[1]/actin_network->get_llength(f_index[1], l_index[1]);
 
-        actin_network->update_forces(f_index[0], l_index[0] + 1, fx[0] *    pos_ratio[0] ,  fy[0] *    pos_ratio[0]);
-        actin_network->update_forces(f_index[0], l_index[0]    , fx[0] * (1-pos_ratio[0]), fy[0] * (1-pos_ratio[0]));
-        actin_network->update_forces(f_index[1], l_index[1] + 1, fx[1] *    pos_ratio[1] , fy[1] *    pos_ratio[1]);
-        actin_network->update_forces(f_index[1], l_index[1]    , fx[1] * (1-pos_ratio[1]), fy[1] * (1-pos_ratio[1]));
-        
+        actin_network->update_forces(f_index[0], l_index[0],   fx[0] *    pos_ratio[0] , fy[0] *    pos_ratio[0] );
+        actin_network->update_forces(f_index[0], l_index[0]+1, fx[0] * (1-pos_ratio[0]), fy[0] * (1-pos_ratio[0]));
+        actin_network->update_forces(f_index[1], l_index[1],   fx[1] *    pos_ratio[1] , fy[1] *    pos_ratio[1] );
+        actin_network->update_forces(f_index[1], l_index[1]+1, fx[1] * (1-pos_ratio[1]), fy[1] * (1-pos_ratio[1]));
     }
     else
         return;
@@ -302,7 +311,6 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 {
     double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
     if (pos >= link_length) { // "passed" the link
-        
         if (l_index[hd] == 0){ // the barbed end of the filament
             
             if (event(kend,dt)==1) {

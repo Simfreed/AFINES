@@ -125,7 +125,7 @@ bool actin::operator==(const actin& that)
 
 string actin::write()
 {
-    return std::to_string(x) + "\t" + std::to_string(y) + "\t" + std::to_string(ld)+ + "\n";
+    return "\n" + std::to_string(x) + "\t" + std::to_string(y) + "\t" + std::to_string(ld);
 }
 
 string actin::to_string()

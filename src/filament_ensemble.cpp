@@ -256,6 +256,19 @@ void filament_ensemble<filament_type>::clear_broken(){
     broken_filaments.clear();
 }
 
+template <class filament_type> 
+int filament_ensemble<filament_type>::get_nactins(){
+    int tot = 0;
+    for (unsigned int f = 0; f < network.size(); f++)
+        tot += network[f]->get_nactins();
+    return tot;
+}
+
+template <class filament_type> 
+int filament_ensemble<filament_type>::get_nlinks(){
+    return this->get_nactins() - network.size();
+}
+
 // Update bending forces between monomers
 template <class filament_type>
 void filament_ensemble<filament_type>::update_bending(){
@@ -340,7 +353,8 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
     cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
-    
+   
+
     int s = pos_sets.size();
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {

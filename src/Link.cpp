@@ -98,12 +98,12 @@ double Link::get_angle(){
 }
 
 double Link::get_length(){
-    return dis_points(hx[0], hy[0], hx[1], hy[1]);
+    return l0; //dis_points(hx[0], hy[0], hx[1], hy[1]);
 }
 
 std::string Link::write(){
-    return std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
-        + std::to_string(hy[1]-hy[0]) + "\n";
+    return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
+        + std::to_string(hy[1]-hy[0]);
 }
 
 std::string Link::to_string(){

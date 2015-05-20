@@ -64,19 +64,23 @@ double dis_points(double x1, double y1, double x2, double y2)
 
 double velocity(double vel0, double force, double fstall)
 {
+    double v;
     if (force>=fstall) {
-        return 0;
+        v = 0;
     }
     else if (force>0 && force<fstall) {
-        return vel0*(1-(fabs(force)/fstall));
+        v = vel0*(1-(fabs(force)/fstall));
     }
     else if (force<=0 && force>=-fstall) {
-        return vel0*(1+(fabs(force)/fstall));
+        v = vel0*(1+(fabs(force)/fstall));
     }
     else{
-        return 2*vel0;
+        v =  2*vel0;
     }
+    return v;
 }
+
+
 
 double cross(double ax, double ay, double bx, double by)
 {

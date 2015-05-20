@@ -54,6 +54,10 @@ motor_ensemble<filament_ensemble_type>::~motor_ensemble( ){
     n_motors.clear();
 };
 
+template <class filament_ensemble_type>
+int motor_ensemble<filament_ensemble_type>::get_nmotors( ){ 
+    return n_motors.size();
+}
 //check if any motors attached to filaments that no longer exist; 
 // if they do, detach them
 // Worst case scenario, this is a O(m*n*p) function,
@@ -102,7 +106,9 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
         s[0]=n_motors[i]->get_states()[0];
         s[1]=n_motors[i]->get_states()[1];
 
-        //cout<<"\nDEBUG: updating motor "<<i<<", states: ( "<<s[0]<<" , "<<s[1]<<" ), f_indexes: ( "<<n_motors[i]->get_f_index()[0]<< " , "<<n_motors[i]->get_f_index()[1]<<" )";
+        //cout<<"\nDEBUG: updating motor "<<i<<", states: ( "<<s[0]<<" , "<<s[1]<<" )\tf_indexes: ( "<<
+        //    n_motors[i]->get_f_index()[0]<< " , "<<n_motors[i]->get_f_index()[1]<<" )\tl_indexes: ( "<<
+        //    n_motors[i]->get_l_index()[0]<< " , "<<n_motors[i]->get_l_index()[1]<<" )";
         if (s[0]==0 && s[1]==0) {
             n_motors[i]->attach(0);
             n_motors[i]->attach(1);
@@ -121,7 +127,8 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
         else {
             n_motors[i]->step_twoheads();
         }
-    
+   
+
         n_motors[i]->actin_update();
     }
 
@@ -138,10 +145,14 @@ void motor_ensemble<filament_ensemble_type>::reshape()
 
 
 template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_write(ofstream& fout)
+void motor_ensemble<filament_ensemble_type>::motor_write(ostream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
-        fout<<n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[0]<<"\t"<<n_motors[i]->get_hx()[1]-n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[1]-n_motors[i]->get_hy()[0]<<"\n";
+        fout<<"\n"<<n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[0]<<"\t"
+            <<n_motors[i]->get_hx()[1]-n_motors[i]->get_hx()[0]<<"\t"
+            <<n_motors[i]->get_hy()[1]-n_motors[i]->get_hy()[0]<<"\t"
+            <<n_motors[i]->get_f_index()[0]<<"\t"<<n_motors[i]->get_f_index()[1]<<"\t"
+            <<n_motors[i]->get_l_index()[0]<<"\t"<<n_motors[i]->get_l_index()[1];
     } 
 }
 

@@ -59,7 +59,11 @@ class filament_ensemble
         double get_angle(int fil, int link);
 
         double get_llength(int fil, int link);
+       
+        int get_nactins();
         
+        int get_nlinks();
+
         void update_shear();
         
         void update_stretching();
