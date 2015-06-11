@@ -96,8 +96,8 @@ int main(int argc, char* argv[]){
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor spring stiffness (um/s)")
         
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(90),"passive motor on rate")
-        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0),"passive motor off rate")
-        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0),"passive motor off rate at filament end")
+        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.01),"passive motor off rate")
+        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0.01),"passive motor off rate at filament end")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(50),"passive motor spring stiffness (pN/um)")
         
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")

@@ -200,14 +200,16 @@ void filament_ensemble<filament_type>::print_filament_thermo(){
 
 template <class filament_type> 
 void filament_ensemble<filament_type>::print_network_thermo(){
-    double KE=0, PE=0, TE=0;
+    double KE=0, PEs=0, PEb=0, TE=0;
     for (unsigned int f = 0; f < network.size(); f++)
     {
         KE += network[f]->get_kinetic_energy();
-        PE += network[f]->get_potential_energy();
+        //PE += network[f]->get_potential_energy();
+        PEb += network[f]->get_bending_energy();
+        PEs += network[f]->get_stretching_energy();
         TE += network[f]->get_total_energy();
     }
-    cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPE = "<<PE<<"\tTE = "<<TE;
+    cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPEs = "<<PEs<<"\tPEb = "<<PEb<<"\tTE = "<<TE;
 }
 
 
@@ -365,6 +367,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
+            //phi0=atan2(1+x0-y0*y0, -1-x0*x0+y0); // this is just the first example in mathematica's streamplot documentation
             network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
         }
     }
