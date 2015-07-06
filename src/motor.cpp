@@ -116,7 +116,7 @@ void motor<filament_ensemble_type>::attach(int hd)
         for (map<array<int, 2>, double>::iterator it=dist.begin(); it!=dist.end(); ++it)
         { 
             if (it->second <= dm && !(f_index[pr(hd)]==(it->first).at(0) && l_index[pr(hd)]==(it->first).at(1))) {
-                                
+
                 onrate=kon*exp(-((it->second)*(it->second))/(dm*dm));
                 
                 if (event(onrate,dt)==1) {
