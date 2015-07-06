@@ -41,10 +41,10 @@ int main(int argc, char* argv[]){
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
     bool use_linear_bending;
 
-    double a_motor_length=0.5, a_motor_v=1.0, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
+    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
     string a_motor_pos_str; 
     
-    double p_motor_length=0.5, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
+    double p_motor_length, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
             p_motor_v=0, p_m_kon, p_m_kend, p_m_koff; 
     string p_motor_pos_str;
     
@@ -84,20 +84,22 @@ int main(int argc, char* argv[]){
         ("actin_length", po::value<double>(&actin_length)->default_value(0.5), "Length of a single actin monomer")
         ("actin_pos_str", po::value<string> (&actin_pos_str)->default_value(""), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
         
-        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / area")
-        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.001), "number of passive motors / area")
+        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / um^2")
+        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.001), "number of passive motors / um^2")
         ("a_motor_pos_str", po::value<string> (&a_motor_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
         ("p_motor_pos_str", po::value<string> (&p_motor_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
         ("a_m_kon", po::value<double>(&a_m_kon)->default_value(90.0),"active motor on rate")
         ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1),"active motor off rate")
         ("a_m_kend", po::value<double>(&a_m_kend)->default_value(5),"active motor off rate at filament end")
+        ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.5),"active motor rest length (um)")
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(50),"active motor spring stiffness (pN/um)")
-        ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor spring stiffness (um/s)")
+        ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
         
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(90),"passive motor on rate")
         ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.01),"passive motor off rate")
         ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0.01),"passive motor off rate at filament end")
+        ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.5),"passive motor rest length (um)")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(50),"passive motor spring stiffness (pN/um)")
         
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
@@ -235,7 +237,6 @@ int main(int argc, char* argv[]){
     file_th << time_str;
     net->write_thermo(file_th);
 
-//ostream* fp = &cout
     //Run the simulation
     while (t<=tfinal) {
         //print time count
@@ -278,7 +279,7 @@ int main(int argc, char* argv[]){
             file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
             crosslks->motor_write(file_pm);
             
-            file_th<< time_str;
+            file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_thermo(file_th);
 		}
         
