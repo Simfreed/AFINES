@@ -50,7 +50,7 @@ class motor_ensemble
 
     private:
 
-        double mrho, mld, mang, motorx, motory, alpha, gamma;
+        double mrho, mld, mang, motorx, motory, alpha, gamma, tMove;
         int nm;
         
         array<double, 2> fov;

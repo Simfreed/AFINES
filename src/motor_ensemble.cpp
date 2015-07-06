@@ -27,6 +27,8 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
     alpha=0.8;
     gamma = 0;
 
+    tMove=10;
+
     for (int i=0; i< nm; i++) {
         
         if ((unsigned int)i < positions.size()){
@@ -102,36 +104,48 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
     this->check_broken_filaments();
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
-
+        
         s[0]=n_motors[i]->get_states()[0];
         s[1]=n_motors[i]->get_states()[1];
 
-        //cout<<"\nDEBUG: updating motor "<<i<<", states: ( "<<s[0]<<" , "<<s[1]<<" )\tf_indexes: ( "<<
-        //    n_motors[i]->get_f_index()[0]<< " , "<<n_motors[i]->get_f_index()[1]<<" )\tl_indexes: ( "<<
-        //    n_motors[i]->get_l_index()[0]<< " , "<<n_motors[i]->get_l_index()[1]<<" )";
         if (s[0]==0 && s[1]==0) {
             n_motors[i]->attach(0);
             n_motors[i]->attach(1);
-            n_motors[i]->brownian(t, gamma);
         }
         else if (s[0]==0 && s[1]==1) {
             n_motors[i]->attach(0);
-            n_motors[i]->brownian(t, gamma);
-            n_motors[i]->step_onehead(1);
         }
         else if (s[0]==1 && s[1]==0) {
             n_motors[i]->attach(1);
-            n_motors[i]->brownian(t, gamma);
-            n_motors[i]->step_onehead(0);
         }
-        else {
-            n_motors[i]->step_twoheads();
-        }
+    
+    }
    
 
-        n_motors[i]->actin_update();
-    }
+    if (t >= tMove){
+        for (unsigned int i=0; i<n_motors.size(); i++) {
 
+            s[0]=n_motors[i]->get_states()[0];
+            s[1]=n_motors[i]->get_states()[1];
+            
+            if (s[0]==0 && s[1]==0) {
+                n_motors[i]->brownian(t, gamma);
+            }
+            else if (s[0]==0 && s[1]==1) {
+                n_motors[i]->brownian(t, gamma);
+                n_motors[i]->step_onehead(1);
+            }
+            else if (s[0]==1 && s[1]==0) {
+                n_motors[i]->brownian(t, gamma);
+                n_motors[i]->step_onehead(0);
+            }
+            else {
+                n_motors[i]->step_twoheads();
+            }
+
+            n_motors[i]->actin_update();
+        }   
+    }
 }
 
 template <class filament_ensemble_type>
