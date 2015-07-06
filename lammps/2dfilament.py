@@ -1,6 +1,7 @@
 import math
 import random
 import sys
+import time
 
 xbds=[-500,500]
 ybds=[-500,500]
@@ -8,6 +9,9 @@ zbds=[-0.05,0.05]
 
 bondlength = float(sys.argv[1]) if len(sys.argv) > 0 else 1
 nrod = int(200 / bondlength)
+
+seed = sys.argv[2] if len(sys.argv) > 1 else time.time()
+random.seed(seed)
 
 rod_pos=[]
 

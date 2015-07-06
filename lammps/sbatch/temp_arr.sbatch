@@ -18,7 +18,7 @@ echo "Array Job; NOT REMAKING EXECUTABLE"
 echo "My SLURM_ARRAY_TASK_ID: " $SLURM_ARRAY_TASK_ID
 
 temp=$SLURM_ARRAY_TASK_ID
-kT300="0.000004" #pg-um^2/us^3
+kT300="0.000004" #pg-um^2/us^2
 kT=$(echo "$temp $kT300" | awk '{printf "%.9f",$1*$2/300}') #pg-um^2/us^2
 
 filament_length=200 #um

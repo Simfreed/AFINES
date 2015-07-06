@@ -1,0 +1,38 @@
+#Actin filament
+
+4 atoms
+3 bonds
+2 angles
+
+1 atom types
+3 bond types
+1 angle types
+
+-500 500 xlo xhi
+-500 500 ylo yhi
+-0.05 0.05 zlo zhi
+
+Masses
+
+1 1
+
+
+Atoms
+
+1 1 1 -150 0 0
+2 1 1 -101.003068855 -0.548396206733 0
+3 1 1 -52.2787248201 4.64181557481 0
+4 1 1 -3.50263379133 9.32080520478 0
+
+
+Bonds
+
+0 1 1 2
+1 2 2 3
+2 3 3 4
+
+
+Angles
+
+1 1 1 2 3
+2 1 2 3 4
