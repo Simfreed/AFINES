@@ -40,6 +40,8 @@ class filament_ensemble
 
         map<array<int,2>, double> get_dist(double x, double y);
 
+        map<array<int, 2>, double> update_dist_map(map<array<int,2>, double> t_map, array<int, 2> mquad, double x, double y);
+        
         array<double,2> get_direction(int fil, int link);
 
         array<double,2> get_intpoints(int fil, int link, double xp, double yp);

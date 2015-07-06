@@ -44,7 +44,7 @@ void filament_ensemble<filament_type>::quad_update()
             for (unsigned int k = 0; k  < filament_quads[j].size(); k++){ //Loop over quadrants of a Link   
                 
                 quad_fils[ filament_quads[j][k] ].push_back({(int)i, (int)j});
-        
+//                cout<<"\nDEBUG: quad_fils[{"<<filament_quads[j][k][0]<<" , "<<filament_quads[j][k][1]<<"}] = {"<<i<<" , "<<j<<"}";
             }
         }   
     }
@@ -64,17 +64,39 @@ vector<filament_type *>* filament_ensemble<filament_type>::get_network()
 template <class filament_type>
 map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
 {
-    array<int, 2> motor_quad = {int(floor(x/fov[0]*nq[0])), int(floor(y/fov[1]*nq[1]))};
     map<array<int, 2>, double> t_map;
-    if(!quad_fils[motor_quad].empty())
-    {
-        for (unsigned int j = 0; j < quad_fils[motor_quad].size(); j++)
-            t_map[quad_fils[motor_quad][j]] = network[quad_fils[motor_quad][j][0]]->get_link(quad_fils[motor_quad][j][1])->get_distance(x,y);
+    int mqx = int(floor(x/fov[0]*nq[0]));
+    int mqy = int(floor(y/fov[1]*nq[1]));
     
-    }
+    t_map = update_dist_map(t_map, {mqx, mqy}, x, y);
+    t_map = update_dist_map(t_map, {mqx, mqy + 1}, x, y);
+    t_map = update_dist_map(t_map, {mqx + 1, mqy}, x, y);
+    t_map = update_dist_map(t_map, {mqx + 1, mqy + 1}, x, y);
+    
     return t_map;
 }
 
+template <class filament_type>
+map<array<int, 2>, double> filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double> t_map, array<int, 2> mquad, double x, double y){
+    
+    array<int, 2> lnk_idx;
+    double dist;
+
+    if(!quad_fils[mquad].empty())
+        
+        for (unsigned int j = 0; j < quad_fils[mquad].size(); j++){
+        
+            lnk_idx = quad_fils[mquad][j];
+            dist = network[lnk_idx[0]]->get_link(lnk_idx[1])->get_distance(x,y);
+            
+            if (t_map.count(lnk_idx) == 0 || t_map[lnk_idx] > dist)
+                
+                t_map[lnk_idx] = dist;
+        }
+
+    return t_map;
+
+}
 template <class filament_type>
 array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int link, double xp, double yp)
 {
