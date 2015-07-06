@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[     60733,       1508]
-NotebookOptionsPosition[     58193,       1415]
-NotebookOutlinePosition[     58531,       1430]
-CellTagsIndexPosition[     58488,       1427]
+NotebookDataLength[     69355,       1705]
+NotebookOptionsPosition[     66029,       1590]
+NotebookOutlinePosition[     66360,       1605]
+CellTagsIndexPosition[     66317,       1602]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -46,10 +46,10 @@ Cell[BoxData[
     RowBox[{
     "archivent", " ", "=", " ", 
      "\"\</project/weare-dinner/simonfreedman/cytomod/out/network/\>\""}], 
-    ";"}], "\[IndentingNewLine]", "\n", 
+    ";"}], "\n", "\n", 
    RowBox[{"(*", 
-    RowBox[{"Line", " ", "Types"}], "*)"}], " ", "\n", "\[IndentingNewLine]", 
-   
+    RowBox[{"Line", " ", "Types"}], "*)"}], " ", "\[IndentingNewLine]", 
+   "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{
      RowBox[{"link", "[", "l_", "]"}], ":=", 
@@ -692,8 +692,11 @@ Cell[BoxData[
           RowBox[{"Export", "[", 
            RowBox[{
             RowBox[{"dir", "<>", "\"\</data/movie.avi\>\""}], ",", "frames"}],
-            "]"}]}], "]"}], ";", "\[IndentingNewLine]", "frames"}]}], 
-      "\[IndentingNewLine]", "]"}]}], ";"}], "\[IndentingNewLine]", "\n", 
+            "]"}]}], "]"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"Clear", "[", 
+         RowBox[{"lt", ",", "amt", ",", "pmt"}], "]"}], ";", 
+        "\[IndentingNewLine]", "frames"}]}], "\[IndentingNewLine]", "]"}]}], 
+    ";"}], "\n", "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{
      RowBox[{"simgs", "[", 
@@ -792,8 +795,8 @@ Cell[BoxData[
              RowBox[{"i", ",", 
               RowBox[{"Length", "[", "frames", "]"}]}], "}"}]}], "]"}]}], 
          "\[IndentingNewLine]", "]"}], ";", "\[IndentingNewLine]", 
-        "frames"}]}], "\[IndentingNewLine]", "]"}]}], ";"}], 
-   "\[IndentingNewLine]", "\n", 
+        "frames"}]}], "\[IndentingNewLine]", "]"}]}], ";"}], "\n", 
+   "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{
      RowBox[{"simMotors", "[", 
@@ -962,7 +965,8 @@ Cell[BoxData[
    3.641052228905649*^9, 3.641052281137534*^9}, {3.641052408218148*^9, 
    3.641052413488391*^9}, {3.6419189815468397`*^9, 3.641918999029744*^9}, {
    3.642157581693077*^9, 3.6421575878774347`*^9}, 3.642157628228915*^9, 
-   3.642157666648184*^9, 3.642431132313678*^9}],
+   3.642157666648184*^9, 3.642431132313678*^9, {3.645184410554162*^9, 
+   3.6451844361606407`*^9}}],
 
 Cell[CellGroupData[{
 
@@ -975,9 +979,9 @@ Cell[BoxData[
  RowBox[{
   RowBox[{"fs", "=", 
    RowBox[{"sim", "[", 
-    RowBox[{"mdwtmp", ",", "100", ",", "False", ",", "True", ",", 
+    RowBox[{"mdwtest", ",", "100", ",", "False", ",", "True", ",", 
      RowBox[{"{", 
-      RowBox[{"10", ",", "10"}], "}"}]}], "]"}]}], ";"}]], "Input",
+      RowBox[{"50", ",", "50"}], "}"}]}], "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.638181431787929*^9, 3.638181446237556*^9}, {
    3.6388212945705633`*^9, 3.638821294687416*^9}, {3.638822286149914*^9, 
    3.63882228643686*^9}, {3.639243855346406*^9, 3.639243883394938*^9}, {
@@ -1006,51 +1010,58 @@ Cell[BoxData[
    3.642157601925604*^9}, 3.642157656006102*^9, {3.642159396543166*^9, 
    3.642159413495047*^9}, 3.642160295745028*^9, {3.6421603437122717`*^9, 
    3.642160344360896*^9}, 3.642171817732478*^9, {3.642172330839982*^9, 
-   3.6421723315415154`*^9}, {3.6421839960408087`*^9, 3.642183997513236*^9}}],
+   3.6421723315415154`*^9}, {3.6421839960408087`*^9, 3.642183997513236*^9}, {
+   3.644057304898131*^9, 3.644057304969871*^9}, {3.644062085221306*^9, 
+   3.644062087149476*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/Code/cytomod/out/tmp//txt_stack/pmotors.txt\"\>"], "Print",\
-
+/home/simonfreedman/Code/cytomod/out/test//txt_stack/pmotors.txt\"\>"], \
+"Print",
  CellChangeTimes->{3.6421595035842667`*^9, 3.642159596810252*^9, 
   3.6421598432965927`*^9, 3.642159961466316*^9, 3.642160312617505*^9, 
   3.6421603598002253`*^9, 3.6421608740645847`*^9, 3.642171833252265*^9, 
   3.642172213901196*^9, 3.6421723575715837`*^9, 3.6421729540986443`*^9, 
   3.642173279035842*^9, 3.642173545580055*^9, 3.642173720872892*^9, 
   3.642173993767857*^9, 3.6421741955646133`*^9, 3.642183634141124*^9, 
-  3.64218403028718*^9, 3.642184754342555*^9}],
+  3.64218403028718*^9, 3.642184754342555*^9, 3.644056925096575*^9, 
+  3.64405733246166*^9, 3.6440589924382887`*^9, 3.644062101694043*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/Code/cytomod/out/tmp//txt_stack/amotors.txt\"\>"], "Print",\
-
+/home/simonfreedman/Code/cytomod/out/test//txt_stack/amotors.txt\"\>"], \
+"Print",
  CellChangeTimes->{3.6421595035842667`*^9, 3.642159596810252*^9, 
   3.6421598432965927`*^9, 3.642159961466316*^9, 3.642160312617505*^9, 
   3.6421603598002253`*^9, 3.6421608740645847`*^9, 3.642171833252265*^9, 
   3.642172213901196*^9, 3.6421723575715837`*^9, 3.6421729540986443`*^9, 
   3.642173279035842*^9, 3.642173545580055*^9, 3.642173720872892*^9, 
   3.642173993767857*^9, 3.6421741955646133`*^9, 3.642183634141124*^9, 
-  3.64218403028718*^9, 3.642184795285063*^9}],
+  3.64218403028718*^9, 3.642184754342555*^9, 3.644056925096575*^9, 
+  3.64405733246166*^9, 3.6440589924382887`*^9, 3.644062115684414*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/Code/cytomod/out/tmp//txt_stack/links.txt\"\>"], "Print",
+/home/simonfreedman/Code/cytomod/out/test//txt_stack/links.txt\"\>"], "Print",\
+
  CellChangeTimes->{3.6421595035842667`*^9, 3.642159596810252*^9, 
   3.6421598432965927`*^9, 3.642159961466316*^9, 3.642160312617505*^9, 
   3.6421603598002253`*^9, 3.6421608740645847`*^9, 3.642171833252265*^9, 
   3.642172213901196*^9, 3.6421723575715837`*^9, 3.6421729540986443`*^9, 
   3.642173279035842*^9, 3.642173545580055*^9, 3.642173720872892*^9, 
   3.642173993767857*^9, 3.6421741955646133`*^9, 3.642183634141124*^9, 
-  3.64218403028718*^9, 3.6421848299063063`*^9}],
+  3.64218403028718*^9, 3.642184754342555*^9, 3.644056925096575*^9, 
+  3.64405733246166*^9, 3.6440589924382887`*^9, 3.644062129145894*^9}],
 
 Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/Code/cytomod/out/tmp/\"\>"], "Print",
+/home/simonfreedman/Code/cytomod/out/test/\"\>"], "Print",
  CellChangeTimes->{3.6421595035842667`*^9, 3.642159596810252*^9, 
   3.6421598432965927`*^9, 3.642159961466316*^9, 3.642160312617505*^9, 
   3.6421603598002253`*^9, 3.6421608740645847`*^9, 3.642171833252265*^9, 
   3.642172213901196*^9, 3.6421723575715837`*^9, 3.6421729540986443`*^9, 
   3.642173279035842*^9, 3.642173545580055*^9, 3.642173720872892*^9, 
   3.642173993767857*^9, 3.6421741955646133`*^9, 3.642183634141124*^9, 
-  3.64218403028718*^9, 3.642184831925177*^9}]
+  3.64218403028718*^9, 3.642184754342555*^9, 3.644056925096575*^9, 
+  3.64405733246166*^9, 3.6440589924382887`*^9, 3.644062129205703*^9}]
 }, Open  ]]
 }, Open  ]],
 
@@ -1114,14 +1125,12 @@ Cell[BoxData[
 Cell[BoxData[
  RowBox[{
   StyleBox[
-   RowBox[{"Part", "::", "partd"}], "MessageName"], 
-  RowBox[{
-  ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(fsbw \
-\[LeftDoubleBracket] 72 \[RightDoubleBracket]\\)\[NoBreak] is longer than \
-depth of object. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\
-\"Link\\\", ButtonFrame->None, \
-ButtonData:>\\\"paclet:ref/message/General/partd\\\", ButtonNote -> \
-\\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
+   RowBox[{"Part", "::", "partd"}], "MessageName"], ":", 
+  " ", "\<\"Part specification \[NoBreak]\\!\\(fsbw \[LeftDoubleBracket] 72 \
+\[RightDoubleBracket]\\)\[NoBreak] is longer than depth of object. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/partd\\\", \
+ButtonNote -> \\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
  CellChangeTimes->{3.642429168703208*^9}]
 }, Open  ]],
 
@@ -1145,11 +1154,11 @@ Cell[BoxData[
    RowBox[{"Part", "::", "partd"}], "MessageName"], 
   RowBox[{
   ":", " "}], "\<\"Part specification \[NoBreak]\\!\\(fs \[LeftDoubleBracket] \
-183 \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of object. \\!\\(\
-\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+41 \[RightDoubleBracket]\\)\[NoBreak] is longer than depth of object. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
 ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/partd\\\", \
 ButtonNote -> \\\"Part::partd\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{3.642429170289712*^9}]
+ CellChangeTimes->{3.644671300960024*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -1181,21 +1190,24 @@ Cell["Other Directories", "Section",
 
 Cell[BoxData[{
  RowBox[{
-  RowBox[{"pms", "=", 
+  RowBox[{"kbs", "=", 
    RowBox[{"{", 
     RowBox[{
-    "\"\<0\>\"", ",", "\"\<.08\>\"", ",", "\"\<.16\>\"", ",", "\"\<.24\>\"", 
-     ",", "\"\<.32\>\"", ",", "\"\<.40\>\"", ",", "\"\<.48\>\"", ",", 
-     "\"\<.56\>\"", ",", "\"\<.64\>\"", ",", "\"\<.72\>\"", ",", 
-     "\"\<.80\>\""}], "}"}]}], ";"}], "\n", 
+    "\"\<0.001\>\"", ",", "\"\<0.01\>\"", ",", "\"\<0.1\>\"", ",", 
+     "\"\<1\>\""}], "}"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{
-  RowBox[{"dirsm", "=", "\[IndentingNewLine]", 
+  RowBox[{"pps", "=", 
+   RowBox[{"ToString", "/@", 
+    RowBox[{"Range", "[", 
+     RowBox[{"0", ",", "10"}], "]"}]}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dirs", "=", "\[IndentingNewLine]", 
    RowBox[{"Table", "[", 
     RowBox[{
-     RowBox[{"mdwnt", "<>", "\"\<flexible_fast_ap0.08_pp\>\"", "<>", "pm"}], 
-     ",", 
+     RowBox[{"mdwnt", "<>", "\"\<rigid_big_k5_ap5_dtp03_pp\>\"", "<>", "pp"}],
+      ",", 
      RowBox[{"{", 
-      RowBox[{"pm", ",", "pms"}], "}"}]}], "]"}]}], ";"}]}], "Input",
+      RowBox[{"pp", ",", "pps"}], "}"}]}], "]"}]}], ";"}]}], "Input",
  CellChangeTimes->{{3.640945322330288*^9, 3.6409453917752*^9}, {
    3.640945467005211*^9, 3.6409454711818657`*^9}, 3.640945977937098*^9, {
    3.640948018546481*^9, 3.640948018915081*^9}, {3.6409480560369*^9, 
@@ -1218,151 +1230,314 @@ Cell[BoxData[{
    3.641897517186083*^9}, {3.64189778319908*^9, 3.641897783999082*^9}, {
    3.64191938768478*^9, 3.641919387835473*^9}, 3.6424310375722933`*^9, {
    3.642932159974153*^9, 3.642932207495455*^9}, {3.64293232732724*^9, 
-   3.642932366682622*^9}}],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{"dirsm", "[", 
-  RowBox[{"[", "6", "]"}], "]"}]], "Input",
- CellChangeTimes->{{3.642431062002429*^9, 3.6424310630865*^9}, {
-  3.642431098406219*^9, 3.642431103367031*^9}}],
-
-Cell[BoxData["\<\"/home/simonfreedman/scratch-midway/cytomod/out/network/\
-flexible_fast_ap0.08_pp.40\"\>"], "Output",
- CellChangeTimes->{{3.642431099497322*^9, 3.6424311062040863`*^9}, 
-   3.642431141379695*^9, 3.642431204698955*^9, 3.642932373442586*^9}]
-}, Open  ]],
+   3.642932366682622*^9}, {3.643021807004623*^9, 3.643021837854294*^9}, {
+   3.643047266457321*^9, 3.643047276536916*^9}, 3.643047315767736*^9, {
+   3.643292510494423*^9, 3.643292514174089*^9}, {3.6432925524800158`*^9, 
+   3.643292593251605*^9}, {3.643912595466412*^9, 3.643912612788033*^9}, {
+   3.643912643378277*^9, 3.6439126448284197`*^9}, {3.643914158405858*^9, 
+   3.6439141659412727`*^9}, {3.643914246978442*^9, 3.6439142510264463`*^9}, {
+   3.64391484237109*^9, 3.643914868283367*^9}, {3.644671335177998*^9, 
+   3.644671365665572*^9}, {3.64467155438772*^9, 3.644671618416297*^9}, {
+   3.644671665886591*^9, 3.6446716733824253`*^9}, {3.644671751053391*^9, 
+   3.644671813077561*^9}, {3.6451819948198853`*^9, 3.64518204469244*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"fs", "=", 
+  RowBox[{"fs1", "=", 
    RowBox[{"sim", "[", 
     RowBox[{
-     RowBox[{"dirsm", "[", 
-      RowBox[{"[", "2", "]"}], "]"}], ",", "100", ",", "False", ",", "True", 
+     RowBox[{"dirs", "[", 
+      RowBox[{"[", "7", "]"}], "]"}], ",", "100", ",", "False", ",", "True", 
      ",", 
      RowBox[{"{", 
-      RowBox[{"50", ",", "50"}], "}"}]}], "]"}]}], ";"}]], "Input",
+      RowBox[{"10", ",", "10"}], "}"}]}], "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.642431046077179*^9, 3.642431058095359*^9}, {
    3.642431214123824*^9, 3.642431223748292*^9}, 3.6424312645319233`*^9, {
    3.6424313512582417`*^9, 3.642431359249627*^9}, {3.642432451822592*^9, 
    3.642432455205572*^9}, {3.6429324060417852`*^9, 3.642932408257135*^9}, {
-   3.642932586060906*^9, 3.6429325922452393`*^9}}],
+   3.642932586060906*^9, 3.6429325922452393`*^9}, {3.6430218657760057`*^9, 
+   3.6430218889596767`*^9}, {3.6430472884531527`*^9, 3.643047296484824*^9}, {
+   3.643366689826714*^9, 3.6433666921291943`*^9}, 3.643912651441803*^9, {
+   3.643914890987124*^9, 3.643914894409733*^9}, {3.644671818913994*^9, 
+   3.644671830160118*^9}, {3.6446718901774693`*^9, 3.644671893851886*^9}, 
+   3.644672441978656*^9, 3.6446726498946533`*^9, 3.644672836536813*^9, 
+   3.644744856255171*^9, {3.644745039778039*^9, 3.6447450424097424`*^9}, 
+   3.6447459638653708`*^9, 3.644746316385069*^9, 3.644747658789921*^9, {
+   3.644748961861026*^9, 3.6447489695199423`*^9}, {3.644749553917533*^9, 
+   3.644749556509124*^9}, {3.644755234147232*^9, 3.644755242137995*^9}, 
+   3.644755453010457*^9, {3.644834273694633*^9, 3.64483428620714*^9}, {
+   3.64483447618642*^9, 3.644834476722777*^9}, {3.644834935815763*^9, 
+   3.644834938606698*^9}, 3.644835073849943*^9}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_ap0.08_\
-pp.08/txt_stack/pmotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6424312807273397`*^9, 3.6424313753671*^9, 
-  3.642432473035315*^9, 3.6429324249878674`*^9, 3.642932609214971*^9}],
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_small_k5_ap5_pp6/\
+txt_stack/pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{
+  3.6424312807273397`*^9, 3.6424313753671*^9, 3.642432473035315*^9, 
+   3.6429324249878674`*^9, 3.642932609214971*^9, {3.643021876204191*^9, 
+   3.643021890213749*^9}, 3.6430473018753147`*^9, 3.643047361490497*^9, 
+   3.643912653196437*^9, 3.643914274650261*^9, 3.6439148976174183`*^9, 
+   3.644671831356436*^9, 3.644671895161727*^9, 3.6446724919872*^9, 
+   3.644672700249188*^9, 3.644672839411066*^9, {3.644744860358077*^9, 
+   3.644744879367001*^9}, 3.6447449528433027`*^9, 3.644745065661874*^9, 
+   3.644745775538446*^9, 3.644746012108143*^9, 3.644746320493259*^9, 
+   3.644747563329113*^9, 3.644747676865779*^9, 3.644748608151086*^9, 
+   3.64474898427529*^9, 3.644749571876009*^9, 3.644754551445262*^9, 
+   3.644755257861989*^9, 3.6448342866766243`*^9, 3.644834493488648*^9, 
+   3.64483495978113*^9, 3.644835090477419*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_ap0.08_\
-pp.08/txt_stack/amotors.txt\"\>"], "Print",
- CellChangeTimes->{3.6424312807273397`*^9, 3.6424313753671*^9, 
-  3.642432473035315*^9, 3.6429324249878674`*^9, 3.642932623259561*^9}],
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_small_k5_ap5_pp6/\
+txt_stack/amotors.txt\"\>"], "Print",
+ CellChangeTimes->{
+  3.6424312807273397`*^9, 3.6424313753671*^9, 3.642432473035315*^9, 
+   3.6429324249878674`*^9, 3.642932609214971*^9, {3.643021876204191*^9, 
+   3.643021890213749*^9}, 3.6430473018753147`*^9, 3.643047361490497*^9, 
+   3.643912653196437*^9, 3.643914274650261*^9, 3.6439148976174183`*^9, 
+   3.644671831356436*^9, 3.644671895161727*^9, 3.6446724919872*^9, 
+   3.644672700249188*^9, 3.644672839411066*^9, {3.644744860358077*^9, 
+   3.644744879367001*^9}, 3.6447449528433027`*^9, 3.644745065661874*^9, 
+   3.644745775538446*^9, 3.644746012108143*^9, 3.644746320493259*^9, 
+   3.644747563329113*^9, 3.644747676865779*^9, 3.644748608151086*^9, 
+   3.64474898427529*^9, 3.644749571876009*^9, 3.644754551445262*^9, 
+   3.644755257861989*^9, 3.6448342866766243`*^9, 3.644834493488648*^9, 
+   3.64483495978113*^9, 3.6448351050960197`*^9}],
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_ap0.08_\
-pp.08/txt_stack/links.txt\"\>"], "Print",
- CellChangeTimes->{3.6424312807273397`*^9, 3.6424313753671*^9, 
-  3.642432473035315*^9, 3.6429324249878674`*^9, 3.642932653959673*^9}],
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_small_k5_ap5_pp6/\
+txt_stack/links.txt\"\>"], "Print",
+ CellChangeTimes->{
+  3.6424312807273397`*^9, 3.6424313753671*^9, 3.642432473035315*^9, 
+   3.6429324249878674`*^9, 3.642932609214971*^9, {3.643021876204191*^9, 
+   3.643021890213749*^9}, 3.6430473018753147`*^9, 3.643047361490497*^9, 
+   3.643912653196437*^9, 3.643914274650261*^9, 3.6439148976174183`*^9, 
+   3.644671831356436*^9, 3.644671895161727*^9, 3.6446724919872*^9, 
+   3.644672700249188*^9, 3.644672839411066*^9, {3.644744860358077*^9, 
+   3.644744879367001*^9}, 3.6447449528433027`*^9, 3.644745065661874*^9, 
+   3.644745775538446*^9, 3.644746012108143*^9, 3.644746320493259*^9, 
+   3.644747563329113*^9, 3.644747676865779*^9, 3.644748608151086*^9, 
+   3.64474898427529*^9, 3.644749571876009*^9, 3.644754551445262*^9, 
+   3.644755257861989*^9, 3.6448342866766243`*^9, 3.644834493488648*^9, 
+   3.64483495978113*^9, 3.644835118196351*^9}],
 
 Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_ap0.08_\
-pp.08\"\>"], "Print",
- CellChangeTimes->{3.6424312807273397`*^9, 3.6424313753671*^9, 
-  3.642432473035315*^9, 3.6429324249878674`*^9, 3.6429326540595627`*^9}]
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_small_k5_ap5_pp6\
+\"\>"], "Print",
+ CellChangeTimes->{
+  3.6424312807273397`*^9, 3.6424313753671*^9, 3.642432473035315*^9, 
+   3.6429324249878674`*^9, 3.642932609214971*^9, {3.643021876204191*^9, 
+   3.643021890213749*^9}, 3.6430473018753147`*^9, 3.643047361490497*^9, 
+   3.643912653196437*^9, 3.643914274650261*^9, 3.6439148976174183`*^9, 
+   3.644671831356436*^9, 3.644671895161727*^9, 3.6446724919872*^9, 
+   3.644672700249188*^9, 3.644672839411066*^9, {3.644744860358077*^9, 
+   3.644744879367001*^9}, 3.6447449528433027`*^9, 3.644745065661874*^9, 
+   3.644745775538446*^9, 3.644746012108143*^9, 3.644746320493259*^9, 
+   3.644747563329113*^9, 3.644747676865779*^9, 3.644748608151086*^9, 
+   3.64474898427529*^9, 3.644749571876009*^9, 3.644754551445262*^9, 
+   3.644755257861989*^9, 3.6448342866766243`*^9, 3.644834493488648*^9, 
+   3.64483495978113*^9, 3.6448351184098873`*^9}]
 }, Open  ]]
 }, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.645183771414647*^9, 3.645183783040954*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"fsgs", "=", 
-   RowBox[{"simgs", "[", 
-    RowBox[{
-     RowBox[{"dirsm", "[", 
-      RowBox[{"[", "4", "]"}], "]"}], ",", "100", ",", "False", ",", 
-     RowBox[{"{", 
-      RowBox[{"50", ",", "50"}], "}"}]}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.642932929184909*^9, 3.642932970466249*^9}}],
+  RowBox[{"Do", "[", 
+   RowBox[{
+    RowBox[{"sim", "[", 
+     RowBox[{
+      RowBox[{"dirs", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", "500", ",", "True", ",", "True", 
+      ",", 
+      RowBox[{"{", 
+       RowBox[{"50", ",", "50"}], "}"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "11", ",", "2", ",", 
+      RowBox[{"-", "1"}]}], "}"}]}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.6446737850068283`*^9, 3.644673849750654*^9}, {
+  3.64483541513072*^9, 3.6448354298730383`*^9}, {3.6448397139087954`*^9, 
+  3.6448397159802637`*^9}, {3.6451837071734333`*^9, 3.645183715105485*^9}, {
+  3.645184353436228*^9, 3.6451843721553*^9}, {3.645185010697199*^9, 
+  3.645185027889614*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData["\<\"Finished importing \
-/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_ap0.08_\
-pp.24/txt_stack/links.txt\"\>"], "Print",
- CellChangeTimes->{3.6429330036850243`*^9}],
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp1/txt_stack/pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.645184496115238*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp1/txt_stack/amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.645184672689933*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp1/txt_stack/links.txt\"\>"], "Print",
+ CellChangeTimes->{3.645184690338235*^9}],
 
 Cell[BoxData["\<\"Generating frames for directory \
-/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_ap0.08_\
-pp.24\"\>"], "Print",
- CellChangeTimes->{3.6429330037473507`*^9}]
-}, Open  ]]
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp1\"\>"], "Print",
+ CellChangeTimes->{3.645184704624621*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp2/txt_stack/pmotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.645184874937809*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp2/txt_stack/amotors.txt\"\>"], "Print",
+ CellChangeTimes->{3.645184977066908*^9}],
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/network/rigid_big_k5_ap5_dtp03_\
+pp2/txt_stack/links.txt\"\>"], "Print",
+ CellChangeTimes->{3.645184993120633*^9}]
+}, Open  ]],
+
+Cell[BoxData["$Aborted"], "Output",
+ CellChangeTimes->{3.645183772711317*^9, 3.645184365678258*^9, 
+  3.645185000079916*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{"Animate", "[", 
+ RowBox[{"Length", "[", "fs1", "]"}]], "Input",
+ CellChangeTimes->{{3.644755423595613*^9, 3.6447554261545267`*^9}}],
+
+Cell[BoxData["1"], "Output",
+ CellChangeTimes->{3.6447554277309103`*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"fs1", "[", 
+  RowBox[{"[", "1", "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.6447553935154133`*^9, 3.644755395173983*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Manipulate", "[", 
   RowBox[{
-   RowBox[{"fsgs", "[", 
+   RowBox[{"fs1", "[", 
     RowBox[{"[", "i", "]"}], "]"}], ",", 
    RowBox[{"{", 
     RowBox[{"i", ",", "1", ",", 
-     RowBox[{"Length", "[", "fsgs", "]"}], ",", "1"}], "}"}], ",", 
-   RowBox[{"AnimationRate", "\[Rule]", "0.1"}]}], "]"}]], "Input",
+     RowBox[{"Length", "[", "fs1", "]"}], ",", "1"}], "}"}]}], "]"}]], "Input",\
+
  CellChangeTimes->{{3.6429331656729727`*^9, 3.642933170910099*^9}, {
   3.6429332814032173`*^9, 3.642933282202327*^9}, {3.6429333745067387`*^9, 
-  3.642933377362074*^9}, {3.642933781366352*^9, 3.642933781622096*^9}}],
+  3.642933377362074*^9}, {3.642933781366352*^9, 3.642933781622096*^9}, {
+  3.643022100428684*^9, 3.643022102597042*^9}, {3.643047381606304*^9, 
+  3.6430473842777987`*^9}, {3.643047634050044*^9, 3.643047655723104*^9}}],
+
+Cell[BoxData["c"], "Input",
+ CellChangeTimes->{3.6448348002480173`*^9}],
 
 Cell[BoxData[
- TagBox[
-  StyleBox[
-   DynamicModuleBox[{$CellContext`i$$ = 6, Typeset`show$$ = True, 
-    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
-    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
-    "\"untitled\"", Typeset`specs$$ = {{
-      Hold[$CellContext`i$$], 1, 16, 1}}, Typeset`size$$ = {
-    360., {178., 182.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
-    Typeset`skipInitDone$$ = True, $CellContext`i$3661$$ = 0}, 
-    DynamicBox[Manipulate`ManipulateBoxes[
-     1, StandardForm, "Variables" :> {$CellContext`i$$ = 1}, 
-      "ControllerVariables" :> {
-        Hold[$CellContext`i$$, $CellContext`i$3661$$, 0]}, 
-      "OtherVariables" :> {
-       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
-        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
-        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
-         Typeset`skipInitDone$$}, "Body" :> 
-      Part[$CellContext`fsgs, $CellContext`i$$], 
-      "Specifications" :> {{$CellContext`i$$, 1, 16, 1, AnimationRate -> 0.1, 
-         AppearanceElements -> {
-          "ProgressSlider", "PlayPauseButton", "FasterSlowerButtons", 
-           "DirectionButton"}}}, 
-      "Options" :> {
-       ControlType -> Animator, AppearanceElements -> None, DefaultBaseStyle -> 
-        "Animate", DefaultLabelStyle -> "AnimateLabel", SynchronousUpdating -> 
-        True, ShrinkingDelay -> 10.}, "DefaultOptions" :> {}],
-     ImageSizeCache->{407., {212., 219.}},
-     SingleEvaluation->True],
-    Deinitialization:>None,
-    DynamicModuleValues:>{},
-    SynchronousInitialization->True,
-    UnsavedVariables:>{Typeset`initDone$$},
-    UntrackedVariables:>{Typeset`size$$}], "Animate",
-   Deployed->True,
-   StripOnInput->False],
-  Manipulate`InterpretManipulate[1]]], "Output",
- CellChangeTimes->{3.642933175258315*^9, 3.642933289076763*^9, 
-  3.642933378884818*^9, 3.642933788621593*^9}]
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"mdwnt", "<>", "\"\<ff_vp01_kb1_pp\>\"", "<>", "pp"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"pp", ",", "pps"}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.64474480331083*^9, 3.6447448736443787`*^9}, {
+  3.644745685640716*^9, 3.644745719152149*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"mdwnt", "<>", "\"\<ff_k5_ap5_kb1_pp\>\"", "<>", "pp"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"pp", ",", "pps"}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.644747521920782*^9, 3.644747549759691*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"dirs", "=", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"mdwnt", "<>", "\"\<rigid_small_k5_ap1_pp\>\"", "<>", "pp"}], 
+     ",", 
+     RowBox[{"{", 
+      RowBox[{"pp", ",", "pps"}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.644755155476472*^9, 3.644755163674699*^9}, {
+  3.64483424142395*^9, 3.644834247312705*^9}, {3.644835364369937*^9, 
+  3.644835366290833*^9}, {3.644839695701346*^9, 3.6448397028913813`*^9}, {
+  3.6448431205647297`*^9, 3.64484312558801*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Length", "[", "dirs", "]"}]], "Input",
+ CellChangeTimes->{{3.6447449131611137`*^9, 3.6447449152155657`*^9}}],
+
+Cell[BoxData["11"], "Output",
+ CellChangeTimes->{3.644744915672058*^9}]
 }, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"dirsm", "[", 
+      RowBox[{"[", "2", "]"}], "]"}], "<>", "\"\</data/bwmovie.avi\>\""}], 
+    ",", "fsgs10"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.643022244204232*^9, 3.6430222462700443`*^9}, {
+  3.643022464718821*^9, 3.643022497662917*^9}, {3.643022570487825*^9, 
+  3.643022575363106*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"fsgs10", "=", 
+   RowBox[{"simgs", "[", 
+    RowBox[{
+     RowBox[{"dirsm", "[", 
+      RowBox[{"[", "2", "]"}], "]"}], ",", "100", ",", "False", ",", 
+     RowBox[{"{", 
+      RowBox[{"10", ",", "10"}], "}"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.643022119313858*^9, 3.643022148040145*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["\<\"Finished importing \
+/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_short_\
+ap1_pp10.0/txt_stack/links.txt\"\>"], "Print",
+ CellChangeTimes->{3.643022182009576*^9}],
+
+Cell[BoxData["\<\"Generating frames for directory \
+/home/simonfreedman/scratch-midway/cytomod/out/network/flexible_fast_short_\
+ap1_pp10.0\"\>"], "Print",
+ CellChangeTimes->{3.643022182050149*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"Animate", "[", 
+  RowBox[{
+   RowBox[{"fsgs10", "[", 
+    RowBox[{"[", "i", "]"}], "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"i", ",", "1", ",", 
+     RowBox[{"Length", "[", "fsgs0", "]"}], ",", "1"}], "}"}], ",", 
+   RowBox[{"AnimationRate", "\[Rule]", "0.1"}]}], "]"}]], "Input",
+ CellChangeTimes->{3.643022222086795*^9}],
 
 Cell[BoxData[
  RowBox[{"Do", "[", 
@@ -1414,7 +1589,7 @@ Cell[BoxData[""], "Input",
 }, Open  ]]
 },
 WindowSize->{1280, 806},
-WindowMargins->{{139, Automatic}, {Automatic, 78}},
+WindowMargins->{{-15, 5}, {Automatic, -23}},
 FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
 StyleDefinitions->"Default.nb"
 ]
@@ -1429,79 +1604,101 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[400, 13, 39418, 951, 4677, "Input"],
+Cell[400, 13, 39593, 955, 4699, "Input"],
 Cell[CellGroupData[{
-Cell[39843, 968, 103, 1, 81, "Section"],
+Cell[40018, 972, 103, 1, 81, "Section"],
 Cell[CellGroupData[{
-Cell[39971, 973, 2363, 35, 32, "Input"],
+Cell[40146, 977, 2464, 37, 32, "Input"],
 Cell[CellGroupData[{
-Cell[42359, 1012, 589, 9, 23, "Print"],
-Cell[42951, 1023, 589, 9, 23, "Print"],
-Cell[43543, 1034, 587, 8, 23, "Print"],
-Cell[44133, 1044, 578, 8, 23, "Print"]
+Cell[42635, 1018, 682, 10, 23, "Print"],
+Cell[43320, 1030, 682, 10, 23, "Print"],
+Cell[44005, 1042, 680, 10, 23, "Print"],
+Cell[44688, 1054, 671, 9, 23, "Print"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[44760, 1058, 307, 8, 32, "Input"],
+Cell[45408, 1069, 307, 8, 32, "Input"],
 Cell[CellGroupData[{
-Cell[45092, 1070, 183, 3, 23, "Print"],
-Cell[45278, 1075, 176, 2, 23, "Print"]
+Cell[45740, 1081, 183, 3, 23, "Print"],
+Cell[45926, 1086, 176, 2, 23, "Print"]
 }, Open  ]]
 }, Open  ]],
-Cell[45481, 1081, 204, 5, 32, "Input"],
+Cell[46129, 1092, 204, 5, 32, "Input"],
 Cell[CellGroupData[{
-Cell[45710, 1090, 126, 2, 32, "Input"],
-Cell[45839, 1094, 233, 3, 32, "Output"]
+Cell[46358, 1101, 126, 2, 32, "Input"],
+Cell[46487, 1105, 233, 3, 32, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[46109, 1102, 318, 9, 32, "Input"],
-Cell[46430, 1113, 511, 11, 24, "Message"]
+Cell[46757, 1113, 318, 9, 32, "Input"],
+Cell[47078, 1124, 496, 9, 24, "Message"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[46978, 1129, 364, 10, 32, "Input"],
-Cell[47345, 1141, 508, 10, 24, "Message"]
+Cell[47611, 1138, 364, 10, 32, "Input"],
+Cell[47978, 1150, 507, 10, 24, "Message"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[47890, 1156, 382, 9, 32, "Input"],
-Cell[48275, 1167, 157, 2, 32, "Output"]
+Cell[48522, 1165, 382, 9, 32, "Input"],
+Cell[48907, 1176, 157, 2, 32, "Output"]
 }, Open  ]],
-Cell[48447, 1172, 92, 1, 32, "Input"]
+Cell[49079, 1181, 92, 1, 32, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[48576, 1178, 102, 1, 51, "Section"],
-Cell[48681, 1181, 2262, 39, 77, "Input"],
+Cell[49208, 1187, 102, 1, 51, "Section"],
+Cell[49313, 1190, 3005, 51, 99, "Input"],
 Cell[CellGroupData[{
-Cell[50968, 1224, 194, 4, 32, "Input"],
-Cell[51165, 1230, 256, 3, 32, "Output"]
-}, Open  ]],
+Cell[52343, 1245, 1510, 26, 32, "Input"],
 Cell[CellGroupData[{
-Cell[51458, 1238, 628, 14, 32, "Input"],
-Cell[CellGroupData[{
-Cell[52111, 1256, 295, 4, 23, "Print"],
-Cell[52409, 1262, 295, 4, 23, "Print"],
-Cell[52707, 1268, 293, 4, 23, "Print"],
-Cell[53003, 1274, 288, 4, 23, "Print"]
+Cell[53878, 1275, 1003, 15, 23, "Print"],
+Cell[54884, 1292, 1005, 15, 23, "Print"],
+Cell[55892, 1309, 1001, 15, 23, "Print"],
+Cell[56896, 1326, 996, 15, 23, "Print"]
 }, Open  ]]
 }, Open  ]],
+Cell[57919, 1345, 92, 1, 32, "Input"],
 Cell[CellGroupData[{
-Cell[53340, 1284, 337, 9, 32, "Input"],
+Cell[58036, 1350, 729, 18, 32, "Input"],
 Cell[CellGroupData[{
-Cell[53702, 1297, 202, 3, 23, "Print"],
-Cell[53907, 1302, 195, 3, 23, "Print"]
+Cell[58790, 1372, 202, 3, 23, "Print"],
+Cell[58995, 1377, 202, 3, 23, "Print"],
+Cell[59200, 1382, 200, 3, 23, "Print"],
+Cell[59403, 1387, 193, 3, 23, "Print"],
+Cell[59599, 1392, 202, 3, 23, "Print"],
+Cell[59804, 1397, 202, 3, 23, "Print"],
+Cell[60009, 1402, 200, 3, 23, "Print"]
+}, Open  ]],
+Cell[60224, 1408, 124, 2, 32, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[60385, 1415, 129, 2, 32, "Input"],
+Cell[60517, 1419, 72, 1, 32, "Output"]
+}, Open  ]],
+Cell[60604, 1423, 147, 3, 32, "Input"],
+Cell[60754, 1428, 613, 13, 32, "Input"],
+Cell[61370, 1443, 71, 1, 32, "Input"],
+Cell[61444, 1446, 364, 9, 32, "Input"],
+Cell[61811, 1457, 316, 8, 32, "Input"],
+Cell[62130, 1467, 522, 12, 32, "Input"],
+Cell[CellGroupData[{
+Cell[62677, 1483, 132, 2, 32, "Input"],
+Cell[62812, 1487, 71, 1, 32, "Output"]
+}, Open  ]],
+Cell[62898, 1491, 389, 10, 32, "Input"],
+Cell[CellGroupData[{
+Cell[63312, 1505, 339, 9, 32, "Input"],
+Cell[CellGroupData[{
+Cell[63676, 1518, 204, 3, 23, "Print"],
+Cell[63883, 1523, 197, 3, 23, "Print"]
 }, Open  ]]
 }, Open  ]],
+Cell[64107, 1530, 347, 9, 32, "Input"],
+Cell[64457, 1541, 570, 14, 32, "Input"],
 Cell[CellGroupData[{
-Cell[54151, 1311, 518, 11, 32, "Input"],
-Cell[54672, 1324, 1934, 39, 481, "Output"]
+Cell[65052, 1559, 201, 5, 32, "Input"],
+Cell[65256, 1566, 302, 4, 32, "Output"]
 }, Open  ]],
-Cell[56621, 1366, 570, 14, 32, "Input"],
-Cell[CellGroupData[{
-Cell[57216, 1384, 201, 5, 32, "Input"],
-Cell[57420, 1391, 302, 4, 32, "Output"]
-}, Open  ]],
-Cell[57737, 1398, 166, 4, 32, "Input"],
-Cell[57906, 1404, 200, 5, 32, "Input"],
-Cell[58109, 1411, 68, 1, 32, "Input"]
+Cell[65573, 1573, 166, 4, 32, "Input"],
+Cell[65742, 1579, 200, 5, 32, "Input"],
+Cell[65945, 1586, 68, 1, 32, "Input"]
 }, Open  ]]
 }
 ]
