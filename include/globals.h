@@ -62,6 +62,7 @@ vector<double> sum_vecs(vector<double> v1, vector<double> v2);
 vector<double *> vec2ptrvec(vector<double>, int dim);
 vector<double *> str2ptrvec(string, string, string);
 vector<array<double,3> > str2arrvec(string, string, string);
+vector<vector<double> > file2vecvec(string path, string delim);
 
 map<array<int, 2>, double> transpose(map<array<int, 2>, double> mat);
 map<array<int, 2>, double> invert_block_diagonal(map<array<int, 2>, double> mat);

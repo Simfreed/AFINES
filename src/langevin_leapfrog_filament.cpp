@@ -133,6 +133,10 @@ void langevin_leapfrog_filament::update_positions(double t)
     }
     kinetic_energy *= mass*actins.size()/2;
     
+    for (unsigned int i = 0; i < links.size(); i++)
+        links[i]->step();
+
+    
 }
 
 vector<langevin_leapfrog_filament *> langevin_leapfrog_filament::update_stretching()
@@ -143,7 +147,6 @@ vector<langevin_leapfrog_filament *> langevin_leapfrog_filament::update_stretchi
         return newfilaments;
     
     for (unsigned int i=0; i < links.size(); i++) {
-        links[i]->step();
         if (fabs(links[i]->get_stretch_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;

@@ -94,8 +94,6 @@ class filament_ensemble
 
         void set_nq(double x, double y);
 
-        void set_ld(double l);
-
         void set_visc(double v);
 
         vector<int> get_broken();
@@ -110,9 +108,7 @@ class filament_ensemble
         
     protected:
 
-        double dt, temperature, rho, ld, link_ld, visc, gamma, min_time;
-        
-        int npolymer, nmon;
+        double dt, temperature, link_ld, visc, gamma, min_time;
         
         bool straight_filaments = false;
         
@@ -135,6 +131,9 @@ class ATfilament_ensemble:
                 double len, double vis, int nactin,
                 double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
                 string bc, double seed);
+        
+        ATfilament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+                double vis, double link_len, double stretching, double bending, double frac_force, string bc); 
         
 };
 

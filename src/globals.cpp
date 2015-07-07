@@ -219,6 +219,34 @@ vector<array<double,3> > str2arrvec(string pos_str, string pos_dlm, string coord
     return out;
 }
 
+vector<vector<double> > file2vecvec(string path, string delim)
+{
+    vector<vector<double> > out;
+    string pos_str = "";
+    vector<string> coords;
+    vector<double> pos;
+    
+    ifstream pos_file;
+    pos_file.open(path);
+    
+    while(getline(pos_file, pos_str))
+    {
+        boost::trim_right(pos_str);
+        boost::split(coords, pos_str, boost::is_any_of(delim));
+        
+        for(unsigned int j=0; j < coords.size(); j++) 
+            pos.push_back( (double) atof(coords[j].data()) );
+        
+        out.push_back(pos);
+
+        pos.clear();
+    }
+
+    pos_file.close();
+    
+    return out;
+}
+
 void intarray_printer(array<int, 2> a)
 {
     cout<<"\n{ " <<a[0]<<" , "<<a[1]<<" }";

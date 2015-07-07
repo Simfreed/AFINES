@@ -48,7 +48,7 @@ int main(int argc, char* argv[]){
             p_motor_v=0, p_m_kon, p_m_kend, p_m_koff; 
     string p_motor_pos_str;
     
-    string config_file, filament_type;                                                // Input configuration
+    string config_file, filament_type, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
     
     string   dir,    afile,  amfile,  pmfile,  lfile, thfile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
@@ -109,6 +109,10 @@ int main(int argc, char* argv[]){
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
         ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
+        
+        ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
+        ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
+        ("p_motor_in", po::value<string>(&p_motor_in)->default_value(""), "input crosslinker positions file")
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
         ("seed", po::value<int>(&seed)->default_value(time(NULL)), "Random number generator seed")
@@ -174,6 +178,7 @@ int main(int argc, char* argv[]){
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
 
+    // To Read positions from input strings in config file
     vector<array<double,3> > actin_position_arrs, a_motor_position_arrs, p_motor_position_arrs;
     if (actin_pos_str.size() > 0)
         actin_position_arrs   = str2arrvec(actin_pos_str, ":", ",");
@@ -181,6 +186,16 @@ int main(int argc, char* argv[]){
         a_motor_position_arrs = str2arrvec(a_motor_pos_str, ":", ",");
     if (p_motor_pos_str.size() > 0)
         p_motor_position_arrs = str2arrvec(p_motor_pos_str, ":", ",");
+    
+    // To Read positions from input files
+    vector<vector<double> > actin_pos_vec;
+    vector<vector<double> > a_motor_pos_vec, p_motor_pos_vec;
+    if (actin_in.size() > 0)
+        actin_pos_vec   = file2vecvec(actin_in, "\t");
+    if (a_motor_in.size() > 0)
+        a_motor_pos_vec = file2vecvec(a_motor_in, "\t");
+    if (p_motor_in.size() > 0)
+        p_motor_pos_vec = file2vecvec(p_motor_in, "\t");
     
     srand(seed);
             
@@ -200,11 +215,19 @@ int main(int argc, char* argv[]){
 
     // Create Network Objects
     cout<<"\nCreating actin network..";
-    ATfilament_ensemble * net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
-            temperature, actin_length, viscosity, nmonomer, link_length, 
-            actin_position_arrs, 
-            link_stretching_stiffness, link_bending_stiffness,
-            fracture_force, bnd_cnd, seed); 
+    ATfilament_ensemble * net;
+    if (actin_pos_vec.size() == 0){
+        net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
+                temperature, actin_length, viscosity, nmonomer, link_length, 
+                actin_position_arrs, 
+                link_stretching_stiffness, link_bending_stiffness,
+                fracture_force, bnd_cnd, seed); 
+    }else{ 
+        net = new ATfilament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
+                temperature, viscosity, link_length, 
+                link_stretching_stiffness, link_bending_stiffness,
+                fracture_force, bnd_cnd); 
+    }
 
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 

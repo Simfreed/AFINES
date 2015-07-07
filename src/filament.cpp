@@ -197,6 +197,10 @@ void filament::update_positions(double t)
         actins[i]->set_ycm(newpos[1]);
         actins[i]->reset_force(); 
     }
+
+    for (unsigned int i = 0; i < links.size(); i++)
+        links[i]->step();
+
 }
 
 array<double, 2> filament::boundary_check(int i, double t, double vx, double vy)
@@ -248,7 +252,7 @@ vector<filament *> filament::update_stretching()
         return newfilaments;
     
     for (unsigned int i=0; i < links.size(); i++) {
-        links[i]->step();
+//        links[i]->step();
         if (fabs(links[i]->get_stretch_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;
@@ -259,7 +263,6 @@ vector<filament *> filament::update_stretching()
     
     return newfilaments;
 }
-
 
 actin * filament::get_actin(int i)
 {

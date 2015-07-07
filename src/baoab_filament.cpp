@@ -84,6 +84,10 @@ void baoab_filament::update_positions(double t)
     }
     dt = 2*dt;
     
+    for (unsigned int i = 0; i < links.size(); i++)
+        links[i]->step();
+
+    
 }
 
 void baoab_filament::update_velocities_O(double t)
@@ -108,7 +112,6 @@ vector<baoab_filament *> baoab_filament::update_stretching()
         return newfilaments;
     
     for (unsigned int i=0; i < links.size(); i++) {
-        links[i]->step();
         if (fabs(links[i]->get_stretch_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;

@@ -27,7 +27,7 @@ filament_ensemble<filament_type>::~filament_ensemble(){
     }
     
     //network.clear();
-};
+}
 
 template <class filament_type> 
 void filament_ensemble<filament_type>::quad_update()
@@ -243,11 +243,6 @@ bool filament_ensemble<filament_type>::is_polymer_start(int fil, int actin){
 }
 
 template <class filament_type> 
-void filament_ensemble<filament_type>::set_ld(double length){
-    ld = length;
-}
-
-template <class filament_type> 
 void filament_ensemble<filament_type>::set_fov(double fovx, double fovy){
     fov[0] = fovx;
     fov[1] = fovy;
@@ -360,11 +355,9 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
     view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
 
-    rho=density;
     visc=vis;
-    ld=rad;//rng_n(len,1.0);
     link_ld = link_len;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
+    int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
 
@@ -376,7 +369,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
-    cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
    
 
     int s = pos_sets.size();
@@ -384,16 +377,55 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new filament(pos_sets[i], nactins, fov, nq,
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             //phi0=atan2(1+x0-y0*y0, -1-x0*x0+y0); // this is just the first example in mathematica's streamplot documentation
-            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
         }
     }
 }
+
+ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+        double vis, double link_len, double stretching, double bending, double frac_force, string bc) {
+    
+    fov = myfov;
+    nq = mynq;
+    visc=vis;
+    link_ld = link_len;
+    dt = delta_t;
+    temperature = temp;
+
+    view[0] = 1;
+    view[1] = 1;
+
+    int s = actins.size(), sa, j;
+    int fil_idx = 0;
+    vector<actin *> avec;
+
+    for (int i=0; i < s; i++){
+        
+        if (actins[i][3] != fil_idx && avec.size() > 0){
+            network.push_back( new filament( avec, fov, nq, link_len, stretching, bending, delta_t, temp, frac_force, 0, bc) );
+            
+            sa = avec.size();
+            for (j = 0; j < sa; j++) delete avec[j];
+            avec.clear();
+            
+            fil_idx = actins[i][3];
+        }
+        avec.push_back(new actin(actins[i][0], actins[i][1], actins[i][2], vis));
+    }
+
+    sa = avec.size();
+    if (sa > 0)
+        network.push_back( new filament( avec, fov, nq, link_len, stretching, bending, delta_t, temp, frac_force, 0, bc) );
+    
+    for (j = 0; j < sa; j++) delete avec[j];
+    avec.clear();
+} 
 
 baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, int nactins, double link_len, vector<array<double,3> > pos_sets, double stretching, double bending, 
@@ -405,11 +437,9 @@ baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2>
     view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
     view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
 
-    rho=density;
     visc=vis;
-    ld=rad;//rng_n(len,1.0);
     link_ld = link_len;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
+    int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
 
@@ -421,20 +451,20 @@ baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2>
 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
-    cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
     
     int s = pos_sets.size();
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new baoab_filament(pos_sets[i], nactins, fov, nq,
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             network.push_back(new baoab_filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, 
-                        ld, link_ld, stretching, bending, frac_force, bc) );
+                        rad, link_ld, stretching, bending, frac_force, bc) );
         }
     }
 }
@@ -475,11 +505,9 @@ lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,
     view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
     view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
 
-    rho=density;
     visc=vis;
-    ld=rad;//rng_n(len,1.0);
     link_ld = link_len;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
+    int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
 
@@ -491,20 +519,20 @@ lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,
 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
-    cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
     
     int s = pos_sets.size();
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new lammps_filament(pos_sets[i], nactins, fov, nq,
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             network.push_back(new lammps_filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, 
-                        ld, link_ld, stretching, bending, frac_force, bc) );
+                        rad, link_ld, stretching, bending, frac_force, bc) );
         }
     }
 }
@@ -550,11 +578,9 @@ langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double 
     view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
     view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
 
-    rho=density;
     visc=vis;
-    ld=rad;//rng_n(len,1.0);
     link_ld = link_len;
-    npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
+    int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
 
@@ -566,20 +592,20 @@ langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double 
 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
-    cout<<"DEBUG: Monomer Length:"<<ld<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
     
     int s = pos_sets.size();
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new langevin_leapfrog_filament(pos_sets[i], nactins, fov, nq,
-                        visc, dt, temp, straight_filaments, ld, link_ld, stretching, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             network.push_back(new langevin_leapfrog_filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, 
-                        ld, link_ld, stretching, bending, frac_force, bc) );
+                        rad, link_ld, stretching, bending, frac_force, bc) );
         }
     }
     min_time = 0; //1e6*dt;
