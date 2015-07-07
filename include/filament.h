@@ -65,13 +65,13 @@ class filament
 
         vector<vector<array<int, 2> > > get_quadrants();
         
-        string write_actins();
+        string write_actins(int fil);
         
-        string write_links();
+        string write_links(int fil);
         
         string to_string();
         
-        string write_thermo();
+        string write_thermo(int fil);
         
         vector<actin *> get_actins(unsigned int first, unsigned int last);
         

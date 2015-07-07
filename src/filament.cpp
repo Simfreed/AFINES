@@ -296,31 +296,31 @@ void filament::set_shear(double g){
     gamma = g;
 }
 
-string filament::write_actins(){
+string filament::write_actins(int fil){
     string all_actins;
     for (unsigned int i =0; i < actins.size(); i++)
     {
-        all_actins += actins[i]->write();
+        all_actins += actins[i]->write() + "\t" + std::to_string(fil);
     }
 
     return all_actins;
 }
 
-string filament::write_links(){
+string filament::write_links(int fil){
     string all_links;
     for (unsigned int i =0; i < links.size(); i++)
     {
-        all_links += links[i]->write();
+        all_links += links[i]->write() + "\t" + std::to_string(fil);
     }
 
     return all_links;
 }
 
-string filament::write_thermo()
+string filament::write_thermo(int fil)
 {
-    return std::to_string(this->get_kinetic_energy()) + \
+    return "\n" + std::to_string(this->get_kinetic_energy()) + \
         "\t" + std::to_string(this->get_potential_energy()) + \
-        "\t" + std::to_string(this->get_total_energy()) + "\n";
+        "\t" + std::to_string(this->get_total_energy()) + "\t" + std::to_string(fil);
 }
 
 vector<actin *> filament::get_actins(unsigned int first, unsigned int last)

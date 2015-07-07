@@ -171,7 +171,7 @@ template <class filament_type>
 void filament_ensemble<filament_type>::write_actins(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network[i]->write_actins();
+        fout<<network[i]->write_actins(i);
     } 
 }
 
@@ -179,14 +179,14 @@ template <class filament_type>
 void filament_ensemble<filament_type>::write_links(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network[i]->write_links();
+        fout<<network[i]->write_links(i);
     } 
 }
 
 template <class filament_type> 
 void filament_ensemble<filament_type>::write_thermo(ofstream& fout){
     for (unsigned int f = 0; f < network.size(); f++)
-        fout<<network[f]->write_thermo();
+        fout<<network[f]->write_thermo(f);
     
 }
 
