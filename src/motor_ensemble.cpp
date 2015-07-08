@@ -19,15 +19,15 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
         double actin_len, double vis, vector<array<double,3> > positions, string BC) {
     
     fov = myfov;
-    mrho=mdensity;
     mld =mlen;
-    nm=int(ceil(mrho*fov[0]*fov[1]));
-    cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
-    f_network=network;
-    alpha=0.8;
     gamma = 0;
-
     tMove=10;
+    f_network=network;
+    
+    int nm = int(ceil(mdensity*fov[0]*fov[1]));
+    cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
+
+    double alpha = 0.8, motorx, motory, mang;
 
     for (int i=0; i< nm; i++) {
         
@@ -42,6 +42,39 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
         }
 
         n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+                    v0, stiffness, ron, roff, rend, actin_len, vis, BC));
+    }
+}
+
+template <class filament_ensemble_type>
+motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
+        double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
+        double actin_len, double vis, string BC) {
+    
+    fov = myfov;
+    mld =mlen;
+    gamma = 0;
+    tMove = 0;
+    f_network=network;
+    
+    int nm = motors.size();
+    cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
+
+    double motorx, motory, mang;
+    array<int, 2> f_index, l_index, state;
+
+    for (int i=0; i< nm; i++) {
+        
+        motorx = motors[i][0] + 0.5*motors[i][2];
+        motory = motors[i][1] + 0.5*motors[i][3];
+        mang   = atan2(motors[i][3], motors[i][2]);
+        
+        f_index = {int(motors[i][4]), int(motors[i][5])};
+        l_index = {int(motors[i][6]), int(motors[i][7])};
+
+        state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
+
+        n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, ron, roff, rend, actin_len, vis, BC));
     }
 }
@@ -102,6 +135,7 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 {
 
     this->check_broken_filaments();
+    array<int, 2> s;
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
         

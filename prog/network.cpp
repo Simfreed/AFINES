@@ -230,13 +230,29 @@ int main(int argc, char* argv[]){
     }
 
     cout<<"\nAdding active motors...";
-    motor_ensemble<ATfilament_ensemble> * myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
-            a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
-            a_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
+    motor_ensemble<ATfilament_ensemble> * myosins;
+    
+    if (a_motor_pos_vec.size() == 0)
+        myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
+                a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
+                a_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
+    else
+        myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
+                a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
+                a_m_kend, actin_length, viscosity, bnd_cnd);
+
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble<ATfilament_ensemble> * crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
-            p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
-            p_m_kend, actin_length, viscosity, p_motor_position_arrs, bnd_cnd);
+    motor_ensemble<ATfilament_ensemble> * crosslks; 
+    
+    if(p_motor_pos_vec.size() == 0)
+        crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
+                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
+                p_m_kend, actin_length, viscosity, p_motor_position_arrs, bnd_cnd);
+    else
+        crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
+                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
+                p_m_kend, actin_length, viscosity, bnd_cnd);
+
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     //cout<<"\nDEBUG: pointer to network = "<<net;
 
