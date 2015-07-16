@@ -172,7 +172,7 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 
 void filament::update_positions(double t)
 {
-    double vx, vy, gamma, T = temperature;
+    double vx, vy, damp, T = temperature;
     array<double, 2> new_rnds;
     array<double, 2> newpos;
     kinetic_energy = 0;  
@@ -180,12 +180,12 @@ void filament::update_positions(double t)
     
     for (unsigned int i = 0; i < actins.size(); i++){
         
-        gamma = actins[i]->get_friction();
+        damp = actins[i]->get_friction();
        
         new_rnds = {rng_n(0,1), rng_n(0,1)};
 
-        vx  = (actins[i]->get_force()[0])/gamma  + sqrt(T/(2*dt*gamma))*(new_rnds[0] + prv_rnds[i][0]);
-        vy  = (actins[i]->get_force()[1])/gamma  + sqrt(T/(2*dt*gamma))*(new_rnds[1] + prv_rnds[i][1]);
+        vx  = (actins[i]->get_force()[0])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[0] + prv_rnds[i][0]);
+        vy  = (actins[i]->get_force()[1])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[1] + prv_rnds[i][1]);
 
         prv_rnds[i] = new_rnds;
         

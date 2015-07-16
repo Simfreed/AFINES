@@ -21,7 +21,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
     fov = myfov;
     mld =mlen;
     gamma = 0;
-    tMove=10;
+    tMove=0;//10;
     f_network=network;
     
     int nm = int(ceil(mdensity*fov[0]*fov[1]));

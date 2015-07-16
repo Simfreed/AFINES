@@ -21,7 +21,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
         rend, double actin_len, double vis, string bc) {
     
     vs          = v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
-    dm          = 0.25;//actin_len/10; //max binding distance
+    dm          = 0.1/sqrt(stiffness); //0.25;//actin_len/10; //max binding distance
     mk          = stiffness;//rng(10,100); 
     fmax        = mk*dm*2;//rng(1,20);
     mld         = mlen;
@@ -159,8 +159,9 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
         new_rnd_x = {rng_n(0,1), rng_n(0,1)};
         new_rnd_y = {rng_n(0,1), rng_n(0,1)};
 
-        xm[0]=hx[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[0] + prv_rnd_x[0]) - mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[0];
-        xm[1]=hx[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[1] + prv_rnd_x[1]) + mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*dt*hy[1];
+        cout<<"\nDEBUG:both states are 0";
+        xm[0]=hx[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[0] + prv_rnd_x[0]) - mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*mobility*dt*hy[0];
+        xm[1]=hx[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[1] + prv_rnd_x[1]) + mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*mobility*dt*hy[1];
         ym[0]=hy[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_y[0] + prv_rnd_y[0]) - mk*dt*mobility*(hy[0]-hy[1]+mld*sin(mphi));
         ym[1]=hy[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_y[1] + prv_rnd_y[1]) + mk*dt*mobility*(hy[0]-hy[1]+mld*sin(mphi));
         if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
@@ -173,7 +174,7 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
         int hd=state[0];//cleverly equivalent to: 
                         //  int hd = (hd for which state[hd] = 0)
         double new_rnd_x = rng_n(0,1), new_rnd_y = rng_n(0,1);
-        xm[hd]=hx[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_x[hd] + new_rnd_x) - mk*dt*mobility*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*dt*hy[hd];
+        xm[hd]=hx[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_x[hd] + new_rnd_x) - mk*dt*mobility*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*mobility*dt*hy[hd];
         ym[hd]=hy[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_y[hd] + new_rnd_y) - mk*dt*mobility*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
         xm[pr(hd)]=hx[pr(hd)];
         ym[pr(hd)]=hy[pr(hd)];
@@ -350,44 +351,47 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
 }
 
 template <class filament_ensemble_type>
-inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x1, double x2, double y1, double y2)
+inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x0, double x1, double y0, double y1)
 {
     //Calculate the sheared simulation bounds (at this height)
     double xleft = 0, xright = 0, yleft, yright;
-    xleft  =  max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
-    xright =  min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
+    xleft  =  max(-fov[0] * 0.5 + gamma * y0 * mobility * t,  -fov[0] * 0.5 + gamma * y1 * mobility * t);
+    xright =  min( fov[0] * 0.5 + gamma * y0 * mobility * t,   fov[0] * 0.5 + gamma * y1 * mobility * t);
     yleft  = -fov[1]*0.5;
     yright =  fov[1]*0.5;
     
-    if (    xleft < x1 && x1 < xright &&  xleft < x2 && x2 < xright
-        &&  yleft < y1 && y1 < yright &&  yleft < y2 && y2 < yright) {
-        hx[0]=x1;
-        hx[1]=x2;
-        hy[0]=y1;
-        hy[1]=y2;
+    if (    xleft < x0 && x0 < xright &&  xleft < x1 && x1 < xright
+        &&  yleft < y0 && y0 < yright &&  yleft < y1 && y1 < yright) {
+        cout<<"\nDEBUG: everythings in boundary, updating positions of heads";
+        hx[0]=x0;
+        hx[1]=x1;
+        hy[0]=y0;
+        hy[1]=y1;
+    }
+    else if (x0>=xright || x0<=xleft)
+    {
+        cout<<"\nDEBUG: head 0 x is outside boundary";
+        hx[1]=x1;
+        hy[0]=y0; 
+        hy[1]=y1;   
     }
     else if (x1>=xright || x1<=xleft)
     {
-        hx[1]=x2;
-        hy[0]=y1; 
-        hy[1]=y2;   
+        cout<<"\nDEBUG: head 1 x is outside boundary";
+        hx[0]=x0;
+        hy[0]=y0;
+        hy[1]=y1;
     }
-    else if (x2>=xright || x2<=xleft)
+    else if(y0>=fov[1]*0.5 || y0<=fov[1]*0.5)
     {
-        hx[0]=x1;
-        hy[0]=y1;
-        hy[1]=y2;
-    }
-    else if(y1>=fov[1]*0.5 || y1<=fov[1]*0.5)
-    {
-        hx[0]=x1;
-        hx[1]=x2;
-        hy[1]=y2;
+        hx[0]=x0;
+        hx[1]=x1;
+        hy[1]=y1;
     }
     else{
-        hx[0]=x1;
-        hx[1]=x2;
-        hy[0]=y1;
+        hx[0]=x0;
+        hx[1]=x1;
+        hy[0]=y0;
     }
 }
 
@@ -397,8 +401,8 @@ inline void motor<filament_ensemble_type>::periodic(double t, double gamma, doub
 {
     //Calculate the sheared simulation bounds (at this height)
     double xleft, xright, yleft, yright;
-    xleft  =  max(-fov[0] * 0.5 + gamma * y1 * t, -fov[0] * 0.5 + gamma * y2 * t);
-    xright =  min( fov[0] * 0.5 + gamma * y1 * t,  fov[0] * 0.5 + gamma * y2 * t);
+    xleft  =  max(-fov[0] * 0.5 + gamma * y1 * mobility * t, -fov[0] * 0.5 + gamma * y2 * mobility * t);
+    xright =  min( fov[0] * 0.5 + gamma * y1 * mobility * t,  fov[0] * 0.5 + gamma * y2 * mobility * t);
     yleft  = -fov[1]*0.5;
     yright =  fov[1]*0.5;
     

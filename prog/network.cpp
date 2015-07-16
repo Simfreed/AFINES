@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
     int seed;
     
     double xrange, yrange;                                                  //Space
+    int xgrid, ygrid, grid_factor; 
     
     int    count = 0, nframes, nmsgs;                                  //Time 
     double tinit = 0.0, t = tinit, tfinal, dt;
@@ -69,6 +70,8 @@ int main(int argc, char* argv[]){
         
         ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
         ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
+        ("grid_factor", po::value<int>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
+        
         
         ("dt", po::value<double>(&dt)->default_value(0.001), "length of individual timestep in seconds")
         ("tfinal", po::value<double>(&tfinal)->default_value(10), "length of simulation in seconds")
@@ -155,16 +158,16 @@ int main(int argc, char* argv[]){
         store(parse_config_file(ifs, config_file_options), vm);
         notify(vm);
     }
+   
     
-    int xgrid, ygrid; 
     // DERIVED QUANTITIES :
     if(a_motor_density == 0 && p_motor_density==0){
         xgrid = 0;
         ygrid = 0;
     }
     else{
-        xgrid  = (int) 2*xrange;
-        ygrid  = (int) 2*yrange;
+        xgrid  = (int) grid_factor*xrange;
+        ygrid  = (int) grid_factor*yrange;
     }
 
     if (polymer_bending_modulus < 0){ //This is a flag for using the temperature for the bending modulus
@@ -257,9 +260,12 @@ int main(int argc, char* argv[]){
     //cout<<"\nDEBUG: pointer to network = "<<net;
 
     string time_str = "t = 0";
-    if (shear_rate != 0)
+    if (shear_rate != 0){
         net->set_shear_rate(shear_rate);
-    
+        myosins->set_shear(shear_rate);
+        crosslks->set_shear(shear_rate);
+    }
+
     if (use_linear_bending){
         //net->set_bending_linear();
         cout<<"\nusing linear bending\n";

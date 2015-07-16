@@ -195,7 +195,7 @@ void filament_ensemble<filament_type>::set_shear_rate(double g)
 {
     for (unsigned int f = 0; f < network.size(); f++)
     {
-        gamma = g;
+        network[f]->set_shear(g);
     }
 }
 
