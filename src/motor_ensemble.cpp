@@ -27,7 +27,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
     int nm = int(ceil(mdensity*fov[0]*fov[1]));
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
 
-    double alpha = 0.8, motorx, motory, mang;
+    double alpha = 1, motorx, motory, mang;
 
     for (int i=0; i< nm; i++) {
         
@@ -40,9 +40,9 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
             motory = rng(-0.5*(fov[1]*alpha-mld),0.5*(fov[1]*alpha-mld));
             mang   = rng(0,2*pi);
         }
-
         n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
                     v0, stiffness, ron, roff, rend, actin_len, vis, BC));
+        
     }
 }
 
@@ -138,19 +138,19 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
     array<int, 2> s;
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
-        
+       
         s[0]=n_motors[i]->get_states()[0];
         s[1]=n_motors[i]->get_states()[1];
 
         if (s[0]==0 && s[1]==0) {
-            n_motors[i]->attach(0);
-            n_motors[i]->attach(1);
+            n_motors[i]->attach(t, 0);
+            n_motors[i]->attach(t, 1);
         }
         else if (s[0]==0 && s[1]==1) {
-            n_motors[i]->attach(0);
+            n_motors[i]->attach(t, 0);
         }
         else if (s[0]==1 && s[1]==0) {
-            n_motors[i]->attach(1);
+            n_motors[i]->attach(t, 1);
         }
     
     }
@@ -159,21 +159,23 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
     if (t >= tMove){
         for (unsigned int i=0; i<n_motors.size(); i++) {
 
+            //cout<<"\nDEBUG: motor "<<i;
             s[0]=n_motors[i]->get_states()[0];
             s[1]=n_motors[i]->get_states()[1];
             
             if (s[0]==0 && s[1]==0) {
-                n_motors[i]->brownian(t, gamma);
+                n_motors[i]->update_position(t);
             }
             else if (s[0]==0 && s[1]==1) {
-                n_motors[i]->brownian(t, gamma);
+                n_motors[i]->update_position(t);
                 n_motors[i]->step_onehead(1);
             }
             else if (s[0]==1 && s[1]==0) {
-                n_motors[i]->brownian(t, gamma);
+                n_motors[i]->update_position(t);
                 n_motors[i]->step_onehead(0);
             }
             else {
+                n_motors[i]->update_position(t);
                 n_motors[i]->step_twoheads();
             }
 
@@ -181,16 +183,6 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
         }   
     }
 }
-
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::reshape()
-{
-    for (unsigned int i=0; i<n_motors.size(); i++) {
-        n_motors[i]->update_shape();
-    }
-}
-
-
 
 template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::motor_write(ostream& fout)
@@ -205,14 +197,6 @@ void motor_ensemble<filament_ensemble_type>::motor_write(ostream& fout)
 }
 
 template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_tension(ofstream& fout)
-{
-    for (unsigned int i=0; i<n_motors.size(); i++) {
-        fout<<n_motors[i]->tension()<<"\n";
-    }
-}
-
-template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::add_motor(motor<filament_ensemble_type> * m)
 {
     n_motors.push_back(m);
@@ -221,6 +205,9 @@ void motor_ensemble<filament_ensemble_type>::add_motor(motor<filament_ensemble_t
 template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::set_shear(double g)
 {
+    for (unsigned int i=0; i<n_motors.size(); i++)
+        n_motors[i]->set_shear(g);
+    
     gamma = g;
 }
 

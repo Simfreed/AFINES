@@ -4,7 +4,7 @@
  *
  *  Created by Shiladitya Banerjee on 9/3/13.
  *  Modified by Simon Freedman 9/2014
- *  Copyright 2013 University of Chicago. All rights reserved.
+n*  Copyright 2013 University of Chicago. All rights reserved.
  *
  */
 
@@ -37,14 +37,14 @@ void filament_ensemble<filament_type>::quad_update()
 
     for (unsigned int i=0; i < network.size(); i++) { //Loop over filaments
         
-        filament_quads = network[i]->get_quadrants(); 
+        filament_quads = network[i]->get_quadrants(delrx); 
         
         for (unsigned int j=0; j < filament_quads.size(); j++){ //Loop over links
             
             for (unsigned int k = 0; k  < filament_quads[j].size(); k++){ //Loop over quadrants of a Link   
                 
                 quad_fils[ filament_quads[j][k] ].push_back({(int)i, (int)j});
-//                cout<<"\nDEBUG: quad_fils[{"<<filament_quads[j][k][0]<<" , "<<filament_quads[j][k][1]<<"}] = {"<<i<<" , "<<j<<"}";
+                //cout<<"\nDEBUG: quad_fils[{"<<filament_quads[j][k][0]<<" , "<<filament_quads[j][k][1]<<"}] = {"<<i<<" , "<<j<<"}";
             }
         }   
     }
@@ -81,13 +81,12 @@ map<array<int, 2>, double> filament_ensemble<filament_type>::update_dist_map(map
     
     array<int, 2> lnk_idx;
     double dist;
-
     if(!quad_fils[mquad].empty())
         
         for (unsigned int j = 0; j < quad_fils[mquad].size(); j++){
         
             lnk_idx = quad_fils[mquad][j];
-            dist = network[lnk_idx[0]]->get_link(lnk_idx[1])->get_distance(x,y);
+            dist = network[lnk_idx[0]]->get_link(lnk_idx[1])->get_distance(network[lnk_idx[0]]->get_BC(), x, y, delrx);
             
             if (t_map.count(lnk_idx) == 0 || t_map[lnk_idx] > dist)
                 
@@ -158,7 +157,7 @@ void filament_ensemble<filament_type>::set_straight_filaments(bool is_straight)
 }
 
 template <class filament_type> 
-void filament_ensemble<filament_type>::update_positions(double t)
+void filament_ensemble<filament_type>::update_positions()
 {
     for (unsigned int f = 0; f < network.size(); f++)
     {
@@ -193,6 +192,10 @@ void filament_ensemble<filament_type>::write_thermo(ofstream& fout){
 template <class filament_type> 
 void filament_ensemble<filament_type>::set_shear_rate(double g)
 {
+    if (network.size() > 0)
+        if (network[0]->get_nactins() > 0)
+            shear_speed = g*fov[1] / (2*network[0]->get_actin(0)->get_friction());
+
     for (unsigned int f = 0; f < network.size(); f++)
     {
         network[f]->set_shear(g);
@@ -201,11 +204,13 @@ void filament_ensemble<filament_type>::set_shear_rate(double g)
 
 
 template <class filament_type> 
-void filament_ensemble<filament_type>::update_shear(){
-    
+void filament_ensemble<filament_type>::update_shear()
+{
+    //cout<<"\nDEBUG: SHEARING"; 
     for (unsigned int f = 0; f < network.size(); f++)
     {
-        network[f]->update_shear();
+        network[f]->update_delrx(shear_speed*t);
+        network[f]->update_shear(t);
     }
 }
 
@@ -260,8 +265,7 @@ void filament_ensemble<filament_type>::set_visc(double nu){
 }
 
 template <class filament_type> 
-void filament_ensemble<filament_type>::update_forces(int f_index, int a_index, double f1, double f2)
-{
+void filament_ensemble<filament_type>::update_forces(int f_index, int a_index, double f1, double f2){
     network[f_index]->update_forces(a_index, f1,f2);
 }
 
@@ -288,13 +292,28 @@ int filament_ensemble<filament_type>::get_nlinks(){
     return this->get_nactins() - network.size();
 }
 
+template <class filament_type> 
+double filament_ensemble<filament_type>::get_delrx(){
+    return delrx;
+}
+
+template <class filament_type> 
+double filament_ensemble<filament_type>::get_actin_friction(){
+    
+    if (network.size() > 0)
+        if (network[0]->get_nactins() > 0)
+            return network[0]->get_actin(0)->get_friction();
+    
+    return 0;
+}
+
 // Update bending forces between monomers
 template <class filament_type>
 void filament_ensemble<filament_type>::update_bending(){
     
     for (unsigned int f = 0; f < network.size(); f++)
     {
-        network[f]->update_bending();
+        network[f]->update_bending(t);
     }
 }
 
@@ -305,7 +324,7 @@ void filament_ensemble<filament_type>::update_stretching(){
     int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
     for (int f = 0; f < s; f++)
     {
-        newfilaments = network[f]->update_stretching();
+        newfilaments = network[f]->update_stretching(t);
         
         if (newfilaments.size() > 0){ //fracture event occured
 
@@ -324,23 +343,104 @@ void filament_ensemble<filament_type>::update_stretching(){
 }
 
 template <class filament_type>
+void filament_ensemble<filament_type>::set_shear_stop(double stopT){
+    shear_stop = stopT; 
+}
+
+template <class filament_type>
+void filament_ensemble<filament_type>::set_shear_dt(double delT){
+    shear_dt = delT; 
+}
+
+template <class filament_type>
 void filament_ensemble<filament_type>::update_int_forces()
 {
-    this->update_shear();
     this->update_stretching();
     this->update_bending();
 }
 
 /* Overdamped Langevin Dynamics Integrator (Ermak and Yeh, 1974) */
 template <class filament_type>
-void filament_ensemble<filament_type>::update(double t){
+void filament_ensemble<filament_type>::update(){
     
     this->update_int_forces();
-    this->update_positions(t);
+    if (fmod(t, shear_dt) < dt && t < shear_stop && t != 0) 
+    {   
+   //     cout<<"\nDEBUG: updating shear";
+        this->update_shear();
+    }
+    
+    this->update_positions();
     this->quad_update();
+    t += dt;
 
 }
 
+template<class filament_type>
+vector<vector<double> > filament_ensemble<filament_type>::get_intersections(double len){
+
+    vector< vector<double> > itrs;
+    double a1, a2, b1, b2, c1, c2, det, x, y, ang;
+    array<double, 2> hx1, hx2, hy1, hy2;
+    pair<double, double> mmx1, mmy1, mmx2, mmy2;
+ 
+    for (unsigned int f1 = 0; f1 < network.size(); f1++){
+        
+        for (unsigned int l1 = 0; l1 < network[f1]->get_nlinks(); l1++){
+
+            hx1 = network[f1]->get_link(l1)->get_hx();
+            hy1 = network[f1]->get_link(l1)->get_hy();
+
+            a1 = hy1[1] - hy1[0];
+            b1 = hx1[0] - hx1[1];
+            c1 = a1*hx1[0] + b1*hy1[0];
+            
+            mmx1 = minmax(hx1[0], hx1[1]);
+            mmy1 = minmax(hy1[0], hy1[1]);
+
+            for (unsigned int f2 = f1; f2 < network.size(); f2++){
+                
+                for (unsigned int l2 = 0; l2 < network[f2]->get_nlinks(); l2++){
+
+                    if (f1 == f2 && fabs(double(l1) - double(l2)) < 2){ //links should be at least two away to get crosslinked
+//                        cout<<"\nDEBUG: not linking links ("<<l1<<","<<l2<<") on filament "<<f1;
+                        continue;
+                    }
+
+                    hx2 = network[f2]->get_link(l2)->get_hx();
+                    hy2 = network[f2]->get_link(l2)->get_hy();
+
+                    a2 = hy2[1] - hy2[0];
+                    b2 = hx2[0] - hx2[1];
+                    c2 = a2*hx2[0] + b2*hy2[0];
+                    
+                    det = a1*b2 - a2*b1;
+                    mmx2 = minmax(hx2[0], hx2[1]);
+                    mmy2 = minmax(hy2[0], hy2[1]);
+                    
+                    if (det!=0){
+                        x = (b2*c1 - b1*c2)/det;
+                        y = (a1*c2 - a2*c1)/det;
+                        if (x > mmx1.first && x > mmx2.first && x < mmx1.second && x < mmx2.second &&
+                            y > mmy1.first && y > mmy2.first && y < mmy1.second && y < mmy2.second){
+                            ang = network[f2]->get_link(l2)->get_angle();// - network[f1]->get_link(l1)->get_angle();
+                            double crdarr[] = { x, y, len*cos(ang), len*sin(ang), double(f1), double(f2), double(l1), double(l2)}; 
+                            vector<double> crdvec(crdarr, crdarr+sizeof(crdarr)/sizeof(double)); 
+                            itrs.push_back(crdvec);
+                        }
+                    }
+                    /*else{
+                        //parallel; determine intersection by endpoint. 
+                        //This is a pain. I'm going to leave it out for now because it's an extremly unlikely scenario 
+                        //and the logic will look really gross
+                        
+                    }*/
+                }
+            }
+        }
+    }
+    return itrs;
+}
 ////////////////////////////////////////
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
@@ -360,6 +460,10 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
+    shear_stop = 1e10;
+    shear_dt = dt;
+    t = 0;
+    delrx = 0;
 
     if (seed == -1){
         straight_filaments = true;
@@ -397,6 +501,8 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
     link_ld = link_len;
     dt = delta_t;
     temperature = temp;
+    t = 0;
+    delrx = 0;
 
     view[0] = 1;
     view[1] = 1;
@@ -442,6 +548,8 @@ baoab_filament_ensemble::baoab_filament_ensemble(double density, array<double,2>
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
+    t = 0;
+    delrx = 0;
 
     if (seed == -1){
         straight_filaments = true;
@@ -475,23 +583,24 @@ void baoab_filament_ensemble::update_velocities_B()
         network[f]->update_velocities_B();
 }
     
-void baoab_filament_ensemble::update_velocities_O(double t)
+void baoab_filament_ensemble::update_velocities_O()
 {
     for (unsigned int f = 0; f < network.size(); f++) 
         network[f]->update_velocities_O(t);
 }
 
-void baoab_filament_ensemble::update(double t)
+void baoab_filament_ensemble::update()
 {
 
     this->update_velocities_B();        /*B*/
-    this->update_positions(t);          /*A*/
-    this->update_velocities_O(t);       /*O*/
-    this->update_positions(t);          /*A*/ 
+    this->update_positions();          /*A*/
+    this->update_velocities_O();       /*O*/
+    this->update_positions();          /*A*/ 
     this->update_int_forces();
     this->update_velocities_B();        /*B*/
     
     this->quad_update();
+    t += dt;
 
 }
 
@@ -510,6 +619,8 @@ lammps_filament_ensemble::lammps_filament_ensemble(double density, array<double,
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
+    t = 0;
+    delrx = 0;
 
     if (seed == -1){
         straight_filaments = true;
@@ -555,14 +666,16 @@ void lammps_filament_ensemble::update_drag()
         network[f]->update_drag();
 }
 
-void lammps_filament_ensemble::update(double t){
+void lammps_filament_ensemble::update(){
     
     this->update_int_forces();    
     if (t > dt*100000) this->update_brownian();
     this->update_drag();
     
-    this->update_positions(t);
+    this->update_positions();
     this->quad_update();
+
+    t += dt;
 
 }
 ///////////////////////////////////////
@@ -583,6 +696,8 @@ langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double 
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
     dt = delta_t;
     temperature = temp;
+    t = 0;
+    delrx = 0;
 
     if (seed == -1){
         straight_filaments = true;
@@ -611,7 +726,7 @@ langevin_leapfrog_filament_ensemble::langevin_leapfrog_filament_ensemble(double 
     min_time = 0; //1e6*dt;
 }
 
-void langevin_leapfrog_filament_ensemble::update_velocities(double t)
+void langevin_leapfrog_filament_ensemble::update_velocities()
 {
     for (unsigned int f = 0; f < network.size(); f++){
         network[f]->reset_velocity();
@@ -621,21 +736,23 @@ void langevin_leapfrog_filament_ensemble::update_velocities(double t)
     }
 }
 
-void langevin_leapfrog_filament_ensemble::update_positions(double t)
+void langevin_leapfrog_filament_ensemble::update_positions()
 {
     for (unsigned int f = 0; f < network.size(); f++)
         network[f]->update_positions(t);
 }
 
 /*Izaguirre, Sweet, Pande, 2010 (Seen in Chodera...Pande, 2011)*/
-void langevin_leapfrog_filament_ensemble::update(double t){
+void langevin_leapfrog_filament_ensemble::update(){
     
-    this->update_velocities(t);
-    this->update_positions(t);
+    this->update_velocities();
+    this->update_positions();
     this->update_int_forces();
-    this->update_velocities(t);
+    this->update_velocities();
     
     this->quad_update();
+
+    t += dt;
 
 }
 

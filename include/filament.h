@@ -45,11 +45,13 @@ class filament
     
         void set_shear(double g);
 
-        void update_shear(); 
+        void update_delrx(double shear_dist);
         
-        vector<filament *> update_stretching();
+        void update_shear(double t); 
         
-        void update_bending();
+        vector<filament *> update_stretching(double t);
+        
+        void update_bending(double);
         
         void update_positions(double t);
         
@@ -63,7 +65,7 @@ class filament
 
         int get_nlinks();
 
-        vector<vector<array<int, 2> > > get_quadrants();
+        vector<vector<array<int, 2> > > get_quadrants(double shear_dist);
         
         string write_actins(int fil);
         
@@ -89,9 +91,9 @@ class filament
        
         inline double angle_between_links(int i, int j);
 
-        void fwd_bending_update();
+        void fwd_bending_update(double);
         
-        void bwd_bending_update();
+        void bwd_bending_update(double);
         
         int get_nactins();
 
@@ -109,8 +111,9 @@ class filament
 
     protected:
         
-        double kb, gamma, temperature, dt, fracture_force, kinetic_energy;
-        
+        double kb, temperature, dt, fracture_force, kinetic_energy, damp;
+        double gamma, max_shear, delrx;
+
         array<double,2> fov;
         array<int,2> nq;
         vector<array<double, 2> > prv_rnds;
@@ -140,7 +143,7 @@ class baoab_filament : public filament
 
         void update_positions(double t);
         
-        vector<baoab_filament *> update_stretching();
+        vector<baoab_filament *> update_stretching(double t);
         
         vector<baoab_filament *> fracture(int node);
         
@@ -178,7 +181,7 @@ class lammps_filament : public filament
 
         void update_positions(double t);
         
-        vector<lammps_filament *> update_stretching();
+        vector<lammps_filament *> update_stretching(double t);
     
         vector<lammps_filament *> fracture(int node);
 
@@ -220,7 +223,7 @@ class langevin_leapfrog_filament : public filament
         
         void update_positions(double t);
         
-        vector<langevin_leapfrog_filament *> update_stretching();
+        vector<langevin_leapfrog_filament *> update_stretching(double t);
     
         vector<langevin_leapfrog_filament *> fracture(int node);
 
@@ -249,7 +252,7 @@ class NFfilament : public filament
 
         double get_tau();
         
-        vector<NFfilament *> update_stretching();
+        vector<NFfilament *> update_stretching(double t);
 
         void update(double t);
         

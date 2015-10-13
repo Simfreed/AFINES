@@ -104,7 +104,7 @@ void baoab_filament::update_velocities_O(double t)
     }
 }
 
-vector<baoab_filament *> baoab_filament::update_stretching()
+vector<baoab_filament *> baoab_filament::update_stretching(double t)
 {
     vector<baoab_filament *> newfilaments;
     
@@ -112,7 +112,8 @@ vector<baoab_filament *> baoab_filament::update_stretching()
         return newfilaments;
     
     for (unsigned int i=0; i < links.size(); i++) {
-        if (fabs(links[i]->get_stretch_force()) > fracture_force){
+        links[i]->update_force(BC, delrx);
+        if (fabs(links[i]->get_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }

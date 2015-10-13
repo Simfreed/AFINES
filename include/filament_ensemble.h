@@ -55,16 +55,22 @@ class filament_ensemble
         double get_int_direction(int fil, int link, double xp, double yp);
 
         double get_xcm(int fil, int link);
-        
+       
         double get_ycm(int fil, int link);
 
         double get_angle(int fil, int link);
 
         double get_llength(int fil, int link);
        
+        double get_actin_friction();
+        
+        double get_delrx();
+        
         int get_nactins();
         
         int get_nlinks();
+
+        vector<vector<double> > get_intersections(double cllen);
 
         void update_shear();
         
@@ -74,7 +80,7 @@ class filament_ensemble
         
         void update_int_forces();
 
-        void update_positions(double t);
+        void update_positions();
 
         void update_forces(int fil, int actin, double f2, double f3);
 
@@ -87,7 +93,11 @@ class filament_ensemble
         void set_straight_filaments(bool is_straight);
 
         void set_shear_rate(double);
+        
+        void set_shear_stop(double);
 
+        void set_shear_dt(double);
+        
         bool is_polymer_start(int f, int a);
 
         void set_fov(double x, double y);
@@ -104,11 +114,12 @@ class filament_ensemble
 
         void print_network_thermo();
 
-        void update(double t);
+        void update();
         
     protected:
 
-        double dt, temperature, link_ld, visc, gamma, min_time;
+        double t, dt, temperature, link_ld, visc, min_time;
+        double gamma, shear_stop, shear_dt, shear_speed, delrx;
         
         bool straight_filaments = false;
         
@@ -149,9 +160,9 @@ class baoab_filament_ensemble:
 
         void update_velocities_B();
 
-        void update_velocities_O(double t);
+        void update_velocities_O();
 
-        void update(double t);
+        void update();
 
 };
 
@@ -171,7 +182,7 @@ class lammps_filament_ensemble:
 
         void update_brownian();
 
-        void update(double t);
+        void update();
 };
 
 class langevin_leapfrog_filament_ensemble:
@@ -186,11 +197,11 @@ class langevin_leapfrog_filament_ensemble:
 
         void set_mass(double m);
 
-        void update_velocities(double t);
+        void update_velocities();
 
-        void update_positions(double t);
+        void update_positions();
 
-        void update(double t);
+        void update();
     
 };
 #endif

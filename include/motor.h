@@ -37,9 +37,13 @@ class motor
 
         double tension();
 
-        void attach(int hd);
+        void attach(double t, int hd);
 
-        void brownian(double t, double gamma);
+        void update_force(double t);
+        
+        void update_position(double t);
+
+        array<double, 2> boundary_check(int i, double t, double vx, double vy);
 
         void step_onehead(int hd);
 
@@ -48,6 +52,8 @@ class motor
         void actin_update();
 
         void update_shape();
+        
+        void set_shear(double g);
         
         array<int,2> get_f_index();
         
@@ -71,7 +77,8 @@ class motor
 
     private:
 
-        double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature;
+        double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature, 
+               actin_damp, force, damp, shear;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y;
         
@@ -81,7 +88,7 @@ class motor
         
         string BC;
         
-        filament_ensemble_type *actin_network;
+        filament_ensemble_type* actin_network;
         
 };
 

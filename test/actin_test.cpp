@@ -1,75 +1,70 @@
 #include "actin.h"
-
+//#include "globals.h"
 #define BOOST_TEST_MODULE actin_test
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
-    actin * a = new actin(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2); 
+    actin * a = new actin(0.25, 0.5, 0.75, 1.25);
     BOOST_CHECK_EQUAL( a->get_xcm(), 0.25);                  // 1 //
     BOOST_CHECK_EQUAL( a->get_ycm(), 0.5);                   // 1 //
-    BOOST_CHECK_EQUAL( a->get_angle(), 0.75);                // 1 //
-    BOOST_CHECK_EQUAL( a->get_length(), 1);               
+    BOOST_CHECK_EQUAL( a->get_length(), 0.75);                // 1 //
+    BOOST_CHECK_EQUAL( a->get_viscosity(), 1.25);               
+    BOOST_CHECK_EQUAL( a->get_velocity()[0], 0);               
+    BOOST_CHECK_EQUAL( a->get_velocity()[1], 0);               
+    BOOST_CHECK_EQUAL( a->get_force()[0], 0);               
+    BOOST_CHECK_EQUAL( a->get_force()[1], 0);               
+    BOOST_CHECK_CLOSE( a->get_friction(), 11.781, 0.001);               
     delete a;
 } 
 
-BOOST_AUTO_TEST_CASE( friction_test )
-{
-    actin a(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
-    double * fric = a.get_friction();
-    double tol = 0.001; //%
-    BOOST_CHECK_CLOSE( fric[0] , 0.340655, tol);
-    BOOST_CHECK_CLOSE( fric[1] , 0.681311, tol);
-    BOOST_CHECK_CLOSE( fric[2] , 0.085164, tol);
-    delete[] fric;
-}
-
 BOOST_AUTO_TEST_CASE( force_test)
 {
-    actin a(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
-    BOOST_CHECK_EQUAL( a.get_forces()[0] , 0); 
-    BOOST_CHECK_EQUAL( a.get_forces()[1] , 0); 
-    BOOST_CHECK_EQUAL( a.get_forces()[2] , 0); 
+    actin a(0.25, 0.5, 0.75, 1.25);
+    array<double, 2> f1 = {3.5,-6.7};
+    array<double, 2> f2 = {-2,1};
+    array<double, 2> ftot = {f1[0]+f2[0],f1[1]+f2[1]};
 
-    a.update_force(11,22,33);
-    BOOST_CHECK_EQUAL( a.get_forces()[0] , 11); 
-    BOOST_CHECK_EQUAL( a.get_forces()[1] , 22); 
-    BOOST_CHECK_EQUAL( a.get_forces()[2] , 33); 
-
-}
-
-BOOST_AUTO_TEST_CASE( direction_test)
-{
-    actin a(0.25, 0.5, 0.75, 1, 2, 2, 4, 4, 0.2);
-    double tol = 0.001; //% 
-    BOOST_CHECK_CLOSE( a.get_direction()[0] , 0.731689 , tol); 
-    BOOST_CHECK_CLOSE( a.get_direction()[1] , 0.681639 , tol); 
-}
-
-BOOST_AUTO_TEST_CASE( start_end_test)
-{
-    actin a(0, 0, 0, 1, 0, 0, 0, 0, 0);
-    double tol = 0.001; //% 
-    BOOST_CHECK_CLOSE( a.get_start()[0], -0.500000, tol); 
-    BOOST_CHECK_CLOSE( a.get_start()[1],  0.000000, tol); 
-    BOOST_CHECK_CLOSE( a.get_end()[0],  0.500000, tol); 
-    BOOST_CHECK_CLOSE( a.get_end()[1],  0.000000, tol); 
+    a.update_force(f1[0], f1[1]);
+    BOOST_CHECK_EQUAL( a.get_force()[0] , f1[0]); 
+    BOOST_CHECK_EQUAL( a.get_force()[1] , f1[1]); 
+    a.update_force(f2[0], f2[1]);
+    BOOST_CHECK_EQUAL( a.get_force()[0] , ftot[0]); 
+    BOOST_CHECK_EQUAL( a.get_force()[1] , ftot[1]); 
     
+    a.reset_force();
+    BOOST_CHECK_EQUAL( a.get_force()[0], 0);               
+    BOOST_CHECK_EQUAL( a.get_force()[1], 0);               
 }
 
-BOOST_AUTO_TEST_CASE( get_intpoint_test)
+BOOST_AUTO_TEST_CASE( velocity_test)
 {
-    actin a(0, 0, 0, 1, 0, 0, 0, 0, 0);
-    double x = 0.1, y = 1;
-    double tol = 0.001;
-    double * intpoint = a.get_intpoint(x,y);
-    BOOST_CHECK_CLOSE( intpoint[0], 0.1, tol);
-    BOOST_CHECK_CLOSE( intpoint[1], 0, tol);
-    delete[] intpoint;
+    actin a(0.25, 0.5, 0.75, 1.25);
+    array<double, 2> v1 = {3.5,-6.7};
+    array<double, 2> v2 = {-2,1};
+    array<double, 2> vtot = {v1[0]+v2[0],v1[1]+v2[1]};
+    double vtotsq = dot(vtot[0], vtot[1], vtot[0], vtot[1]);
+
+    a.update_velocity(v1[0], v1[1]);
+    BOOST_CHECK_EQUAL( a.get_velocity()[0] , v1[0]); 
+    BOOST_CHECK_EQUAL( a.get_velocity()[1] , v1[1]); 
+    a.update_velocity(v2[0], v2[1]);
+    BOOST_CHECK_EQUAL( a.get_velocity()[0] , vtot[0]); 
+    BOOST_CHECK_EQUAL( a.get_velocity()[1] , vtot[1]); 
+    BOOST_CHECK_EQUAL( a.get_vsquared() , vtotsq); 
+    
+    a.reset_velocity();
+    BOOST_CHECK_EQUAL( a.get_velocity()[0], 0);               
+    BOOST_CHECK_EQUAL( a.get_velocity()[1], 0);               
 }
 
-BOOST_AUTO_TEST_CASE( set_get_xcm )
+BOOST_AUTO_TEST_CASE( pos_test)
 {
-    actin a(1, 0, 0, 1, 0, 0, 0, 0, 0);
+    actin a(0.25, 0.5, 0.75, 1);
+    a.set_xcm(-0.45);
+    a.set_ycm(5.67);
+    
+    BOOST_CHECK_EQUAL( a.get_xcm(), -0.45);
+    BOOST_CHECK_EQUAL( a.get_ycm() , 5.67);
 }
 // EOF

@@ -32,6 +32,7 @@
 #include <array>
 #include <map>
 #include <algorithm> //std::for_each
+#include <unordered_set>
 
 using namespace std;
 
@@ -50,10 +51,18 @@ int pr(int num);
 double rng_exp(double mean);
 double rng_n(double mean, double var);
 int event(double rate, double timestep);
-double dis_points(double x1, double y1, double x2, double y2);
+
+array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox);
+array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox, double shear_dist);
+array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
+
+double dist_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
+double dot_bc(string bc, double dx1, double dy1, double dx2, double dy2, double xbox, double ybox, double shear_dist);
+
 double velocity(double vel0, double force, double fstall);
 double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
+
 double mean(vector<double> vals);
 double var(vector<double> vals);
 double mode_var(vector<double> vals, double m);
@@ -63,6 +72,14 @@ vector<double *> vec2ptrvec(vector<double>, int dim);
 vector<double *> str2ptrvec(string, string, string);
 vector<array<double,3> > str2arrvec(string, string, string);
 vector<vector<double> > file2vecvec(string path, string delim);
+
+template <typename T> int sgn(T val);
+
+pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
+multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &p);
+
+//template <typename A, typename B> pair<B,A> flip_pair(const pair<A,B> &p);
+//template <typename A, typename B> multimap<B,A> flip_map(const map<A,B> &src);
 
 map<array<int, 2>, double> transpose(map<array<int, 2>, double> mat);
 map<array<int, 2>, double> invert_block_diagonal(map<array<int, 2>, double> mat);

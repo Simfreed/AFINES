@@ -56,10 +56,62 @@ int event(double rate, double timestep)
         return 0;
 }
 
-double dis_points(double x1, double y1, double x2, double y2)
+array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox)
 {
-    double dis=sqrt(pow(x2-x1,2)+pow(y2-y1,2));
-    return dis;
+    //Using the minimum image convention
+    //Allen and Tildesley, page 30
+    double rxij = dx - xbox * round(dx / xbox);
+    double ryij = dy - ybox * round(dy / ybox);
+    return {rxij, ryij};
+}
+
+array<double, 2> rij_xperiodic(double dx, double dy, double xbox, double ybox)
+{
+    //Using the minimum image convention
+    //Allen and Tildesley, page 30
+    double rxij = dx - xbox * round(dx / xbox);
+    double ryij = dy;
+    return {rxij, ryij};
+}
+
+array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox, double delrx)
+{
+    //Using the minimum image convention
+    //Allen and Tildesley, page 247 
+    double cory, rxij, ryij;
+    cory = round(dy / ybox);
+    rxij = dx   - cory * delrx;
+    rxij = rxij - round(rxij / xbox) * xbox;
+    ryij = dy   - cory * ybox;
+    return {rxij, ryij};
+}
+
+double dist_bc(string bc, double dx, double dy, double xbox, double ybox, double delrx){
+    
+    array<double, 2> rij = rij_bc(bc, dx, dy, xbox, ybox, delrx);
+    return hypot(rij[0], rij[1]);
+}
+
+array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybox, double delrx){
+    
+    if (bc == "PERIODIC")
+        return rij_periodic(dx, dy, xbox, ybox);
+    if (bc == "XPERIODIC")
+        return rij_xperiodic(dx, dy, xbox, ybox);
+    else if (bc =="LEES-EDWARDS")
+        return rij_lees_edwards(dx, dy, xbox, ybox, delrx);
+    else
+        return {dx, dy};
+
+}
+
+double dot_bc(string bc, double dx1, double dy1, double dx2, double dy2, double xbox, double ybox, double delrx)
+{
+    array<double, 2> 
+        rij1 = rij_bc(bc, dx1, dy1, xbox, ybox, delrx), 
+        rij2 = rij_bc(bc, dx2, dy2, xbox, ybox, delrx);
+    
+    return dot(rij1[0], rij1[1], rij2[0], rij2[1]);
 }
 
 double velocity(double vel0, double force, double fstall)
@@ -251,3 +303,29 @@ void intarray_printer(array<int, 2> a)
 {
     cout<<"\n{ " <<a[0]<<" , "<<a[1]<<" }";
 }
+
+template <typename T> int sgn(T val){
+    return (T(0) < val) - (val < T(0));
+}
+
+// Method to sort a map by value; source, for more general formulation:
+// http://stackoverflow.com/questions/5056645/sorting-stdmap-using-value/5056797#5056797
+pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p)
+{
+        return std::pair<double,array<int,2> >(p.second, p.first);
+}
+
+multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &src)
+{
+    multimap<double,array<int,2> > dst;
+    std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()), 
+            flip_pair);
+    return dst;
+}
+
+//template pair<double, array<int, 2> > flip_pair<array<int,2>, double> (const pair<array<int, 2> , double>);
+//template multimap<double, array<int, 2> > flip_map<array<int,2>, double> (const map<array<int, 2> , double>);
+
+template int sgn<int>(int);
+template int sgn<double>(double);
+template int sgn<float>(float);

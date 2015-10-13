@@ -139,15 +139,16 @@ void langevin_leapfrog_filament::update_positions(double t)
     
 }
 
-vector<langevin_leapfrog_filament *> langevin_leapfrog_filament::update_stretching()
+vector<langevin_leapfrog_filament *> langevin_leapfrog_filament::update_stretching(double t)
 {
     vector<langevin_leapfrog_filament *> newfilaments;
-    
+
     if(links.size() == 0)
         return newfilaments;
-    
+   
     for (unsigned int i=0; i < links.size(); i++) {
-        if (fabs(links[i]->get_stretch_force()) > fracture_force){
+        links[i]->update_force(BC, delrx);
+        if (fabs(links[i]->get_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }

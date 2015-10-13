@@ -115,15 +115,16 @@ void lammps_filament::update_positions(double t)
     
 }
 
-vector<lammps_filament *> lammps_filament::update_stretching()
+vector<lammps_filament *> lammps_filament::update_stretching(double t)
 {
     vector<lammps_filament *> newfilaments;
-    
+
     if(links.size() == 0)
         return newfilaments;
-    
+   
     for (unsigned int i=0; i < links.size(); i++) {
-        if (fabs(links[i]->get_stretch_force()) > fracture_force){
+        links[i]->update_force(BC, delrx);
+        if (fabs(links[i]->get_force()) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }

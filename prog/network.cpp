@@ -54,7 +54,9 @@ int main(int argc, char* argv[]){
     string   dir,    afile,  amfile,  pmfile,  lfile, thfile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
 
-    double shear_rate;                                                      //External Force
+    double shear_rate, shear_freq, shear_stop, strain_pct;                     //External Force
+    
+    bool link_intersect_flag;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -111,7 +113,11 @@ int main(int argc, char* argv[]){
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
-        ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/(um*s)")
+        
+        ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/um")
+        ("strain_pct", po::value<double>(&strain_pct)->default_value(0), "pct that the boundarys get sheared")
+        ("shear_freq", po::value<double>(&shear_freq)->default_value(1), "Frequency of shearing in # of timesteps (i.e., shear_freq = 0.33 ==> shear every third time step)")
+        ("shear_stop", po::value<double>(&shear_stop)->default_value(1e12), "amount of time to shear for [s]")
         
         ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
         ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
@@ -123,6 +129,8 @@ int main(int argc, char* argv[]){
                                                                             Options: (1) BD = Ermak Yeh Brownian Dynamics\
                                                                                      (2) BAOAB = Charlie's Overdamped BAOAB\
                                                                                      (3) LLF = Langevin Leap Frog")
+        
+        ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "output directory")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -225,12 +233,14 @@ int main(int argc, char* argv[]){
                 actin_position_arrs, 
                 link_stretching_stiffness, link_bending_stiffness,
                 fracture_force, bnd_cnd, seed); 
-    }else{ 
+    }else{
         net = new ATfilament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, link_bending_stiffness,
                 fracture_force, bnd_cnd); 
     }
+   
+    if (link_intersect_flag) p_motor_pos_vec = net->get_intersections(p_motor_length); 
 
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins;
@@ -249,27 +259,30 @@ int main(int argc, char* argv[]){
     
     if(p_motor_pos_vec.size() == 0)
         crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
+                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_kend,
                 p_m_kend, actin_length, viscosity, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_koff,
+                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_kend,
                 p_m_kend, actin_length, viscosity, bnd_cnd);
 
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
-    //cout<<"\nDEBUG: pointer to network = "<<net;
+
+    double shear_dt = dt/shear_freq;
+    if (strain_pct != 0){
+        // Based on completing a shear of strain_pct * xrange within the simulation, 
+        // By shearing at 1 time step and then allowing the system to relax for t = shear_dt 
+        // strain_dist = strain_pct * xrange = shear_rate * actin_mobility * boundary_height * tfinal / 2
+        double strain_dist = strain_pct * yrange;
+        shear_rate = 8 * pi * actin_length * viscosity * strain_dist / (yrange * tfinal * shear_freq);
+        //shear_rate = 16. * pi * actin_length * viscosity * xrange * strain_pct/ (yrange * tfinal);
+        
+        net->set_shear_rate(shear_rate);
+        net->set_shear_dt(shear_dt);
+        net->set_shear_stop(shear_stop);
+    }
 
     string time_str = "t = 0";
-    if (shear_rate != 0){
-        net->set_shear_rate(shear_rate);
-        myosins->set_shear(shear_rate);
-        crosslks->set_shear(shear_rate);
-    }
-
-    if (use_linear_bending){
-        //net->set_bending_linear();
-        cout<<"\nusing linear bending\n";
-    }
 
     file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
     net->write_actins(file_a);
@@ -299,7 +312,7 @@ int main(int argc, char* argv[]){
     o_file.close();
     
     //Run the simulation
-    while (t<=tfinal) {
+    while (t<tfinal) {
         //print time count
 		if (count%n_bw_stdout==0) {
 			cout<<"\nTime counts: "<<count;
@@ -308,10 +321,7 @@ int main(int argc, char* argv[]){
         }
 
         //update network
-        if (shear_rate != 0)
-            net->update_shear();
-        
-        net->update(t);//updates all forces, velocities and positions of filaments
+        net->update();//updates all forces, velocities and positions of filaments
 
         //update motors and cross linkers
         crosslks->motor_walk(t);

@@ -36,30 +36,28 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     l_index     = mylindex; //link index for each head
     fov         = myfov;
     BC          = bc; 
+    pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
+                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
     
-    actin_network = network;
-    
+    shear       = 0;
+    force       = 0; // force on the spring  
+
     hx[0]=pos[0]-0.5*mld*cos(mphi);
     hy[0]=pos[1]-0.5*mld*sin(mphi);
     hx[1]=hx[0]+mld*cos(mphi);
     hy[1]=hy[0]+mld*sin(mphi);
     
-    mobility=1./(4*pi*vis*mld);//log(10)/(4*pi*vis*mld);
+    damp=(4*pi*vis*mld);
     
-    
-    // pos_a_end = distance from pointy end -- by default 0
-    //      i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
-    pos_a_end = {0, 0};
-
+    actin_network = network;
+   
     if (state[0]){
-        pos_a_end[0] = dis_points(hx[0],hy[0],
-                actin_network->get_end(f_index[0], l_index[0])[0],
-                actin_network->get_end(f_index[0], l_index[0])[1]);
+        pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
+                                   actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
     }
     if (state[1]){
-        pos_a_end[1] = dis_points(hx[1],hy[1],
-                actin_network->get_end(f_index[1], l_index[1])[0],
-                actin_network->get_end(f_index[1], l_index[1])[1]);
+        pos_a_end[1] = dist_bc(BC, actin_network->get_end(f_index[1], l_index[1])[0] - hx[1],
+                                   actin_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
     }
     
     
@@ -100,30 +98,46 @@ string motor<filament_ensemble_type>::get_BC()
 template <class filament_ensemble_type>
 double motor<filament_ensemble_type>::tension()
 {
-    double lf=dis_points(hx[0],hy[0],hx[1],hy[1]);
+    double lf=hypot(hx[1]-hx[0],hy[1]-hy[0]);
     return mk*(lf-mld)/fmax;
+}
+
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::set_shear(double gamma)
+{
+    shear = gamma;
 }
 
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
 template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::attach(int hd)
+void motor<filament_ensemble_type>::attach(double t, int hd)
 {
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
     double onrate;
     array<double, 2> intpoint;
+    
+    multimap<double, array<int, 2> > dist_sorted;
 
     if(!dist.empty()){
-        for (map<array<int, 2>, double>::iterator it=dist.begin(); it!=dist.end(); ++it)
-        { 
-            if (it->second <= dm && !(f_index[pr(hd)]==(it->first).at(0) && l_index[pr(hd)]==(it->first).at(1))) {
+        dist_sorted = flip_map(dist);
 
-                onrate=kon*exp(-((it->second)*(it->second))/(dm*dm));
+        //for (map<array<int, 2>, double>::iterator it=dist.begin(); it!=dist.end(); ++it)
+        for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
+        {
+            //cout<<"\nDEBUG: distance of head "<<hd<<" to link ("<<(it->second).at(0)<<" , "<<(it->second).at(1)<<" ) = "<<it->first;
+            //if (it->second <= dm && !(f_index[pr(hd)]==(it->first).at(0) && l_index[pr(hd)]==(it->first).at(1))) {
+            if (it->first <= dm && !(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
+                //cout<<"\nclose enough!";
+                //onrate=kon*exp(-((it->second)*(it->second))/(dm*dm));
+                onrate=kon*exp(-((it->first)*(it->first))/(dm*dm));
                 
                 if (event(onrate,dt)==1) {
                     //update state
                     state[hd] = 1;
-                    f_index[hd] = (it->first).at(0);
-                    l_index[hd] = (it->first).at(1);
+                    //f_index[hd] = (it->first).at(0);
+                    //l_index[hd] = (it->first).at(1);
+                    f_index[hd] = (it->second).at(0);
+                    l_index[hd] = (it->second).at(1);
 
                     //update head position
                     intpoint = actin_network->get_intpoints(f_index[hd], l_index[hd], hx[hd],hy[hd]);
@@ -138,9 +152,9 @@ void motor<filament_ensemble_type>::attach(int hd)
                         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
                     }
 
-                    pos_a_end[hd]=dis_points(hx[hd],hy[hd],
-                            actin_network->get_end(f_index[hd], l_index[hd])[0],
-                            actin_network->get_end(f_index[hd], l_index[hd])[1]);
+                    pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
+                                              actin_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
+                                              actin_network->get_delrx());
                     break;
                 }
             }
@@ -148,24 +162,41 @@ void motor<filament_ensemble_type>::attach(int hd)
     }	
 } 
 
-//perform brownian motion and shear if head unattached
 template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::brownian(double t, double gamma)
-{
+void motor<filament_ensemble_type>::update_force(double t)
+{ 
+    force = mk * (dist_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()) - mld);
+    //cout<<"\nDEBUG: force = "<<force;
+}
 
+//perform brownian motion if head unattached
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::update_position(double t)
+{
+    
+    this->update_force(t);
     if (state[0]==0 && state[1]==0) {
         
-        array<double, 2> new_rnd_x, new_rnd_y;
+        double vx0, vy0, vx1, vy1; 
+        array<double, 2> new_rnd_x, new_rnd_y, pos0, pos1;
+
         new_rnd_x = {rng_n(0,1), rng_n(0,1)};
         new_rnd_y = {rng_n(0,1), rng_n(0,1)};
+       
+        
+        vx0 =  force*cos(mphi) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x[0] + prv_rnd_x[0]);
+        vx1 = -force*cos(mphi) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x[1] + prv_rnd_x[1]);
+        vy0 =  force*sin(mphi) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y[0] + prv_rnd_y[0]);
+        vy1 = -force*sin(mphi) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y[1] + prv_rnd_y[1]);
 
-        cout<<"\nDEBUG:both states are 0";
-        xm[0]=hx[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[0] + prv_rnd_x[0]) - mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*mobility*dt*hy[0];
-        xm[1]=hx[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_x[1] + prv_rnd_x[1]) + mk*dt*mobility*(hx[0]-hx[1]+mld*cos(mphi)) + gamma*mobility*dt*hy[1];
-        ym[0]=hy[0]+sqrt(dt*mobility*temperature/2)*(new_rnd_y[0] + prv_rnd_y[0]) - mk*dt*mobility*(hy[0]-hy[1]+mld*sin(mphi));
-        ym[1]=hy[1]+sqrt(dt*mobility*temperature/2)*(new_rnd_y[1] + prv_rnd_y[1]) + mk*dt*mobility*(hy[0]-hy[1]+mld*sin(mphi));
-        if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
-        if (BC == "PERIODIC")  periodic(t, gamma, xm[0],xm[1],ym[0],ym[1]);
+        pos0 = boundary_check(0, t, vx0, vy0); 
+        pos1 = boundary_check(1, t, vx1, vy1);
+       
+        hx[0] = pos0[0];
+        hx[1] = pos1[0];
+        hy[0] = pos0[1];
+        hy[1] = pos1[1];
+
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
         prv_rnd_x = new_rnd_x;
         prv_rnd_y = new_rnd_y;
@@ -174,12 +205,16 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
         int hd=state[0];//cleverly equivalent to: 
                         //  int hd = (hd for which state[hd] = 0)
         double new_rnd_x = rng_n(0,1), new_rnd_y = rng_n(0,1);
-        xm[hd]=hx[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_x[hd] + new_rnd_x) - mk*dt*mobility*(hx[hd]-hx[pr(hd)]+pow(-1,hd)*mld*cos(mphi)) + gamma*mobility*dt*hy[hd];
-        ym[hd]=hy[hd]+sqrt(dt*mobility*temperature/2)*(prv_rnd_y[hd] + new_rnd_y) - mk*dt*mobility*(hy[hd]-hy[pr(hd)]+pow(-1,hd)*mld*sin(mphi));
-        xm[pr(hd)]=hx[pr(hd)];
-        ym[pr(hd)]=hy[pr(hd)];
-        if (BC == "REFLECTIVE") reflect(t, gamma, xm[0],xm[1],ym[0],ym[1]);
-        if (BC == "PERIODIC")  periodic(t, gamma, xm[0],xm[1],ym[0],ym[1]);
+        double vx, vy;
+        array<double, 2> pos;
+
+        vx =  pow(-1,hd)*force*cos(mphi) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x + prv_rnd_x[hd]);
+        vy =  pow(-1,hd)*force*sin(mphi) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y + prv_rnd_y[hd]);
+        
+        pos = boundary_check(hd, t, vx, vy);
+        hx[hd] = pos[0];
+        hy[hd] = pos[1];
+
         mphi=atan2((hy[1]-hy[0]),(hx[1]-hx[0]));
         prv_rnd_x[hd] = new_rnd_x;
         prv_rnd_y[hd] = new_rnd_y;
@@ -187,6 +222,91 @@ void motor<filament_ensemble_type>::brownian(double t, double gamma)
     else {
         return;
     }
+
+}
+
+template <class filament_ensemble_type>
+array<double, 2> motor<filament_ensemble_type>::boundary_check(int i, double t, double vx, double vy)
+{
+    //double xnew, ynew; 
+    double xnew = hx[i]+dt*vx;
+    double ynew = hy[i]+dt*vy;
+        
+    //Calculate the unsheared simulation bounds (at this height)
+    double xleft  = -fov[0] * 0.5;
+    double xright =  fov[0] * 0.5;
+    double yleft  = -fov[1] * 0.5;
+    double yright =  fov[1] * 0.5;
+
+    if(BC == "REFLECTIVE")
+    {
+        double local_shear = actin_network->get_delrx() * ynew * 2 / fov[1];
+        xleft  += local_shear; //sheared simulation bounds
+        xright += local_shear;
+        if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vx;
+        if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vy;
+    }
+    
+    else if(BC == "INFINITE")
+    {
+        double local_shear = actin_network->get_delrx() * ynew * 2 / fov[1];
+        xleft  += local_shear; //sheared simulation bounds
+        xright += local_shear;
+        if (xnew <= xleft) xnew = xleft;
+        else if (xnew >= xright) xnew = xright;
+        if (ynew <= yleft) ynew = yleft;
+        else if (ynew >= yright) ynew = yright;
+
+    }
+    
+    else if(BC == "XPERIODIC")
+    {
+        if (xnew < xleft)       xnew += fov[0];
+        else if (xnew > xright) xnew -= fov[0];
+        if (ynew < yleft)      ynew = yleft;
+        else if(ynew > yright) ynew = yright;
+
+    }
+    
+    else if(BC == "PERIODIC")
+    {
+        if (xnew < xleft)       xnew += fov[0];
+        else if (xnew > xright) xnew -= fov[0];
+        if (ynew < yleft)      ynew += fov[1];
+        else if(ynew > yright) ynew -= fov[1];
+
+    }
+    else if(BC == "HARMONIC")
+    {
+        double bnd_force, harm_bnd_const = 1; //pN/ um
+        if (xnew <= xleft){
+            bnd_force = harm_bnd_const * (xleft - xnew);
+            xnew += bnd_force / damp * dt;
+        }
+        else if (xnew >= xright) {
+            bnd_force = harm_bnd_const * (xright - xnew);
+            xnew += bnd_force / damp * dt;
+        }
+        if (ynew <= yleft){
+            bnd_force = harm_bnd_const * (yleft - ynew);
+            ynew += bnd_force / damp * dt;
+        }
+        else if (ynew >= yright) {
+            bnd_force = harm_bnd_const * (yright - ynew);
+            ynew += bnd_force / damp * dt;
+        }
+    }
+    else if(BC == "LEES-EDWARDS")
+    {
+        double delrx = actin_network->get_delrx();
+        double cory = round(ynew / fov[1]);
+        xnew = xnew - delrx  * cory;
+        xnew = xnew - fov[0] * round(xnew / fov[0]);
+        ynew = ynew - fov[1] * cory;
+
+    }
+    
+    return {xnew, ynew};
 
 }
 
@@ -247,10 +367,10 @@ void motor<filament_ensemble_type>::actin_update()
     if (state[0]==1 && state[1]==1) {
 
         array<double, 2> fx, fy, pos_ratio;
-        
-        fx[0]= -mk*(hx[0]-hx[1]+mld*cos(mphi));
+       
+        fx[0] = force*cos(mphi);
         fx[1]= -fx[0];
-        fy[0]= -mk*(hy[0]-hy[1]+mld*sin(mphi));
+        fy[0] = force*sin(mphi);
         fy[1]= -fy[0];
         pos_ratio[0] = pos_a_end[0]/actin_network->get_llength(f_index[0], l_index[0]);
         pos_ratio[1] = pos_a_end[1]/actin_network->get_llength(f_index[1], l_index[1]);
@@ -348,102 +468,6 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
     }
     
 
-}
-
-template <class filament_ensemble_type>
-inline void motor<filament_ensemble_type>::reflect(double t, double gamma, double x0, double x1, double y0, double y1)
-{
-    //Calculate the sheared simulation bounds (at this height)
-    double xleft = 0, xright = 0, yleft, yright;
-    xleft  =  max(-fov[0] * 0.5 + gamma * y0 * mobility * t,  -fov[0] * 0.5 + gamma * y1 * mobility * t);
-    xright =  min( fov[0] * 0.5 + gamma * y0 * mobility * t,   fov[0] * 0.5 + gamma * y1 * mobility * t);
-    yleft  = -fov[1]*0.5;
-    yright =  fov[1]*0.5;
-    
-    if (    xleft < x0 && x0 < xright &&  xleft < x1 && x1 < xright
-        &&  yleft < y0 && y0 < yright &&  yleft < y1 && y1 < yright) {
-        cout<<"\nDEBUG: everythings in boundary, updating positions of heads";
-        hx[0]=x0;
-        hx[1]=x1;
-        hy[0]=y0;
-        hy[1]=y1;
-    }
-    else if (x0>=xright || x0<=xleft)
-    {
-        cout<<"\nDEBUG: head 0 x is outside boundary";
-        hx[1]=x1;
-        hy[0]=y0; 
-        hy[1]=y1;   
-    }
-    else if (x1>=xright || x1<=xleft)
-    {
-        cout<<"\nDEBUG: head 1 x is outside boundary";
-        hx[0]=x0;
-        hy[0]=y0;
-        hy[1]=y1;
-    }
-    else if(y0>=fov[1]*0.5 || y0<=fov[1]*0.5)
-    {
-        hx[0]=x0;
-        hx[1]=x1;
-        hy[1]=y1;
-    }
-    else{
-        hx[0]=x0;
-        hx[1]=x1;
-        hy[0]=y0;
-    }
-}
-
-//TODO: Implement harmonic boundary conditions
-template <class filament_ensemble_type>
-inline void motor<filament_ensemble_type>::periodic(double t, double gamma, double x1, double x2, double y1, double y2)
-{
-    //Calculate the sheared simulation bounds (at this height)
-    double xleft, xright, yleft, yright;
-    xleft  =  max(-fov[0] * 0.5 + gamma * y1 * mobility * t, -fov[0] * 0.5 + gamma * y2 * mobility * t);
-    xright =  min( fov[0] * 0.5 + gamma * y1 * mobility * t,  fov[0] * 0.5 + gamma * y2 * mobility * t);
-    yleft  = -fov[1]*0.5;
-    yright =  fov[1]*0.5;
-    
-    if (    xleft < x1 && x1 < xright &&  xleft < x2 && x2 < xright
-        &&  yleft < y1 && y1 < yright &&  yleft < y2 && y2 < yright) {
-        hx[0]=x1;
-        hx[1]=x2;
-        hy[0]=y1;
-        hy[1]=y2;
-    }
-    else if (x1>=xright || x1<=xleft)
-    {
-        if( x1 >= xright) hx[0]=x1 - fov[0];
-        if( x1 <= xleft ) hx[0]=x1 + fov[0];
-        hx[1]=x2;
-        hy[0]=y1; 
-        hy[1]=y2;   
-    }
-    else if (x2>=xright || x2<=xleft)
-    {
-        hx[0]=x1;
-        if( x2 >= xright) hx[1]=x2 - fov[0];
-        if( x2 <= xleft ) hx[1]=x2 + fov[0];
-        hy[0]=y1;
-        hy[1]=y2;
-    }
-    else if(y1>=yright || y1<=yleft)
-    {
-        hx[0]=x1;
-        hx[1]=x2;
-        if( y1 >= yright) hy[0]=y1 - fov[1];
-        if( y1 <= yleft ) hy[0]=y1 + fov[1];
-        hy[1]=y2;
-    }
-    else{
-        hx[0]=x1;
-        hx[1]=x2;
-        hy[0]=y1;
-        if( y2 >= yright) hy[1]=y2 - fov[1];
-        if( y2 <= yleft ) hy[1]=y2 + fov[1];
-    }
 }
 
 template <class filament_ensemble_type>

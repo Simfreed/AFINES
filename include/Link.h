@@ -61,13 +61,13 @@ class Link
         
         bool is_similar(const Link& that);    
 
-        virtual double get_stretch_force();
+        void update_force(string bc, double shear_dist);
+
+        double get_force();
 
         void set_aindex1(int i);
         
-        array<double,4> get_forces();
-        
-        double get_distance(double xp, double yp);
+        double get_distance(string bc, double xp, double yp, double shear_dist);
 
         double get_int_angle(double xp, double yp);
         
@@ -75,13 +75,13 @@ class Link
         
         vector<array<int,2> > get_quadrants();
        
-        void quad_update();
+        void quad_update(string bc, double shear_dist);
         
         array<double, 2> get_direction();
 
     protected:
 
-        double xcm, ycm, phi, l0, kl;
+        double xcm, ycm, phi, l0, kl, force;
        
         array<double,2> fov, hx, hy;
         
