@@ -38,6 +38,8 @@ class filament_ensemble
 
         vector<filament_type *> * get_network();
 
+        filament_type * get_filament(int index);
+
         map<array<int,2>, double> get_dist(double x, double y);
 
         map<array<int, 2>, double> update_dist_map(map<array<int,2>, double> t_map, array<int, 2> mquad, double x, double y);
@@ -74,6 +76,8 @@ class filament_ensemble
 
         void update_shear();
         
+        void update_delrx(double);
+        
         void update_stretching();
         
         void update_bending();
@@ -92,6 +96,8 @@ class filament_ensemble
         
         void set_straight_filaments(bool is_straight);
 
+        void set_y_thresh(double);
+        
         void set_shear_rate(double);
         
         void set_shear_stop(double);

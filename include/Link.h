@@ -51,9 +51,11 @@ class Link
         
         string to_string();
         
-        string write();
+        string write(string bc, double shear_dist);
         
         void step();
+        
+        void step(string bc, double shear_dist);
         
         void filament_update();
         
@@ -63,15 +65,15 @@ class Link
 
         void update_force(string bc, double shear_dist);
 
-        double get_force();
+        array<double,2> get_force();
 
         void set_aindex1(int i);
         
-        double get_distance(string bc, double xp, double yp, double shear_dist);
+        double get_distance(string bc, double shear_dist, double xp, double yp);
 
         double get_int_angle(double xp, double yp);
         
-        array<double,2> get_intpoint(double xp, double yp);
+        array<double,2> get_intpoint(string bc, double shear_dist, double xp, double yp);
         
         vector<array<int,2> > get_quadrants();
        
@@ -81,10 +83,11 @@ class Link
 
     protected:
 
-        double xcm, ycm, phi, l0, kl, force;
+        double xcm, ycm, phi, l0, kl;//, force;
        
         array<double,2> fov, hx, hy;
-        
+        array<double, 2> force;
+
         array<int, 2> nq, aindex;
         
         filament *fil;

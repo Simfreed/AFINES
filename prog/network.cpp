@@ -55,8 +55,9 @@ int main(int argc, char* argv[]){
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
 
     double shear_rate, shear_freq, shear_stop, strain_pct;                     //External Force
-    
-    bool link_intersect_flag;
+    double ythresh;                                                           //percent of field of view in y direction to move filaments 
+    bool link_intersect_flag, dead_head_flag;
+    int dead_head;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -73,6 +74,7 @@ int main(int argc, char* argv[]){
         ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
         ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
         ("grid_factor", po::value<int>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
+        ("ythresh", po::value<double>(&ythresh)->default_value(1), "percentage of yrange to include in dynamics of filaments")
         
         
         ("dt", po::value<double>(&dt)->default_value(0.001), "length of individual timestep in seconds")
@@ -130,7 +132,9 @@ int main(int argc, char* argv[]){
                                                                                      (2) BAOAB = Charlie's Overdamped BAOAB\
                                                                                      (3) LLF = Langevin Leap Frog")
         
-        ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "output directory")
+        ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "flag to put a cross link at all filament intersections")
+        ("dead_head_flag", po::value<bool>(&dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all motors")
+        ("dead_head", po::value<int>(&dead_head)->default_value(0), "index of head to kill")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -241,6 +245,7 @@ int main(int argc, char* argv[]){
     }
    
     if (link_intersect_flag) p_motor_pos_vec = net->get_intersections(p_motor_length); 
+    net->set_y_thresh(ythresh); 
 
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins;
@@ -253,6 +258,7 @@ int main(int argc, char* argv[]){
         myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
                 a_m_kend, actin_length, viscosity, bnd_cnd);
+    if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
     motor_ensemble<ATfilament_ensemble> * crosslks; 
@@ -310,7 +316,9 @@ int main(int argc, char* argv[]){
     o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", dt between output files: "<< n_bw_print*dt<<", Viscosity: " << viscosity              <<"\n";
     o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
     o_file.close();
-    
+    //Perform the shear here
+    net->update_delrx(strain_pct*xrange/2);
+    //net->update_shear();
     //Run the simulation
     while (t<tfinal) {
         //print time count

@@ -20,6 +20,8 @@
 //included dependences
 #include <iostream> //std::cout
 #include <boost/algorithm/string.hpp>
+#include <boost/range/irange.hpp>
+#include <boost/range/join.hpp>
 //#include "iomanip"
 #include <math.h>
 #include "fstream"
@@ -33,6 +35,8 @@
 #include <map>
 #include <algorithm> //std::for_each
 #include <unordered_set>
+#include <limits>
+#include <cstddef>
 
 using namespace std;
 
@@ -56,14 +60,22 @@ array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox);
 array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox, double shear_dist);
 array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
 
+vector<int> range_bc(string bc, double delrx, int topq, int low, int high);
+vector<int> int_range(int lo, int hi);
+
+double mean_periodic(vector<double> nums, double bnd);
+double mean(vector<double> nums);
+array<double, 2> cm_bc(string bc, vector<double> xi, vector<double> yi, double xbox, double ybox, double shear_dist);
+
 double dist_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
 double dot_bc(string bc, double dx1, double dy1, double dx2, double dy2, double xbox, double ybox, double shear_dist);
+array<double, 2> pos_bc(string bc, double delrx, double dt, array<double, 2> fov, array<double, 2> vel, array<double, 2> pos);
 
 double velocity(double vel0, double force, double fstall);
 double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
+double dot(array<double, 2> v1, array<double, 2> v2);
 
-double mean(vector<double> vals);
 double var(vector<double> vals);
 double mode_var(vector<double> vals, double m);
 bool close(double e, double a, double r);

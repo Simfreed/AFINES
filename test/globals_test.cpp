@@ -8,8 +8,11 @@ BOOST_AUTO_TEST_CASE( event_test )
 
 } 
 
-BOOST_AUTO_TEST_CASE( friction_test )
+BOOST_AUTO_TEST_CASE( rij_periodic_test )
 {
+    double dx=0.5, dy=5, xl=10, yl=7;
+    array<double, 2> = rij_periodic(dx, dy, xl, yl);
+
 }
 
 BOOST_AUTO_TEST_CASE( force_test)

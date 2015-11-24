@@ -31,6 +31,8 @@ persistence_length: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/persistence_length.cpp $(INC) $(LIB) -o bin/pl
 network: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt
+debug: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
 baoab_network: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/baoab_network.cpp $(INC) $(LIB) -o bin/baoab_nt
 llf_network: $(OBJECTS)

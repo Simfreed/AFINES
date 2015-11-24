@@ -26,8 +26,8 @@ Link::Link(double len, double stretching_stiffness, filament* f,
     hx = {0,0};
     hy = {0,0};
 
-    force = 0;
-    this->step();
+    force = {0,0};
+    //this->step();
 }
 Link::~Link(){ 
     //std::cout<<"DELETING LINK\n";
@@ -41,45 +41,39 @@ array<double,2> Link::get_hy(){
     return hy;
 }
 
-void Link::set_aindex1(int i){
-    aindex[1] = i;
-    this->step();
-}
-
 // stepping kinetics
-void Link::step()
+
+void Link::step(string bc, double shear_dist)
 {
     hx[0] = fil->get_actin(aindex[0])->get_xcm();
     hx[1] = fil->get_actin(aindex[1])->get_xcm();
     hy[0] = fil->get_actin(aindex[0])->get_ycm();
     hy[1] = fil->get_actin(aindex[1])->get_ycm();
 
-    xcm = (hx[0]+hx[1])/2.0;
-    ycm = (hy[0]+hy[1])/2.0;
-    phi=atan2(hy[1]-hy[0],hx[1]-hx[0]);
+    array<double, 2> cm = cm_bc(bc, {hx[0], hx[1]}, {hy[0], hy[1]}, fov[0], fov[1], shear_dist);
+    xcm = cm[0];
+    ycm = cm[1];
+    
+    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    phi=atan2(disp[1],disp[0]);
 
 }
 
 void Link::update_force(string bc, double shear_dist)
 {
-    force = kl * (dist_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist) - l0);
+    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    force = {kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))};
 }
 
-double Link::get_force()
+array<double,2> Link::get_force()
 {
     return force;
 }
 
 void Link::filament_update()
 {
-    double fx0, fy0, fx1, fy1;
-    
-    fx0 =  force * cos(phi); 
-    fy0 =  force * sin(phi); 
-    fx1 =  -fx0;
-    fy1 =  -fy0;
-    fil->update_forces(aindex[0], fx0, fy0);
-    fil->update_forces(aindex[1], fx1, fy1);
+    fil->update_forces(aindex[0],  force[0],  force[1]);
+    fil->update_forces(aindex[1], -force[0], -force[1]);
 
 }
 
@@ -106,9 +100,10 @@ double Link::get_length(){
     return l0; 
 }
 
-std::string Link::write(){
-    return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(hx[1]-hx[0]) + "\t" 
-        + std::to_string(hy[1]-hy[0]);
+std::string Link::write(string bc, double shear_dist){
+    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(disp[0]) + "\t" 
+        + std::to_string(disp[1]);
 }
 
 std::string Link::to_string(){
@@ -148,123 +143,76 @@ void Link::quad_update(string bc, double delrx){
     quad.clear();
     int xlower, xupper, ylower, yupper;
     
-    if(hx[0] <= hx[1])
+    if(fabs(phi) < pi/2)//if(hx[0] <= hx[1])
     {
-        xlower = int(round(hx[0]/fov[0]*nq[0]));
-        xupper = max(int(round( hx[1]/fov[0]*nq[0])), xlower + 1);
+        xlower = int(round( hx[0]/fov[0]*nq[0]));
+        xupper = int(round( hx[1]/fov[0]*nq[0]));
     }
     else
     {
-        xlower = int(round(hx[1]/fov[0]*nq[0]));
-        xupper = max(int(round( hx[0]/fov[0]*nq[0])), xlower + 1);
+        xlower = int(round( hx[1]/fov[0]*nq[0]));
+        xupper = int(round( hx[0]/fov[0]*nq[0]));
     };
     
-    if(hy[0] <= hy[1])
+    if(phi >= 0) //hy[0] <= hy[1])
     {
-        ylower = int(round(hy[0]/fov[1]*nq[1]));
-        yupper = max(int(round( hy[1]/fov[1]*nq[1])), ylower + 1);
+        ylower = int(round( hy[0]/fov[1]*nq[1]));
+        yupper = int(round( hy[1]/fov[1]*nq[1]));
     }
     else
     {
-        ylower = int(round(hy[1]/fov[1]*nq[1]));
-        yupper = max(int(round( hy[0]/fov[1]*nq[1])), ylower + 1);
+        ylower = int(round( hy[1]/fov[1]*nq[1]));
+        yupper = int(round( hy[0]/fov[1]*nq[1]));
     };
-    for(int xcoord = xlower; xcoord <= xupper; xcoord++)
-    {
-        for(int ycoord = ylower; ycoord <= yupper; ycoord++)
-        {
+
+    if (xlower == xupper) xupper++;
+    if (ylower == yupper) yupper++;
+
+    vector<int> xcoords = range_bc(bc, delrx, nq[0]/2, xlower, xupper);
+    vector<int> ycoords = range_bc(bc, delrx, nq[1]/2, ylower, yupper);
+    
+    for(int xcoord : xcoords)
+        for(int ycoord : ycoords){
             quad.push_back({xcoord, ycoord});
-            
-            if (abs(xcoord) == nq[0]/2 || abs(ycoord) == nq[1]/2){
-                if (bc == "PERIODIC"){
-                    if (abs(ycoord) !=  nq[1]/2)                // at xboundary 
-                        quad.push_back({-xcoord,  ycoord});
-                    else if (abs(xcoord) !=  nq[0]/2)           // at yboundary
-                        quad.push_back({ xcoord, -ycoord});
-                    else{                                       // at corner
-                        quad.push_back({-xcoord,  ycoord});
-                        quad.push_back({ xcoord, -ycoord});
-                        quad.push_back({-xcoord, -ycoord});
-                    }
-                }
-                else if (bc == "XPERIODIC"){
-                    if (abs(xcoord) ==  nq[0]/2) 
-                        quad.push_back({-xcoord,  ycoord});
-                }
-                else if (bc == "LEES-EDWARDS"){
-                    if (abs(ycoord) !=  nq[1]/2) 
-                        quad.push_back({-xcoord,  ycoord});
-                    else if (abs(xcoord) !=  nq[0]/2) 
-                        quad.push_back({ xcoord - sgn(ycoord)*int(round(delrx)), -ycoord});
-                    else{
-                        quad.push_back({-xcoord,  ycoord});
-                        quad.push_back({ xcoord - sgn(ycoord)*int(round(delrx)), -ycoord});
-                        if (ycoord > 0){
-                            if (xcoord - int(round(delrx)) < nq[0]/2)
-                                quad.push_back( {xcoord - int(round(delrx)) + 1, -ycoord} );
-                            else
-                                quad.push_back( {-xcoord, -ycoord} );
-                        }
-                        else{
-                            if (xcoord + int(round(delrx)) > -nq[0]/2)
-                                quad.push_back( {xcoord + int(round(delrx)) - 1, -ycoord} );
-                            else
-                                quad.push_back( {-xcoord, -ycoord} );
-                        }
-                    }
-                }
-                     
-            }
+            //cout<<"\nDEBUG: quadrant : ("<<xcoord<<" , "<<ycoord<<")";
+        }
+
+
+}
+
+//shortest(perpendicular) distance between an arbitrary point and the Link
+//SO : 849211
+double Link::get_distance(string bc, double delrx, double xp, double yp)
+{
+    array<double, 2> ip = this->get_intpoint(bc, delrx, xp, yp);
+    return dist_bc(bc, ip[0]-xp, ip[1]-yp, fov[0], fov[1], delrx);
+}
+
+array<double,2> Link::get_intpoint(string bc, double delrx, double xp, double yp)
+{
+    array<double, 2> int_point; 
+    double l2 = pow(dist_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx),2);
+    if (l2==0){
+        int_point = {hx[0], hy[0]};
+    }else{
+        //Consider the line extending the link, parameterized as h0 + tp ( h1 - h0 )
+        //tp = projection of (xp, yp) onto the line
+        double tp=dot_bc(bc, xp-hx[0], yp-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
+
+        if (tp<0){ 
+            int_point = {hx[0], hy[0]};
+        }
+        else if(tp>1.0){
+            int_point = {hx[1], hy[1]};
+        }
+        else{
+            array<double, 2> disp   = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx); 
+            array<double, 2> proj   = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
+            int_point               = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
+            //cout<<"\nDEBUG: tp = "<<tp<<"; h0 = ("<<hx[0]<<", "<<hy[0]<<")\nproj = ("<<proj[0]<<", "<<proj[1]<<"); closest = ("<<closest[0]<<", "<<closest[1]<<")";
         }
     }
-}
-
-//shortest(perpendicular) distance between an arbitray point and the Link
-double Link::get_distance(string bc, double xp, double yp, double delrx)
-{
-    double l2=pow(dist_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx),2);
-    if (l2==0) {
-        return dist_bc(bc, hx[0]-xp, hy[0]-yp, fov[0], fov[1], delrx);
-    }
-    
-    double tp=dot_bc(bc, xp-hx[0], yp-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
-    
-    if (tp<0) {
-        return dist_bc(bc, hx[0]-xp, hy[0]-yp, fov[0], fov[1], delrx);
-    }
-    else if(tp>1.0){
-        return dist_bc(bc, hx[1]-xp, hy[1]-yp, fov[0], fov[1], delrx);
-    }
-    else{
-        double px=hx[0]+tp*(hx[1]-hx[0]);
-        double py=hy[0]+tp*(hy[1]-hy[0]);
-        return dist_bc(bc, px-xp, py-yp, fov[0], fov[1], delrx);
-    }
-}
-
-//closest point on the link to point (xp, yp)
-array<double,2> Link::get_intpoint(double xp, double yp)
-{
-    array<double,2> coordinates;
-    double l2 = pow(hypot( hx[1]-hx[0], hy[1]- hy[0]) , 2);
-    if (l2==0) {
-        coordinates[0]=hx[0];
-        coordinates[1]=hy[1];
-    }
-    double tp=dot(xp-hx[0],yp-hy[0],hx[1]-hx[0],hy[1]-hy[0])/l2;
-    if (tp<0) {
-        coordinates[0]=hx[0];
-        coordinates[1]=hy[0];
-    }
-    else if(tp>1.0){
-        coordinates[0]=hx[1];
-        coordinates[1]=hy[1];
-    }
-    else{
-        coordinates[0]=hx[0]+tp*(hx[1]-hx[0]);
-        coordinates[1]=hy[0]+tp*(hy[1]-hy[0]);
-    }
-    return coordinates;
+    return int_point;
 }
 
 double Link::get_int_angle(double xp, double yp)

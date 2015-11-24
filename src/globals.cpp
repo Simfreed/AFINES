@@ -9,7 +9,7 @@
  */
 
 #include "globals.h"
-
+#include <boost/range/irange.hpp>
 /* distances in microns, time in seconds, forces in pN */
 
 /*generic functions to be used below*/
@@ -132,7 +132,33 @@ double velocity(double vel0, double force, double fstall)
     return v;
 }
 
+array<double, 2> cm_bc(string bc, vector<double> xi, vector<double> yi, double xbox, double ybox, double delrx)
+{
+    if (bc == "PERIODIC" || bc == "LEES-EDWARDS")
+        return {mean_periodic(xi, xbox) , mean_periodic(yi, ybox)};
+    else
+        return {mean(xi), mean(yi)};
+}
 
+double mean(vector<double> nums)
+{
+    double tot = 0;
+    for (double n : nums) tot += n;
+    return tot/((double) nums.size());
+}
+
+// Source https://en.wikipedia.org/wiki/Center_of_mass#Systems_with_periodic_boundary_conditions
+double mean_periodic(vector<double> nums, double bnd)
+{
+    double theta, xitot=0, zetatot=0;
+    for (double n : nums){
+        theta = n*2*pi/bnd;
+        xitot += cos(theta);
+        zetatot += sin(theta);
+    }
+    double thetabar = atan2(zetatot/((double) nums.size()), xitot/((double) nums.size())) + pi; 
+    return bnd*thetabar/(2*pi);
+}
 
 double cross(double ax, double ay, double bx, double by)
 {
@@ -144,14 +170,9 @@ double dot(double x1, double y1, double x2, double y2)
     return x1*x2+y1*y2;
 }
 
-double mean(vector<double> vals)
+double dot(array<double, 2> v1, array<double, 2> v2)
 {
-    double sum = 0;
-    for (unsigned int i = 0; i < vals.size(); i++){
-        sum+= vals[i];
-    }
-    return sum / vals.size();
-
+    return v1[0]*v2[0]+v1[1]*v2[1];
 }
 
 double var(vector<double> vals)
@@ -308,6 +329,89 @@ template <typename T> int sgn(T val){
     return (T(0) < val) - (val < T(0));
 }
 
+vector<int> int_range(int lo, int hi)
+{
+    vector<int> out;
+    for (int i = lo; i< hi; i++) out.push_back(i);
+    return out;
+}
+
+vector<int> range_bc(string bc, double delrx, int topq, int lo, int hi)
+{
+    vector<int> out;
+    if (lo <= hi)
+        out = int_range(lo, hi);
+    else if (bc == "PERIODIC" || bc == "LEES-EDWARDS"){
+        vector<int> A = int_range(lo, topq), B = int_range(-topq, hi);
+        out.reserve(A.size() + B.size());
+        out.insert(out.end(), A.begin(), A.end());
+        out.insert(out.end(), B.begin(), B.end());
+    }
+    else 
+        out = vector<int>();
+
+    return out;
+}
+
+array<double, 2> pos_bc(string bc, double delrx, double dt, array<double, 2> fov, array<double, 2> vel, array<double, 2> pos)
+{
+    double xnew = pos[0], ynew = pos[1];
+        
+    double xleft  = -fov[0] * 0.5;
+    double xright =  fov[0] * 0.5;
+    double yleft  = -fov[1] * 0.5;
+    double yright =  fov[1] * 0.5;
+
+    if(bc == "REFLECTIVE")
+    {
+        double local_shear = delrx * 2 * ynew / fov[1];
+        xleft  += local_shear; //sheared simulation bounds
+        xright += local_shear;
+        if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vel[0];
+        if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vel[1];
+
+    }
+    else if(bc == "INFINITE")
+    {
+        double local_shear = delrx * 2 * ynew / fov[1];
+        xleft  += local_shear; //sheared simulation bounds
+        xright += local_shear;
+        if      (xnew <= xleft)  xnew = xleft;
+        else if (xnew >= xright) xnew = xright;
+        if      (ynew <= yleft)  ynew = yleft;
+        else if (ynew >= yright) ynew = yright;
+
+    }
+    else if(bc == "XPERIODIC")
+    {
+        if      (xnew < xleft)  xnew += fov[0];
+        else if (xnew > xright) xnew -= fov[0];
+
+        if      (ynew < yleft)  ynew = yleft;
+        else if (ynew > yright) ynew = yright;
+
+    }
+    else if(bc == "PERIODIC")
+    {
+        if      (xnew < xleft)  xnew += fov[0];
+        else if (xnew > xright) xnew -= fov[0];
+        if      (ynew < yleft)  ynew += fov[1];
+        else if (ynew > yright) ynew -= fov[1];
+
+    }
+    else if(bc == "LEES-EDWARDS")
+    {
+        double cory = round(ynew/fov[1]);
+        xnew = xnew - delrx  * cory;
+        xnew = xnew - fov[0] * round(xnew / fov[0]);
+        ynew = ynew - fov[1] * cory;
+    }
+    
+    return {xnew, ynew};
+
+}
+
+
 // Method to sort a map by value; source, for more general formulation:
 // http://stackoverflow.com/questions/5056645/sorting-stdmap-using-value/5056797#5056797
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p)
@@ -323,8 +427,6 @@ multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &src)
     return dst;
 }
 
-//template pair<double, array<int, 2> > flip_pair<array<int,2>, double> (const pair<array<int, 2> , double>);
-//template multimap<double, array<int, 2> > flip_map<array<int,2>, double> (const map<array<int, 2> , double>);
 
 template int sgn<int>(int);
 template int sgn<double>(double);

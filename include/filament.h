@@ -43,6 +43,8 @@ class filament
         
         ~filament();
     
+        void set_y_thresh(double y);
+        
         void set_shear(double g);
 
         void update_delrx(double shear_dist);
@@ -55,7 +57,7 @@ class filament
         
         void update_positions(double t);
         
-        array<double, 2> boundary_check(int i, double t, double vx, double vy);
+        array<double, 2> boundary_check(int i, double x, double y);
         
         void update(double t);
         
@@ -65,7 +67,7 @@ class filament
 
         int get_nlinks();
 
-        vector<vector<array<int, 2> > > get_quadrants(double shear_dist);
+        vector<vector<array<int, 2> > > get_quadrants();
         
         string write_actins(int fil);
         
@@ -108,11 +110,13 @@ class filament
         double get_total_energy();
     
         void print_thermo();
+        
+        array<double,2> get_bead_position(int bead);
 
     protected:
         
         double kb, temperature, dt, fracture_force, kinetic_energy, damp;
-        double gamma, max_shear, delrx;
+        double gamma, max_shear, delrx, y_thresh;
 
         array<double,2> fov;
         array<int,2> nq;

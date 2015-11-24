@@ -24,6 +24,8 @@ filament::filament(){
     kinetic_energy = 0;
     gamma = 0;
     delrx=0;
+    damp = 0;
+    y_thresh=1;
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -39,7 +41,8 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     kb              = bending_stiffness;
     BC              = bndcnd;
     kinetic_energy  = 0;
-
+    damp            = 0;
+    y_thresh        = 1;
 }
 
 filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
@@ -59,8 +62,10 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     kinetic_energy  = 0;
     
     damp = 4*pi*actinRadius*visc;
+    y_thresh = 1;
 
-    double xcm, ycm, phi, variance;
+    double phi, variance;
+    array<double, 2> next_pos;
     //the start of the polymer: 
     actins.push_back(new actin( startpos[0], startpos[1], actinRadius, visc));
     prv_rnds.push_back({0,0});
@@ -71,32 +76,19 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
 
     for (int j = 1; j < nactin; j++) {
 
-        xcm = actins.back()->get_xcm() + linkLength*cos(phi);
-        ycm = actins.back()->get_ycm() + linkLength*sin(phi);
-
-        // Check that this monomer is in the field of view; if not stop building the polymer
-        if (       xcm > (0.5*(fov[0] - actinRadius)) || xcm < (-0.5*(fov[0] - actinRadius)) 
-                || ycm > (0.5*(fov[1] - actinRadius)) || ycm < (-0.5*(fov[1] - actinRadius))      )
-        {
-            cout<<"DEBUG:"<<j+1<<"th segment of filament outside field of view; stopped building filament\n";
-            break;
-        }else{
-            // Add the segment
-            actins.push_back( new actin(xcm, ycm, actinRadius, visc) );
-            prv_rnds.push_back({0,0});
-            links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1, j}, fov, nq) );  
-            
-        } 
+        //next_pos = boundary_check(j-1, actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi));
+        next_pos = pos_bc(BC, delrx, dt, fov, 
+                {linkLength*cos(phi)/dt, linkLength*sin(phi)/dt},
+                {actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi)});
+        actins.push_back( new actin(next_pos[0], next_pos[1], actinRadius, visc) );
+        prv_rnds.push_back({0,0});
+        links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1, j}, fov, nq) );  
+        links[j-1]->step(BC, delrx);  
         
         // Calculate the Next angle on the actin polymer
-        if (!isStraight){ 
-
-            //phi += rng(-1*maxSmallAngle , maxSmallAngle);
-            phi += rng_n(0, variance);
-        }
-
+        if (!isStraight) phi += rng_n(0, variance);
+    
     }
-
    
 }
 
@@ -114,6 +106,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     kb = bending_stiffness;
     fov = myfov;
     nq = mynq;
+    y_thresh = 1;
 
     if (actinvec.size() > 0)
     {
@@ -128,6 +121,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
 
             actins.push_back(new actin(*(actinvec[j])));
             links.push_back( new Link(linkLength, stretching_stiffness, this, {(int)j-1, (int)j}, fov, nq) );  
+            links[j-1]->step(BC, delrx);
             prv_rnds.push_back({0,0});
             
         }
@@ -159,19 +153,27 @@ void filament::add_actin(actin * a, double linkLength, double stretching_stiffne
     if (actins.size() > 1){
         int j = (int) actins.size() - 1;
         links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1,  j}, fov, nq ) );  
+        links[j-1]->step(BC, delrx);
     }
+    if (damp == 0)
+        damp = a->get_friction();
 }
 
-vector<vector<array<int,2> > > filament::get_quadrants(double shear_dist)
+vector<vector<array<int,2> > > filament::get_quadrants()
 {
     //should return a map between actin and x, y coords of quadrant
     vector<vector<array<int,2> > > quads;
     vector<array<int, 2> > l_quads;
-    for (unsigned int i=0; i<links.size(); i++){ 
-        links[i]->quad_update(BC, shear_dist);
+    for (unsigned int i=0; i < links.size(); i++){ 
+        links[i]->quad_update(BC, delrx);
         quads.push_back(links[i]->get_quadrants());
     }
+    
     return quads;
+}
+
+void filament::set_y_thresh(double y){
+    y_thresh = y;
 }
 
 void filament::update_positions(double t)
@@ -180,120 +182,29 @@ void filament::update_positions(double t)
     array<double, 2> new_rnds;
     array<double, 2> newpos;
     kinetic_energy = 0;  
-    //if (t < dt*100000) T = 0;
-    
-    for (unsigned int i = 0; i < actins.size(); i++){
-        
-        new_rnds = {rng_n(0,1), rng_n(0,1)};
+    double top_y = y_thresh*fov[1]/2.; 
 
+    for (unsigned int i = 0; i < actins.size(); i++){
+       
+        if (fabs(actins[i]->get_ycm()) > top_y) continue;
+     
+        new_rnds = {rng_n(0,1), rng_n(0,1)};
         vx  = (actins[i]->get_force()[0])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[0] + prv_rnds[i][0]);
         vy  = (actins[i]->get_force()[1])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[1] + prv_rnds[i][1]);
-        //cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
+//        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
        
         prv_rnds[i] = new_rnds;
         
         kinetic_energy += vx*vx + vy*vy;
-        
-        newpos = boundary_check(i, t, vx, vy); 
-        
+        //newpos = boundary_check(i, actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt); 
+        newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt});
         actins[i]->set_xcm(newpos[0]);
         actins[i]->set_ycm(newpos[1]);
         actins[i]->reset_force(); 
     }
 
     for (unsigned int i = 0; i < links.size(); i++)
-        links[i]->step();
-
-}
-
-array<double, 2> filament::boundary_check(int i, double t, double vx, double vy)
-{
-    //double xnew, ynew; 
-    double xnew = actins[i]->get_xcm() + dt*vx;
-    double ynew = actins[i]->get_ycm() + dt*vy;
-        
-    //Calculate the sheared simulation bounds (at this height)
-    double xleft  = -fov[0] * 0.5;
-    double xright =  fov[0] * 0.5;
-    double yleft  = -fov[1] * 0.5;
-    double yright =  fov[1] * 0.5;
-
-    if(BC == "REFLECTIVE")
-    {
-        double local_shear = delrx * 2 * ynew / fov[1];
-        xleft  += local_shear; //sheared simulation bounds
-        xright += local_shear;
-        //cout<<"\nDEBUG: x-bounds: ("<<xleft<<","<<xright<<")";
-        if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vx;
-        if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vy;
-//        if (xnew <= xleft || xnew >= xright) cout<<"\nDEBUG: outside";
-        //cout<<"\nDEBUG: xnew = "<<xnew;
-
-    }
-    else if(BC == "INFINITE")
-    {
-        double local_shear = delrx * 2 * ynew / fov[1];
-        xleft  += local_shear; //sheared simulation bounds
-        xright += local_shear;
-        if (xnew <= xleft) xnew = xleft;
-        else if (xnew >= xright) xnew = xright;
-        if (ynew <= yleft) ynew = yleft;
-        else if (ynew >= yright) ynew = yright;
-
-    }
-    else if(BC == "XPERIODIC")
-    {
-        if (xnew < xleft)       xnew += fov[0];
-        else if (xnew > xright) xnew -= fov[0];
-
-        if (ynew < yleft)      ynew = yleft;
-        else if(ynew > yright) ynew = yright;
-
-    }
-    else if(BC == "PERIODIC")
-    {
-        if (xnew < xleft)       xnew += fov[0];
-        else if (xnew > xright) xnew -= fov[0];
-
-        if (ynew < yleft)      ynew += fov[1];
-        else if(ynew > yright) ynew -= fov[1];
-
-    }
-    else if(BC == "HARMONIC")
-    {
-        double bnd_force, harm_bnd_const = 1; //pN/ um
-        if (xnew <= xleft){
-            bnd_force = harm_bnd_const * (xleft - xnew);
-            xnew += bnd_force / damp * dt;
-        }
-        else if (xnew >= xright) {
-            bnd_force = harm_bnd_const * (xright - xnew);
-            xnew += bnd_force / damp * dt;
-        }
-        if (ynew <= yleft){
-            bnd_force = harm_bnd_const * (yleft - ynew);
-            ynew += bnd_force / damp * dt;
-        }
-        else if (ynew >= yright) {
-            bnd_force = harm_bnd_const * (yright - ynew);
-            ynew += bnd_force / damp * dt;
-        }
-    }
-    else if(BC == "LEES-EDWARDS")
-    {
-        double cory = round(ynew/fov[1]);
-        xnew = xnew - delrx  * cory;
-        xnew = xnew - fov[0] * round(xnew / fov[0]);
-        ynew = ynew - fov[1] * cory;
-        //cout<<"\nDEBUG: delrx = "<<delrx;
-    }
-    else if(BC == "NONE")
-    {
-        xnew -= actins[floor(actins.size()/2)]->get_xcm();
-        ynew -= actins[floor(actins.size()/2)]->get_ycm();
-    }
-    
-    return {xnew, ynew};
+        links[i]->step(BC, delrx);
 
 }
 
@@ -306,7 +217,7 @@ vector<filament *> filament::update_stretching(double t)
    
     for (unsigned int i=0; i < links.size(); i++) {
         links[i]->update_force(BC, delrx);
-        if (fabs(links[i]->get_force()) > fracture_force){
+        if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
@@ -344,20 +255,14 @@ void filament::update_shear(double t){
     
     double local_shear;
     for (unsigned int i = 0; i < actins.size(); i++){
-       // "pre-strain" + differential strain according to Gardel 2004
-        //actins[i]->update_force( gamma * actins[i]->get_ycm()*(1 + 0.05*sin(0.1*t)), 0); 
         local_shear = delrx * 2 * actins[i]->get_ycm() * dt/ (fov[1]*(t+dt));
         actins[i]->set_xcm(actins[i]->get_xcm() + local_shear);
-
-        /*fx = gamma*actins[i]->get_ycm();
         
-        if (fabs(fx) > max_shear) 
-            fx = sgn(actins[i]->get_ycm())*max_shear;
-        
-        actins[i]->update_force(fx, 0); 
-        */
+        // "pre-strain" + differential strain according to Gardel 2004
+        //actins[i]->update_force( gamma * actins[i]->get_ycm()*(1 + 0.05*sin(0.1*t)), 0); 
     }
 }
+
 
 void filament::update_forces(int index, double f1, double f2)
 {
@@ -383,7 +288,7 @@ string filament::write_links(int fil){
     string all_links;
     for (unsigned int i =0; i < links.size(); i++)
     {
-        all_links += links[i]->write() + "\t" + std::to_string(fil);
+        all_links += links[i]->write(BC, delrx) + "\t" + std::to_string(fil);
     }
 
     return all_links;
@@ -811,10 +716,13 @@ double filament::get_stretching_energy(){
     }
     
     double sum = 0, stretch;
+    array<double, 2> tension;
 
     for (unsigned int i = 0; i < links.size(); i++)
     {
-        stretch = links[i]->get_force();
+        tension = links[i]->get_force();
+        //cout<<"\nDEBUG: tension = ("<<tension[0]<<" , "<<tension[1]<<")";
+        stretch = hypot(tension[0], tension[1]);
         sum += stretch*stretch;
     }
     
@@ -835,6 +743,11 @@ double filament::get_potential_energy()
 double filament::get_total_energy()
 {
     return this->get_potential_energy() + this->get_kinetic_energy();
+}
+
+array<double, 2> filament::get_bead_position(int n)
+{
+    return {actins[n]->get_xcm(), actins[n]->get_ycm()};
 }
 
 void filament::print_thermo()

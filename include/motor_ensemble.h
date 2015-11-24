@@ -51,6 +51,8 @@ class motor_ensemble
         void add_motor(motor<filament_ensemble_type> * m);
 
         void set_shear(double g);
+        
+        void kill_heads(int i);
 
     private:
 

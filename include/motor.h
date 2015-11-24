@@ -37,15 +37,21 @@ class motor
 
         double tension();
 
-        void attach(double t, int hd);
+        bool attach( int hd);
 
-        void update_force(double t);
+        void relax_head( int hd);
+
+        void kill_head( int hd);
         
-        void update_position(double t);
+        void update_force();
+        
+        void update_angle();
+        
+        void brownian_relax(int hd);
 
-        array<double, 2> boundary_check(int i, double t, double vx, double vy);
+        array<double, 2> boundary_check(int i,  double vx, double vy);
 
-        void step_onehead(int hd);
+        void step_onehead( int hd);
 
         void step_twoheads();
 
@@ -69,18 +75,19 @@ class motor
 
         void detach_head(int hd);
 
-        void move_end_detach(int hd, double pos);
+        void move_end_detach( int hd, double pos);
 
         inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
         
         inline void periodic(double t, double gamma, double x1, double x2, double y1, double y2);
 
+        string to_string();
     private:
 
         double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature, 
-               actin_damp, force, damp, shear;
+               actin_damp, damp, shear;
         
-        array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y;
+        array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force;
         
         array<int,2> state, f_index, l_index;
         

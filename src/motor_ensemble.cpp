@@ -52,7 +52,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
         double actin_len, double vis, string BC) {
     
     fov = myfov;
-    mld =mlen;
+    mld = mlen;
     gamma = 0;
     tMove = 0;
     f_network=network;
@@ -93,6 +93,13 @@ template <class filament_ensemble_type>
 int motor_ensemble<filament_ensemble_type>::get_nmotors( ){ 
     return n_motors.size();
 }
+
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::kill_heads(int hd){
+    for (unsigned int i = 0; i < n_motors.size(); i++)
+        n_motors[i]->kill_head(hd);
+}
+
 //check if any motors attached to filaments that no longer exist; 
 // if they do, detach them
 // Worst case scenario, this is a O(m*n*p) function,
@@ -139,49 +146,33 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
        
-        s[0]=n_motors[i]->get_states()[0];
-        s[1]=n_motors[i]->get_states()[1];
-
-        if (s[0]==0 && s[1]==0) {
-            n_motors[i]->attach(t, 0);
-            n_motors[i]->attach(t, 1);
+//        cout<<"\nDEBUG: motor "<<i;
+        s = n_motors[i]->get_states();
+        
+        if (t >= tMove){
+           
+            if (s[0] == 1)         n_motors[i]->step_onehead(0);
+            else if (s[0] == 0)    n_motors[i]->brownian_relax(0);
+            if (s[1] == 1)         n_motors[i]->step_onehead(1);
+            else if (s[1] == 0)    n_motors[i]->brownian_relax(1);
+            
+            n_motors[i]->update_force();
+            n_motors[i]->update_angle();
+            n_motors[i]->actin_update();
         }
-        else if (s[0]==0 && s[1]==1) {
-            n_motors[i]->attach(t, 0);
+        
+        bool attached;
+        if (!s[0]){
+            attached = n_motors[i]->attach(0);
+            //if(attached && s[1] == 0) n_motors[i]->relax_head(1);
         }
-        else if (s[0]==1 && s[1]==0) {
-            n_motors[i]->attach(t, 1);
+        if (!s[1]){
+            attached = n_motors[i]->attach(1);
+            //if(attached && s[0] == 0) n_motors[i]->relax_head(0);
         }
     
     }
-   
-
-    if (t >= tMove){
-        for (unsigned int i=0; i<n_motors.size(); i++) {
-
-            //cout<<"\nDEBUG: motor "<<i;
-            s[0]=n_motors[i]->get_states()[0];
-            s[1]=n_motors[i]->get_states()[1];
-            
-            if (s[0]==0 && s[1]==0) {
-                n_motors[i]->update_position(t);
-            }
-            else if (s[0]==0 && s[1]==1) {
-                n_motors[i]->update_position(t);
-                n_motors[i]->step_onehead(1);
-            }
-            else if (s[0]==1 && s[1]==0) {
-                n_motors[i]->update_position(t);
-                n_motors[i]->step_onehead(0);
-            }
-            else {
-                n_motors[i]->update_position(t);
-                n_motors[i]->step_twoheads();
-            }
-
-            n_motors[i]->actin_update();
-        }   
-    }
+    
 }
 
 template <class filament_ensemble_type>
@@ -212,6 +203,3 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
 }
 
 template class motor_ensemble<ATfilament_ensemble>;
-template class motor_ensemble<lammps_filament_ensemble>;
-template class motor_ensemble<baoab_filament_ensemble>;
-template class motor_ensemble<langevin_leapfrog_filament_ensemble>;
