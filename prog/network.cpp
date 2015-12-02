@@ -274,7 +274,7 @@ int main(int argc, char* argv[]){
 
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
 
-    double shear_dt = dt/shear_freq;
+    /*double shear_dt = dt/shear_freq;
     if (strain_pct != 0){
         // Based on completing a shear of strain_pct * xrange within the simulation, 
         // By shearing at 1 time step and then allowing the system to relax for t = shear_dt 
@@ -286,7 +286,7 @@ int main(int argc, char* argv[]){
         net->set_shear_rate(shear_rate);
         net->set_shear_dt(shear_dt);
         net->set_shear_stop(shear_stop);
-    }
+    }*/
 
     string time_str = "t = 0";
 
@@ -316,11 +316,13 @@ int main(int argc, char* argv[]){
     o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", dt between output files: "<< n_bw_print*dt<<", Viscosity: " << viscosity              <<"\n";
     o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
     o_file.close();
+    
     //Perform the shear here
     net->update_delrx(strain_pct*xrange/2);
-    //net->update_shear();
+    net->update_shear();
+    
     //Run the simulation
-    while (t<tfinal) {
+    while (t < tfinal) {
         //print time count
 		if (count%n_bw_stdout==0) {
 			cout<<"\nTime counts: "<<count;

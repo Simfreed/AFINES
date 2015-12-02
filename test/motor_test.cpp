@@ -614,6 +614,90 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     
 }   
 
+BOOST_AUTO_TEST_CASE( force_attached )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    vector<vector<double> > actin_sets;
+    array<int, 2> nq = {100,100}, state = {1,1}, findex = {0,1}, lindex = {2, 2};
+
+    double dt = 1, temp = 0, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 2, koff = 0, kend = 0;
+    double frac_force = 0;
+    double tol = 0.001, zero = 1e-10;   
+
+    vector<double> pos1={3, 0, actin_rad,0}, pos2={2, 0,actin_rad,0}, pos3={1, 0,actin_rad,0}, pos4={0, 0,actin_rad,0};
+    vector<double> pos5={0, 3, actin_rad,1}, pos6={0, 2,actin_rad,1}, pos7={0, 1,actin_rad,1}, pos8={0, 0,actin_rad,1};
+    
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    actin_sets.push_back(pos4);
+    actin_sets.push_back(pos5);
+    actin_sets.push_back(pos6);
+    actin_sets.push_back(pos7);
+    actin_sets.push_back(pos8);
+    
+    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, bending, frac_force, bc);
+    f->quad_update(); 
+    //cout<<f->get_filament(0)->to_string(); 
+    //cout<<f->get_filament(1)->to_string(); 
+    //MOTOR
+    double mx = 0.25, my = sqrt(3)/4, mang = (pi/2.+pi/6.), mlen = 1;
+    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>({mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, kon, koff, kend, actin_rad, vis, bc);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 2*my, tol);
+    BOOST_CHECK_SMALL(m.get_hx()[1], zero);
+    BOOST_CHECK_CLOSE(m.get_hy()[1], 2*my, tol);
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 2);
+    
+    /*##################################*/
+    m.update_force();
+    m.step_onehead(0);
+    m.step_onehead(1);
+    /*##################################*/
+
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx+v0*dt, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx+v0*dt, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 2*my+v0*dt - 1, tol);
+    BOOST_CHECK_SMALL(m.get_hx()[1], zero);
+    BOOST_CHECK_CLOSE(m.get_hy()[1], 2*my+v0*dt, tol);
+    
+    m.actin_update();
+//    array<double, 2> forcea, forceb, /*bottom 2*/ forcec, forced /*top 2*/;
+    
+    m.step_onehead(0);
+    m.step_onehead(1);
+    
+}   
+
 /* Functions to test : 
         void attach(int hd);
 

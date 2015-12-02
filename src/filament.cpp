@@ -25,7 +25,7 @@ filament::filament(){
     gamma = 0;
     delrx=0;
     damp = 0;
-    y_thresh=1;
+    y_thresh=2;
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -194,7 +194,7 @@ void filament::update_positions(double t)
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
        
         prv_rnds[i] = new_rnds;
-        
+        //cout<<"\nDEBUG: actin force = ("<<actins[i]->get_force()[0]<<" , "<<actins[i]->get_force()[1]<<")";
         kinetic_energy += vx*vx + vy*vy;
         //newpos = boundary_check(i, actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt); 
         newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt});
@@ -255,8 +255,10 @@ void filament::update_shear(double t){
     
     double local_shear;
     for (unsigned int i = 0; i < actins.size(); i++){
-        local_shear = delrx * 2 * actins[i]->get_ycm() * dt/ (fov[1]*(t+dt));
+        //local_shear = delrx * 2 * actins[i]->get_ycm() * dt/ (fov[1]*(t+dt));
+        local_shear = delrx * 2 * actins[i]->get_ycm() / fov[1];
         actins[i]->set_xcm(actins[i]->get_xcm() + local_shear);
+        //cout<<"\nDEBUG: local_shear = "<<local_shear;
         
         // "pre-strain" + differential strain according to Gardel 2004
         //actins[i]->update_force( gamma * actins[i]->get_ycm()*(1 + 0.05*sin(0.1*t)), 0); 
@@ -271,7 +273,7 @@ void filament::update_forces(int index, double f1, double f2)
 
 void filament::set_shear(double g){
     gamma = g;
-    max_shear = gamma*fov[1]*0.4;
+    max_shear = gamma*fov[1]*0.5;
 }
 
 string filament::write_actins(int fil){

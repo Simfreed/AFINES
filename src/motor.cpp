@@ -21,7 +21,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
         rend, double actin_len, double vis, string bc) {
     
     vs          = v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
-    dm          = sqrt(2*0.004/stiffness); //max binding distance
+    dm          = mlen - sqrt(2*0.004/stiffness); //max binding distance; note, to be positive l0 > sqrt(2T/k)
     mk          = stiffness;//rng(10,100); 
     fmax        = mk*dm*2;//rng(1,20);
     mld         = mlen;
@@ -46,7 +46,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     damp=(4*pi*vis*mld);
     
     array<double, 2> posH0 = boundary_check(0, pos[0]-0.5*mld*cos(mphi), pos[1]-0.5*mld*sin(mphi)); 
-    array<double, 2> posH1 = boundary_check(0, pos[0]+0.5*mld*cos(mphi), pos[1]+0.5*mld*sin(mphi)); 
+    array<double, 2> posH1 = boundary_check(1, pos[0]+0.5*mld*cos(mphi), pos[1]+0.5*mld*sin(mphi)); 
     hx[0] = posH0[0];
     hy[0] = posH0[1];
     hx[1] = posH1[0];
@@ -160,7 +160,8 @@ void motor<filament_ensemble_type>::update_force()
 { 
     array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     force = {mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))};
-    //cout<<"\nDEBUG: disp = ("<<disp[0]<<","<<disp[1]<<")\nforce = ("<<force[0]<<","<<force[1]<<")";
+    //cout<<"\nDEBUG: mphi = "<<mphi<<"\n\tdisp = ("<<disp[0]<<","<<disp[1]<<")\n\tforce = ("<<force[0]<<","<<force[1]<<")\n\tBC : "<<BC<<"\tdelrx = "<<actin_network->get_delrx();
+    //cout<<"\nDEBUG: h0 = ("<<hx[0]<<" , "<<hy[0]<<")\th1 = ("<<hx[1]<<" , "<<hy[1]<<")";
 }
 
 template <class filament_ensemble_type>
@@ -333,6 +334,16 @@ string motor<filament_ensemble_type>::to_string()
             kon, koff, kend, dt, temperature, damp, 
             fov[0],  fov[1], pos_a_end[0], pos_a_end[1], shear, force[0], force[1]);
     return buffer;
+}
+
+template <class filament_ensemble_type>
+string motor<filament_ensemble_type>::write()
+{
+    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
+    return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) 
+        +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1]) 
+        +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1]) 
+        +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
 
 

@@ -82,6 +82,8 @@ class motor
         inline void periodic(double t, double gamma, double x1, double x2, double y1, double y2);
 
         string to_string();
+        
+        string write();
     private:
 
         double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature, 

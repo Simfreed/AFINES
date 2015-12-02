@@ -96,7 +96,7 @@ array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybo
     
     if (bc == "PERIODIC")
         return rij_periodic(dx, dy, xbox, ybox);
-    if (bc == "XPERIODIC")
+    else if (bc == "XPERIODIC")
         return rij_xperiodic(dx, dy, xbox, ybox);
     else if (bc =="LEES-EDWARDS")
         return rij_lees_edwards(dx, dy, xbox, ybox, delrx);
@@ -393,11 +393,8 @@ array<double, 2> pos_bc(string bc, double delrx, double dt, array<double, 2> fov
     }
     else if(bc == "PERIODIC")
     {
-        if      (xnew < xleft)  xnew += fov[0];
-        else if (xnew > xright) xnew -= fov[0];
-        if      (ynew < yleft)  ynew += fov[1];
-        else if (ynew > yright) ynew -= fov[1];
-
+        xnew = xnew - fov[0] * round(xnew / fov[0]);
+        ynew = ynew - fov[1] * round(ynew / fov[1]);
     }
     else if(bc == "LEES-EDWARDS")
     {

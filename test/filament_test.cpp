@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
             bending_stiffness, fracture_force, bc);
 
     vector<vector<array<int,2> > > quads, expected_quads;
-    quads = f->get_quadrants(0);
+    quads = f->get_quadrants();
 
     for(int i = 0; i < nactin - 1; i++){
         expected_quads.push_back(vector<array<int,2> >() );
@@ -824,6 +824,54 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_pos_test )
 
 }
 
+BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_pos_test )
+{
+    // vector<filament *> fracture(int node);
+    double  xrange              = 50;
+    double  yrange              = 50;
+    int     xgrid               = (int)(2*xrange);
+    int     ygrid               = (int)(2*yrange);
+    double  dt                  = 1;
+    double  temp                = 0;
+    double  link_length         = 1;
+    double  actin_length        = link_length/2;
+    double  viscosity           = 1/(4*pi*actin_length);
+    double  stretching_stiffness= 1;
+    double  bending_stiffness   = 1; 
+    double  fracture_force      = 100;
+    string  bc                  = "LEES-EDWARDS";
+    double  strain              = 0.2;
+
+    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+
+    actin * act1 = new actin(0, -23, actin_length, viscosity);
+    f->add_actin(act1, link_length, stretching_stiffness);
+    
+    f->update_forces(0,0,-3);
+    f->update_positions(0);
+    array<double, 2> pos = f->get_bead_position(0);
+    BOOST_CHECK_EQUAL(pos[0], 0);
+    BOOST_CHECK_EQUAL(pos[1], 24);
+    
+    f->update_delrx(strain*xrange/2);
+    
+    f->update_forces(0,0,3);
+    f->update_positions(0);
+    pos = f->get_bead_position(0);
+    BOOST_CHECK_EQUAL(pos[0], -5);
+    BOOST_CHECK_EQUAL(pos[1], -23);
+    
+    f->update_forces(0,-21,0);
+    f->update_positions(0);
+    pos = f->get_bead_position(0);
+    BOOST_CHECK_EQUAL(pos[0],  24);
+    BOOST_CHECK_EQUAL(pos[1], -23);
+    
+    delete f;
+    delete act1;
+
+}
+
 BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_stretch_test )
 {
     // vector<filament *> fracture(int node);
@@ -924,6 +972,79 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
 
 }
 
+BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
+{
+    // vector<filament *> fracture(int node);
+    double  xrange              = 50;
+    double  yrange              = 50;
+    int     xgrid               = (int)(2*xrange);
+    int     ygrid               = (int)(2*yrange);
+    double  dt                  = 1;
+    double  temp                = 0;
+    double  link_length         = 1;
+    double  actin_length        = link_length/2;
+    double  viscosity           = 1/(4*pi*actin_length);
+    double  stretching_stiffness= 1;
+    double  bending_stiffness   = 1; 
+    double  fracture_force      = 100;
+    string  bc                  = "LEES-EDWARDS";
+    double  tol                 = 0.001;
+    double  strain              = 0.16; //this makes the initial distance sqrt[3^2 + 4^2] = 5
+
+    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    f->update_delrx(strain*xrange/2);
+
+    actin * act1 = new actin(1, 24, actin_length, viscosity);
+    actin * act2 = new actin(1,-23, actin_length, viscosity);
+    
+    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act2, link_length, stretching_stiffness);
+    f->update_stretching(0);
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(5-link_length)*(5-link_length));
+    
+    f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    f->update_delrx(strain*xrange/2);
+
+    act1 = new actin(1, 24, actin_length, viscosity);
+    act2 = new actin(-3,-23, actin_length, viscosity);
+    
+    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act2, link_length, stretching_stiffness);
+    f->update_stretching(0);
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
+    f->update_positions(0);
+    array<double, 2> pos = f->get_bead_position(0);
+    BOOST_CHECK_CLOSE(pos[0], -3,tol);
+    BOOST_CHECK_CLOSE(pos[1], -24,tol);
+    
+    pos = f->get_bead_position(1);
+    BOOST_CHECK_CLOSE(pos[0], 1, tol);
+    BOOST_CHECK_CLOSE(pos[1], 25,tol);
+    
+    f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    f->update_delrx(strain*xrange/2);
+    
+    act1 = new actin(24, 1, actin_length, viscosity);
+    act2 = new actin(-23, 1, actin_length, viscosity);
+    
+    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act2, link_length, stretching_stiffness);
+    f->update_stretching(0);
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
+    f->update_positions(0);
+    pos = f->get_bead_position(0);
+    BOOST_CHECK_CLOSE(pos[0], -24,tol);
+    BOOST_CHECK_CLOSE(pos[1], 1,tol);
+    
+    pos = f->get_bead_position(1);
+    BOOST_CHECK_CLOSE(pos[0], 25,tol);
+    BOOST_CHECK_CLOSE(pos[1], 1,tol);
+    
+    delete f;
+    delete act1;
+    delete act2;
+
+}
 BOOST_AUTO_TEST_CASE( bending_test_three_beads_periodic )
 {
     //Check if the angle between two rods is smaller after some small number of integration steps
@@ -1002,6 +1123,70 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
     cout<<"\n----------BENDING AND STRETCHING TEST, THREE BEADS----------\n";
     
     filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "PERIODIC"); 
+    actin * act1 = new actin(0, 24, actin_length, viscosity);
+    actin * act2 = new actin(-1, -24.5, actin_length, viscosity);
+    actin * act3 = new actin(1.5, -24.0, actin_length, viscosity);
+    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act3, link_length, stretching_stiffness);
+
+    vector<filament *> newfils = f->update_stretching(0);
+    f->update_bending(0);
+    f->update_positions(0);
+    
+    cout<<"\nINITIAL CONFIGURATION\n";
+    cout<<f->to_string();
+    
+    double e0 = f->get_total_energy(), e1;
+    for (int t = 1; t < nsteps; t++){
+    //    cout<<"\nEnergy at time "<<t<<" : "<<e0<<"\n";
+        newfils = f->update_stretching(t);
+        if (newfils.size()>0)
+            break;
+        f->update_bending(t);
+        f->update_positions(t);
+        e1 = f->get_total_energy();
+        BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
+        e0 = e1;
+    }
+    cout<<"\nFINAL CONFIGURATION\n";
+    cout<<f->to_string(); 
+    
+    delete f;
+    delete act1;
+    delete act2;
+    delete act3;
+    if (newfils.size()>0){
+        delete newfils[0];
+        delete newfils[1];
+    }
+} 
+
+BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
+{
+    //Check if the angle between two rods is smaller after some small number of integration steps
+    //Check if the stretching energy decreases after some small number of integration steps
+    double  viscosity               = 0.5;
+    double  actin_length            = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1; 
+    double  bending_stiffness       = 0.04; 
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 50;
+    double  fovy                    = 50;
+    int     nx                      = 100;
+    int     ny                      = 100;
+    int     nsteps                  = 10000;
+    double  strain                  = 0.5;
+    
+    cout<<"\n----------BENDING AND STRETCHING TEST, THREE BEADS, LE, "<<strain<<" Strain----------\n";
+    
+    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "LEES-EDWARDS"); 
+    f->update_delrx(strain*fovx/2);
+    f->update_shear(0);
+
     actin * act1 = new actin(0, 24, actin_length, viscosity);
     actin * act2 = new actin(-1, -24.5, actin_length, viscosity);
     actin * act3 = new actin(1.5, -24.0, actin_length, viscosity);

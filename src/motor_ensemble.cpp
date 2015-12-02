@@ -156,8 +156,8 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
             if (s[1] == 1)         n_motors[i]->step_onehead(1);
             else if (s[1] == 0)    n_motors[i]->brownian_relax(1);
             
-            n_motors[i]->update_force();
             n_motors[i]->update_angle();
+            n_motors[i]->update_force();
             n_motors[i]->actin_update();
         }
         
@@ -179,11 +179,7 @@ template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::motor_write(ostream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
-        fout<<"\n"<<n_motors[i]->get_hx()[0]<<"\t"<<n_motors[i]->get_hy()[0]<<"\t"
-            <<n_motors[i]->get_hx()[1]-n_motors[i]->get_hx()[0]<<"\t"
-            <<n_motors[i]->get_hy()[1]-n_motors[i]->get_hy()[0]<<"\t"
-            <<n_motors[i]->get_f_index()[0]<<"\t"<<n_motors[i]->get_f_index()[1]<<"\t"
-            <<n_motors[i]->get_l_index()[0]<<"\t"<<n_motors[i]->get_l_index()[1];
+        fout<<n_motors[i]->write();
     } 
 }
 
