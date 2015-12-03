@@ -22,6 +22,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/join.hpp>
+#include <boost/optional.hpp>
 //#include "iomanip"
 #include <math.h>
 #include "fstream"
@@ -96,4 +97,7 @@ multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &p);
 map<array<int, 2>, double> transpose(map<array<int, 2>, double> mat);
 map<array<int, 2>, double> invert_block_diagonal(map<array<int, 2>, double> mat);
 void intarray_printer(array<int,2> a);
+
+boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2>, array<double, 2>, array<double, 2>, array<double, 2>);
+boost::optional<array<double, 2> > seg_seg_intersection_bc(string, double, array<double, 2>, array<double, 2>, array<double, 2>, array<double, 2>, array<double, 2>);
 #endif

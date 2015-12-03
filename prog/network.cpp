@@ -244,7 +244,7 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd); 
     }
    
-    if (link_intersect_flag) p_motor_pos_vec = net->get_intersections(p_motor_length); 
+    if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length); 
     net->set_y_thresh(ythresh); 
 
     cout<<"\nAdding active motors...";

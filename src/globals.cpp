@@ -424,7 +424,59 @@ multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &src)
     return dst;
 }
 
+boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2> r1, array<double, 2> r2, array<double, 2> s1, array<double, 2> s2)
+{
+    double a1, a2, b1, b2, c1, c2, det, x, y;
+    pair<double, double> mmx1, mmy1, mmx2, mmy2;
+    array<double, 2> ans;
 
+    a1 = r2[1] - r1[1]; //hy1[1] - hy1[0];
+    b1 = r1[0] - r2[0]; //hx1[0] - hx1[1];
+    c1 = a1*r1[0] + b1*r1[1]; //a1*hx1[0] + b1*hy1[0];
+    
+    mmx1 = minmax(r1[0], r2[0]);
+    mmy1 = minmax(r1[1], r2[1]);
+
+    a2 = s2[1] - s1[1];//hy2[1] - hy2[0];
+    b2 = s1[0] - s2[0];//hx2[0] - hx2[1];
+    c2 = a2*s1[0] + b2*s1[1];
+
+    det = a1*b2 - a2*b1;
+    mmx2 = minmax(s1[0], s2[0]);
+    mmy2 = minmax(s1[1], s2[1]);
+                    
+    if (det!=0){
+        x = (b2*c1 - b1*c2)/det;
+        y = (a1*c2 - a2*c1)/det;
+        if (x >= mmx1.first && x >= mmx2.first && x <= mmx1.second && x <= mmx2.second &&
+            y >= mmy1.first && y >= mmy2.first && y <= mmy1.second && y <= mmy2.second){
+            ans = {x,y};
+            return ans;
+        }
+    }
+    return boost::none;
+    /*else{
+    //parallel; determine intersection by endpoint. 
+    //This is a pain. I'm going to leave it out for now because it's an extremly unlikely scenario 
+    //and the logic will look really gross
+
+    }*/
+}
+
+boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double delrx, array<double, 2> fov, array<double, 2> r1, array<double, 2> r2, array<double, 2> r3, array<double, 2> r4)
+{
+    array<double, 2> rij12, rij13, rij14;
+    rij12 = rij_bc(bc, r2[0] - r1[0], r2[1] - r1[1], fov[0], fov[1], delrx);
+    rij13 = rij_bc(bc, r3[0] - r1[0], r3[1] - r1[1], fov[0], fov[1], delrx);
+    rij14 = rij_bc(bc, r4[0] - r1[0], r4[1] - r1[1], fov[0], fov[1], delrx);
+
+    boost::optional<array<double, 2> > inter = seg_seg_intersection({0,0}, rij12, rij13, rij14);
+    if (inter)
+        return pos_bc(bc, delrx, 0, fov, {0,0}, {inter->at(0) + r1[0], inter->at(1) + r1[1]}); 
+    else 
+        return boost::none;
+
+}
 template int sgn<int>(int);
 template int sgn<double>(double);
 template int sgn<float>(float);

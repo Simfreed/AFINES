@@ -398,64 +398,41 @@ void filament_ensemble<filament_type>::update(){
 }
 
 template<class filament_type>
-vector<vector<double> > filament_ensemble<filament_type>::get_intersections(double len){
+vector<vector<double> > filament_ensemble<filament_type>::link_link_intersections(double len){
 
     vector< vector<double> > itrs;
-    double a1, a2, b1, b2, c1, c2, det, x, y, ang;
-    array<double, 2> hx1, hx2, hy1, hy2;
+    double ang;
+    array<double, 2> r1, r2, s1, s2;
     pair<double, double> mmx1, mmy1, mmx2, mmy2;
- 
+    boost::optional<array<double, 2> > inter;
+    string bcf1; 
     for (unsigned int f1 = 0; f1 < network.size(); f1++){
         
         for (unsigned int l1 = 0; l1 < network[f1]->get_nlinks(); l1++){
 
-            hx1 = network[f1]->get_link(l1)->get_hx();
-            hy1 = network[f1]->get_link(l1)->get_hy();
-
-            a1 = hy1[1] - hy1[0];
-            b1 = hx1[0] - hx1[1];
-            c1 = a1*hx1[0] + b1*hy1[0];
-            
-            mmx1 = minmax(hx1[0], hx1[1]);
-            mmy1 = minmax(hy1[0], hy1[1]);
-
+            r1 = {network[f1]->get_link(l1)->get_hx()[0], network[f1]->get_link(l1)->get_hy()[0]};
+            r2 = {network[f1]->get_link(l1)->get_hx()[1], network[f1]->get_link(l1)->get_hy()[1]};
+            bcf1 = network[f1]->get_BC();
             for (unsigned int f2 = f1; f2 < network.size(); f2++){
                 
                 for (unsigned int l2 = 0; l2 < network[f2]->get_nlinks(); l2++){
 
                     if (f1 == f2 && fabs(double(l1) - double(l2)) < 2){ //links should be at least two away to get crosslinked
-//                        cout<<"\nDEBUG: not linking links ("<<l1<<","<<l2<<") on filament "<<f1;
                         continue;
                     }
 
-                    hx2 = network[f2]->get_link(l2)->get_hx();
-                    hy2 = network[f2]->get_link(l2)->get_hy();
+                    s1 = {network[f2]->get_link(l2)->get_hx()[0], network[f2]->get_link(l2)->get_hy()[0]};
+                    s2 = {network[f2]->get_link(l2)->get_hx()[1], network[f2]->get_link(l2)->get_hy()[1]};
 
-                    a2 = hy2[1] - hy2[0];
-                    b2 = hx2[0] - hx2[1];
-                    c2 = a2*hx2[0] + b2*hy2[0];
+                    inter = seg_seg_intersection_bc(bcf1, delrx, fov, r1, r2, s1, s2);
                     
-                    det = a1*b2 - a2*b1;
-                    mmx2 = minmax(hx2[0], hx2[1]);
-                    mmy2 = minmax(hy2[0], hy2[1]);
-                    
-                    if (det!=0){
-                        x = (b2*c1 - b1*c2)/det;
-                        y = (a1*c2 - a2*c1)/det;
-                        if (x > mmx1.first && x > mmx2.first && x < mmx1.second && x < mmx2.second &&
-                            y > mmy1.first && y > mmy2.first && y < mmy1.second && y < mmy2.second){
-                            ang = network[f2]->get_link(l2)->get_angle();// - network[f1]->get_link(l1)->get_angle();
-                            double crdarr[] = { x, y, len*cos(ang), len*sin(ang), double(f1), double(f2), double(l1), double(l2)}; 
-                            vector<double> crdvec(crdarr, crdarr+sizeof(crdarr)/sizeof(double)); 
-                            itrs.push_back(crdvec);
-                        }
+                    if (inter){
+                        ang = network[f2]->get_link(l2)->get_angle();
+                        itrs.push_back({inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), double(f1), double(f2), double(l1), double(l2)}); 
+//                        double crdarr[] = {inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), double(f1), double(f2), double(l1), double(l2)}; 
+//                        vector<double> crdvec(crdarr, crdarr+sizeof(crdarr)/sizeof(double)); 
+//                        itrs.push_back(crdvec);
                     }
-                    /*else{
-                        //parallel; determine intersection by endpoint. 
-                        //This is a pain. I'm going to leave it out for now because it's an extremly unlikely scenario 
-                        //and the logic will look really gross
-                        
-                    }*/
                 }
             }
         }
