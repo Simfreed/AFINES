@@ -53,11 +53,15 @@ int main(int argc, char* argv[]){
     
     string   dir,    afile,  amfile,  pmfile,  lfile, thfile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
+    ios_base::openmode write_mode = ios_base::out;
 
-    double shear_rate, shear_freq, shear_stop, strain_pct;                     //External Force
-    double ythresh;                                                           //percent of field of view in y direction to move filaments 
-    bool link_intersect_flag, dead_head_flag;
+    double strain_pct, time_of_strain, pre_strain;                                      //External Force
+    double d_strain, prev_d_strain, d_strain_freq, d_strain_amp, time_of_dstrain;
+    bool link_intersect_flag, motor_intersect_flag, dead_head_flag;
+    double p_linkage_prob, a_linkage_prob;                                              
     int dead_head;
+
+    bool restart_actin, restart_a_motor, restart_p_motor;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -71,59 +75,63 @@ int main(int argc, char* argv[]){
     po::options_description config("Configuration");
     config.add_options()
         
-        ("xrange", po::value<double>(&xrange)->default_value(50), "size of cell in horizontal direction (um)")
-        ("yrange", po::value<double>(&yrange)->default_value(50), "size of cell in vertical direction (um)")
+        ("xrange", po::value<double>(&xrange)->default_value(10), "size of cell in horizontal direction (um)")
+        ("yrange", po::value<double>(&yrange)->default_value(10), "size of cell in vertical direction (um)")
         ("grid_factor", po::value<int>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
-        ("ythresh", po::value<double>(&ythresh)->default_value(1), "percentage of yrange to include in dynamics of filaments")
         
-        
-        ("dt", po::value<double>(&dt)->default_value(0.001), "length of individual timestep in seconds")
+        ("dt", po::value<double>(&dt)->default_value(0.0001), "length of individual timestep in seconds")
         ("tfinal", po::value<double>(&tfinal)->default_value(10), "length of simulation in seconds")
         ("nframes", po::value<int>(&nframes)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
         ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
        
-        ("viscosity", po::value<double>(&viscosity)->default_value(1), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 1 for water")
+        ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
-        ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("REFLECTIVE"), "boundary conditions")
+        ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("PERIODIC"), "boundary conditions")
         
-        ("nmonomer", po::value<double>(&nmonomer)->default_value(1), "number of monomers per filament")
+        ("nmonomer", po::value<double>(&nmonomer)->default_value(11), "number of monomers per filament")
         ("npolymer", po::value<double>(&npolymer)->default_value(3), "number of polymers in the network")
         ("actin_length", po::value<double>(&actin_length)->default_value(0.5), "Length of a single actin monomer")
         ("actin_pos_str", po::value<string> (&actin_pos_str)->default_value(""), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
         
-        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.001), "number of active motors / um^2")
-        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.001), "number of passive motors / um^2")
+        ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.05), "number of active motors / um^2")
+        ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.05), "number of passive motors / um^2")
         ("a_motor_pos_str", po::value<string> (&a_motor_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
         ("p_motor_pos_str", po::value<string> (&p_motor_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
-        ("a_m_kon", po::value<double>(&a_m_kon)->default_value(90.0),"active motor on rate")
-        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1),"active motor off rate")
-        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(5),"active motor off rate at filament end")
-        ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.5),"active motor rest length (um)")
-        ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(50),"active motor spring stiffness (pN/um)")
+        ("a_m_kon", po::value<double>(&a_m_kon)->default_value(9000),"active motor on rate")
+        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1000),"active motor off rate")
+        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(1000),"active motor off rate at filament end")
+        ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.4),"active motor rest length (um)")
+        ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(10),"active motor spring stiffness (pN/um)")
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
         
-        ("p_m_kon", po::value<double>(&p_m_kon)->default_value(90),"passive motor on rate")
-        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.01),"passive motor off rate")
-        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0.01),"passive motor off rate at filament end")
-        ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.5),"passive motor rest length (um)")
-        ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(50),"passive motor spring stiffness (pN/um)")
+        ("p_m_kon", po::value<double>(&p_m_kon)->default_value(9000),"passive motor on rate")
+        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(1000),"passive motor off rate")
+        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(1000),"passive motor off rate at filament end")
+        ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.150),"passive motor rest length (um) (default: filamin)")
+        ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(10),"passive motor spring stiffness (pN/um)")
         
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
-        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
         
-        ("shear_rate", po::value<double>(&shear_rate)->default_value(0), "shear rate in pN/um")
         ("strain_pct", po::value<double>(&strain_pct)->default_value(0), "pct that the boundarys get sheared")
-        ("shear_freq", po::value<double>(&shear_freq)->default_value(1), "Frequency of shearing in # of timesteps (i.e., shear_freq = 0.33 ==> shear every third time step)")
-        ("shear_stop", po::value<double>(&shear_stop)->default_value(1e12), "amount of time to shear for [s]")
+        ("time_of_strain", po::value<double>(&time_of_strain)->default_value(0), "time at which the step strain occurs")
+
+        ("d_strain_freq", po::value<double>(&d_strain_freq)->default_value(1), "differential strain frequency")
+        ("d_strain_amp", po::value<double>(&d_strain_amp)->default_value(0), "differential strain amplitude")
+        ("time_of_dstrain", po::value<double>(&time_of_dstrain)->default_value(10000), "time when differential strain starts")
         
         ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
         ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
         ("p_motor_in", po::value<string>(&p_motor_in)->default_value(""), "input crosslinker positions file")
+        
+        ("restart_actin", po::value<bool>(&restart_actin)->default_value(false), "if true, input actin positions file chosen by default")
+        ("restart_a_motor", po::value<bool>(&restart_a_motor)->default_value(false), "if true, input motor positions file chosen by default")
+        ("restart_p_motor", po::value<bool>(&restart_p_motor)->default_value(false), "if true, input crosslinker positions file chosen by default")
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
         ("seed", po::value<int>(&seed)->default_value(time(NULL)), "Random number generator seed")
@@ -133,6 +141,10 @@ int main(int argc, char* argv[]){
                                                                                      (3) LLF = Langevin Leap Frog")
         
         ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "flag to put a cross link at all filament intersections")
+        ("motor_intersect_flag", po::value<bool>(&motor_intersect_flag)->default_value(false), "flag to put a motor at all filament intersections")
+        ("p_linkage_prob", po::value<double>(&p_linkage_prob)->default_value(1), "If link_intersect_flag, probability that two filaments that intersect will be linked")
+        ("a_linkage_prob", po::value<double>(&a_linkage_prob)->default_value(1), "If motor_intersect_flag, probability that two filaments that intersect will be motor-d")
+
         ("dead_head_flag", po::value<bool>(&dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all motors")
         ("dead_head", po::value<int>(&dead_head)->default_value(0), "index of head to kill")
         ; 
@@ -172,16 +184,6 @@ int main(int argc, char* argv[]){
     }
    
     
-    // DERIVED QUANTITIES :
-    if(a_motor_density == 0 && p_motor_density==0){
-        xgrid = 0;
-        ygrid = 0;
-    }
-    else{
-        xgrid  = (int) grid_factor*xrange;
-        ygrid  = (int) grid_factor*yrange;
-    }
-
     if (polymer_bending_modulus < 0){ //This is a flag for using the temperature for the bending modulus
         polymer_bending_modulus = 10*temperature; // 10um * kT
     }
@@ -201,10 +203,19 @@ int main(int argc, char* argv[]){
         a_motor_position_arrs = str2arrvec(a_motor_pos_str, ":", ",");
     if (p_motor_pos_str.size() > 0)
         p_motor_position_arrs = str2arrvec(p_motor_pos_str, ":", ",");
-    
+   
+
     // To Read positions from input files
     vector<vector<double> > actin_pos_vec;
     vector<vector<double> > a_motor_pos_vec, p_motor_pos_vec;
+    
+    if (restart_actin)
+        actin_in = dir + "/restart/in/actins.txt";
+    if (restart_a_motor)
+        a_motor_in = dir + "/restart/in/amotors.txt";
+    if (restart_p_motor)
+        p_motor_in = dir + "/restart/in/pmotors.txt";
+    
     if (actin_in.size() > 0)
         actin_pos_vec   = file2vecvec(actin_in, "\t");
     if (a_motor_in.size() > 0)
@@ -221,12 +232,26 @@ int main(int argc, char* argv[]){
     pmfile = dir + "/txt_stack/pmotors.txt";
     thfile = dir + "/data/thermo.txt";
 
-    file_a.open(afile.c_str());
-    file_l.open(lfile.c_str());
-    file_am.open(amfile.c_str());
-    file_pm.open(pmfile.c_str());
-	file_th.open(thfile.c_str());
+    if (restart_actin || restart_a_motor || restart_p_motor) write_mode = ios_base::app;
 
+    file_a.open(afile.c_str(), write_mode);
+    file_l.open(lfile.c_str(), write_mode);
+    file_am.open(amfile.c_str(), write_mode);
+    file_pm.open(pmfile.c_str(), write_mode);
+	file_th.open(thfile.c_str(), write_mode);
+
+
+    // DERIVED QUANTITIES :
+    if(a_motor_density == 0 && a_motor_pos_vec.size() == 0 &&
+            p_motor_density==0 && p_motor_pos_vec.size() == 0 &&
+            !link_intersect_flag && !motor_intersect_flag){
+        xgrid = 0;
+        ygrid = 0;
+    }
+    else{
+        xgrid  = (int) grid_factor*xrange;
+        ygrid  = (int) grid_factor*yrange;
+    }
 
     // Create Network Objects
     cout<<"\nCreating actin network..";
@@ -244,8 +269,8 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd); 
     }
    
-    if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length); 
-    net->set_y_thresh(ythresh); 
+    if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
+    if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 
 
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins;
@@ -317,14 +342,35 @@ int main(int argc, char* argv[]){
     o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
     o_file.close();
     
-    //Perform the shear here
-    net->update_delrx(strain_pct*xrange/2);
-    net->update_shear();
-    
+    pre_strain = strain_pct * xrange;
+    prev_d_strain = 0;
+
+    cout<<"\nDEBUG: time of pre_strain = "<<time_of_strain;
     //Run the simulation
+    if (time_of_strain == 0){
+        cout<<"\nDEBUG: t = "<<t<<"; adding pre_strain of "<<pre_strain<<" um here";
+        net->update_delrx( pre_strain );
+        net->update_shear();
+    }
     while (t < tfinal) {
         //print time count
-		if (count%n_bw_stdout==0) {
+
+        if (time_of_strain!=0 && close(t, time_of_strain, dt/(10*time_of_strain))){
+            //Perform the shear here
+            cout<<"\nDEBUG: t = "<<t<<"; adding pre_strain of "<<pre_strain<<" um here";
+            net->update_delrx( pre_strain );
+            net->update_shear();
+        }
+
+        if (t >= time_of_dstrain){
+            d_strain = d_strain_amp * sin(2*pi*d_strain_freq * ( t - time_of_dstrain) );
+            net->update_delrx( pre_strain + d_strain );
+            net->update_d_strain( d_strain - prev_d_strain );
+            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<d_strain<<" um here";
+            prev_d_strain = d_strain;
+        }
+        
+        if (count%n_bw_stdout==0) {
 			cout<<"\nTime counts: "<<count;
 		    //net->print_filament_thermo();
             net->print_network_thermo();
@@ -365,7 +411,13 @@ int main(int argc, char* argv[]){
 		}
         
     }
-    
+
+    file_a << "\n";
+    file_l << "\n";
+    file_am << "\n";
+    file_pm << "\n";
+    file_th << "\n";
+
     file_a.close();
     file_l.close();
     file_am.close();

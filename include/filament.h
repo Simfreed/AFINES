@@ -49,6 +49,8 @@ class filament
 
         void update_delrx(double shear_dist);
         
+        void update_d_strain(double);
+
         void update_shear(double t); 
         
         vector<filament *> update_stretching(double t);

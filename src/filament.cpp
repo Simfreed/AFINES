@@ -72,7 +72,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     phi = startpos[2];
     
     if (temp != 0) variance = temp/(bending_stiffness * linkLength * linkLength);
-    else variance = 1;
+    else variance = 0;
 
     for (int j = 1; j < nactin; j++) {
 
@@ -255,16 +255,20 @@ void filament::update_shear(double t){
     
     double local_shear;
     for (unsigned int i = 0; i < actins.size(); i++){
-        //local_shear = delrx * 2 * actins[i]->get_ycm() * dt/ (fov[1]*(t+dt));
-        local_shear = delrx * 2 * actins[i]->get_ycm() / fov[1];
+        local_shear = delrx * actins[i]->get_ycm() / fov[1];
         actins[i]->set_xcm(actins[i]->get_xcm() + local_shear);
         //cout<<"\nDEBUG: local_shear = "<<local_shear;
-        
-        // "pre-strain" + differential strain according to Gardel 2004
-        //actins[i]->update_force( gamma * actins[i]->get_ycm()*(1 + 0.05*sin(0.1*t)), 0); 
     }
 }
 
+void filament::update_d_strain(double g){
+    
+    double local_strain;
+    for (unsigned int i = 0; i < actins.size(); i++){
+        local_strain = g * actins[i]->get_ycm() / fov[1];
+        actins[i]->set_xcm(actins[i]->get_xcm() + local_strain);
+    }
+}
 
 void filament::update_forces(int index, double f1, double f2)
 {

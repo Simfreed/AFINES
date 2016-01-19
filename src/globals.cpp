@@ -47,6 +47,11 @@ double rng_n(double mean, double var)
     return mean+var*Z;
 }
 
+bool event(double prob)
+{
+    return rng(0,1) < prob;
+}
+
 int event(double rate, double timestep)
 {
     if (rng(0,1.0)<rate*timestep) {
@@ -208,6 +213,12 @@ vector<double> sum_vecs(vector<double> v1, vector<double> v2)
         }
     }
     return s;
+}
+
+//SO:17333 (more info there)
+bool are_same(double a, double b)
+{
+    return fabs(a-b) < std::numeric_limits<double>::epsilon();
 }
 
 bool close(double actual, double expected, double err)
@@ -450,6 +461,8 @@ boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2> r1, arr
         y = (a1*c2 - a2*c1)/det;
         if (x >= mmx1.first && x >= mmx2.first && x <= mmx1.second && x <= mmx2.second &&
             y >= mmy1.first && y >= mmy2.first && y <= mmy1.second && y <= mmy2.second){
+//            cout<<"\nDEBUG: segments : \n\t("<<r1[0]<<","<<r1[1]<<") --> ("<<r2[0]<<","<<r2[1]<<") and \n\t("<<
+//                                               s1[0]<<","<<s1[1]<<") --> ("<<s2[0]<<","<<s2[1]<<") intersect"; 
             ans = {x,y};
             return ans;
         }
@@ -463,16 +476,25 @@ boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2> r1, arr
     }*/
 }
 
+string print_pair(string name, array<double, 2> p)
+{
+    return name + ": ("+std::to_string(p[0])+","+std::to_string(p[1])+")";
+}
+
 boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double delrx, array<double, 2> fov, array<double, 2> r1, array<double, 2> r2, array<double, 2> r3, array<double, 2> r4)
 {
-    array<double, 2> rij12, rij13, rij14;
+    array<double, 2> rij12, rij13, rij34, rij14;
     rij12 = rij_bc(bc, r2[0] - r1[0], r2[1] - r1[1], fov[0], fov[1], delrx);
     rij13 = rij_bc(bc, r3[0] - r1[0], r3[1] - r1[1], fov[0], fov[1], delrx);
-    rij14 = rij_bc(bc, r4[0] - r1[0], r4[1] - r1[1], fov[0], fov[1], delrx);
+    rij34 = rij_bc(bc, r4[0] - r3[0], r4[1] - r3[1], fov[0], fov[1], delrx);
+    rij14 = {rij13[0] + rij34[0], rij13[1] + rij34[1]};
 
     boost::optional<array<double, 2> > inter = seg_seg_intersection({0,0}, rij12, rij13, rij14);
-    if (inter)
+    if (inter){
+//        cout<<"\nDEBUG: old coords:"<<print_pair("r1",r1)   <<"\t"<<print_pair("r2",r2)<<"\t"<<print_pair("r3",r3)<<"\t"<<print_pair("r4",r4);
+//        cout<<"\nDEBUG: new coords:"<<print_pair("r1",{0,0})<<"\t"<<print_pair("r2",rij12)<<"\t"<<print_pair("r3",rij13)<<"\t"<<print_pair("r4",rij14);
         return pos_bc(bc, delrx, 0, fov, {0,0}, {inter->at(0) + r1[0], inter->at(1) + r1[1]}); 
+    }
     else 
         return boost::none;
 

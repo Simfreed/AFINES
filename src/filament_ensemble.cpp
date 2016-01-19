@@ -223,7 +223,17 @@ void filament_ensemble<filament_type>::update_delrx(double drx)
     }
 }
 
-    template <class filament_type> 
+template <class filament_type> 
+void filament_ensemble<filament_type>::update_d_strain(double g)
+{
+    //cout<<"\nDEBUG: SHEARING"; 
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->update_d_strain(g);
+    }
+}
+
+template <class filament_type> 
 void filament_ensemble<filament_type>::update_shear()
 {
     //cout<<"\nDEBUG: SHEARING"; 
@@ -398,7 +408,7 @@ void filament_ensemble<filament_type>::update(){
 }
 
 template<class filament_type>
-vector<vector<double> > filament_ensemble<filament_type>::link_link_intersections(double len){
+vector<vector<double> > filament_ensemble<filament_type>::link_link_intersections(double len, double prob){
 
     vector< vector<double> > itrs;
     double ang;
@@ -413,7 +423,7 @@ vector<vector<double> > filament_ensemble<filament_type>::link_link_intersection
             r1 = {network[f1]->get_link(l1)->get_hx()[0], network[f1]->get_link(l1)->get_hy()[0]};
             r2 = {network[f1]->get_link(l1)->get_hx()[1], network[f1]->get_link(l1)->get_hy()[1]};
             bcf1 = network[f1]->get_BC();
-            for (unsigned int f2 = f1; f2 < network.size(); f2++){
+            for (unsigned int f2 = f1+1; f2 < network.size(); f2++){
                 
                 for (unsigned int l2 = 0; l2 < network[f2]->get_nlinks(); l2++){
 
@@ -426,12 +436,10 @@ vector<vector<double> > filament_ensemble<filament_type>::link_link_intersection
 
                     inter = seg_seg_intersection_bc(bcf1, delrx, fov, r1, r2, s1, s2);
                     
-                    if (inter){
+                    if (inter && rng(0,1) <= prob){
                         ang = network[f2]->get_link(l2)->get_angle();
-                        itrs.push_back({inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), double(f1), double(f2), double(l1), double(l2)}); 
-//                        double crdarr[] = {inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), double(f1), double(f2), double(l1), double(l2)}; 
-//                        vector<double> crdvec(crdarr, crdarr+sizeof(crdarr)/sizeof(double)); 
-//                        itrs.push_back(crdvec);
+                        itrs.push_back({inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), 
+                                double(f1), double(f2), double(l1), double(l2)}); 
                     }
                 }
             }

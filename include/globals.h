@@ -55,6 +55,7 @@ double rng(double start, double end);
 int pr(int num);
 double rng_exp(double mean);
 double rng_n(double mean, double var);
+bool event(double prob);
 int event(double rate, double timestep);
 
 array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox);
@@ -80,6 +81,7 @@ double dot(array<double, 2> v1, array<double, 2> v2);
 double var(vector<double> vals);
 double mode_var(vector<double> vals, double m);
 bool close(double e, double a, double r);
+bool are_same(double a, double b);
 vector<double> sum_vecs(vector<double> v1, vector<double> v2);
 vector<double *> vec2ptrvec(vector<double>, int dim);
 vector<double *> str2ptrvec(string, string, string);
@@ -90,6 +92,7 @@ template <typename T> int sgn(T val);
 
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
 multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &p);
+string print_pair(string name, array<double, 2> p);
 
 //template <typename A, typename B> pair<B,A> flip_pair(const pair<A,B> &p);
 //template <typename A, typename B> multimap<B,A> flip_map(const map<A,B> &src);

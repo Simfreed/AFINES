@@ -72,9 +72,11 @@ class filament_ensemble
         
         int get_nlinks();
 
-        vector<vector<double> > link_link_intersections(double cllen);
+        vector<vector<double> > link_link_intersections(double cllen, double prob);
 
         void update_shear();
+        
+        void update_d_strain(double);
         
         void update_delrx(double);
         

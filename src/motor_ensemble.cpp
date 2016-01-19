@@ -28,7 +28,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
 
     double alpha = 1, motorx, motory, mang;
-
+    array<double, 3> motor_pos; 
     for (int i=0; i< nm; i++) {
         
         if ((unsigned int)i < positions.size()){
@@ -40,7 +40,9 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
             motory = rng(-0.5*(fov[1]*alpha-mld),0.5*(fov[1]*alpha-mld));
             mang   = rng(0,2*pi);
         }
-        n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+        motor_pos = {motorx, motory, mang};
+
+        n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
                     v0, stiffness, ron, roff, rend, actin_len, vis, BC));
         
     }
@@ -60,21 +62,19 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
     int nm = motors.size();
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
 
-    double motorx, motory, mang;
+    array<double, 4> motor_pos;
     array<int, 2> f_index, l_index, state;
 
     for (int i=0; i< nm; i++) {
         
-        motorx = motors[i][0] + 0.5*motors[i][2];
-        motory = motors[i][1] + 0.5*motors[i][3];
-        mang   = atan2(motors[i][3], motors[i][2]);
+        motor_pos = {motors[i][0], motors[i][1], motors[i][2], motors[i][3]};
         
         f_index = {int(motors[i][4]), int(motors[i][5])};
         l_index = {int(motors[i][6]), int(motors[i][7])};
 
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
 
-        n_motors.push_back(new motor<filament_ensemble_type>( {motorx, motory, mang}, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
+        n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, ron, roff, rend, actin_len, vis, BC));
     }
 }
