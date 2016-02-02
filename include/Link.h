@@ -29,7 +29,7 @@ class Link
     public:
         Link();
         
-        Link(double len, double stiffness, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
+        Link(double len, double stiffness, double max_ext, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
         
         virtual ~Link();
 
@@ -44,6 +44,8 @@ class Link
         double get_angle();
 
         double get_l0();
+        
+        double get_fene_ext();
         
         double get_xcm();
         
@@ -64,6 +66,10 @@ class Link
         bool is_similar(const Link& that);    
 
         void update_force(string bc, double shear_dist);
+        
+        void update_force_fraenkel_fene(string bc, double shear_dist);
+        
+        void update_force_marko_siggia(string bc, double shear_dist, double kToverA);
 
         array<double,2> get_force();
 
@@ -83,7 +89,7 @@ class Link
 
     protected:
 
-        double xcm, ycm, phi, l0, kl;//, force;
+        double xcm, ycm, phi, l0, kl, max_ext, eps_ext;//, force;
        
         array<double,2> fov, hx, hy;
         array<double, 2> force;

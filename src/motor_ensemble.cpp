@@ -15,7 +15,7 @@
 //motor_ensemble class
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
-        double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
+        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, double ron, double roff, double rend, 
         double actin_len, double vis, vector<array<double,3> > positions, string BC) {
     
     fov = myfov;
@@ -43,14 +43,14 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
         motor_pos = {motorx, motory, mang};
 
         n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
-                    v0, stiffness, ron, roff, rend, actin_len, vis, BC));
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, actin_len, vis, BC));
         
     }
 }
 
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
-        double mlen, filament_ensemble_type * network, double v0, double stiffness, double ron, double roff, double rend, 
+        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, double ron, double roff, double rend, 
         double actin_len, double vis, string BC) {
     
     fov = myfov;
@@ -75,7 +75,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
 
         n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
-                    v0, stiffness, ron, roff, rend, actin_len, vis, BC));
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, actin_len, vis, BC));
     }
 }
 
@@ -157,7 +157,8 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
             else if (s[1] == 0)    n_motors[i]->brownian_relax(1);
             
             n_motors[i]->update_angle();
-            n_motors[i]->update_force();
+            //n_motors[i]->update_force();
+            n_motors[i]->update_force_fraenkel_fene();
             n_motors[i]->actin_update();
         }
         
@@ -198,4 +199,15 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
     gamma = g;
 }
 
+template <class filament_ensemble_type> 
+void motor_ensemble<filament_ensemble_type>::print_ensemble_thermo(){
+    double KE=0, PEs=0;
+    for (unsigned int m = 0; m < n_motors.size(); m++)
+    {
+        KE += n_motors[m]->get_kinetic_energy();
+        //PEs += n_motors[m]->get_stretching_energy();
+        PEs += n_motors[m]->get_stretching_energy_fene();
+    }
+    cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPEs = "<<PEs<<"\tPEb = "<<0<<"\tTE = "<<(KE+PEs);
+}
 template class motor_ensemble<ATfilament_ensemble>;

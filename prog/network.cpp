@@ -39,8 +39,7 @@ int main(int argc, char* argv[]){
     double actin_length, npolymer, nmonomer;                                // Actin 
     string actin_pos_str;
     
-    double link_length, polymer_bending_modulus, link_stretching_stiffness, fracture_force, bending_fracture_force; // Links
-    bool use_linear_bending;
+    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force, bending_fracture_force; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
     string a_motor_pos_str; 
@@ -57,9 +56,9 @@ int main(int argc, char* argv[]){
 
     double strain_pct, time_of_strain, pre_strain;                                      //External Force
     double d_strain, prev_d_strain, d_strain_freq, d_strain_amp, time_of_dstrain;
-    bool link_intersect_flag, motor_intersect_flag, dead_head_flag;
+    bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag;
     double p_linkage_prob, a_linkage_prob;                                              
-    int dead_head;
+    int dead_head, p_dead_head;
 
     bool restart_actin, restart_a_motor, restart_p_motor;
 
@@ -116,7 +115,7 @@ int main(int argc, char* argv[]){
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
-        ("use_linear_bending,linear", po::value<bool>(&use_linear_bending)->default_value(false),"option to send spring type of bending springs")
+        ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
         
         ("strain_pct", po::value<double>(&strain_pct)->default_value(0), "pct that the boundarys get sheared")
         ("time_of_strain", po::value<double>(&time_of_strain)->default_value(0), "time at which the step strain occurs")
@@ -147,6 +146,9 @@ int main(int argc, char* argv[]){
 
         ("dead_head_flag", po::value<bool>(&dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all motors")
         ("dead_head", po::value<int>(&dead_head)->default_value(0), "index of head to kill")
+        
+        ("p_dead_head_flag", po::value<bool>(&p_dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all crosslinks")
+        ("p_dead_head", po::value<int>(&p_dead_head)->default_value(0), "index of head to kill")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -190,7 +192,7 @@ int main(int argc, char* argv[]){
 
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
     
-    double link_bending_stiffness    = polymer_bending_modulus * pow(1.0/link_length , 1);
+    double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
@@ -260,12 +262,12 @@ int main(int argc, char* argv[]){
         net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
-                link_stretching_stiffness, link_bending_stiffness,
+                link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd, seed); 
     }else{
         net = new ATfilament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
-                link_stretching_stiffness, link_bending_stiffness,
+                link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd); 
     }
    
@@ -277,11 +279,11 @@ int main(int argc, char* argv[]){
     
     if (a_motor_pos_vec.size() == 0)
         myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
-                a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
+                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
     else
         myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
-                a_motor_length, net, a_motor_v, a_motor_stiffness, a_m_kon, a_m_koff,
+                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, actin_length, viscosity, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
@@ -290,12 +292,13 @@ int main(int argc, char* argv[]){
     
     if(p_motor_pos_vec.size() == 0)
         crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_kend,
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
                 p_m_kend, actin_length, viscosity, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, p_m_kon, p_m_kend,
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
                 p_m_kend, actin_length, viscosity, bnd_cnd);
+    if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
 
@@ -374,6 +377,8 @@ int main(int argc, char* argv[]){
 			cout<<"\nTime counts: "<<count;
 		    //net->print_filament_thermo();
             net->print_network_thermo();
+            crosslks->print_ensemble_thermo();
+            myosins->print_ensemble_thermo();
         }
 
         //update network

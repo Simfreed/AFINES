@@ -17,13 +17,15 @@ template <class filament_ensemble_type>
 motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filament_ensemble_type * network, 
         array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> mylindex,
         array<double, 2> myfov, double delta_t, double temp,
-        double v0, double stiffness, double ron, double roff, double
+        double v0, double stiffness, double max_ext_ratio, double ron, double roff, double
         rend, double actin_len, double vis, string bc) {
     
     vs          = v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
-    dm          = mlen - sqrt(2*0.004/stiffness); //max binding distance; note, to be positive l0 > sqrt(2T/k)
+    dm          = sqrt(10*0.004/stiffness); //width of binding distance distribution; note, allows for arbitrary force generation of up to 10kT w/in 2sigma
     mk          = stiffness;//rng(10,100); 
-    fmax        = mk*dm*2;//rng(1,20);
+    max_ext     = max_ext_ratio*mlen;
+    eps_ext     = 0.01*max_ext;
+    fmax        = 3.85; //mk*dm*2;//rng(1,20);
     mld         = mlen;
     dt          = delta_t;
     kon         = ron*dt;
@@ -41,7 +43,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     
     shear       = 0;
     force       = {0,0}; // force on the spring  
-
+    kinetic_energy = 0; //assume m = 1
     actin_network = network;
     damp=(4*pi*vis*mld);
     
@@ -70,12 +72,14 @@ template <class filament_ensemble_type>
 motor<filament_ensemble_type>::motor( array<double, 4> pos, double mlen, filament_ensemble_type * network, 
         array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> mylindex,
         array<double, 2> myfov, double delta_t, double temp,
-        double v0, double stiffness, double ron, double roff, double
+        double v0, double stiffness, double max_ext_ratio, double ron, double roff, double
         rend, double actin_len, double vis, string bc) {
     
     vs          = v0;//rng_n(v0,0.4);//rng(v0-0.3,v0+0.3);
     dm          = mlen - sqrt(2*0.004/stiffness); //max binding distance; note, to be positive l0 > sqrt(2T/k)
     mk          = stiffness;//rng(10,100); 
+    max_ext     = max_ext_ratio*mlen;
+    eps_ext     = 0.01*max_ext;
     fmax        = mk*dm*2;//rng(1,20);
     mld         = mlen;
     dt          = delta_t;
@@ -209,6 +213,25 @@ void motor<filament_ensemble_type>::update_force()
     force = {mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))};
 }
 
+/* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
+ * Adapted by placing a cutoff, similar to how it's done in LAMMPS src/bond_fene.cpp*/
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::update_force_fraenkel_fene()
+{
+    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
+    double ext = abs(mld - hypot(disp[0], disp[1]));
+    double scaled_ext, mkp;
+    
+    if (max_ext - ext > eps_ext )
+        scaled_ext = ext/max_ext;
+    else
+        scaled_ext = (max_ext - eps_ext)/max_ext;
+    
+    mkp = mk/(1-scaled_ext*scaled_ext);
+    force = {mkp*(disp[0]-mld*cos(mphi)), mkp*(disp[1]-mld*sin(mphi))};
+
+}
+
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::brownian_relax(int hd)
 {
@@ -217,7 +240,7 @@ void motor<filament_ensemble_type>::brownian_relax(int hd)
 
     double vx =  pow(-1,hd)*force[0] / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x + prv_rnd_x[hd]);
     double vy =  pow(-1,hd)*force[1] / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y + prv_rnd_y[hd]);
-        
+    kinetic_energy = vx*vx + vy*vy;    
     array<double, 2> pos = boundary_check(hd, hx[hd] + vx*dt, hy[hd] + vy*dt);
     hx[hd] = pos[0];
     hy[hd] = pos[1];
@@ -272,6 +295,8 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
         offrate = koff*exp(fabs(fm)/fmax);
     }
     
+    //if(rnd()<0.5) vm *=-1;
+
     if (event(offrate)) this->detach_head(hd);
     else                      move_end_detach(hd, pos_a_end[hd]+dt*vm);
 
@@ -356,6 +381,28 @@ array<int, 2> motor<filament_ensemble_type>::get_l_index(){
 template <class filament_ensemble_type>
 array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
     return pos_a_end;
+}
+
+template <class filament_ensemble_type>
+double motor<filament_ensemble_type>::get_stretching_energy(){
+    return (force[0]*force[0]+force[1]*force[1])/(2*mk);
+}
+
+template <class filament_ensemble_type>
+double motor<filament_ensemble_type>::get_stretching_energy_fene()
+{
+    double ext = abs(mld - dist_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()));
+    
+    if (max_ext - ext > eps_ext )
+        return -0.5*mk*max_ext*max_ext*log(1-(ext/max_ext)*(ext/max_ext));
+    else
+        return 0.25*mk*ext*(max_ext/eps_ext);
+    
+}
+
+template <class filament_ensemble_type>
+double motor<filament_ensemble_type>::get_kinetic_energy(){
+    return kinetic_energy;
 }
 
 template <class filament_ensemble_type>

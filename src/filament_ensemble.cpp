@@ -165,7 +165,17 @@ void filament_ensemble<filament_type>::update_positions()
 {
     for (unsigned int f = 0; f < network.size(); f++)
     {
-        network[f]->update_positions(t);
+        network[f]->update_positions();
+    }
+
+}
+
+template <class filament_type> 
+void filament_ensemble<filament_type>::update_positions_range(int lo, int hi)
+{
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->update_positions_range(lo, hi);
     }
 
 }
@@ -268,6 +278,14 @@ void filament_ensemble<filament_type>::print_network_thermo(){
     cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPEs = "<<PEs<<"\tPEb = "<<PEb<<"\tTE = "<<TE;
 }
 
+template <class filament_type> 
+void filament_ensemble<filament_type>::print_filament_lengths(){
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        cout<<"\nF"<<f<<" : "<<network[f]->get_end2end()<<" um";
+    }
+}
+
 
 template <class filament_type> 
 bool filament_ensemble<filament_type>::is_polymer_start(int fil, int actin){
@@ -319,6 +337,11 @@ int filament_ensemble<filament_type>::get_nactins(){
 template <class filament_type> 
 int filament_ensemble<filament_type>::get_nlinks(){
     return this->get_nactins() - network.size();
+}
+
+template <class filament_type> 
+int filament_ensemble<filament_type>::get_nfilaments(){
+    return network.size();
 }
 
 template <class filament_type> 
@@ -388,19 +411,11 @@ void filament_ensemble<filament_type>::update_int_forces()
     this->update_bending();
 }
 
-/* Overdamped Langevin Dynamics Integrator (Ermak and Yeh, 1974) */
+/* Overdamped Langevin Dynamics Integrator (Leimkuhler, 2013) */
 template <class filament_type>
 void filament_ensemble<filament_type>::update(){
     
     this->update_int_forces();
-/*    if (fmod(t, shear_dt) < dt && t < shear_stop && t != 0) 
-    {   
-   //     cout<<"\nDEBUG: updating shear";
-        
-        this->update_delrx(shear_speed*t);
-        this->update_shear();
-    }
-*/    
     this->update_positions();
     this->quad_update();
     t += dt;
@@ -452,7 +467,7 @@ vector<vector<double> > filament_ensemble<filament_type>::link_link_intersection
 ////////////////////////////////////////
 
 ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, 
+        double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
@@ -487,19 +502,19 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new filament(pos_sets[i], nactins, fov, nq,
-                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             //phi0=atan2(1+x0-y0*y0, -1-x0*x0+y0); // this is just the first example in mathematica's streamplot documentation
-            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, bending, frac_force, bc) );
+            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }
     }
 }
 
 ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double vis, double link_len, double stretching, double bending, double frac_force, string bc) {
+        double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc) {
     
     fov = myfov;
     nq = mynq;
@@ -520,7 +535,7 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
     for (int i=0; i < s; i++){
         
         if (actins[i][3] != fil_idx && avec.size() > 0){
-            network.push_back( new filament( avec, fov, nq, link_len, stretching, bending, delta_t, temp, frac_force, 0, bc) );
+            network.push_back( new filament( avec, fov, nq, link_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
             
             sa = avec.size();
             for (j = 0; j < sa; j++) delete avec[j];
@@ -533,7 +548,7 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
 
     sa = avec.size();
     if (sa > 0)
-        network.push_back( new filament( avec, fov, nq, link_len, stretching, bending, delta_t, temp, frac_force, 0, bc) );
+        network.push_back( new filament( avec, fov, nq, link_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
     
     for (j = 0; j < sa; j++) delete avec[j];
     avec.clear();

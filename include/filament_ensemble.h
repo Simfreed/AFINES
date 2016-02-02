@@ -71,6 +71,8 @@ class filament_ensemble
         int get_nactins();
         
         int get_nlinks();
+        
+        int get_nfilaments();
 
         vector<vector<double> > link_link_intersections(double cllen, double prob);
 
@@ -88,6 +90,8 @@ class filament_ensemble
 
         void update_positions();
 
+        void update_positions_range(int lo, int hi);
+        
         void update_forces(int fil, int actin, double f2, double f3);
 
         void write_actins(ofstream& fout);
@@ -99,6 +103,8 @@ class filament_ensemble
         void set_straight_filaments(bool is_straight);
 
         void set_y_thresh(double);
+        
+        void set_fene_dist_pct(double);
         
         void set_shear_rate(double);
         
@@ -122,6 +128,8 @@ class filament_ensemble
 
         void print_network_thermo();
 
+        void print_filament_lengths();
+        
         void update();
         
     protected:
@@ -148,11 +156,11 @@ class ATfilament_ensemble:
         
         ATfilament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
-                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
+                double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
                 string bc, double seed);
         
         ATfilament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-                double vis, double link_len, double stretching, double bending, double frac_force, string bc); 
+                double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc); 
         
 };
 

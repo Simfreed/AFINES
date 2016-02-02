@@ -13,7 +13,7 @@
 
 Link::Link(){ }
 
-Link::Link(double len, double stretching_stiffness, filament* f, 
+Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filament* f, 
         array<int, 2> myaindex, array<double, 2> myfov, array<int, 2> mynq)
 {
     kl      = stretching_stiffness;
@@ -23,6 +23,9 @@ Link::Link(double len, double stretching_stiffness, filament* f,
     fov     = myfov;
     nq      = mynq;
 
+    max_ext = max_ext_ratio * l0;
+    eps_ext = 0.01*max_ext;
+    
     hx = {0,0};
     hy = {0,0};
 
@@ -65,6 +68,35 @@ void Link::update_force(string bc, double shear_dist)
     force = {kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))};
 }
 
+/* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
+ * Adapted by placing a cutoff, similar to how it's done in LAMMPS src/bond_fene.cpp*/
+void Link::update_force_fraenkel_fene(string bc, double shear_dist)
+{
+    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    double ext = abs(l0 - hypot(disp[0], disp[1]));
+    double scaled_ext, klp;
+    if (max_ext - ext > eps_ext ){
+        //cout<<"\nDEBUG: approaching cutoff";
+        scaled_ext = ext/max_ext;
+    }
+    else{
+        //cout<<"\nDEBUG: at cutoff";
+        scaled_ext = (max_ext - eps_ext)/max_ext;
+    }
+    klp = kl/(1-scaled_ext*scaled_ext);
+    force = {klp*(disp[0]-l0*cos(phi)), klp*(disp[1]-l0*sin(phi))};
+
+}
+
+void Link::update_force_marko_siggia(string bc, double shear_dist, double kToverLp)
+{
+    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    double xrat = disp[0]/(l0*cos(phi)), yrat = disp[1]/(l0*sin(phi));
+    if (xrat != xrat || xrat == 1) xrat = 0;
+    if (yrat != yrat || yrat == 1) yrat = 0;
+    force = {kToverLp*(0.25/((1-xrat)*(1-xrat))-0.25+xrat), kToverLp*(0.25/((1-yrat)*(1-yrat))-0.25+yrat)};  
+}
+
 array<double,2> Link::get_force()
 {
     return force;
@@ -84,6 +116,11 @@ double Link::get_kl(){
 double Link::get_l0(){
     return l0;
 }
+
+double Link::get_fene_ext(){
+    return max_ext/l0;
+}
+
 double Link::get_xcm(){
     return xcm;
 }

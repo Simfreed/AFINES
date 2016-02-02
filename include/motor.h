@@ -28,12 +28,14 @@ class motor
 
         motor(array<double, 3> pos, double mlen, filament_ensemble_type* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
-                array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
+                array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio, 
+                double ron, double roff,
                 double rend, double actin_len, double vis, string BC);
         
         motor(array<double, 4> pos, double mlen, filament_ensemble_type* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
-                array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double ron, double roff,
+                array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio,
+                double ron, double roff,
                 double rend, double actin_len, double vis, string BC);
 
         ~motor();
@@ -49,6 +51,8 @@ class motor
         void kill_head( int hd);
         
         void update_force();
+        
+        void update_force_fraenkel_fene();
         
         void update_angle();
         
@@ -86,13 +90,19 @@ class motor
         
         inline void periodic(double t, double gamma, double x1, double x2, double y1, double y2);
 
+        double get_stretching_energy();
+        
+        double get_stretching_energy_fene();
+
+        double get_kinetic_energy();
+        
         string to_string();
         
         string write();
     private:
 
         double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature, 
-               actin_damp, damp, shear;
+               actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force;
         

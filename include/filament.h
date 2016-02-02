@@ -34,9 +34,9 @@ class filament
         
         filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
                 double vis, double deltat, double temp, bool isStraight,
-                double actinLength, double linkLength, double stretching, double bending, double fracture, string bc); 
+                double actinLength, double linkLength, double stretching, double ext, double bending, double fracture, string bc); 
 
-        filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double bending_stiffness, 
+        filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double ext, double bending_stiffness, 
                 double deltat, double temp, double fracture, double gamma, string bc);
        
         filament();
@@ -52,12 +52,18 @@ class filament
         void update_d_strain(double);
 
         void update_shear(double t); 
+
+        void pull_on_ends(double f);
+        
+        void affine_pull(double f);
         
         vector<filament *> update_stretching(double t);
         
         void update_bending(double);
         
-        void update_positions(double t);
+        void update_positions();
+        
+        void update_positions_range(int lo, int hi);
         
         array<double, 2> boundary_check(int i, double x, double y);
         
@@ -79,6 +85,8 @@ class filament
         
         string write_thermo(int fil);
         
+        double get_end2end();
+
         vector<actin *> get_actins(unsigned int first, unsigned int last);
         
         vector<filament *> fracture(int node);
@@ -87,7 +95,7 @@ class filament
         
         bool operator==(const filament& that);
         
-        void add_actin(actin * a, double l0, double kl);
+        void add_actin(actin * a, double l0, double kl, double me);
         
         void set_BC(string s);
 
@@ -117,7 +125,7 @@ class filament
 
     protected:
         
-        double kb, temperature, dt, fracture_force, kinetic_energy, damp;
+        double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp;
         double gamma, max_shear, delrx, y_thresh;
 
         array<double,2> fov;

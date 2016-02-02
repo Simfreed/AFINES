@@ -26,6 +26,7 @@ filament::filament(){
     delrx=0;
     damp = 0;
     y_thresh=2;
+    kToverLp=0;
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -43,11 +44,13 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     kinetic_energy  = 0;
     damp            = 0;
     y_thresh        = 1;
+    kToverLp        = temperature * temperature / (bending_stiffness*1); // 1 is the link length, here
+
 }
 
 filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov, array<int, 2> mynq, double visc, 
         double deltat, double temp, bool isStraight, double actinRadius, double linkLength, double stretching_stiffness,
-        double bending_stiffness, double frac_force, string bdcnd)
+        double max_ext_ratio, double bending_stiffness, double frac_force, string bdcnd)
 {
     
     fov = myfov;
@@ -63,6 +66,8 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     
     damp = 4*pi*actinRadius*visc;
     y_thresh = 1;
+    
+    kToverLp = temperature * temperature / (kb * linkLength); 
 
     double phi, variance;
     array<double, 2> next_pos;
@@ -71,7 +76,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     prv_rnds.push_back({0,0});
     phi = startpos[2];
     
-    if (temp != 0) variance = temp/(bending_stiffness * linkLength * linkLength);
+    if (temp != 0) variance = temp/bending_stiffness;
     else variance = 0;
 
     for (int j = 1; j < nactin; j++) {
@@ -82,7 +87,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
                 {actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi)});
         actins.push_back( new actin(next_pos[0], next_pos[1], actinRadius, visc) );
         prv_rnds.push_back({0,0});
-        links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1, j}, fov, nq) );  
+        links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
         links[j-1]->step(BC, delrx);  
         
         // Calculate the Next angle on the actin polymer
@@ -93,7 +98,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
 }
 
 filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, 
-        double stretching_stiffness, double bending_stiffness, 
+        double stretching_stiffness, double max_ext_ratio, double bending_stiffness, 
         double deltat, double temp, double frac_force, double g, string bdcnd)
 {
     
@@ -108,6 +113,8 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     nq = mynq;
     y_thresh = 1;
 
+    kToverLp = temperature * temperature / (kb * linkLength); 
+
     if (actinvec.size() > 0)
     {
         actins.push_back(new actin(*(actinvec[0])));
@@ -120,7 +127,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
         for (unsigned int j = 1; j < actinvec.size(); j++) {
 
             actins.push_back(new actin(*(actinvec[j])));
-            links.push_back( new Link(linkLength, stretching_stiffness, this, {(int)j-1, (int)j}, fov, nq) );  
+            links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
             links[j-1]->step(BC, delrx);
             prv_rnds.push_back({0,0});
             
@@ -131,7 +138,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
 
 filament::~filament(){
     
-    cout<<"DELETING FILAMENT\n";
+    //cout<<"DELETING FILAMENT\n";
     int nr = actins.size(), nl = links.size();
     for (int i = 0; i < nr; i ++)
     {    
@@ -146,13 +153,13 @@ filament::~filament(){
     prv_rnds.clear();
 }
 
-void filament::add_actin(actin * a, double linkLength, double stretching_stiffness){
+void filament::add_actin(actin * a, double linkLength, double stretching_stiffness, double max_ext_ratio){
     
     actins.push_back(new actin(*a));
     prv_rnds.push_back({0,0});    
     if (actins.size() > 1){
         int j = (int) actins.size() - 1;
-        links.push_back( new Link(linkLength, stretching_stiffness, this, {j-1,  j}, fov, nq ) );  
+        links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
         links[j-1]->step(BC, delrx);
     }
     if (damp == 0)
@@ -176,7 +183,7 @@ void filament::set_y_thresh(double y){
     y_thresh = y;
 }
 
-void filament::update_positions(double t)
+void filament::update_positions()
 {
     double vx, vy, T = temperature;
     array<double, 2> new_rnds;
@@ -185,6 +192,41 @@ void filament::update_positions(double t)
     double top_y = y_thresh*fov[1]/2.; 
 
     for (unsigned int i = 0; i < actins.size(); i++){
+       
+        if (fabs(actins[i]->get_ycm()) > top_y) continue;
+     
+        new_rnds = {rng_n(0,1), rng_n(0,1)};
+        vx  = (actins[i]->get_force()[0])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[0] + prv_rnds[i][0]);
+        vy  = (actins[i]->get_force()[1])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[1] + prv_rnds[i][1]);
+//        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
+       
+        prv_rnds[i] = new_rnds;
+        //cout<<"\nDEBUG: actin force = ("<<actins[i]->get_force()[0]<<" , "<<actins[i]->get_force()[1]<<")";
+        kinetic_energy += vx*vx + vy*vy;
+        //newpos = boundary_check(i, actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt); 
+        newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt});
+        actins[i]->set_xcm(newpos[0]);
+        actins[i]->set_ycm(newpos[1]);
+        actins[i]->reset_force(); 
+    }
+
+    for (unsigned int i = 0; i < links.size(); i++)
+        links[i]->step(BC, delrx);
+
+}
+
+void filament::update_positions_range(int lo, int hi)
+{
+    double vx, vy, T = temperature;
+    array<double, 2> new_rnds;
+    array<double, 2> newpos;
+    kinetic_energy = 0;  
+    double top_y = y_thresh*fov[1]/2.; 
+
+    int low = max(0, lo);
+    int high = min(hi, (int)actins.size());
+
+    for (unsigned int i = low; i < high; i++){
        
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
@@ -217,6 +259,7 @@ vector<filament *> filament::update_stretching(double t)
    
     for (unsigned int i=0; i < links.size(); i++) {
         links[i]->update_force(BC, delrx);
+        //links[i]->update_force_fraenkel_fene(BC, delrx);
         if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_force){
             newfilaments = this->fracture(i);
             break;
@@ -273,6 +316,34 @@ void filament::update_d_strain(double g){
 void filament::update_forces(int index, double f1, double f2)
 {
     actins[index]->update_force(f1,f2);
+}
+
+void filament::pull_on_ends(double f)
+{
+    if (actins.size() < 2) return;
+    int last = actins.size() - 1; 
+    array<double, 2> dr = rij_bc(BC, actins[last]->get_xcm() - actins[0]->get_xcm(),  
+                                     actins[last]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
+    double ang = atan2( dr[1], dr[0]);
+    
+    actins[ 0  ]->update_force(-0.5*f*cos(ang), -0.5*f*sin(ang));
+    actins[last]->update_force( 0.5*f*cos(ang),  0.5*f*sin(ang));
+}
+
+void filament::affine_pull(double f)
+{
+    if (actins.size() < 2) return;
+    int last = actins.size() - 1; 
+    array<double, 2> dr = rij_bc(BC, actins[last]->get_xcm() - actins[0]->get_xcm(),  
+                                     actins[last]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
+    double ang = atan2( dr[1], dr[0]);
+    //cout<<"\nDEBUG: angle = "<<ang;
+    double frac, fcos = f*cos(ang), fsin = f*sin(ang);
+
+    for (int i = 0; i <= last; i++){
+        frac = (double(i)/double(last)-0.5);
+        actins[i]->update_force(frac*fcos, frac*fsin);
+    }
 }
 
 void filament::set_shear(double g){
@@ -333,11 +404,11 @@ vector<filament *> filament::fracture(int node){
 
     if (lower_half.size() > 0)
         newfilaments.push_back(
-                new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
+                new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
     if (upper_half.size() > 0)
         newfilaments.push_back(
-                new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), kb, 
+                new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
 
     for (int i = 0; i < (int)(lower_half.size()); i++) delete lower_half[i];
@@ -761,3 +832,12 @@ void filament::print_thermo()
     cout<<"\tKE = "<<this->get_kinetic_energy()<<"\tPE = "<<this->get_potential_energy()<<\
         "\tTE = "<<this->get_total_energy();
 }
+
+double filament::get_end2end()
+{
+    if (actins.size() < 2) 
+        return 0;
+    else 
+        return dist_bc(BC, actins[actins.size() - 1]->get_xcm() - actins[0]->get_xcm(),  
+                           actins[actins.size() - 1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
+} 
