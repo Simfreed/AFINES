@@ -100,7 +100,8 @@ void lammps_filament::update_positions(double t)
                     
         kinetic_energy += actins[i]->get_vsquared();
         
-        newpos = boundary_check(i, t, actins[i]->get_velocity()[0], actins[i]->get_velocity()[1]); 
+        newpos = boundary_check(i, actins[i]->get_xcm() + actins[i]->get_velocity()[0]*dt, 
+                                   actins[i]->get_ycm() + actins[i]->get_velocity()[1]*dt); 
         
         actins[i]->set_xcm(newpos[0]);
         actins[i]->set_ycm(newpos[1]);
@@ -124,7 +125,7 @@ vector<lammps_filament *> lammps_filament::update_stretching(double t)
    
     for (unsigned int i=0; i < links.size(); i++) {
         links[i]->update_force(BC, delrx);
-        if (fabs(links[i]->get_force()) > fracture_force){
+        if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
