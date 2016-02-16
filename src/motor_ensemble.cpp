@@ -142,12 +142,13 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 {
 
     this->check_broken_filaments();
-    array<int, 2> s;
-
-    for (unsigned int i=0; i<n_motors.size(); i++) {
+    int nmotors_sz = int(n_motors.size());
+    #pragma omp parallel for
+    
+    for (int i=0; i<nmotors_sz; i++) {
        
 //        cout<<"\nDEBUG: motor "<<i;
-        s = n_motors[i]->get_states();
+        array<int, 2> s = n_motors[i]->get_states();
         
         if (t >= tMove){
            
@@ -157,18 +158,17 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
             else if (s[1] == 0)    n_motors[i]->brownian_relax(1);
             
             n_motors[i]->update_angle();
-            //n_motors[i]->update_force();
-            n_motors[i]->update_force_fraenkel_fene();
+            n_motors[i]->update_force();
+            //n_motors[i]->update_force_fraenkel_fene();
             n_motors[i]->actin_update();
         }
         
-        bool attached;
         if (!s[0]){
-            attached = n_motors[i]->attach(0);
+            n_motors[i]->attach(0);
             //if(attached && s[1] == 0) n_motors[i]->relax_head(1);
         }
         if (!s[1]){
-            attached = n_motors[i]->attach(1);
+            n_motors[i]->attach(1);
             //if(attached && s[0] == 0) n_motors[i]->relax_head(0);
         }
     
@@ -205,8 +205,8 @@ void motor_ensemble<filament_ensemble_type>::print_ensemble_thermo(){
     for (unsigned int m = 0; m < n_motors.size(); m++)
     {
         KE += n_motors[m]->get_kinetic_energy();
-        //PEs += n_motors[m]->get_stretching_energy();
-        PEs += n_motors[m]->get_stretching_energy_fene();
+        PEs += n_motors[m]->get_stretching_energy();
+        //PEs += n_motors[m]->get_stretching_energy_fene();
     }
     cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPEs = "<<PEs<<"\tPEb = "<<0<<"\tTE = "<<(KE+PEs);
 }

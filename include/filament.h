@@ -76,7 +76,8 @@ class filament
         int get_nlinks();
 
         vector<vector<array<int, 2> > > get_quadrants();
-        
+        //multimap<int, array<int, 2> > > get_quadrants();
+
         string write_actins(int fil);
         
         string write_links(int fil);

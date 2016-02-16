@@ -32,24 +32,64 @@ filament_ensemble<filament_type>::~filament_ensemble(){
 template <class filament_type> 
 void filament_ensemble<filament_type>::quad_update()
 {
+    quad_fils_mm.clear();
+    int qs, net_sz = int(network.size());
+    vector<array<int, 2> > q;
+    vector<multimap<array<int, 2>, array<int, 2> >* > fil_quads(net_sz);
+//    <multimap<array<int, 2>, array<int, 2> > quad_fils_mmi;
+    
+    #pragma omp parallel for
+    for (int f = 0; f < net_sz; f++){
+        multimap<array<int, 2>, array<int, 2> > *mm = new multimap<array<int, 2>, array<int, 2> >;
+        for (int l = 0; l < network[f]->get_nlinks(); l++){
+            network[f]->get_link(l)->quad_update(network[f]->get_BC(), delrx); 
+            q = network[f]->get_link(l)->get_quadrants();
+            qs = int(q.size());
+            for (int i = 0; i < qs; i++){
+//                quad_fils_mm.insert(pair<array<int, 2>, array<int, 2> >(q[i], {f,l}));
+                mm->insert(pair<array<int, 2>, array<int, 2> >(q[i], {f,l}));
+            }
+        }
+        fil_quads[f] = mm;
+    }
+
+    for (int f = 0; f < net_sz; f++){
+        quad_fils_mm.insert(fil_quads[f]->begin(), fil_quads[f]->end());
+        delete fil_quads[f];
+    }
+
+}
+
+/*
+template <class filament_type> 
+void filament_ensemble<filament_type>::quad_update()
+{
     quad_fils.clear();
     vector< vector< array<int, 2> > > filament_quads;
-
-    for (unsigned int i=0; i < network.size(); i++) { //Loop over filaments
+    const int net_sz = int(network.size());
+    map<int, vector< vector< array<int, 2> > > > all_filament_quads;
+//    #pragma omp parallel for
+    
+    for (int i=0; i < net_sz; i++) { //Loop over filaments
         
-        filament_quads = network[i]->get_quadrants(); 
+        // filament_quads = network[i]->get_quadrants(); 
+        all_filament_quads[i] = network[i]->get_quadrants();
         
+    }
+    
+    for (map<int, vector< vector< array<int, 2> > > >::iterator it = all_filament_quads.begin(); it != all_filament_quads.end(); ++it){
+        filament_quads = it->second;
         for (unsigned int j=0; j < filament_quads.size(); j++){ //Loop over links
-            
+
             for (unsigned int k = 0; k  < filament_quads[j].size(); k++){ //Loop over quadrants of a Link   
-                
-                quad_fils[ filament_quads[j][k] ].push_back({(int)i, (int)j});
+
+                quad_fils[ filament_quads[j][k] ].push_back({it->first, (int)j});
                 //cout<<"\nDEBUG: quad_fils[{"<<filament_quads[j][k][0]<<" , "<<filament_quads[j][k][1]<<"}] = {"<<i<<" , "<<j<<"}";
             }
         }   
     }
 
-}
+}*/
 
 template <class filament_type>
 vector<filament_type *>* filament_ensemble<filament_type>::get_network()
@@ -72,20 +112,21 @@ map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, do
     map<array<int, 2>, double> t_map;
     int mqx = int(floor(x/fov[0]*nq[0]));
     int mqy = int(floor(y/fov[1]*nq[1]));
-    t_map = update_dist_map(t_map, {mqx, mqy}, x, y);
-    t_map = update_dist_map(t_map, {mqx, mqy + 1}, x, y);
-    t_map = update_dist_map(t_map, {mqx + 1, mqy}, x, y);
-    t_map = update_dist_map(t_map, {mqx + 1, mqy + 1}, x, y);
+    update_dist_map(t_map, {mqx, mqy}, x, y);
+    update_dist_map(t_map, {mqx, mqy + 1}, x, y);
+    update_dist_map(t_map, {mqx + 1, mqy}, x, y);
+    update_dist_map(t_map, {mqx + 1, mqy + 1}, x, y);
     
     return t_map;
 }
-
+/*
 template <class filament_type>
-map<array<int, 2>, double> filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double> t_map, array<int, 2> mquad, double x, double y){
+void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y){
     
     array<int, 2> lnk_idx;
     double dist;
-    if(!quad_fils[mquad].empty())
+    
+    if(quad_fils.find(mquad) != quad_fils.end()){
         
         for (unsigned int j = 0; j < quad_fils[mquad].size(); j++){
         
@@ -96,10 +137,28 @@ map<array<int, 2>, double> filament_ensemble<filament_type>::update_dist_map(map
                 
                 t_map[lnk_idx] = dist;
         }
-
-    return t_map;
+    }
 
 }
+*/
+template <class filament_type>
+void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y){
+    
+    array<int, 2> fl_idx;
+    double dist;
+    multimap<array<int, 2>, array<int, 2> >::iterator it;
+    pair<multimap<array<int, 2>, array<int, 2> >::iterator, multimap<array<int, 2>, array<int, 2> >::iterator > ii;
+    ii = quad_fils_mm.equal_range(mquad);
+    
+    for(it = ii.first; it != ii.second; ++it){
+        fl_idx = it->second;
+        dist = network[fl_idx[0]]->get_link(fl_idx[1])->get_distance(network[fl_idx[0]]->get_BC(), delrx, x, y);
+        
+        if (t_map.find(fl_idx) == t_map.end() || t_map[fl_idx] > dist) t_map[fl_idx] = dist;
+    }
+
+}
+    
 template <class filament_type>
 array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int link, double xp, double yp)
 {
@@ -163,7 +222,9 @@ void filament_ensemble<filament_type>::set_straight_filaments(bool is_straight)
 template <class filament_type> 
 void filament_ensemble<filament_type>::update_positions()
 {
-    for (unsigned int f = 0; f < network.size(); f++)
+    int net_sz = int(network.size());
+    #pragma omp parallel for 
+    for (int f = 0; f < net_sz; f++)
     {
         network[f]->update_positions();
     }
@@ -361,9 +422,12 @@ double filament_ensemble<filament_type>::get_actin_friction(){
 
 // Update bending forces between monomers
 template <class filament_type>
-void filament_ensemble<filament_type>::update_bending(){
+void filament_ensemble<filament_type>::update_bending()
+{
+    int net_sz = int(network.size());
+    #pragma omp parallel for
     
-    for (unsigned int f = 0; f < network.size(); f++)
+    for (int f = 0; f < net_sz; f++)
     {
         network[f]->update_bending(t);
     }
@@ -372,11 +436,12 @@ void filament_ensemble<filament_type>::update_bending(){
 template <class filament_type>
 void filament_ensemble<filament_type>::update_stretching(){
     
-    vector<filament_type *> newfilaments;
+//    vector<filament_type *> newfilaments;
     int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
+    #pragma omp parallel for
     for (int f = 0; f < s; f++)
     {
-        newfilaments = network[f]->update_stretching(t);
+        vector<filament_type *> newfilaments = network[f]->update_stretching(t);
         
         if (newfilaments.size() > 0){ //fracture event occured
 
@@ -491,6 +556,8 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     }else{
         srand(seed);
     }
+    
+    max_links_per_gp =  10*nq[0]*nq[1]/(npolymer*nactin);
 
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 

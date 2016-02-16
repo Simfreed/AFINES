@@ -273,3 +273,18 @@ array<double, 2> Link::get_direction()
 {
     return {cos(phi), sin(phi)};
 }
+
+double Link::get_stretching_energy(){
+    return (force[0]*force[0]+force[1]*force[1])/(2*kl);
+}
+
+double Link::get_stretching_energy_fene(string bc, double shear_dist)
+{
+    double ext = abs(l0 - dist_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist));
+    
+    if (max_ext - ext > eps_ext )
+        return -0.5*kl*max_ext*max_ext*log(1-(ext/max_ext)*(ext/max_ext));
+    else
+        return 0.25*kl*ext*(max_ext/eps_ext);
+    
+}

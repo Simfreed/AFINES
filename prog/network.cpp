@@ -79,7 +79,7 @@ int main(int argc, char* argv[]){
         ("grid_factor", po::value<int>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
         
         ("dt", po::value<double>(&dt)->default_value(0.0001), "length of individual timestep in seconds")
-        ("tfinal", po::value<double>(&tfinal)->default_value(10), "length of simulation in seconds")
+        ("tfinal", po::value<double>(&tfinal)->default_value(0.01), "length of simulation in seconds")
         ("nframes", po::value<int>(&nframes)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
         ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
        

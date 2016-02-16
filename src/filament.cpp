@@ -170,7 +170,6 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 {
     //should return a map between actin and x, y coords of quadrant
     vector<vector<array<int,2> > > quads;
-    vector<array<int, 2> > l_quads;
     for (unsigned int i=0; i < links.size(); i++){ 
         links[i]->quad_update(BC, delrx);
         quads.push_back(links[i]->get_quadrants());
@@ -178,6 +177,18 @@ vector<vector<array<int,2> > > filament::get_quadrants()
     
     return quads;
 }
+/*
+multimap<int, array<int, 2> > filament::get_quadrants()
+{
+    //should return a map between actin and x, y coords of quadrant
+    multipmap<int, array<int, 2> > quads;
+    for (unsigned int i=0; i < links.size(); i++){ 
+        links[i]->quad_update(BC, delrx);
+        quads.push_back(links[i]->get_quadrants());
+    }
+    
+    return quads;
+}*/
 
 void filament::set_y_thresh(double y){
     y_thresh = y;
@@ -190,8 +201,9 @@ void filament::update_positions()
     array<double, 2> newpos;
     kinetic_energy = 0;  
     double top_y = y_thresh*fov[1]/2.; 
-
-    for (unsigned int i = 0; i < actins.size(); i++){
+    int sa = int(actins.size());
+    int la = int(links.size());
+    for (int i = 0; i < sa; i++){
        
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
@@ -203,14 +215,13 @@ void filament::update_positions()
         prv_rnds[i] = new_rnds;
         //cout<<"\nDEBUG: actin force = ("<<actins[i]->get_force()[0]<<" , "<<actins[i]->get_force()[1]<<")";
         kinetic_energy += vx*vx + vy*vy;
-        //newpos = boundary_check(i, actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt); 
         newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt});
         actins[i]->set_xcm(newpos[0]);
         actins[i]->set_ycm(newpos[1]);
         actins[i]->reset_force(); 
     }
 
-    for (unsigned int i = 0; i < links.size(); i++)
+    for (int i = 0; i < la; i++)
         links[i]->step(BC, delrx);
 
 }
@@ -226,7 +237,7 @@ void filament::update_positions_range(int lo, int hi)
     int low = max(0, lo);
     int high = min(hi, (int)actins.size());
 
-    for (unsigned int i = low; i < high; i++){
+    for (int i = low; i < high; i++){
        
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
@@ -786,24 +797,15 @@ double filament::get_bending_energy(){
 
 }
 
-double filament::get_stretching_energy(){
+double filament::get_stretching_energy()
+{
     
-    if(links.size() == 0){
-        return 0;
-    }
-    
-    double sum = 0, stretch;
-    array<double, 2> tension;
-
+    double u = 0;
     for (unsigned int i = 0; i < links.size(); i++)
-    {
-        tension = links[i]->get_force();
-        //cout<<"\nDEBUG: tension = ("<<tension[0]<<" , "<<tension[1]<<")";
-        stretch = hypot(tension[0], tension[1]);
-        sum += stretch*stretch;
-    }
+        //u += links[i]->get_stretching_energy_fene(BC, delrx);
+        u += links[i]->get_stretching_energy();
     
-    return sum/(2.0*links[0]->get_kl());
+    return u;
 
 }
 

@@ -10,8 +10,9 @@ TARGET := bin/runner
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -O3 -Wall -std=c++11 -DBOOST_TEST_DYN_LINK
-LIB :=  -L /software/boost-1.50-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options
+# CFLAGS := -O3 -Wall -std=c++0x -DBOOST_TEST_DYN_LINK -openmp # -pg
+CFLAGS := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -fopenmp -g
+LIB := -L /software/boost-1.50-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options
 INC := -I include  -I /usr/include/ -I /usr/local/include/
 
 $(TARGET): $(OBJECTS)
@@ -33,6 +34,8 @@ network: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt
 filament_force_extension: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/filament_force_extension.cpp $(INC) $(LIB) -o bin/ffe
+network_pull: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/network_pull.cpp $(INC) $(LIB) -o bin/ntp
 debug: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
 baoab_network: $(OBJECTS)

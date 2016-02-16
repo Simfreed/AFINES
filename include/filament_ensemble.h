@@ -42,7 +42,8 @@ class filament_ensemble
 
         map<array<int,2>, double> get_dist(double x, double y);
 
-        map<array<int, 2>, double> update_dist_map(map<array<int,2>, double> t_map, array<int, 2> mquad, double x, double y);
+        //map<array<int, 2>, double> update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
+        void update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
         
         array<double,2> get_direction(int fil, int link);
 
@@ -136,14 +137,15 @@ class filament_ensemble
 
         double t, dt, temperature, link_ld, visc, min_time;
         double gamma, shear_stop, shear_dt, shear_speed, delrx;
-        
+        double max_links_per_gp; 
         bool straight_filaments = false;
         
         array<double,2> fov, view;
         array<int, 2> nq;
         vector<int> broken_filaments, empty_vector;
         
-        map<array<int, 2>, vector<array<int, 2> > > quad_fils;
+        //map<array<int, 2>, vector<array<int, 2> > > quad_fils;
+        multimap<array<int, 2>, array<int, 2> > quad_fils_mm;
         
         vector<filament_type *> network;
 };

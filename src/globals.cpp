@@ -137,7 +137,7 @@ double velocity(double vel0, double force, double fstall)
     return v;
 }
 
-array<double, 2> cm_bc(string bc, vector<double> xi, vector<double> yi, double xbox, double ybox, double delrx)
+array<double, 2> cm_bc(string bc, const vector<double>& xi, const vector<double>& yi, double xbox, double ybox, double delrx)
 {
     if (bc == "PERIODIC" || bc == "LEES-EDWARDS")
         return {mean_periodic(xi, xbox) , mean_periodic(yi, ybox)};
@@ -145,7 +145,7 @@ array<double, 2> cm_bc(string bc, vector<double> xi, vector<double> yi, double x
         return {mean(xi), mean(yi)};
 }
 
-double mean(vector<double> nums)
+double mean(const vector<double>& nums)
 {
     double tot = 0;
     for (double n : nums) tot += n;
@@ -153,7 +153,7 @@ double mean(vector<double> nums)
 }
 
 // Source https://en.wikipedia.org/wiki/Center_of_mass#Systems_with_periodic_boundary_conditions
-double mean_periodic(vector<double> nums, double bnd)
+double mean_periodic(const vector<double>& nums, double bnd)
 {
     double theta, xitot=0, zetatot=0;
     for (double n : nums){
@@ -175,12 +175,12 @@ double dot(double x1, double y1, double x2, double y2)
     return x1*x2+y1*y2;
 }
 
-double dot(array<double, 2> v1, array<double, 2> v2)
+double dot(const array<double, 2>& v1, const array<double, 2>& v2)
 {
     return v1[0]*v2[0]+v1[1]*v2[1];
 }
 
-double var(vector<double> vals)
+double var(const vector<double>& vals)
 {
     double m = mean(vals), sum = 0;
     for (unsigned int i = 0; i < vals.size(); i++){
@@ -189,7 +189,7 @@ double var(vector<double> vals)
     return sum / vals.size();
 }
 
-double mode_var(vector<double> vals, double m)
+double mode_var(const vector<double>& vals, double m)
 {
     double sum = 0;
     for (unsigned int i = 0; i < vals.size(); i++){
@@ -198,7 +198,7 @@ double mode_var(vector<double> vals, double m)
     return sum / vals.size();
 }
 
-vector<double> sum_vecs(vector<double> v1, vector<double> v2)
+vector<double> sum_vecs(const vector<double>& v1, const vector<double>& v2)
 {
     vector<double> s;
     if (v1.empty())
@@ -239,7 +239,7 @@ bool close(double actual, double expected, double err)
  * [{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}] if dim = 3
  */
 
-vector<double *> vec2ptrvec(vector<double> v, int dim)
+vector<double *> vec2ptrvec(const vector<double>& v, int dim)
 {
     vector<double *> out;
     double * pos;
@@ -364,7 +364,7 @@ vector<int> range_bc(string bc, double delrx, int topq, int lo, int hi)
     return out;
 }
 
-array<double, 2> pos_bc(string bc, double delrx, double dt, array<double, 2> fov, array<double, 2> vel, array<double, 2> pos)
+array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 2>& fov, const array<double, 2>& vel, const array<double, 2>& pos)
 {
     double xnew = pos[0], ynew = pos[1];
         
@@ -435,7 +435,7 @@ multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &src)
     return dst;
 }
 
-boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2> r1, array<double, 2> r2, array<double, 2> s1, array<double, 2> s2)
+boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>& r1, const array<double, 2>& r2, const array<double, 2>& s1, const array<double, 2>& s2)
 {
     double a1, a2, b1, b2, c1, c2, det, x, y;
     pair<double, double> mmx1, mmy1, mmx2, mmy2;
@@ -476,12 +476,12 @@ boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2> r1, arr
     }*/
 }
 
-string print_pair(string name, array<double, 2> p)
+string print_pair(string name, const array<double, 2>& p)
 {
     return name + ": ("+std::to_string(p[0])+","+std::to_string(p[1])+")";
 }
 
-boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double delrx, array<double, 2> fov, array<double, 2> r1, array<double, 2> r2, array<double, 2> r3, array<double, 2> r4)
+boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double delrx, const array<double, 2>& fov, const array<double, 2>& r1, const array<double, 2>& r2, const array<double, 2>& r3, const array<double, 2>& r4)
 {
     array<double, 2> rij12, rij13, rij34, rij14;
     rij12 = rij_bc(bc, r2[0] - r1[0], r2[1] - r1[1], fov[0], fov[1], delrx);

@@ -38,6 +38,7 @@
 #include <unordered_set>
 #include <limits>
 #include <cstddef>
+#include <omp.h>
 
 using namespace std;
 
@@ -65,25 +66,25 @@ array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybo
 vector<int> range_bc(string bc, double delrx, int topq, int low, int high);
 vector<int> int_range(int lo, int hi);
 
-double mean_periodic(vector<double> nums, double bnd);
-double mean(vector<double> nums);
-array<double, 2> cm_bc(string bc, vector<double> xi, vector<double> yi, double xbox, double ybox, double shear_dist);
+double mean_periodic(const vector<double>& nums, double bnd);
+double mean(const vector<double>& nums);
+array<double, 2> cm_bc(string bc, const vector<double>& xi, const vector<double>& yi, double xbox, double ybox, double shear_dist);
 
 double dist_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
 double dot_bc(string bc, double dx1, double dy1, double dx2, double dy2, double xbox, double ybox, double shear_dist);
-array<double, 2> pos_bc(string bc, double delrx, double dt, array<double, 2> fov, array<double, 2> vel, array<double, 2> pos);
+array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 2>& fov, const array<double, 2>& vel, const array<double, 2>& pos);
 
 double velocity(double vel0, double force, double fstall);
 double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
-double dot(array<double, 2> v1, array<double, 2> v2);
+double dot(const array<double, 2>& v1, const array<double, 2>& v2);
 
-double var(vector<double> vals);
-double mode_var(vector<double> vals, double m);
+double var(const vector<double>& vals);
+double mode_var(const vector<double>& vals, double m);
 bool close(double e, double a, double r);
 bool are_same(double a, double b);
-vector<double> sum_vecs(vector<double> v1, vector<double> v2);
-vector<double *> vec2ptrvec(vector<double>, int dim);
+vector<double> sum_vecs(const vector<double>& v1, const vector<double>& v2);
+vector<double *> vec2ptrvec(const vector<double>&, int dim);
 vector<double *> str2ptrvec(string, string, string);
 vector<array<double,3> > str2arrvec(string, string, string);
 vector<vector<double> > file2vecvec(string path, string delim);
@@ -92,7 +93,7 @@ template <typename T> int sgn(T val);
 
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
 multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &p);
-string print_pair(string name, array<double, 2> p);
+string print_pair(string name, const array<double, 2>& p);
 
 //template <typename A, typename B> pair<B,A> flip_pair(const pair<A,B> &p);
 //template <typename A, typename B> multimap<B,A> flip_map(const map<A,B> &src);
@@ -101,6 +102,6 @@ map<array<int, 2>, double> transpose(map<array<int, 2>, double> mat);
 map<array<int, 2>, double> invert_block_diagonal(map<array<int, 2>, double> mat);
 void intarray_printer(array<int,2> a);
 
-boost::optional<array<double, 2> > seg_seg_intersection(array<double, 2>, array<double, 2>, array<double, 2>, array<double, 2>);
-boost::optional<array<double, 2> > seg_seg_intersection_bc(string, double, array<double, 2>, array<double, 2>, array<double, 2>, array<double, 2>, array<double, 2>);
+boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
+boost::optional<array<double, 2> > seg_seg_intersection_bc(string, double, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
 #endif

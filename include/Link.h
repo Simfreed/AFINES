@@ -47,6 +47,8 @@ class Link
         
         double get_fene_ext();
         
+        double get_stretching_energy();
+        
         double get_xcm();
         
         double get_ycm();
@@ -68,6 +70,8 @@ class Link
         void update_force(string bc, double shear_dist);
         
         void update_force_fraenkel_fene(string bc, double shear_dist);
+        
+        double get_stretching_energy_fene(string bc, double shear_dist);
         
         void update_force_marko_siggia(string bc, double shear_dist, double kToverA);
 
