@@ -90,13 +90,17 @@ class Link
         void quad_update(string bc, double shear_dist);
         
         array<double, 2> get_direction();
+        
+        array<double, 2> get_disp();
+        
+        array<double, 2> get_neg_disp();
 
     protected:
 
         double xcm, ycm, phi, l0, kl, max_ext, eps_ext;//, force;
        
         array<double,2> fov, hx, hy;
-        array<double, 2> force;
+        array<double, 2> disp, force;
 
         array<int, 2> nq, aindex;
         

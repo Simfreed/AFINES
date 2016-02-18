@@ -104,7 +104,7 @@ class motor
         double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature, 
                actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy;
         
-        array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force;
+        array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
         
         array<int,2> state, f_index, l_index;
         

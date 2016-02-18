@@ -503,10 +503,8 @@ void filament::fwd_bending_update(double t)
         
         // More than 1 actin--> bending forces to calculate
        
-        ram1 = rij_bc(BC, actins[1]->get_xcm() - actins[0]->get_xcm(),  
-                          actins[1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
-        ra   = rij_bc(BC, actins[2]->get_xcm() - actins[1]->get_xcm(),
-                          actins[2]->get_ycm() - actins[1]->get_ycm(), fov[0], fov[1], delrx);
+        ram1 = links[0]->get_disp();
+        ra = links[1]->get_disp();
 
         Cam1am1 = ram1[0]*ram1[0] + ram1[1]*ram1[1];
         Caa     = ra[0]*ra[0]   + ra[1]*ra[1];
@@ -531,8 +529,7 @@ void filament::fwd_bending_update(double t)
         else
         {
             //More than 2 actins--> more bending forces to calculate
-            rap1 = rij_bc(BC, actins[3]->get_xcm() - actins[2]->get_xcm(),
-                              actins[3]->get_ycm() - actins[2]->get_ycm(), fov[0], fov[1], delrx);
+            rap1 = links[2]->get_disp();
 
             Cap1ap1 = rap1[0]*rap1[0] + rap1[1]*rap1[1];
             Caap1   = rap1[0]*ra[0]   + rap1[1]*ra[1];
@@ -548,9 +545,8 @@ void filament::fwd_bending_update(double t)
             for (unsigned int j = 2; j < actins.size() - 2; j++){
 
                 
-                rap2 = rij_bc(BC, actins[j+2]->get_xcm() - actins[j+1]->get_xcm(),
-                                  actins[j+2]->get_ycm() - actins[j+1]->get_ycm(), fov[0], fov[1], delrx);
-
+                rap2 = links[j+1]->get_disp();
+                
                 Cap2ap2 = rap2[0]*rap2[0] + rap2[1]*rap2[1];
                 Cap1ap2 = rap1[0]*rap2[0] + rap1[1]*rap2[1];
 
@@ -635,18 +631,15 @@ void filament::bwd_bending_update(double t)
     double forcex, forcey;
     //initialize all NODE forces to be 0
    
-    int zero = actins.size() - 1, one = actins.size() - 2, two = actins.size()-3, three = actins.size() - 4;
+    int one = links.size() - 1, two = links.size()-2, three = links.size() - 3;
     //single actin --> no bending energy 
     if (actins.size() > 2)
     { 
         //First two actins won't have any bending forces: 
         
         // More than 1 actin--> bending forces to calculate
-        ram1 = rij_bc(BC, actins[one]->get_xcm() - actins[zero]->get_xcm(), 
-                           actins[one]->get_ycm() - actins[zero]->get_ycm(), fov[0], fov[1], delrx);
-        
-        ra = rij_bc(BC, actins[two]->get_xcm() - actins[one]->get_xcm(), 
-                         actins[two]->get_ycm() - actins[one]->get_ycm(), fov[0], fov[1], delrx);
+        ram1 = links[one]->get_neg_disp(); 
+        ra = links[two]->get_neg_disp(); 
 
         Cam1am1 = ram1[0]*ram1[0] + ram1[1]*ram1[1];
         Caa     = ra[0]  *ra[0]   + ra[1]  *ra[1];
@@ -673,9 +666,7 @@ void filament::bwd_bending_update(double t)
         else
         {
             //More than 2 actins--> more bending forces to calculate
-            rap1 = rij_bc(BC, actins[three]->get_xcm() - actins[two]->get_xcm(), 
-                               actins[three]->get_ycm() - actins[two]->get_ycm(), fov[0], fov[1], delrx);
-
+            rap1 = links[three]->get_neg_disp();
             Cap1ap1 = rap1[0]*rap1[0] + rap1[1]*rap1[1];
             Caap1   = rap1[0]*ra[0]   + rap1[1]*ra[1];
 
@@ -689,9 +680,7 @@ void filament::bwd_bending_update(double t)
             //Enter loop if more than 3 actins. For 3 actin case, the loop is skipped
             for (unsigned int j = two; j > 1; j--){
 
-                rap2 = rij_bc(BC, actins[j-2]->get_xcm() - actins[j-1]->get_xcm(),
-                                   actins[j-2]->get_ycm() - actins[j-1]->get_ycm(), fov[0], fov[1], delrx);
-
+                rap2 = links[j-2]->get_neg_disp();
                 Cap2ap2 = rap2[0]*rap2[0] + rap2[1]*rap2[1];
                 Cap1ap2 = rap1[0]*rap2[0] + rap1[1]*rap2[1];
 

@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     actin a; 
    
     f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     //Expect to have actins  at (0, 0), (1, 0), (2, 0), ..., (9, 0)
     //Expect to have links at (0.5, 0), (1.5, 0), (2.5, 0), ...., (8.5, 0)
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     for (int i = 0; i < nrod - 1; i++){
         a = actin( i, 0, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid});
+        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid});
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
     }
     a = actin( (nrod - 1), 0, actin_length, viscosity );
@@ -80,13 +80,13 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     startx=-1; starty = 0; startphi= 3*pi/2;
 
     f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     //Expect to have actin monomers at (-1, 0), (-1, -1), (-1, -2), ..., (-1, -9)
     for (int i = 0; i < nrod-1; i++){
         a = actin( -1 , -i, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
     }
     a = actin( -1, -(nrod - 1), actin_length, viscosity );
@@ -120,21 +120,21 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     actin a;
     vector<actin *> rodvec;
 
-    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, link_length, stretching_stiffness, bending_stiffness, dt, temp, fracture_force, shear, bc);
+    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, link_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
     delete f; 
     
     for (int i = 0; i < nrod; i++){
         rodvec.push_back(new actin( i, 0, actin_length, viscosity ));
     }
 
-    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, link_length, stretching_stiffness, bending_stiffness, dt, temp, fracture_force, shear, bc);
+    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, link_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
     //Expect to have rods  at (0, 0), (2, 0), (4, 0), ..., (18, 0)
     //Expect to have links at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
     
     for (int i = 0; i < nrod-1; i++){
         a = actin( i, 0, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
     }
     
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     actin a; 
    
     f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     vector<vector<array<int,2> > > quads, expected_quads;
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     startx=-1; starty = 0; startphi= 3*pi/2;
 
     f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     vector<actin *> rods0to0  = f->get_actins(0,0);
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     for (int i = 0; i < nrod-1; i++){
         a = actin( -1 , -i, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
         BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
     }
     a = actin( -1, -(nrod - 1), actin_length, viscosity );
@@ -314,10 +314,10 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     actin a; 
 
     f      = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     fcheck = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     vector<filament *> newfils = f->fracture(5);
@@ -326,10 +326,10 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     BOOST_CHECK_EQUAL(newfils.size(), 2);
 
     f1 = new filament({startx, starty, startphi}, 6, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     f2 = new filament({startx + 6, starty, startphi}, 4, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     //check that the new filaments are the ones we expect
@@ -338,19 +338,19 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     BOOST_CHECK_MESSAGE(*(newfils[1]) == *f2, "\n" + newfils[1]->to_string() + "\ndoes not equal\n" + f2->to_string());
 
     f2a = new filament({startx + 6, starty, startphi}, 3, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     f2b = new filament({startx + 9, starty, startphi}, 1, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     vector<filament *> newfils2 = newfils[1]->fracture(2);
     BOOST_CHECK_MESSAGE(*(newfils2[0]) == *f2a, "\n" + newfils2[0]->to_string() + "\ndoes not equal\n" + f2a->to_string());
     BOOST_CHECK_MESSAGE(*(newfils2[1]) == *f2b, "\n" + newfils2[1]->to_string() + "\ndoes not equal\n" + f2b->to_string());
  
     // Try updating all new filaments
-    f->update_positions(1);
-    newfils[0]->update_positions(1);
-    newfils[1]->update_positions(1);
+    f->update_positions();
+    newfils[0]->update_positions();
+    newfils[1]->update_positions();
 
     delete f;
     delete f1;
@@ -395,8 +395,8 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
     actin * act1 = new actin(0, 0, actin_length, viscosity);
     actin * act2 = new actin(2, 0, actin_length, viscosity); 
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
 
     cout<<"\nfilament configuration (t = 0)\n"<<f->to_string();
     
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
         if (newfils.size()>0)
             break;
         //f->update_bending();
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_stretching_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\ntime: " + to_string(t) + "e0: "+ to_string(e0) + "e1: " + to_string(e1));
         e0 = e1;
@@ -428,8 +428,8 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
     act1 = new actin(0, 0, actin_length, viscosity);
     act2 = new actin(0.5, 0, actin_length, viscosity); 
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
 
     cout<<"\nfilament configuration (t = 0)\n"<<f->to_string();
     
@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
         if (newfils.size()>0)
             break;
         //f->update_bending();
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_stretching_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\ntime: " + to_string(t) + "e0: "+ to_string(e0) + "e1: " + to_string(e1));
         e0 = e1;
@@ -483,9 +483,9 @@ BOOST_AUTO_TEST_CASE( stretching_test_three_beads )
     actin * act1 = new actin(0, 0, actin_length, viscosity);
     actin * act2 = new actin(0, 1.5, actin_length, viscosity);
     actin * act3 = new actin(0, 2, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
-    f->add_actin(act3, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_actin(act3, link_length, stretching_stiffness,1);
     
     double e0 = numeric_limits<double>::max(), e1;
     vector<filament *> newfils;
@@ -496,7 +496,7 @@ BOOST_AUTO_TEST_CASE( stretching_test_three_beads )
         //cout<<"\nBending energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending(t);
         newfils = f->update_stretching(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_stretching_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nEnergy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -534,9 +534,9 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads )
     actin * act1 = new actin(0, 0, actin_length, viscosity);
     actin * act2 = new actin(1, 0, actin_length, viscosity);
     actin * act3 = new actin(1, 1, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
-    f->add_actin(act3, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_actin(act3, link_length, stretching_stiffness,1);
 
     vector<filament *> newfils;
     cout<<"\nINITIAL CONFIGURATION\n";
@@ -549,7 +549,7 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads )
         if (newfils.size()>0)
             break;
         f->update_bending(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_bending_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nBending energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -591,13 +591,13 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
     actin * act1 = new actin(0, 0, actin_length, viscosity);
     actin * act2 = new actin(0, 1.5, actin_length, viscosity);
     actin * act3 = new actin(0.5, 1.5, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
-    f->add_actin(act3, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_actin(act3, link_length, stretching_stiffness,1);
 
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);
-    f->update_positions(0);
+    f->update_positions();
     
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
@@ -609,7 +609,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
         if (newfils.size()>0)
             break;
         f->update_bending(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -649,12 +649,12 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
     double startx = 0, starty = 0, startphi = 0;
     
     f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 
+            viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);
-    f->update_positions(0);
+    f->update_positions();
     
     double e0 = f->get_total_energy(), e1;
     int nsteps = 1000;
@@ -665,7 +665,7 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
         //cout<<"\nTotal energy at iteration "<<t<<" : "<<e0<<"\n";
         f->update_bending(t);
         newfils = f->update_stretching(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nTotal Energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -704,13 +704,13 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
     actin * act1 = new actin(0, 0, actin_length, viscosity);
     actin * act2 = new actin(0, 1, actin_length, viscosity); 
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
 
     cout<<"\nfilament configuration (t = 0)\n"<<f->to_string();
     
     vector<filament *> newfils = f->update_stretching(0);
-    f->update_positions(0);
+    f->update_positions();
     double e0 = f->get_stretching_energy();
     double e1;
     
@@ -723,7 +723,7 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
         newfils = f->update_stretching(t);
         if (newfils.size()>0)
             break;
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_stretching_energy();
         //BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\ntime: " + to_string(t) + "\te0: "+ to_string(e0) + "\te1: " + to_string(e1));
         e0 = e1;
@@ -754,23 +754,23 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_test )
    
     filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     actin * act1 = new actin(24, 0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
 
     f->update_forces(0,3,0);
-    f->update_positions(0);
+    f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
 
     BOOST_CHECK_EQUAL(pos[0], 21);
     BOOST_CHECK_EQUAL(pos[1], 0);
 
     f->update_forces(0,0,10);
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], 21);
     BOOST_CHECK_EQUAL(pos[1], 10);
     
     f->update_forces(0,0,16);
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], 21);
     BOOST_CHECK_EQUAL(pos[1], -6);
@@ -799,22 +799,22 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_pos_test )
    
     filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     actin * act1 = new actin(24, 0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
 
     f->update_forces(0,3,0);
-    f->update_positions(0);
+    f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], -23);
     BOOST_CHECK_EQUAL(pos[1], 0);
 
     f->update_forces(0,0,10);
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], -23);
     BOOST_CHECK_EQUAL(pos[1], 10);
     
     f->update_forces(0,0,16);
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], -23);
     BOOST_CHECK_EQUAL(pos[1], -24);
@@ -845,10 +845,10 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_pos_test )
     filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
 
     actin * act1 = new actin(0, -23, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
     
     f->update_forces(0,0,-3);
-    f->update_positions(0);
+    f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], 0);
     BOOST_CHECK_EQUAL(pos[1], 24);
@@ -856,13 +856,13 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_pos_test )
     f->update_delrx(strain*xrange/2);
     
     f->update_forces(0,0,3);
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0], -5);
     BOOST_CHECK_EQUAL(pos[1], -23);
     
     f->update_forces(0,-21,0);
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_EQUAL(pos[0],  24);
     BOOST_CHECK_EQUAL(pos[1], -23);
@@ -895,11 +895,11 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_stretch_test )
     actin * act1 = new actin(24, 1, actin_length, viscosity);
     actin * act2 = new actin(-23, 1, actin_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
     BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(47-link_length)*(47-link_length));
-    f->update_positions(0);
+    f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -22,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
@@ -936,11 +936,11 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
     actin * act1 = new actin(24, 1, actin_length, viscosity);
     actin * act2 = new actin(-23, 1, actin_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
     BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
-    f->update_positions(0);
+    f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -24,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
@@ -953,11 +953,11 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
     act1 = new actin(1, 24, actin_length, viscosity);
     act2 = new actin(1, -23, actin_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
     BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[1], -24,tol);
     BOOST_CHECK_CLOSE(pos[0], 1,tol);
@@ -997,8 +997,8 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     actin * act1 = new actin(1, 24, actin_length, viscosity);
     actin * act2 = new actin(1,-23, actin_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
     BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(5-link_length)*(5-link_length));
     
@@ -1008,11 +1008,11 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     act1 = new actin(1, 24, actin_length, viscosity);
     act2 = new actin(-3,-23, actin_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
     BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
-    f->update_positions(0);
+    f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -3,tol);
     BOOST_CHECK_CLOSE(pos[1], -24,tol);
@@ -1027,11 +1027,11 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     act1 = new actin(24, 1, actin_length, viscosity);
     act2 = new actin(-23, 1, actin_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
     BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
-    f->update_positions(0);
+    f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -24,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
@@ -1069,9 +1069,9 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads_periodic )
     actin * act1 = new actin(24.5, 0, actin_length, viscosity);
     actin * act2 = new actin(-24.5, 0, actin_length, viscosity);
     actin * act3 = new actin(-24.5, 1, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
-    f->add_actin(act3, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_actin(act3, link_length, stretching_stiffness,1);
 
     vector<filament *> newfils;
     cout<<"\nINITIAL CONFIGURATION\n";
@@ -1084,7 +1084,7 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads_periodic )
         if (newfils.size()>0)
             break;
         f->update_bending(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_bending_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nBending energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -1126,13 +1126,13 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
     actin * act1 = new actin(0, 24, actin_length, viscosity);
     actin * act2 = new actin(-1, -24.5, actin_length, viscosity);
     actin * act3 = new actin(1.5, -24.0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
-    f->add_actin(act3, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_actin(act3, link_length, stretching_stiffness,1);
 
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);
-    f->update_positions(0);
+    f->update_positions();
     
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
@@ -1144,7 +1144,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
         if (newfils.size()>0)
             break;
         f->update_bending(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;
@@ -1190,13 +1190,13 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
     actin * act1 = new actin(0, 24, actin_length, viscosity);
     actin * act2 = new actin(-1, -24.5, actin_length, viscosity);
     actin * act3 = new actin(1.5, -24.0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness);
-    f->add_actin(act2, link_length, stretching_stiffness);
-    f->add_actin(act3, link_length, stretching_stiffness);
+    f->add_actin(act1, link_length, stretching_stiffness,1);
+    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_actin(act3, link_length, stretching_stiffness,1);
 
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);
-    f->update_positions(0);
+    f->update_positions();
     
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
@@ -1208,7 +1208,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
         if (newfils.size()>0)
             break;
         f->update_bending(t);
-        f->update_positions(t);
+        f->update_positions();
         e1 = f->get_total_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;

@@ -54,6 +54,8 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     hx[1] = posH1[0];
     hy[1] = posH1[1];
     
+    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
+    
     if (state[0]){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
@@ -209,7 +211,6 @@ bool motor<filament_ensemble_type>::attach(int hd)
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::update_force()
 { 
-    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     force = {mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))};
 }
 
@@ -218,7 +219,6 @@ void motor<filament_ensemble_type>::update_force()
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::update_force_fraenkel_fene()
 {
-    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     double ext = abs(mld - hypot(disp[0], disp[1]));
     double scaled_ext, mkp;
     
@@ -267,7 +267,7 @@ void motor<filament_ensemble_type>::relax_head(int hd)
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::update_angle()
 {
-    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
+    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     mphi=atan2(disp[1],disp[0]);
 }
 
@@ -391,7 +391,7 @@ double motor<filament_ensemble_type>::get_stretching_energy(){
 template <class filament_ensemble_type>
 double motor<filament_ensemble_type>::get_stretching_energy_fene()
 {
-    double ext = abs(mld - dist_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()));
+    double ext = abs(mld - hypot(disp[0], disp[1]));
     
     if (max_ext - ext > eps_ext )
         return -0.5*mk*max_ext*max_ext*log(1-(ext/max_ext)*(ext/max_ext));
@@ -429,7 +429,6 @@ string motor<filament_ensemble_type>::to_string()
 template <class filament_ensemble_type>
 string motor<filament_ensemble_type>::write()
 {
-    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) 
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1]) 
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1]) 

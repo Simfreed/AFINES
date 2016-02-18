@@ -20,7 +20,9 @@
 #include "string"
 #include "vector"
 #include "map"
+#include "unordered_map"
 #include "filament.h"
+#include <boost/functional/hash.hpp>
 
 //=====================================
 //filament network class
@@ -32,18 +34,27 @@ class filament_ensemble
 
         ~filament_ensemble();
         
-        void quad_update_monomer(int i);
+        void nlist_init();
+        
+        void nlist_init_serial();
         
         void quad_update();
+        
+        void quad_update_serial();
+        
+        void consolidate_quads();
 
+        void update_quads_per_filament(int);
+
+        void reset_n_links(int);
+
+        void update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
+        
         vector<filament_type *> * get_network();
 
         filament_type * get_filament(int index);
 
         map<array<int,2>, double> get_dist(double x, double y);
-
-        //map<array<int, 2>, double> update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
-        void update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
         
         array<double,2> get_direction(int fil, int link);
 
@@ -137,16 +148,31 @@ class filament_ensemble
 
         double t, dt, temperature, link_ld, visc, min_time;
         double gamma, shear_stop, shear_dt, shear_speed, delrx;
-        double max_links_per_gp; 
+        double max_links_per_quad_per_filament, max_links_per_quad; 
         bool straight_filaments = false;
         
         array<double,2> fov, view;
         array<int, 2> nq;
         vector<int> broken_filaments, empty_vector;
+        //links_per_quad_per_filament[f][{x,y}] => {l_1...l_kmax} means that link l_k on filament f is located at quadrant {x,y} for all k in {1..kmax}
+//        vector<unordered_map<array<int, 2>, vector<int>*, boost::hash<array<int, 2> > > * > links_per_quad_per_filament; 
+        //n_links_per_quad_per_filament[f][{x,y}] => kmax means that kmax links are indexed to {x,y} on filament f
+//        vector<unordered_map<array<int, 2>, int,         boost::hash<array<int, 2> > > * > n_links_per_quad_per_filament; 
         
-        //map<array<int, 2>, vector<array<int, 2> > > quad_fils;
-        multimap<array<int, 2>, array<int, 2> > quad_fils_mm;
+        //links_per_quad[{x,y}] => {{f_1, l_1}, {f_1, l_2},...,{f_k, l_j},...} means that link l_j on filament f_k is located at quadrant {x,y}
+        unordered_map<array<int, 2>, vector<array<int, 2> >*, boost::hash<array<int, 2> > > links_per_quad; 
+        //vector< vector < vector< array<int, 2 >* >* > links_per_quad;
+        //vector< vector < int >* > n_links_per_quad;
+        //n_links_per_quad[{x,y}] => kmax means that kmax links are indexed to {x,y} 
+        unordered_map<array<int, 2>, int,         boost::hash<array<int, 2> > > n_links_per_quad; 
+
+        vector<map<array<int, 2>, vector<int>*> * > links_per_quad_per_filament; 
+        vector<map<array<int, 2>, int> * > n_links_per_quad_per_filament; 
+//        map<array<int, 2>, vector<array<int, 2> >* > links_per_quad; 
+//        map<array<int, 2>, int> n_links_per_quad; 
         
+        
+        vector<array<int, 2>* > all_quads;
         vector<filament_type *> network;
 };
 

@@ -22,74 +22,26 @@ filament_ensemble<filament_type>::~filament_ensemble(){
     cout<<"DELETING FILAMENT_ENSEMBLE\n";
     
     int s = network.size();
+    int qs = all_quads.size();    
+    for (unsigned int i = 0; i < qs; i++){
+        /*for (unsigned int f = 0; f < network.size(); f++){
+            delete links_per_quad_per_filament[f]->at(*(all_quads[i]));
+        }*/
+        delete links_per_quad[*(all_quads[i])];
+        delete all_quads[i];
+    }
+    
+ /*   for (unsigned int f = 0; f < s; f++){
+        delete links_per_quad_per_filament[f];
+        delete n_links_per_quad_per_filament[f];
+    }
+   */ 
     for (int i = 0; i < s; i++){
         delete network[i];
     }
     
-    //network.clear();
+    
 }
-
-template <class filament_type> 
-void filament_ensemble<filament_type>::quad_update()
-{
-    quad_fils_mm.clear();
-    int qs, net_sz = int(network.size());
-    vector<array<int, 2> > q;
-    vector<multimap<array<int, 2>, array<int, 2> >* > fil_quads(net_sz);
-//    <multimap<array<int, 2>, array<int, 2> > quad_fils_mmi;
-    
-    #pragma omp parallel for
-    for (int f = 0; f < net_sz; f++){
-        multimap<array<int, 2>, array<int, 2> > *mm = new multimap<array<int, 2>, array<int, 2> >;
-        for (int l = 0; l < network[f]->get_nlinks(); l++){
-            network[f]->get_link(l)->quad_update(network[f]->get_BC(), delrx); 
-            q = network[f]->get_link(l)->get_quadrants();
-            qs = int(q.size());
-            for (int i = 0; i < qs; i++){
-//                quad_fils_mm.insert(pair<array<int, 2>, array<int, 2> >(q[i], {f,l}));
-                mm->insert(pair<array<int, 2>, array<int, 2> >(q[i], {f,l}));
-            }
-        }
-        fil_quads[f] = mm;
-    }
-
-    for (int f = 0; f < net_sz; f++){
-        quad_fils_mm.insert(fil_quads[f]->begin(), fil_quads[f]->end());
-        delete fil_quads[f];
-    }
-
-}
-
-/*
-template <class filament_type> 
-void filament_ensemble<filament_type>::quad_update()
-{
-    quad_fils.clear();
-    vector< vector< array<int, 2> > > filament_quads;
-    const int net_sz = int(network.size());
-    map<int, vector< vector< array<int, 2> > > > all_filament_quads;
-//    #pragma omp parallel for
-    
-    for (int i=0; i < net_sz; i++) { //Loop over filaments
-        
-        // filament_quads = network[i]->get_quadrants(); 
-        all_filament_quads[i] = network[i]->get_quadrants();
-        
-    }
-    
-    for (map<int, vector< vector< array<int, 2> > > >::iterator it = all_filament_quads.begin(); it != all_filament_quads.end(); ++it){
-        filament_quads = it->second;
-        for (unsigned int j=0; j < filament_quads.size(); j++){ //Loop over links
-
-            for (unsigned int k = 0; k  < filament_quads[j].size(); k++){ //Loop over quadrants of a Link   
-
-                quad_fils[ filament_quads[j][k] ].push_back({it->first, (int)j});
-                //cout<<"\nDEBUG: quad_fils[{"<<filament_quads[j][k][0]<<" , "<<filament_quads[j][k][1]<<"}] = {"<<i<<" , "<<j<<"}";
-            }
-        }   
-    }
-
-}*/
 
 template <class filament_type>
 vector<filament_type *>* filament_ensemble<filament_type>::get_network()
@@ -103,6 +55,193 @@ filament_type * filament_ensemble<filament_type>::get_filament(int index)
     return network[index];
 }
 
+template<class filament_type>
+void filament_ensemble<filament_type>::nlist_init()
+{
+    array<int, 2> xy;
+    for (int x = -nq[0]/2; x <= nq[0]/2; x++)
+        for (int y = -nq[1]/2; y <= nq[1]/2; y++){
+            all_quads.push_back(new array<int,2>{{x,y}});
+            xy = *(all_quads[all_quads.size()-1]);
+        }
+
+    for (array<int, 2>* xyptr : all_quads){ 
+        links_per_quad[*xyptr] = new vector<array<int,2> >(max_links_per_quad);
+        n_links_per_quad[*xyptr] = 0;
+    }
+    
+    for (unsigned int f = 0; f < network.size(); f++){
+        //links_per_quad_per_filament.push_back(new unordered_map<array<int,2>, vector<int>*, boost::hash<array<int, 2> > >);
+        //n_links_per_quad_per_filament.push_back(new unordered_map<array<int, 2>, int, boost::hash<array<int, 2> > >);
+        links_per_quad_per_filament.push_back(new map<array<int,2>, vector<int>*>);
+        n_links_per_quad_per_filament.push_back(new map<array<int, 2>, int>);
+        for (array<int, 2>* xyptr : all_quads){ 
+            links_per_quad_per_filament[f]->insert(
+                    pair<array<int,2>, vector<int>* >(*xyptr, new vector<int>(max_links_per_quad_per_filament) ) );
+            n_links_per_quad_per_filament[f]->insert(pair<array<int, 2>, int>(*xyptr, 0) );
+//            cout<<"\nDEBUG: {nlinks_per_quad_per_filament["<<f<<"]->at{"<<xy[0]<<","<<xy[1]<<"} => "<<n_links_per_quad_per_filament[f]->at(xy);
+        }
+    }
+
+}
+
+template<class filament_type>
+void filament_ensemble<filament_type>::nlist_init_serial()
+{
+    array<int, 2> xy;
+    for (int x = -nq[0]/2; x <= nq[0]/2; x++)
+        for (int y = -nq[1]/2; y <= nq[1]/2; y++){
+            all_quads.push_back(new array<int,2>{{x,y}});
+            xy = *(all_quads[all_quads.size()-1]);
+        }
+
+    for (array<int, 2>* xyptr : all_quads){ 
+        links_per_quad[*xyptr] = new vector<array<int,2> >(max_links_per_quad);
+    }
+
+}
+/*
+template <class filament_type> 
+void filament_ensemble<filament_type>::reset_n_links(int f)
+{
+    for (array<int, 2>* xyptr : all_quads){ 
+        n_links_per_quad_per_filament[f]->at(*xyptr)=0;
+    }
+}
+*/
+template <class filament_type> 
+void filament_ensemble<filament_type>::update_quads_per_filament(int f)
+{
+    vector<vector<array<int, 2> > > filament_quads = network[f]->get_quadrants(); 
+    for (unsigned int l = 0; l < filament_quads.size(); l++){
+        for (unsigned int gp = 0; gp < filament_quads[l].size(); gp++){
+            //links_per_quad[at filament f][at grid point {x,y}][at the highest untaken index]          = link_index
+            links_per_quad_per_filament[f]->at(filament_quads[l][gp])->at(
+                    n_links_per_quad_per_filament[f]->at(filament_quads[l][gp]) ) = l;
+            n_links_per_quad_per_filament[f]->at(filament_quads[l][gp]) += 1;
+            if (n_links_per_quad_per_filament[f]->at(filament_quads[l][gp]) == max_links_per_quad_per_filament)
+                break;
+        }
+    }
+}
+
+template <class filament_type> 
+void filament_ensemble<filament_type>::consolidate_quads()
+{
+    array<int, 2> xy;
+    int nl;
+    const int net_sz = int(network.size());
+    for (array<int, 2>* xyptr : all_quads){
+        n_links_per_quad[*xyptr] = 0;
+    }
+    for (int f=0; f < net_sz; f++) { //Loop over filaments
+        // {x,y} --> vec ints
+        for (map<array<int,2>, vector<int>*>::iterator it = links_per_quad_per_filament[f]->begin(); 
+                it != links_per_quad_per_filament[f]->end(); ++it)
+        {
+            xy = it->first; 
+            nl = n_links_per_quad_per_filament[f]->at(xy);
+            if (nl == 0) continue;
+            for (int i = 0; i < nl; i++){
+                links_per_quad[xy]->at(i + n_links_per_quad[xy] ) = {f, it->second->at(i)};
+            }
+            n_links_per_quad[xy] += nl;
+            n_links_per_quad_per_filament[f]->at(xy) = 0;
+        }
+    }
+
+   /* 
+    for (array<int, 2>* xyptr : all_quads){
+        xy = *xyptr;
+        n_links_per_quad[xy] = 0;
+        for (int f=0; f < net_sz; f++) { //Loop over filaments
+            for (int i = 0; i < n_links_per_quad_per_filament[f]->at(xy); i++){
+                links_per_quad[xy]->at(i + n_links_per_quad[xy] ) = {f, links_per_quad_per_filament[f]->at(xy)->at(i)};
+            }
+            n_links_per_quad[xy] += n_links_per_quad_per_filament[f]->at(xy);
+            n_links_per_quad_per_filament[f]->at(xy) = 0;
+        }
+    }
+    */
+}
+    
+template <class filament_type> 
+void filament_ensemble<filament_type>::quad_update()
+{
+    const int net_sz = int(network.size());
+    
+    #pragma omp parallel for
+    
+    for (int f=0; f < net_sz; f++) { //Loop over filaments
+        if (f==0) cout<<"\nDEBUG: quad_update: using "<<omp_get_num_threads()<<" cores";  
+        update_quads_per_filament(f);
+    }
+    
+    consolidate_quads();
+}
+
+template <class filament_type>
+void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y){
+    
+    array<int, 2> fl;
+    double dist;
+    
+    if(links_per_quad.count(mquad)){
+        
+        for (unsigned int i = 0; i < n_links_per_quad[mquad]; i++){
+
+            fl = links_per_quad[mquad]->at(i);
+            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y);
+            
+            if (t_map.find(fl) == t_map.end() || t_map[fl] > dist)
+                t_map[fl] = dist;
+        }
+    }
+
+}
+
+template <class filament_type> 
+void filament_ensemble<filament_type>::quad_update_serial()
+{
+    int qs, net_sz = int(network.size());
+    vector<array<int, 2> > q;
+    
+    for (array<int, 2>* xyptr : all_quads){ 
+        n_links_per_quad[*xyptr]=0;
+    }
+    
+    for (int f = 0; f < net_sz; f++){
+        for (int l = 0; l < network[f]->get_nlinks(); l++){
+            q = network[f]->get_link(l)->get_quadrants();
+            qs = int(q.size());
+            for (int i = 0; i < qs; i++){
+                links_per_quad[q[i]]->at(n_links_per_quad[q[i]]) = {f,l};
+                n_links_per_quad[q[i]]++;
+            }
+        }
+    }
+
+}
+
+/*
+template <class filament_type>
+void filament_ensemble<filament_type>::update_dist_map_serial(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y){
+    
+    array<int, 2> fl_idx;
+    double dist;
+    multimap<array<int, 2>, array<int, 2> >::iterator it;
+    pair<multimap<array<int, 2>, array<int, 2> >::iterator, multimap<array<int, 2>, array<int, 2> >::iterator > ii;
+    ii = quad_fils_mm.equal_range(mquad);
+    
+    for(it = ii.first; it != ii.second; ++it){
+        fl_idx = it->second;
+        dist = network[fl_idx[0]]->get_link(fl_idx[1])->get_distance(network[fl_idx[0]]->get_BC(), delrx, x, y);
+        
+        if (t_map.find(fl_idx) == t_map.end() || t_map[fl_idx] > dist) t_map[fl_idx] = dist;
+    }
+
+}
+ */   
 //given motor head position, return a map between  
 //  the INDICES (i.e., {i, j} where i is the filament index and j is the link index)
 //  and their corresponding DISTANCES to the link at that distance 
@@ -119,46 +258,7 @@ map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, do
     
     return t_map;
 }
-/*
-template <class filament_type>
-void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y){
-    
-    array<int, 2> lnk_idx;
-    double dist;
-    
-    if(quad_fils.find(mquad) != quad_fils.end()){
-        
-        for (unsigned int j = 0; j < quad_fils[mquad].size(); j++){
-        
-            lnk_idx = quad_fils[mquad][j];
-            dist = network[lnk_idx[0]]->get_link(lnk_idx[1])->get_distance(network[lnk_idx[0]]->get_BC(), delrx, x, y);
-            
-            if (t_map.count(lnk_idx) == 0 || t_map[lnk_idx] > dist)
-                
-                t_map[lnk_idx] = dist;
-        }
-    }
 
-}
-*/
-template <class filament_type>
-void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y){
-    
-    array<int, 2> fl_idx;
-    double dist;
-    multimap<array<int, 2>, array<int, 2> >::iterator it;
-    pair<multimap<array<int, 2>, array<int, 2> >::iterator, multimap<array<int, 2>, array<int, 2> >::iterator > ii;
-    ii = quad_fils_mm.equal_range(mquad);
-    
-    for(it = ii.first; it != ii.second; ++it){
-        fl_idx = it->second;
-        dist = network[fl_idx[0]]->get_link(fl_idx[1])->get_distance(network[fl_idx[0]]->get_BC(), delrx, x, y);
-        
-        if (t_map.find(fl_idx) == t_map.end() || t_map[fl_idx] > dist) t_map[fl_idx] = dist;
-    }
-
-}
-    
 template <class filament_type>
 array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int link, double xp, double yp)
 {
@@ -226,6 +326,7 @@ void filament_ensemble<filament_type>::update_positions()
     #pragma omp parallel for 
     for (int f = 0; f < net_sz; f++)
     {
+        if (f==0) cout<<"\nDEBUG: update_positions: using "<<omp_get_num_threads()<<" cores";  
         network[f]->update_positions();
     }
 
@@ -429,6 +530,8 @@ void filament_ensemble<filament_type>::update_bending()
     
     for (int f = 0; f < net_sz; f++)
     {
+        if (f==0) cout<<"\nDEBUG: update_bending: using "<<omp_get_num_threads()<<" cores";  
+     
         network[f]->update_bending(t);
     }
 }
@@ -441,6 +544,7 @@ void filament_ensemble<filament_type>::update_stretching(){
     #pragma omp parallel for
     for (int f = 0; f < s; f++)
     {
+        if (f==0) cout<<"\nDEBUG: update_stretching: using "<<omp_get_num_threads()<<" cores";  
         vector<filament_type *> newfilaments = network[f]->update_stretching(t);
         
         if (newfilaments.size() > 0){ //fracture event occured
@@ -482,7 +586,8 @@ void filament_ensemble<filament_type>::update(){
     
     this->update_int_forces();
     this->update_positions();
-    this->quad_update();
+    //this->quad_update();
+    this->quad_update_serial();
     t += dt;
 
 }
@@ -536,11 +641,10 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
-    nq = mynq;
-
     view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
     view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
-
+    nq = mynq;
+    
     visc=vis;
     link_ld = link_len;
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
@@ -550,15 +654,14 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     shear_dt = dt;
     t = 0;
     delrx = 0;
-
+    
     if (seed == -1){
         straight_filaments = true;
     }else{
         srand(seed);
     }
     
-    max_links_per_gp =  10*nq[0]*nq[1]/(npolymer*nactin);
-
+    
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
     cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
     cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
@@ -578,13 +681,20 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
             network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }
     }
+    
+    //Neighbor List Initialization
+    max_links_per_quad              = npolymer*(nactins-1);
+    max_links_per_quad_per_filament = nactins - 1;
+    //this->nlist_init();
+    this->nlist_init_serial();
+
 }
 
 ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc) {
     
     fov = myfov;
-    nq = mynq;
+
     visc=vis;
     link_ld = link_len;
     dt = delta_t;
@@ -598,10 +708,13 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
     int s = actins.size(), sa, j;
     int fil_idx = 0;
     vector<actin *> avec;
-
+    
+    nq = mynq;
+    
     for (int i=0; i < s; i++){
         
         if (actins[i][3] != fil_idx && avec.size() > 0){
+            
             network.push_back( new filament( avec, fov, nq, link_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
             
             sa = avec.size();
@@ -619,6 +732,11 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
     
     for (j = 0; j < sa; j++) delete avec[j];
     avec.clear();
+   
+    max_links_per_quad              = actins.size();
+    max_links_per_quad_per_filament = int(ceil(actins.size() / (fil_idx + 1)))- 1;
+    //this->nlist_init();
+    this->nlist_init_serial();
 } 
 
 template class filament_ensemble<filament>;

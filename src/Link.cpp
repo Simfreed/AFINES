@@ -57,14 +57,13 @@ void Link::step(string bc, double shear_dist)
     xcm = cm[0];
     ycm = cm[1];
     
-    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     phi=atan2(disp[1],disp[0]);
 
 }
 
 void Link::update_force(string bc, double shear_dist)
 {
-    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     force = {kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))};
 }
 
@@ -72,7 +71,6 @@ void Link::update_force(string bc, double shear_dist)
  * Adapted by placing a cutoff, similar to how it's done in LAMMPS src/bond_fene.cpp*/
 void Link::update_force_fraenkel_fene(string bc, double shear_dist)
 {
-    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     double ext = abs(l0 - hypot(disp[0], disp[1]));
     double scaled_ext, klp;
     if (max_ext - ext > eps_ext ){
@@ -90,7 +88,6 @@ void Link::update_force_fraenkel_fene(string bc, double shear_dist)
 
 void Link::update_force_marko_siggia(string bc, double shear_dist, double kToverLp)
 {
-    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     double xrat = disp[0]/(l0*cos(phi)), yrat = disp[1]/(l0*sin(phi));
     if (xrat != xrat || xrat == 1) xrat = 0;
     if (yrat != yrat || yrat == 1) yrat = 0;
@@ -100,6 +97,16 @@ void Link::update_force_marko_siggia(string bc, double shear_dist, double kTover
 array<double,2> Link::get_force()
 {
     return force;
+}
+
+array<double,2> Link::get_disp()
+{
+    return disp;
+}
+
+array<double,2> Link::get_neg_disp()
+{
+    return {-disp[0], -disp[1]};
 }
 
 void Link::filament_update()
@@ -138,7 +145,6 @@ double Link::get_length(){
 }
 
 std::string Link::write(string bc, double shear_dist){
-    array<double, 2> disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) + "\t" + std::to_string(disp[0]) + "\t" 
         + std::to_string(disp[1]);
 }
@@ -243,7 +249,6 @@ array<double,2> Link::get_intpoint(string bc, double delrx, double xp, double yp
             int_point = {hx[1], hy[1]};
         }
         else{
-            array<double, 2> disp   = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx); 
             array<double, 2> proj   = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
             int_point               = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
             //cout<<"\nDEBUG: tp = "<<tp<<"; h0 = ("<<hx[0]<<", "<<hy[0]<<")\nproj = ("<<proj[0]<<", "<<proj[1]<<"); closest = ("<<closest[0]<<", "<<closest[1]<<")";

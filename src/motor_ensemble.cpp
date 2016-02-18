@@ -147,7 +147,7 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
     
     for (int i=0; i<nmotors_sz; i++) {
        
-//        cout<<"\nDEBUG: motor "<<i;
+        if(i==0) cout<<"\nDEBUG: motor_walk: using "<<omp_get_num_threads()<<" cores";
         array<int, 2> s = n_motors[i]->get_states();
         
         if (t >= tMove){
