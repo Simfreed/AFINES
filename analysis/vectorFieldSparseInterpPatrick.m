@@ -79,7 +79,8 @@ sG(find(sG==0))=NaN; % It also prevents division by zero
 Vi=[Vi(:,1)./sG Vi(:,2)./sG];
 
 % Mi is the interpolated M
-Mi=[Pg Pg+Vi];
+%Mi=[Pg Pg+Vi];
+Mi=[Pg Vi];
 
 % Set all vectors outside the passed polygon to 0
 if ~isempty(polygon)
