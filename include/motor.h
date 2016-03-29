@@ -76,6 +76,8 @@ class motor
         
         array<double,2> get_pos_a_end();
         
+        array<double,2> get_force();
+        
         array<int, 2> get_states();
         
         array<double, 2> get_hx();
@@ -101,8 +103,8 @@ class motor
         string write();
     private:
 
-        double mphi,mld, mobility, vs, dm, fmax, mk, kon, koff, kend, dt, temperature, 
-               actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy;
+        double mphi,mld, mobility, vs, dm, stall_force, mk, kon, koff, kend, dt, temperature, 
+               actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
         

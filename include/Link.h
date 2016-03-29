@@ -102,8 +102,8 @@ class Link
         array<double,2> fov, hx, hy;
         array<double, 2> disp, force;
 
-        array<int, 2> nq, aindex;
-        
+        array<int, 2> nq, half_nq, aindex;
+         
         filament *fil;
         
         vector< array<int,2> > quad; //vector of two vectors(x and y quadrants) of integers

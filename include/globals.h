@@ -39,6 +39,7 @@
 #include <limits>
 #include <cstddef>
 #include <omp.h>
+#include <random>
 
 using namespace std;
 
@@ -48,13 +49,14 @@ using namespace std;
 const double pi = 3.14159265358979323;
 const double maxSmallAngle = pi/12; //Small angles DEFINED as such that sin(t) = t to 2 SigFigs
 const double eps = 1e-10;
-const double temperature = 0.004;
+const double infty = 1e10;
 const double actin_mass_density = 2.6e-14; //miligram / micron
 /*generic functions to be used below*/
-
+void set_seed(int s);
 double rng(double start, double end);
 int pr(int num);
 double rng_exp(double mean);
+double rng_n(); //default parameters --> mu = 0, sig = 1
 double rng_n(double mean, double var);
 bool event(double prob);
 int event(double rate, double timestep);
@@ -63,8 +65,10 @@ array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox);
 array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox, double shear_dist);
 array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
 
-vector<int> range_bc(string bc, double delrx, int topq, int low, int high);
+vector<int> range_bc(string bc, double delrx, int botq, int topq, int low, int high);
+vector<int> range_bc(string bc, double delrx, int botq, int topq, int low, int high, int di);
 vector<int> int_range(int lo, int hi);
+vector<int> int_range(int lo, int hi, int di);
 
 double mean_periodic(const vector<double>& nums, double bnd);
 double mean(const vector<double>& nums);
@@ -73,8 +77,12 @@ array<double, 2> cm_bc(string bc, const vector<double>& xi, const vector<double>
 double dist_bc(string bc, double dx, double dy, double xbox, double ybox, double shear_dist);
 double dot_bc(string bc, double dx1, double dy1, double dx2, double dy2, double xbox, double ybox, double shear_dist);
 array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 2>& fov, const array<double, 2>& vel, const array<double, 2>& pos);
+array<int, 2> coord2quad(const array<double, 2>& fov, const array<int, 2>& nq, const array<double, 2>& pos);
+int coord2quad_floor(double fov, int nq, double pos);
+int coord2quad_ceil(double fov, int nq, double pos);
+int coord2quad(double fov, int nq, double pos);
 
-double velocity(double vel0, double force, double fstall);
+double my_velocity(double vel0, double force, double fstall);
 double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
 double dot(const array<double, 2>& v1, const array<double, 2>& v2);
@@ -104,4 +112,5 @@ void intarray_printer(array<int,2> a);
 
 boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
 boost::optional<array<double, 2> > seg_seg_intersection_bc(string, double, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
+
 #endif

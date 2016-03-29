@@ -180,8 +180,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
 
     for(int i = 0; i < nactin - 1; i++){
         expected_quads.push_back(vector<array<int,2> >() );
-        expected_quads[i].push_back({2*i, 0});
-        expected_quads[i].push_back({2*i+1, 0});
+        expected_quads[i].push_back({2*i+xgrid/2, ygrid/2});
+        expected_quads[i].push_back({2*i+1+xgrid/2, ygrid/2});
     }
 
     cout<<"\nFilament Quadrants:"; 

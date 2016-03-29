@@ -23,7 +23,11 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
     gamma = 0;
     tMove=0;//10;
     f_network=network;
+    v = v0;
     
+    ke = 0;
+    pe = 0;
+
     int nm = int(ceil(mdensity*fov[0]*fov[1]));
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
 
@@ -58,7 +62,8 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
     gamma = 0;
     tMove = 0;
     f_network=network;
-    
+    v = v0;
+
     int nm = motors.size();
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
 
@@ -143,11 +148,11 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 
     this->check_broken_filaments();
     int nmotors_sz = int(n_motors.size());
-    #pragma omp parallel for
+    //#pragma omp parallel for
     
     for (int i=0; i<nmotors_sz; i++) {
        
-        if(i==0) cout<<"\nDEBUG: motor_walk: using "<<omp_get_num_threads()<<" cores";
+    //    if(i==0) cout<<"\nDEBUG: motor_walk: using "<<omp_get_num_threads()<<" cores";
         array<int, 2> s = n_motors[i]->get_states();
         
         if (t >= tMove){
@@ -173,6 +178,7 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
         }
     
     }
+    this->update_energies();
     
 }
 
@@ -200,14 +206,26 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
 }
 
 template <class filament_ensemble_type> 
-void motor_ensemble<filament_ensemble_type>::print_ensemble_thermo(){
-    double KE=0, PEs=0;
+void motor_ensemble<filament_ensemble_type>::update_energies()
+{
+    ke = 0;
+    pe = 0;
     for (unsigned int m = 0; m < n_motors.size(); m++)
     {
-        KE += n_motors[m]->get_kinetic_energy();
-        PEs += n_motors[m]->get_stretching_energy();
-        //PEs += n_motors[m]->get_stretching_energy_fene();
+        ke += n_motors[m]->get_kinetic_energy();
+        pe += n_motors[m]->get_stretching_energy();
+        //pe += n_motors[m]->get_stretching_energy_fene();
     }
-    cout<<"\nAll Fs\t:\tKE = "<<KE<<"\tPEs = "<<PEs<<"\tPEb = "<<0<<"\tTE = "<<(KE+PEs);
 }
+
+template <class filament_ensemble_type> 
+double motor_ensemble<filament_ensemble_type>::get_potential_energy(){
+    return pe;
+}
+
+template <class filament_ensemble_type> 
+void motor_ensemble<filament_ensemble_type>::print_ensemble_thermo(){
+    cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
+}
+
 template class motor_ensemble<ATfilament_ensemble>;

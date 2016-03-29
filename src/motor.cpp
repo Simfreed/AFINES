@@ -25,7 +25,7 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     mk          = stiffness;//rng(10,100); 
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    fmax        = 3.85; //mk*dm*2;//rng(1,20);
+    stall_force        = 3.85; //mk*dm*2;//rng(1,20);
     mld         = mlen;
     dt          = delta_t;
     kon         = ron*dt;
@@ -56,11 +56,11 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos, double mlen, filamen
     
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     
-    if (state[0]){
+    if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
     }
-    if (state[1]){
+    if (state[1] == 1){
         pos_a_end[1] = dist_bc(BC, actin_network->get_end(f_index[1], l_index[1])[0] - hx[1],
                                    actin_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
     }
@@ -82,7 +82,7 @@ motor<filament_ensemble_type>::motor( array<double, 4> pos, double mlen, filamen
     mk          = stiffness;//rng(10,100); 
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    fmax        = mk*dm*2;//rng(1,20);
+    stall_force        = mk*dm*2;//rng(1,20);
     mld         = mlen;
     dt          = delta_t;
     kon         = ron*dt;
@@ -173,7 +173,7 @@ void motor<filament_ensemble_type>::set_shear(double gamma)
 template <class filament_ensemble_type>
 bool motor<filament_ensemble_type>::attach(int hd)
 {
-//    cout<<"\nDEBUG: hx["<<hd<<"], hy["<<hd<<"] = ("<<hx[hd]<<" , "<<hy[hd]<<" )";
+//    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
     double onrate;
     array<double, 2> intpoint;
@@ -182,10 +182,14 @@ bool motor<filament_ensemble_type>::attach(int hd)
 
     if(!dist.empty()){
         dist_sorted = flip_map(dist);
+        //cout<<"\nDEBUG: #neighbors: "<<dist_sorted.size();
         for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
-            if (it->first <= dm && !(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
+            if (it->first > dm)
+                break;
+            else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 onrate=kon*exp(-((it->first)*(it->first))/(dm*dm));
+                //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate;
                 if (event(onrate)) {
                     //update state
                     state[hd] = 1;
@@ -200,6 +204,7 @@ bool motor<filament_ensemble_type>::attach(int hd)
                     pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
                                               actin_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
                                               actin_network->get_delrx());
+                    //cout<<"\nDEBUG: attaching. pos_a_end = "<<pos_a_end[hd];
                     return true;
                 }
             }
@@ -212,6 +217,8 @@ template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::update_force()
 { 
     force = {mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))};
+    //double stretch = hypot(disp[0], disp[1]) - mld;
+    //force = {stretch*cos(mphi), stretch*sin(mphi)};
 }
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
@@ -282,17 +289,18 @@ template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::step_onehead(int hd)
 {
 
-    double vm, fm, offrate;
+    double vm, fm, offrate = koff;
     
     if (state[pr(hd)] == 0){ //skip some unneccessary calculation
         vm = vs;
-        offrate = koff;
     }
     else{
         array<double, 2> dir = actin_network->get_direction(f_index[hd], l_index[hd]);
-        fm = pow(-1, hd+1)*dot(force, dir);
-        vm = velocity(vs, fm, fmax);
-        offrate = koff*exp(fabs(fm)/fmax);
+        fm = pow(-1, hd)*dot(force, dir);
+        vm = my_velocity(vs, fm, stall_force);
+        if (fm > 0){
+            offrate = koff*exp(fm/stall_force);
+        }
     }
     
     //if(rnd()<0.5) vm *=-1;
@@ -326,11 +334,13 @@ void motor<filament_ensemble_type>::actin_update()
 template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::detach_head(int hd)
 {
+   
     state[hd]=0;
     f_index[hd]=-1;
     l_index[hd]=-1;
     pos_a_end[hd]=0;
     this->relax_head(hd);
+    
 }
 
 template <class filament_ensemble_type>
@@ -384,6 +394,11 @@ array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
 }
 
 template <class filament_ensemble_type>
+array<double, 2> motor<filament_ensemble_type>::get_force(){
+    return force;
+}
+
+template <class filament_ensemble_type>
 double motor<filament_ensemble_type>::get_stretching_energy(){
     return (force[0]*force[0]+force[1]*force[1])/(2*mk);
 }
@@ -396,7 +411,7 @@ double motor<filament_ensemble_type>::get_stretching_energy_fene()
     if (max_ext - ext > eps_ext )
         return -0.5*mk*max_ext*max_ext*log(1-(ext/max_ext)*(ext/max_ext));
     else
-        return 0.25*mk*ext*(max_ext/eps_ext);
+        return 0.25*mk*ext*ext*(max_ext/eps_ext);
     
 }
 
@@ -420,7 +435,7 @@ string motor<filament_ensemble_type>::to_string()
             shear = %f\t tension = (%f, %f)\n",
             hx[0], hy[0], hx[1], hy[1], mphi,
             state[0],  state[1], f_index[0],  f_index[1], l_index[0],  l_index[1], 
-            vs, dm, mk, fmax, mld,
+            vs, dm, mk, stall_force, mld,
             kon, koff, kend, dt, temperature, damp, 
             fov[0],  fov[1], pos_a_end[0], pos_a_end[1], shear, force[0], force[1]);
     return buffer;

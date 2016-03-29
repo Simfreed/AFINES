@@ -24,9 +24,10 @@ filament::filament(){
     kinetic_energy = 0;
     gamma = 0;
     delrx=0;
-    damp = 0;
+    damp = infty;
     y_thresh=2;
     kToverLp=0;
+    bd_prefactor = sqrt(temperature/(2*dt*damp));
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -42,9 +43,10 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     kb              = bending_stiffness;
     BC              = bndcnd;
     kinetic_energy  = 0;
-    damp            = 0;
+    damp            = infty;
     y_thresh        = 1;
     kToverLp        = temperature * temperature / (bending_stiffness*1); // 1 is the link length, here
+    bd_prefactor = sqrt(temperature/(2*dt*damp));
 
 }
 
@@ -68,6 +70,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     y_thresh = 1;
     
     kToverLp = temperature * temperature / (kb * linkLength); 
+    bd_prefactor = sqrt(temperature/(2*dt*damp));
 
     double phi, variance;
     array<double, 2> next_pos;
@@ -133,6 +136,8 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
             
         }
     }
+    
+    bd_prefactor = sqrt(temperature/(2*dt*damp));
 
 }
 
@@ -162,7 +167,7 @@ void filament::add_actin(actin * a, double linkLength, double stretching_stiffne
         links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
         links[j-1]->step(BC, delrx);
     }
-    if (damp == 0)
+    if (damp == infty)
         damp = a->get_friction();
 }
 
@@ -196,7 +201,7 @@ void filament::set_y_thresh(double y){
 
 void filament::update_positions()
 {
-    double vx, vy, T = temperature;
+    double vx, vy;
     array<double, 2> new_rnds;
     array<double, 2> newpos;
     kinetic_energy = 0;  
@@ -207,9 +212,9 @@ void filament::update_positions()
        
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
-        new_rnds = {rng_n(0,1), rng_n(0,1)};
-        vx  = (actins[i]->get_force()[0])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[0] + prv_rnds[i][0]);
-        vy  = (actins[i]->get_force()[1])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[1] + prv_rnds[i][1]);
+        new_rnds = {rng_n(), rng_n()};
+        vx  = (actins[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
+        vy  = (actins[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
        
         prv_rnds[i] = new_rnds;
@@ -228,7 +233,7 @@ void filament::update_positions()
 
 void filament::update_positions_range(int lo, int hi)
 {
-    double vx, vy, T = temperature;
+    double vx, vy;
     array<double, 2> new_rnds;
     array<double, 2> newpos;
     kinetic_energy = 0;  
@@ -241,9 +246,9 @@ void filament::update_positions_range(int lo, int hi)
        
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
-        new_rnds = {rng_n(0,1), rng_n(0,1)};
-        vx  = (actins[i]->get_force()[0])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[0] + prv_rnds[i][0]);
-        vy  = (actins[i]->get_force()[1])/damp  + sqrt(T/(2*dt*damp))*(new_rnds[1] + prv_rnds[i][1]);
+        new_rnds = {rng_n(), rng_n()};
+        vx  = (actins[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
+        vy  = (actins[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
        
         prv_rnds[i] = new_rnds;
@@ -317,10 +322,8 @@ void filament::update_shear(double t){
 
 void filament::update_d_strain(double g){
     
-    double local_strain;
     for (unsigned int i = 0; i < actins.size(); i++){
-        local_strain = g * actins[i]->get_ycm() / fov[1];
-        actins[i]->set_xcm(actins[i]->get_xcm() + local_strain);
+        actins[i]->set_xcm(actins[i]->get_xcm() + g * actins[i]->get_ycm() / fov[1]);
     }
 }
 
@@ -782,7 +785,7 @@ double filament::get_bending_energy(){
         sum += theta*theta;
     }
     
-    return kb*sum/2.0;
+    return kb*sum; //doubled because of backward and forward bending updates
 
 }
 

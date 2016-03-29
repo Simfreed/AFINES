@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
 BOOST_AUTO_TEST_CASE( move_end_detach )
 {
     //Filament ENSEMBLE
-    double tol = 0.001;
+    double tol = 0.001, zero = 1e-10;   
     array<double, 2> fov = {50,50};
     array<int, 2> nq = {2,2}, state = {1,0}, findex = {0,-1}, lindex = {0, -1};
     vector<array<double, 3> > pos_sets;
@@ -225,7 +225,148 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.625, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
+   
+    //Test 2 : Motor on filament facing left, so, moves right
+    pos_sets.clear();
+    pos_sets.push_back({0,0,pi});
+    f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+
+    //MOTOR
+    mx = -0.125;
+    findex = {0,-1}, lindex = {0, -1}; 
+    kon = 0, koff = 2, kend = 2; 
+
+    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+
+    // IF position is greater than filament length
+    pos = 1.125;
+    //  If last rod in filament
+    //      try to detach
+    //      if detach:
+    //          (a) new state of head is correct (was 1, now 0)
+    //          (b) position of head relative to end of rod is correct (0)
+    //          (c) position of head is correct
+
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    m.move_end_detach(0, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
+    //      else (don't detach): 
+    //          stay
+    kend = -1;
+    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    m.move_end_detach(0, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    //  Else (not last rod in filament)
+    mx = -1.125;
+    lindex = {1, -1};
+    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    
+    //      (a) motor moves to next rod in filament
+    //      (b) motor moves appropriate distance
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    m.move_end_detach(0, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], -0.875, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    // Else ( new position isn't more than filament length
+    //  (a) motor moves to appropriate new position
+    pos = 0.375;
+    m.move_end_detach(0, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], -0.625, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    //TEST 3, OTHER HEAD
+    mx = 0.125, my =-0.5;
+    state = {0,1},  findex = {-1,0}, lindex = {-1, 0}; 
+    kon = 0, koff = 2, kend = 2; 
+    pos_sets.clear();
+    pos_sets.push_back({0,0,0});
+    f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+
+    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+
+    // IF position is greater than filament length
+    pos = 1.125;
+    //  If last rod in filament
+    //      try to detach
+    //      if detach:
+    //          (a) new state of head is correct (was 1, now 0)
+    //          (b) position of head relative to end of rod is correct (0)
+    //          (c) position of head is correct
+
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    m.move_end_detach(1, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[1], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], 0);
+    BOOST_CHECK_CLOSE(m.get_hx()[1], mx - 0.5*mlen*cos(mang), tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[1], my + 0.5*mlen*sin(mang), tol);
+    
+    //      else (don't detach): 
+    //          stay
+    kend = -1;
+    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    m.move_end_detach(1, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[1], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
+    
+    //  Else (not last rod in filament)
+    mx = 1.125;
+    lindex = {-1, 1};
+    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    
+    //      (a) motor moves to next rod in filament
+    //      (b) motor moves appropriate distance
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    m.move_end_detach(1, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[1], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
+    
+    // Else ( new position isn't more than filament length
+    //  (a) motor moves to appropriate new position
+    pos = 0.375;
+    m.move_end_detach(1, pos); 
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], pos, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[1], 0.625, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
     delete f;
 }
 
@@ -235,7 +376,7 @@ BOOST_AUTO_TEST_CASE( attach )
     array<double, 2> fov = {50,50};
     array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<array<double, 3> > pos_sets;
-    int nactin = 4;
+    int nactin = 5;
     int nfil = 1;//3;
     double actin_density = nfil*nactin/(fov[0]*fov[1]);
 
@@ -254,7 +395,7 @@ BOOST_AUTO_TEST_CASE( attach )
     pos_sets.push_back({0,0,0});
     //pos_sets.push_back({-2,3,pi});
     ATfilament_ensemble * f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
-    f->quad_update(); 
+    f->quad_update_serial(); 
     //MOTOR
     double mx = 2.35, my = 0.5, mang = pi/2, mlen = 1;
     motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
@@ -370,7 +511,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
 {
     //Filament ENSEMBLE
     array<double, 2> fov = {50,50};
-    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    array<int, 2> nq = {100,100}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
     double dt = 1, temp = 0, vis = 0;
@@ -390,7 +531,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
     ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
-    f->quad_update(); 
+    f->quad_update_serial(); 
     
     //MOTOR
     double mx = 2.35, my = -24.625, mang = pi/2, mlen = 1;
@@ -461,7 +602,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     actin_sets.push_back(pos8);
     
     ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
-    f->quad_update(); 
+    f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
     //MOTOR
@@ -487,6 +628,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     BOOST_CHECK_EQUAL(m.get_f_index()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
     
+    m.update_angle();
     m.update_force();
     //m.step_twoheads();
     m.actin_update();
@@ -561,7 +703,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     actin_sets.push_back(pos8);
     
     ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
-    f->quad_update(); 
+    f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
     //MOTOR
@@ -585,6 +727,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 2);
     
     /*##################################*/
+    m.update_angle();
     m.update_force();
     m.step_onehead(0);
     m.step_onehead(1);
@@ -645,7 +788,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     actin_sets.push_back(pos8);
     
     ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
-    f->quad_update(); 
+    f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
     //MOTOR
@@ -669,6 +812,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 2);
     
     /*##################################*/
+    m.update_angle();
     m.update_force();
     m.step_onehead(0);
     m.step_onehead(1);
@@ -698,6 +842,474 @@ BOOST_AUTO_TEST_CASE( force_attached )
     
 }   
 
+BOOST_AUTO_TEST_CASE( dead_head )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    vector<vector<double> > actin_sets;
+    array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {2, -1};
+
+    double dt = 1, temp = 0, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 2, koff = 0, kend = 0;
+    double frac_force = 0;
+    double tol = 0.001, zero = 1e-10;   
+
+    vector<double> pos1={3, 0, actin_rad,0}, pos2={2, 0,actin_rad,0}, pos3={1, 0,actin_rad,0}, pos4={0, 0,actin_rad,0};
+    
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    actin_sets.push_back(pos4);
+    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 0.45, my = 0.5, mang = pi/2, mlen = 1;
+    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    //m.kill_head(1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+   
+    double h0x1 = mx+v0*dt;
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x1, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x1, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx = -mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*cos(atan2(mlen, v0*dt));
+    double mfy =  mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*sin(atan2(mlen, v0*dt));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy, tol);
+
+//    f->update_positions();
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], mfx*h0x1, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[0], mfx*(1-h0x1), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], mfy*h0x1, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[1], mfy*(1-h0x1), tol);
+    
+// PURPOSELY NOT UPDATING POSITIONS OF ACTINS, SO THAT I DON'T HAVE TO FIGURE OUT 
+// TOO MANY THINGS FOR THE SLOWED DOWN MYOSIN
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+    
+    double fmax = 3.85;
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    
+    double h0x2 = mx + v0*dt + v0*(1+mfx/fmax)*dt;
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x2 , tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x2, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx2 = -mstiff*(sqrt((h0x2-mx)*(h0x2-mx)+ mlen*mlen)-mlen)*cos(atan2(mlen, h0x2-mx));
+    double mfy2 =  mstiff*(sqrt((h0x2-mx)*(h0x2-mx)+ mlen*mlen)-mlen)*sin(atan2(mlen, h0x2-mx));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx2, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy2, tol);
+
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], mfx*h0x1 + mfx2*h0x2, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[0], mfx*(1-h0x1) + mfx2*(1-h0x2), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], mfy*h0x1 + mfy2*h0x2, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[1], mfy*(1-h0x1) + mfy2*(1-h0x2), tol);
+
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+    
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    double h0x3 = mx + v0*dt + v0*(1+mfx/fmax)*dt + v0*(1+mfx2/fmax)*dt;
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x3 - 1, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x3, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx3 = -mstiff*(sqrt((h0x3-mx)*(h0x3-mx)+ mlen*mlen)-mlen)*cos(atan2(mlen, h0x3-mx));
+    double mfy3 =  mstiff*(sqrt((h0x3-mx)*(h0x3-mx)+ mlen*mlen)-mlen)*sin(atan2(mlen, h0x3-mx));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx3, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy3, tol);
+
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], mfx*h0x1 + mfx2*h0x2 + mfx3*(2-h0x3), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], mfx3*(h0x3-1), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], mfy*h0x1 + mfy2*h0x2 + mfy3*(2-h0x3), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], mfy3*(h0x3-1), tol);
+
+}   
+
+BOOST_AUTO_TEST_CASE( dead_head_upside_down )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    vector<vector<double> > actin_sets;
+    array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {2, -1};
+
+    double dt = 1, temp = 0, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 2, koff = 0, kend = 0;
+    double frac_force = 0;
+    double tol = 0.001, zero = 1e-10;   
+
+    vector<double> pos1={3, 0, actin_rad,0}, pos2={2, 0,actin_rad,0}, pos3={1, 0,actin_rad,0}, pos4={0, 0,actin_rad,0};
+    
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    actin_sets.push_back(pos4);
+    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 0.25, my = -0.5, mang = -pi/2, mlen = 1;
+    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    //m.kill_head(1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx+v0*dt, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx+v0*dt, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx = -mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*cos(atan2(mlen, v0*dt));
+    double mfy = -mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*sin(atan2(mlen, v0*dt));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy, tol);
+
+//    f->update_positions();
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], mfx/2, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[0], mfx/2, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], mfy/2, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[1], mfy/2, tol);
+
+// PURPOSELY NOT UPDATING POSITIONS OF ACTINS, SO THAT I DON'T HAVE TO FIGURE OUT 
+// TOO MANY THINGS FOR THE SLOWED DOWN MYOSIN
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+    
+    double fmax = 3.85;
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    
+    double h0x = mx + v0*dt + v0*(1+mfx/fmax)*dt;
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x , tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx2 = -mstiff*(sqrt((h0x-mx)*(h0x-mx)+ mlen*mlen)-mlen)*cos(atan2(mlen, h0x-mx));
+    double mfy2 = -mstiff*(sqrt((h0x-mx)*(h0x-mx)+ mlen*mlen)-mlen)*sin(atan2(mlen, h0x-mx));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx2, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy2, tol);
+
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], mfx/2 + mfx2*h0x, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[0], mfx/2 + mfx2*(1-h0x), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], mfy/2 + mfy2*h0x, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 3)[1], mfy/2 + mfy2*(1-h0x), tol);
+
+}   
+
+BOOST_AUTO_TEST_CASE( dead_head_bwd )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    vector<vector<double> > actin_sets;
+    array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {1, -1};
+
+    double dt = 1, temp = 0, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 2, koff = 0, kend = 0;
+    double frac_force = 0;
+    double tol = 0.001, zero = 1e-10;   
+
+    vector<double> pos1={0, 0, actin_rad,0}, pos2={1, 0,actin_rad,0}, pos3={2, 0,actin_rad,0}, pos4={3, 0,actin_rad,0};
+    
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    actin_sets.push_back(pos4);
+    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 1.5, my = 0.5, mang = pi/2, mlen = 1;
+    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    //m.kill_head(1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.5, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.75, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx-v0*dt, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx =  mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*cos(atan2(mlen, v0*dt));
+    double mfy =  mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*sin(atan2(mlen, v0*dt));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy, tol);
+
+//    f->update_positions();
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy, tol);
+
+// PURPOSELY NOT UPDATING POSITIONS OF ACTINS, SO THAT I DON'T HAVE TO FIGURE OUT 
+// TOO MANY THINGS FOR THE SLOWED DOWN MYOSIN
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+    
+    double fmax = 3.85;
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    double h0x2 = mx - v0*dt - v0*(1-mfx/fmax)*dt;
+    double h0pos_a_end = 2-h0x2; //1 - (h0x-1)
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0pos_a_end , tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x2, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx2 = mstiff*(sqrt((h0x2-mx)*(h0x2-mx)+ mlen*mlen)-mlen)*cos(atan2(mlen, mx - h0x2));
+    double mfy2 = mstiff*(sqrt((h0x2-mx)*(h0x2-mx)+ mlen*mlen)-mlen)*sin(atan2(mlen, mx - h0x2));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx2, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy2, tol);
+
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_a_end, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx + mfx2*(1-h0pos_a_end), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_a_end, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_a_end), tol);
+
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    
+    double h0x3 = mx - v0*dt - v0*(1-mfx/fmax)*dt - v0*(1-mfx2/fmax)*dt;
+    //double h0pos_a_end = 2-h0x; //1 - (h0x-1)
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 1-h0x3 , tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x3, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx3 = mstiff*(sqrt((h0x3-mx)*(h0x3-mx)+ mlen*mlen)-mlen)*cos(atan2(mlen, mx - h0x3));
+    double mfy3 = mstiff*(sqrt((h0x3-mx)*(h0x3-mx)+ mlen*mlen)-mlen)*sin(atan2(mlen, mx - h0x3));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx3, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy3, tol);
+
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_a_end + mfx3*h0x3, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 0)[0], (1-h0x3)*mfx3, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_a_end + mfy3*h0x3, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 0)[1], (1-h0x3)*mfy3, tol);
+}   
+
+BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    vector<vector<double> > actin_sets;
+    array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {1, -1};
+
+    double dt = 1, temp = 0, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 2, koff = 0, kend = 0;
+    double frac_force = 0;
+    double tol = 0.001, zero = 1e-10;   
+
+    vector<double> pos1={0, 0, actin_rad,0}, pos2={1, 0,actin_rad,0}, pos3={2, 0,actin_rad,0}, pos4={3, 0,actin_rad,0};
+    
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    actin_sets.push_back(pos4);
+    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 1.5, my = -0.5, mang = 3*pi/2, mlen = 1;
+    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    //m.kill_head(1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.5, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.75, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], mx-v0*dt, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx =  mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*cos(atan2(mlen, v0*dt));
+    double mfy =  -mstiff*(sqrt(v0*v0*dt*dt+ mlen*mlen)-mlen)*sin(atan2(mlen, v0*dt));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy, tol);
+
+//    f->update_positions();
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy, tol);
+
+// PURPOSELY NOT UPDATING POSITIONS OF ACTINS, SO THAT I DON'T HAVE TO FIGURE OUT 
+// TOO MANY THINGS FOR THE SLOWED DOWN MYOSIN
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+    
+    double fmax = 3.85;
+    //force is near 0, so each head just move v0*dt = 0.25
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
+    
+    double h0x = mx - v0*dt - v0*(1-mfx/fmax)*dt;
+    double h0pos_a_end = 2-h0x; //1 - (h0x-1)
+    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0pos_a_end , tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], h0x, tol);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+
+    double mfx2 = mstiff*(sqrt((h0x-mx)*(h0x-mx)+ mlen*mlen)-mlen)*cos(atan2(mlen, mx - h0x));
+    double mfy2 = -mstiff*(sqrt((h0x-mx)*(h0x-mx)+ mlen*mlen)-mlen)*sin(atan2(mlen, mx - h0x));
+
+    BOOST_CHECK_CLOSE(m.get_force()[0], mfx2, tol);
+    BOOST_CHECK_CLOSE(m.get_force()[1], mfy2, tol);
+
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_a_end, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx + mfx2*(1-h0pos_a_end), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_a_end, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_a_end), tol);
+
+}   
 /* Functions to test : 
         void attach(int hd);
 

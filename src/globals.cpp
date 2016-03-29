@@ -11,6 +11,9 @@
 #include "globals.h"
 #include <boost/range/irange.hpp>
 /* distances in microns, time in seconds, forces in pN */
+mt19937_64 generator;
+normal_distribution<double> distribution(0,1);
+//uniform_real_distribution<double> distribution(-0.5,0.5);
 
 /*generic functions to be used below*/
 double rng(double start, double end)
@@ -35,6 +38,15 @@ double rng_exp(double mean)
     return  -mean*log(u);
 }
 
+void set_seed(int s){
+    generator.seed(s);
+}
+
+double rng_n()
+{
+    return distribution(generator);
+
+}
 
 double rng_n(double mean, double var)
 {
@@ -45,6 +57,7 @@ double rng_n(double mean, double var)
     Z = sqrt(-2 * log(U)) * sin(2 * pi * V);
     
     return mean+var*Z;
+
 }
 
 bool event(double prob)
@@ -119,22 +132,18 @@ double dot_bc(string bc, double dx1, double dy1, double dx2, double dy2, double 
     return dot(rij1[0], rij1[1], rij2[0], rij2[1]);
 }
 
-double velocity(double vel0, double force, double fstall)
+double my_velocity(double vel0, double force, double fstall)
 {
-    double v;
     if (force>=fstall) {
-        v = 0;
+        return 0;
     }
-    else if (force>0 && force<fstall) {
-        v = vel0*(1-(fabs(force)/fstall));
-    }
-    else if (force<=0 && force>=-fstall) {
-        v = vel0*(1+(fabs(force)/fstall));
+    else if ((force > -fstall) && (force < fstall)){
+        return vel0*(1-force/fstall);
     }
     else{
-        v =  2*vel0;
+        return 2*vel0;
     }
-    return v;
+
 }
 
 array<double, 2> cm_bc(string bc, const vector<double>& xi, const vector<double>& yi, double xbox, double ybox, double delrx)
@@ -347,13 +356,51 @@ vector<int> int_range(int lo, int hi)
     return out;
 }
 
-vector<int> range_bc(string bc, double delrx, int topq, int lo, int hi)
+vector<int> int_range(int lo, int hi, int di)
 {
     vector<int> out;
+    for (int i = lo; i != hi; i+=di) out.push_back(i);
+    return out;
+}
+
+vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi)
+{
+    vector<int> out;
+    if (hi > topq) hi = hi - (topq-botq);
+    if (lo < botq) lo = lo + (topq-botq);
+
     if (lo <= hi)
         out = int_range(lo, hi);
     else if (bc == "PERIODIC" || bc == "LEES-EDWARDS"){
-        vector<int> A = int_range(lo, topq), B = int_range(-topq, hi);
+        vector<int> A = int_range(lo, topq), B = int_range(botq, hi);
+        out.reserve(A.size() + B.size());
+        out.insert(out.end(), A.begin(), A.end());
+        out.insert(out.end(), B.begin(), B.end());
+    }
+    else 
+        out = vector<int>();
+
+    return out;
+}
+
+vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi, int di)
+{
+    vector<int> out;
+    if (hi > topq) hi = hi - (topq-botq);
+    if (lo < botq) lo = lo + (topq-botq);
+
+    if ((lo <= hi && di > 0) || (lo > hi && di < 0))
+        out = int_range(lo, hi, di);
+    else if (bc == "PERIODIC" || bc == "LEES-EDWARDS"){
+        vector<int> A, B;   
+        if ( di > 0 ){
+            A = int_range(lo, topq, di);
+            B = int_range(botq, hi, di);
+        }else{ 
+            A = int_range(lo, botq, di);
+            B = int_range(topq - 1, hi, di);
+        }
+
         out.reserve(A.size() + B.size());
         out.insert(out.end(), A.begin(), A.end());
         out.insert(out.end(), B.begin(), B.end());
@@ -491,14 +538,28 @@ boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double del
 
     boost::optional<array<double, 2> > inter = seg_seg_intersection({0,0}, rij12, rij13, rij14);
     if (inter){
-//        cout<<"\nDEBUG: old coords:"<<print_pair("r1",r1)   <<"\t"<<print_pair("r2",r2)<<"\t"<<print_pair("r3",r3)<<"\t"<<print_pair("r4",r4);
-//        cout<<"\nDEBUG: new coords:"<<print_pair("r1",{0,0})<<"\t"<<print_pair("r2",rij12)<<"\t"<<print_pair("r3",rij13)<<"\t"<<print_pair("r4",rij14);
         return pos_bc(bc, delrx, 0, fov, {0,0}, {inter->at(0) + r1[0], inter->at(1) + r1[1]}); 
     }
     else 
         return boost::none;
 
 }
+
+int coord2quad_floor(double fov, int nq, double coord)
+{
+    return int(floor((coord+fov/2)*nq/fov));
+}
+
+int coord2quad_ceil(double fov, int nq, double coord)
+{
+    return min(int(ceil((coord+fov/2)*nq/fov)), nq);
+}
+
+int coord2quad(double fov, int nq, double coord)
+{
+    return min(int(round((coord+fov/2)*nq/fov)), nq);
+}
+
 template int sgn<int>(int);
 template int sgn<double>(double);
 template int sgn<float>(float);

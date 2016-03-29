@@ -5,14 +5,16 @@ CC := g++ # This is the main compiler
 # CC := clang --analyze # and comment out the linker last line for sanity
 SRCDIR := src
 BUILDDIR := build
-TARGET := bin/runner
+BUILDDIR_DEBUG := build_debug
+TARGET := bin/nt
 #  
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 # CFLAGS := -O3 -Wall -std=c++0x -DBOOST_TEST_DYN_LINK -openmp # -pg
 CFLAGS := -O3 -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -fopenmp # -g
-CFLAGSDEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -fopenmp -pg
+CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -fopenmp -pg
 LIB := -L /software/boost-1.50-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options
 # LIB := 
 INC := -I include  -I /usr/include/ -I /usr/local/include/
@@ -25,9 +27,17 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	  @mkdir -p $(BUILDDIR)
 	    @echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
+$(BUILDDIR_DEBUG)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	  @mkdir -p $(BUILDDIR_DEBUG)
+	    @echo " $(CC) $(CFLAGS_DEBUG) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS_DEBUG) $(INC) -c -o $@ $<
+
 clean:
 	  @echo " Cleaning..."; 
 	    @echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
+
+clean_debug:
+	  @echo " Cleaning..."; 
+	    @echo " $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)"; $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)
 
 # Programs
 persistence_length: $(OBJECTS)
@@ -38,8 +48,8 @@ filament_force_extension: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/filament_force_extension.cpp $(INC) $(LIB) -o bin/ffe
 network_pull: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/network_pull.cpp $(INC) $(LIB) -o bin/ntp
-debug: $(OBJECTS)
-	$(CC) $(CFLAGSDEBUG) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
+debug: $(OBJECTS_DEBUG)
+	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
 baoab_network: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/baoab_network.cpp $(INC) $(LIB) -o bin/baoab_nt
 llf_network: $(OBJECTS)
@@ -78,11 +88,7 @@ DLfilament_tester: $(OBJECTS)
 filament_ensemble_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/filament_ensemble_test.cpp $(INC) $(LIB) -o bin/filament_ensemble_tester
 
-test:actin_tester actin_ensemble_tester link_tester link_ensemble_tester motor_tester motor_ensemble_tester
-
-# Spikes
-ticket:
-	  $(CC) $(CFLAGS) spikes/ticket.cpp $(INC) $(LIB) -o bin/ticket
+test:actin_tester link_tester filament_tester motor_tester # filament_ensemble_tester motor_ensemble_tester
 
 .PHONY: clean
 

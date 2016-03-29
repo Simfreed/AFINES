@@ -25,12 +25,13 @@ int main(int argc, char* argv[]){
      * VARIABLES           *
      **********************/
     
-    int seed;
+    int myseed;
     
     double xrange, yrange;                                                  //Space
-    int xgrid, ygrid, grid_factor; 
+    int xgrid, ygrid;
+    double grid_factor; 
     
-    int    count = 0, nframes, nmsgs;                                  //Time 
+    int    count = 0, nframes, nmsgs, n_bw_shear;                                  //Time 
     double tinit = 0.0, t = tinit, tfinal, dt;
     
     double viscosity, temperature;                                          //Environment
@@ -50,12 +51,12 @@ int main(int argc, char* argv[]){
     
     string config_file, filament_type, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
     
-    string   dir,    afile,  amfile,  pmfile,  lfile, thfile;                  // Output
-    ofstream o_file, file_a, file_am, file_pm, file_l, file_th;
+    string   dir,    afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
+    ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
-    double strain_pct, time_of_strain, pre_strain;                                      //External Force
-    double d_strain, prev_d_strain, d_strain_freq, d_strain_amp, time_of_dstrain;
+    double strain_pct, time_of_strain, pre_strain, d_strain_pct, d_strain_amp;                                      //External Force
+    double d_strain, prev_d_strain, d_strain_freq, time_of_dstrain;
     bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag;
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
@@ -76,12 +77,13 @@ int main(int argc, char* argv[]){
         
         ("xrange", po::value<double>(&xrange)->default_value(10), "size of cell in horizontal direction (um)")
         ("yrange", po::value<double>(&yrange)->default_value(10), "size of cell in vertical direction (um)")
-        ("grid_factor", po::value<int>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
+        ("grid_factor", po::value<double>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
         
         ("dt", po::value<double>(&dt)->default_value(0.0001), "length of individual timestep in seconds")
         ("tfinal", po::value<double>(&tfinal)->default_value(0.01), "length of simulation in seconds")
-        ("nframes", po::value<int>(&nframes)->default_value(1000), "number of timesteps between printing actin/link/motor positions to file")
-        ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of timesteps between printing simulation progress to stdout")
+        ("nframes", po::value<int>(&nframes)->default_value(1000), "number of times between actin/link/motor positions to are printed to file")
+        ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of times simulation progress is printed to stdout")
+        ("n_bw_shears", po::value<int>(&n_bw_shear)->default_value(1000000000), "number of timesteps between subsequent shears")
        
         ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
@@ -121,7 +123,7 @@ int main(int argc, char* argv[]){
         ("time_of_strain", po::value<double>(&time_of_strain)->default_value(0), "time at which the step strain occurs")
 
         ("d_strain_freq", po::value<double>(&d_strain_freq)->default_value(1), "differential strain frequency")
-        ("d_strain_amp", po::value<double>(&d_strain_amp)->default_value(0), "differential strain amplitude")
+        ("d_strain_pct", po::value<double>(&d_strain_pct)->default_value(0), "differential strain amplitude")
         ("time_of_dstrain", po::value<double>(&time_of_dstrain)->default_value(10000), "time when differential strain starts")
         
         ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
@@ -133,7 +135,7 @@ int main(int argc, char* argv[]){
         ("restart_p_motor", po::value<bool>(&restart_p_motor)->default_value(false), "if true, input crosslinker positions file chosen by default")
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
-        ("seed", po::value<int>(&seed)->default_value(time(NULL)), "Random number generator seed")
+        ("myseed", po::value<int>(&myseed)->default_value(time(NULL)), "Random number generator myseed")
         ("filament_type", po::value<string>(&filament_type)->default_value("BAOAB"), "type of filament / integrator to use.\
                                                                             Options: (1) BD = Ermak Yeh Brownian Dynamics\
                                                                                      (2) BAOAB = Charlie's Overdamped BAOAB\
@@ -191,7 +193,7 @@ int main(int argc, char* argv[]){
     }
 
     double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
-    
+    cout<<"\nDEBUG: actin_density = "<<actin_density; 
     double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
     int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
@@ -225,14 +227,14 @@ int main(int argc, char* argv[]){
     if (p_motor_in.size() > 0)
         p_motor_pos_vec = file2vecvec(p_motor_in, "\t");
     
-    srand(seed);
-            
+    set_seed(myseed);
     
     afile  = dir + "/txt_stack/actins.txt";
     lfile  = dir + "/txt_stack/links.txt";
     amfile = dir + "/txt_stack/amotors.txt";
     pmfile = dir + "/txt_stack/pmotors.txt";
     thfile = dir + "/data/thermo.txt";
+    pefile = dir + "/data/pe.txt";
 
     if (restart_actin || restart_a_motor || restart_p_motor) write_mode = ios_base::app;
 
@@ -241,18 +243,19 @@ int main(int argc, char* argv[]){
     file_am.open(amfile.c_str(), write_mode);
     file_pm.open(pmfile.c_str(), write_mode);
 	file_th.open(thfile.c_str(), write_mode);
+	file_pe.open(pefile.c_str(), write_mode);
 
 
     // DERIVED QUANTITIES :
     if(a_motor_density == 0 && a_motor_pos_vec.size() == 0 &&
             p_motor_density==0 && p_motor_pos_vec.size() == 0 &&
             !link_intersect_flag && !motor_intersect_flag){
-        xgrid = 0;
-        ygrid = 0;
+        xgrid = 1;
+        ygrid = 1;
     }
     else{
-        xgrid  = (int) grid_factor*xrange;
-        ygrid  = (int) grid_factor*yrange;
+        xgrid  = (int) round(grid_factor*xrange);
+        ygrid  = (int) round(grid_factor*yrange);
     }
 
     // Create Network Objects
@@ -263,7 +266,7 @@ int main(int argc, char* argv[]){
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd, seed); 
+                fracture_force, bnd_cnd, myseed); 
     }else{
         net = new ATfilament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
@@ -302,20 +305,6 @@ int main(int argc, char* argv[]){
 
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
 
-    /*double shear_dt = dt/shear_freq;
-    if (strain_pct != 0){
-        // Based on completing a shear of strain_pct * xrange within the simulation, 
-        // By shearing at 1 time step and then allowing the system to relax for t = shear_dt 
-        // strain_dist = strain_pct * xrange = shear_rate * actin_mobility * boundary_height * tfinal / 2
-        double strain_dist = strain_pct * yrange;
-        shear_rate = 8 * pi * actin_length * viscosity * strain_dist / (yrange * tfinal * shear_freq);
-        //shear_rate = 16. * pi * actin_length * viscosity * xrange * strain_pct/ (yrange * tfinal);
-        
-        net->set_shear_rate(shear_rate);
-        net->set_shear_dt(shear_dt);
-        net->set_shear_stop(shear_stop);
-    }*/
-
     string time_str = "t = 0";
 
     file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
@@ -346,6 +335,7 @@ int main(int argc, char* argv[]){
     o_file.close();
     
     pre_strain = strain_pct * xrange;
+    d_strain_amp = d_strain_pct * xrange;
     prev_d_strain = 0;
 
     cout<<"\nDEBUG: time of pre_strain = "<<time_of_strain;
@@ -373,6 +363,13 @@ int main(int argc, char* argv[]){
             prev_d_strain = d_strain;
         }
         
+        if (count%n_bw_shear==0){
+            net->update_delrx( pre_strain + d_strain_amp );
+            net->update_d_strain( d_strain_amp );
+            pre_strain += d_strain_amp;
+            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<d_strain_amp<<" um here; total strain = "<<pre_strain<<" um";
+        }
+
         if (count%n_bw_stdout==0) {
 			cout<<"\nTime counts: "<<count;
 		    //net->print_filament_thermo();
@@ -413,6 +410,9 @@ int main(int argc, char* argv[]){
             
             file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_thermo(file_th);
+
+            file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
+                myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
 		}
         
     }
@@ -428,6 +428,7 @@ int main(int argc, char* argv[]){
     file_am.close();
     file_pm.close();
     file_th.close(); 
+    file_pe.close(); 
     //Delete all objects created
     cout<<"\nHere's where I think I delete things\n";
     

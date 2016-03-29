@@ -43,6 +43,10 @@ class motor_ensemble
 
         void motor_walk(double t);
 
+        void update_energies();
+        
+        double get_potential_energy();
+
         void reshape();
 
         void motor_write(ostream& fout);
@@ -60,7 +64,8 @@ class motor_ensemble
     private:
 
         double mld, gamma, tMove;
-        
+        double ke, pe, v;
+
         array<double, 2> fov;
         filament_ensemble_type *f_network;
         vector<motor<filament_ensemble_type> *> n_motors;  
