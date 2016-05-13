@@ -1,0 +1,534 @@
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  5 MAY 2016 12:13
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**actosim_v2.tex
+(./actosim_v2.tex
+LaTeX2e <2011/06/27>
+Babel <3.9f> and hyphenation patterns for 78 languages loaded.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2013/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/times.sty
+Package: times 2005/04/12 PSNFSS-v9.2a (SPQR) 
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+)
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count87
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/cite/cite.sty
+LaTeX Info: Redefining \cite on input line 302.
+LaTeX Info: Redefining \nocite on input line 373.
+Package: cite 2010/09/10  v 5.3
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2010/09/12 v5.6 Page Geometry
+
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+)
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+)
+(/usr/local/texlive/2013/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count88
+\Gm@cntv=\count89
+\c@Gm@tempcnt=\count90
+\Gm@bindingoffset=\dimen105
+\Gm@wd@mp=\dimen106
+\Gm@odd@mp=\dimen107
+\Gm@even@mp=\dimen108
+\Gm@layoutwidth=\dimen109
+\Gm@layoutheight=\dimen110
+\Gm@layouthoffset=\dimen111
+\Gm@layoutvoffset=\dimen112
+\Gm@dimlist=\toks15
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/bm.sty
+Package: bm 2004/02/26 v1.1c Bold Symbol Support (DPC/FMi)
+\symboldoperators=\mathgroup4
+\symboldletters=\mathgroup5
+\symboldsymbols=\mathgroup6
+LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 138.
+LaTeX Info: Redefining \bm on input line 204.
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/cleveref/cleveref.sty
+Package: cleveref 2013/03/22 v0.18.9 Intelligent cross-referencing
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2013/05/02 v3.3-89 Customizing captions (AR)
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2013/05/02 v1.6-88 caption3 kernel (AR)
+Package caption3 Info: TeX engine: e-TeX on input line 57.
+\captionmargin=\dimen113
+\captionmargin@=\dimen114
+\captionwidth=\dimen115
+\caption@tempdima=\dimen116
+\caption@indent=\dimen117
+\caption@parindent=\dimen118
+\caption@hangindent=\dimen119
+)
+\c@ContinuedFloat=\count91
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2013/02/03 v1.1-62 Sub-captions (AR)
+\c@subfigure=\count92
+\c@subtable=\count93
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count94
+\float@exts=\toks16
+\float@box=\box26
+\@float@everytoks=\toks17
+\@floatcapt=\box27
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/array.sty
+Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
+\col@sep=\dimen120
+\extrarowheight=\dimen121
+\NC@list=\toks18
+\extratabsurround=\skip43
+\backup@length=\skip44
+)
+(./actosim_v2.aux)
+\openout1 = `actosim_v2.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 26.
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+(/usr/local/texlive/2013/texmf-dist/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count95
+\scratchdimen=\dimen122
+\scratchbox=\box28
+\nofMPsegments=\count96
+\nofMParguments=\count97
+\everyMPshowfont=\toks19
+\MPscratchCnt=\count98
+\MPscratchDim=\dimen123
+\MPnumerator=\count99
+\makeMPintoPDFobject=\count100
+\everyMPtoPDFconversion=\toks20
+) (/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Manage graphics extensions (HO)
+
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+
+(/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(72.26999pt, 452.9679pt, 72.26999pt)
+* v-part:(T,H,B)=(72.26999pt, 700.50687pt, 72.26999pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=452.9679pt
+* \textheight=700.50687pt
+* \oddsidemargin=0.0pt
+* \evensidemargin=0.0pt
+* \topmargin=-37.0pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=44.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
+Package caption Info: End \AtBeginDocument code.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 30.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 30.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10.95> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 31.
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <17.28> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 50.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 91.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 91.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 91.
+[1
+
+{/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (10.94762pt too wide) in paragraph at lines 120--131
+\OT1/ptm/m/n/12 driven ac-tive net-works. We quan-ti-ta-tively re-pro-duce the 
+ex-per-i-men-tally mea-sured spatio-temporal
+ []
+
+[2]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 182.
+ <figs/t0.pdf, id=13, 168.63pt x 94.55933pt>
+File: figs/t0.pdf Graphic file (type pdf)
+ <use figs/t0.pdf>
+Package pdftex.def Info: figs/t0.pdf used on input line 200.
+(pdftex.def)             Requested size: 202.35497pt x 113.4706pt.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 204.
+ [3]
+<figs/bundling/full_figure.pdf, id=22, 351.74199pt x 193.9245pt>
+File: figs/bundling/full_figure.pdf Graphic file (type pdf)
+
+<use figs/bundling/full_figure.pdf>
+Package pdftex.def Info: figs/bundling/full_figure.pdf used on input line 219.
+(pdftex.def)             Requested size: 422.08826pt x 232.70822pt.
+ [4 <./figs/t0.pdf> <./figs/bundling/full_figure.pdf
+
+pdfTeX warning: pdflatex (file ./figs/bundling/full_figure.pdf): PDF inclusion:
+ multiple pdfs with page group included in a single page
+>] <figs/elasticity/shear_result.pdf, id=2897, 278.17445pt x 228.855pt>
+File: figs/elasticity/shear_result.pdf Graphic file (type pdf)
+
+<use figs/elasticity/shear_result.pdf>
+Package pdftex.def Info: figs/elasticity/shear_result.pdf used on input line 30
+1.
+(pdftex.def)             Requested size: 333.80766pt x 274.62462pt.
+ [5]
+<figs/minimal.pdf, id=2903, 421.575pt x 120.45pt>
+File: figs/minimal.pdf Graphic file (type pdf)
+ <use figs/minimal.pdf>
+Package pdftex.def Info: figs/minimal.pdf used on input line 331.
+(pdftex.def)             Requested size: 452.9679pt x 129.4224pt.
+
+[6 <./figs/elasticity/shear_result.pdf>]
+<figs/polarity_sorting/ps_fig.pdf, id=3421, 338.27682pt x 200.75pt>
+File: figs/polarity_sorting/ps_fig.pdf Graphic file (type pdf)
+
+<use figs/polarity_sorting/ps_fig.pdf>
+Package pdftex.def Info: figs/polarity_sorting/ps_fig.pdf used on input line 36
+4.
+(pdftex.def)             Requested size: 405.93016pt x 240.89877pt.
+ [7 <./figs/minimal.pdf>]
+<figs/divergence/div_fig.pdf, id=3495, 367.72835pt x 204.765pt>
+File: figs/divergence/div_fig.pdf Graphic file (type pdf)
+
+<use figs/divergence/div_fig.pdf>
+Package pdftex.def Info: figs/divergence/div_fig.pdf used on input line 409.
+(pdftex.def)             Requested size: 441.2718pt x 245.71675pt.
+ [8 <./figs/polarity_sorting/ps_fig.pdf>]
+<figs/motility/mot_fig.pdf, id=4984, 375.63457pt x 204.765pt>
+File: figs/motility/mot_fig.pdf Graphic file (type pdf)
+
+<use figs/motility/mot_fig.pdf>
+Package pdftex.def Info: figs/motility/mot_fig.pdf used on input line 473.
+(pdftex.def)             Requested size: 450.75922pt x 245.71675pt.
+ [9 <./figs/divergence/div_fig.pdf>] [10 <./figs/motility/mot_fig.pdf>]
+Overfull \hbox (26.60487pt too wide) in paragraph at lines 542--558
+[]\OT1/ptm/m/n/12 Other ac-to-myosin mod-els have ex-plored the driv-ing mech-a
+-nisms be-hind con-trac-til-ity. Dasanyake,
+ []
+
+[11]
+Overfull \hbox (12.99652pt too wide) in paragraph at lines 615--623
+[]\OT1/ptm/m/n/12 Similar net-works that in-volve other pro-teins also ex-ist i
+n the cy-toskele-ton, such as microtubule-
+ []
+
+[12] <figs/filament/pl_fig.pdf, id=13637, 271.5893pt x 200.75pt>
+File: figs/filament/pl_fig.pdf Graphic file (type pdf)
+
+<use figs/filament/pl_fig.pdf>
+Package pdftex.def Info: figs/filament/pl_fig.pdf used on input line 673.
+(pdftex.def)             Requested size: 271.58862pt x 200.7495pt.
+ [13] [14 <./figs/filament/pl_fig.pdf>] [15]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 806.
+
+Overfull \hbox (48.62334pt too wide) in paragraph at lines 802--845
+ [][] 
+ []
+
+[16] (./actosim_v2.bbl [17] [18] [19] [20] [21])
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 858.
+
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+) [22]
+Package epstopdf Info: Source file: <figs/filament/kb_vs_lp_fit_all.eps>
+(epstopdf)                    date: 2016-05-02 15:16:38
+(epstopdf)                    size: 263656 bytes
+(epstopdf)             Output file: <figs/filament/kb_vs_lp_fit_all-eps-convert
+ed-to.pdf>
+(epstopdf)                    date: 2016-05-02 17:24:28
+(epstopdf)                    size: 13401 bytes
+(epstopdf)             Command: <repstopdf --outfile=figs/filament/kb_vs_lp_fit
+_all-eps-converted-to.pdf figs/filament/kb_vs_lp_fit_all.eps>
+(epstopdf)             \includegraphics on input line 908.
+Package epstopdf Info: Output file is already uptodate.
+
+<figs/filament/kb_vs_lp_fit_all-eps-converted-to.pdf, id=21284, 542.025pt x 371
+.3875pt>
+File: figs/filament/kb_vs_lp_fit_all-eps-converted-to.pdf Graphic file (type pd
+f)
+ <use figs/filament/kb_vs_lp_fit_all-eps-converted-to.pdf>
+Package pdftex.def Info: figs/filament/kb_vs_lp_fit_all-eps-converted-to.pdf us
+ed on input line 908.
+(pdftex.def)             Requested size: 181.18439pt x 124.14497pt.
+Package epstopdf Info: Source file: <figs/filament/kl_vs_lp_fit30.eps>
+(epstopdf)                    date: 2016-05-02 15:16:38
+(epstopdf)                    size: 261172 bytes
+(epstopdf)             Output file: <figs/filament/kl_vs_lp_fit30-eps-converted
+-to.pdf>
+(epstopdf)                    date: 2016-05-02 17:24:30
+(epstopdf)                    size: 12827 bytes
+(epstopdf)             Command: <repstopdf --outfile=figs/filament/kl_vs_lp_fit
+30-eps-converted-to.pdf figs/filament/kl_vs_lp_fit30.eps>
+(epstopdf)             \includegraphics on input line 914.
+Package epstopdf Info: Output file is already uptodate.
+
+<figs/filament/kl_vs_lp_fit30-eps-converted-to.pdf, id=21285, 542.025pt x 366.3
+6874pt>
+File: figs/filament/kl_vs_lp_fit30-eps-converted-to.pdf Graphic file (type pdf)
+
+ <use figs/filament/kl_vs_lp_fit30-eps-converted-to.pdf>
+Package pdftex.def Info: figs/filament/kl_vs_lp_fit30-eps-converted-to.pdf used
+ on input line 914.
+(pdftex.def)             Requested size: 181.18439pt x 122.46735pt.
+Package epstopdf Info: Source file: <figs/filament/sAvgd_L1-100.eps>
+(epstopdf)                    date: 2016-05-02 15:16:38
+(epstopdf)                    size: 508328 bytes
+(epstopdf)             Output file: <figs/filament/sAvgd_L1-100-eps-converted-t
+o.pdf>
+(epstopdf)                    date: 2016-05-02 17:24:33
+(epstopdf)                    size: 98551 bytes
+(epstopdf)             Command: <repstopdf --outfile=figs/filament/sAvgd_L1-100
+-eps-converted-to.pdf figs/filament/sAvgd_L1-100.eps>
+(epstopdf)             \includegraphics on input line 920.
+Package epstopdf Info: Output file is already uptodate.
+
+<figs/filament/sAvgd_L1-100-eps-converted-to.pdf, id=21286, 542.025pt x 420.571
+24pt>
+File: figs/filament/sAvgd_L1-100-eps-converted-to.pdf Graphic file (type pdf)
+ <use figs/filament/sAvgd_L1-100-eps-converted-to.pdf>
+Package pdftex.def Info: figs/filament/sAvgd_L1-100-eps-converted-to.pdf used o
+n input line 920.
+(pdftex.def)             Requested size: 271.7835pt x 210.88834pt.
+Package epstopdf Info: Source file: <figs/filament/R2vsL.eps>
+(epstopdf)                    date: 2016-05-02 15:16:38
+(epstopdf)                    size: 216794 bytes
+(epstopdf)             Output file: <figs/filament/R2vsL-eps-converted-to.pdf>
+(epstopdf)                    date: 2016-05-02 17:24:35
+(epstopdf)                    size: 14116 bytes
+(epstopdf)             Command: <repstopdf --outfile=figs/filament/R2vsL-eps-co
+nverted-to.pdf figs/filament/R2vsL.eps>
+(epstopdf)             \includegraphics on input line 926.
+Package epstopdf Info: Output file is already uptodate.
+
+<figs/filament/R2vsL-eps-converted-to.pdf, id=21287, 752.8125pt x 506.89375pt>
+File: figs/filament/R2vsL-eps-converted-to.pdf Graphic file (type pdf)
+
+<use figs/filament/R2vsL-eps-converted-to.pdf>
+Package pdftex.def Info: figs/filament/R2vsL-eps-converted-to.pdf used on input
+ line 926.
+(pdftex.def)             Requested size: 181.18439pt x 121.9973pt.
+
+Overfull \hbox (192.58452pt too wide) in paragraph at lines 906--938
+[]$[]$   $[]$  $[]$
+ []
+
+[23]
+Package epstopdf Info: Source file: <figs/elasticity/eng_vs_t_k10.eps>
+(epstopdf)                    date: 2016-05-02 15:16:40
+(epstopdf)                    size: 2805943 bytes
+(epstopdf)             Output file: <figs/elasticity/eng_vs_t_k10-eps-converted
+-to.pdf>
+(epstopdf)                    date: 2016-05-02 17:24:42
+(epstopdf)                    size: 801070 bytes
+(epstopdf)             Command: <repstopdf --outfile=figs/elasticity/eng_vs_t_k
+10-eps-converted-to.pdf figs/elasticity/eng_vs_t_k10.eps>
+(epstopdf)             \includegraphics on input line 944.
+Package epstopdf Info: Output file is already uptodate.
+
+<figs/elasticity/eng_vs_t_k10-eps-converted-to.pdf, id=21291, 722.7pt x 465.74p
+t>
+File: figs/elasticity/eng_vs_t_k10-eps-converted-to.pdf Graphic file (type pdf)
+
+ <use figs/elasticity/eng_vs_t_k10-eps-converted-to.pdf>
+Package pdftex.def Info: figs/elasticity/eng_vs_t_k10-eps-converted-to.pdf used
+ on input line 944.
+(pdftex.def)             Requested size: 158.54152pt x 102.17174pt.
+Package epstopdf Info: Source file: <figs/elasticity/eng_vs_t_k100.eps>
+(epstopdf)                    date: 2016-05-02 15:16:40
+(epstopdf)                    size: 2536985 bytes
+(epstopdf)             Output file: <figs/elasticity/eng_vs_t_k100-eps-converte
+d-to.pdf>
+(epstopdf)                    date: 2016-05-02 17:24:49
+(epstopdf)                    size: 715483 bytes
+(epstopdf)             Command: <repstopdf --outfile=figs/elasticity/eng_vs_t_k
+100-eps-converted-to.pdf figs/elasticity/eng_vs_t_k100.eps>
+(epstopdf)             \includegraphics on input line 949.
+Package epstopdf Info: Output file is already uptodate.
+
+<figs/elasticity/eng_vs_t_k100-eps-converted-to.pdf, id=21292, 722.7pt x 457.71
+pt>
+File: figs/elasticity/eng_vs_t_k100-eps-converted-to.pdf Graphic file (type pdf
+)
+ <use figs/elasticity/eng_vs_t_k100-eps-converted-to.pdf>
+Package pdftex.def Info: figs/elasticity/eng_vs_t_k100-eps-converted-to.pdf use
+d on input line 949.
+(pdftex.def)             Requested size: 158.54152pt x 100.41016pt.
+
+<figs/bundling/bundling_supplement.pdf, id=21293, 244.51054pt x 104.39pt>
+File: figs/bundling/bundling_supplement.pdf Graphic file (type pdf)
+
+<use figs/bundling/bundling_supplement.pdf>
+Package pdftex.def Info: figs/bundling/bundling_supplement.pdf used on input li
+ne 964.
+(pdftex.def)             Requested size: 452.9679pt x 193.394pt.
+ [24 <./figs/filament/kb_vs_lp_fit_all-eps-converted-to.pdf> <./figs/filament/k
+l_vs_lp_fit30-eps-converted-to.pdf> <./figs/filament/sAvgd_L1-100-eps-converted
+-to.pdf> <./figs/filament/R2vsL-eps-converted-to.pdf> <./figs/elasticity/eng_vs
+_t_k10-eps-converted-to.pdf> <./figs/elasticity/eng_vs_t_k100-eps-converted-to.
+pdf>] [25 <./figs/bundling/bundling_supplement.pdf>] (./actosim_v2.aux) ) 
+Here is how much of TeX's memory you used:
+ 5227 strings out of 493315
+ 90943 string characters out of 6137904
+ 181636 words of memory out of 5000000
+ 8595 multiletter control sequences out of 15000+600000
+ 31890 words of font info for 73 fonts, out of 8000000 for 9000
+ 957 hyphenation exceptions out of 8191
+ 38i,13n,47p,1340b,483s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/
+local/texlive/2013/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2
+013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/20
+13/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/201
+3/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2013
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2013/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2013/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2013/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2013/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2013/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2013/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2013/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2013/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2013/texmf-dist/fonts/t
+ype1/urw/courier/ucrr8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw
+/times/utmb8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utm
+r8a.pfb></usr/local/texlive/2013/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on actosim_v2.pdf (25 pages, 6591352 bytes).
+PDF statistics:
+ 22856 PDF objects out of 26593 (max. 8388607)
+ 15140 compressed objects within 152 object streams
+ 0 named destinations out of 1000 (max. 500000)
+ 76 words of extra memory for PDF output out of 10000 (max. 10000000)
+
