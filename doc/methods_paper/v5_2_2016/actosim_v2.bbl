@@ -1,0 +1,347 @@
+\begin{thebibliography}{10}
+
+\bibitem{murrell2012}
+Michael~P. Murrell and Margaret~L. Gardel.
+\newblock F-actin buckling coordinates contractility and severing in a
+  biomimetic actomyosin cortex.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  109(51):20820--20825, 2012.
+
+\bibitem{murrell2014}
+Michael Murrell and Margaret~L. Gardel.
+\newblock Actomyosin sliding is attenuated in contractile biomimetic cortices.
+\newblock {\em Molecular Biology of the Cell}, 25(12):1845--1853, 2014.
+
+\bibitem{takiguchi1991}
+Kingo Takiguchi.
+\newblock Heavy meromyosin induces sliding movements between antiparallel actin
+  filaments.
+\newblock {\em Journal of biochemistry}, 109(4):520--527, 1991.
+
+\bibitem{nedelec2002}
+Fran{\c{c}}ois N{\'e}d{\'e}lec.
+\newblock Computer simulations reveal motor properties generating stable
+  antiparallel microtubule interactions.
+\newblock {\em The Journal of Cell Biology}, 158(6):1005--1015, 2002.
+
+\bibitem{dasanyake2011}
+Nilushi~L. Dasanayake, Paul~J. Michalski, and Anders~E. Carlsson.
+\newblock General mechanism of actomyosin contractility.
+\newblock {\em Physical Review Letters}, 107(11):118101, 2011.
+
+\bibitem{wang2012}
+Shenshen Wang and Peter~G. Wolynes.
+\newblock Active contractility in actomyosin networks.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  109(17):6446--6451, 2012.
+
+\bibitem{ennomani2016}
+Hajer Ennomani, Ga{\"e}lle Letort, Christophe Gu{\'e}rin, Jean-Louis Martiel,
+  Wenxiang Cao, Fran{\c{c}}ois N{\'e}d{\'e}lec, M~Enrique, Manuel Th{\'e}ry,
+  and Laurent Blanchoin.
+\newblock Architecture and connectivity govern actin network contractility.
+\newblock {\em Current Biology}, 26(5):616--626, 2016.
+
+\bibitem{huxley1969}
+H.E. Huxley.
+\newblock The mechanism of muscular contraction.
+\newblock {\em Science}, 164(3886):1356--1366, 1969.
+
+\bibitem{lenz2012}
+Martin Lenz, Todd Thoresen, Margaret~L Gardel, and Aaron~R Dinner.
+\newblock Contractile units in disordered actomyosin bundles arise from f-actin
+  buckling.
+\newblock {\em Physical review letters}, 108(23):238107, 2012.
+
+\bibitem{murrell2015}
+Michael Murrell, Patrick~W. Oakes, Martin Lenz, and Margaret~L. Gardel.
+\newblock Forcing cells into shape: the mechanics of actomyosin contractility.
+\newblock {\em Nature Reviews Molecular Cell Biology}, 16(8):486--498, 2015.
+
+\bibitem{stam2016}
+Samantha Stam, Shiladitya Banerjee, Simon Freedman, Kimberly Weirich, Aaron~R
+  Dinner, and Margaret~L Gardel.
+\newblock Filament rigidity and connectivity tune the deformation modes of
+  active cytoskeletal networks.
+\newblock in preparation.
+
+\bibitem{burov2013}
+Stanislav Burov, S.M.~Ali Tabei, Toan Huynh, Michael~P. Murrell, Louis~H.
+  Philipson, Stuart~A. Rice, Margaret~L. Gardel, Norbert~F. Scherer, and
+  Aaron~R. Dinner.
+\newblock Distribution of directional change as a signature of complex
+  dynamics.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  110(49):19689--19694, 2013.
+
+\bibitem{gardel2004}
+M.L. Gardel, J.H. Shin, F.C. MacKintosh, L.~Mahadevan, P.~Matsudaira, and D.A.
+  Weitz.
+\newblock Elastic behavior of cross-linked and bundled actin networks.
+\newblock {\em Science}, 304(5675):1301--1305, 2004.
+
+\bibitem{guha2005}
+Minakshi Guha, Mian Zhou, and Yu-li Wang.
+\newblock Cortical actin turnover during cytokinesis requires myosin ii.
+\newblock {\em Current biology}, 15(8):732--736, 2005.
+
+\bibitem{wilson2010}
+Cyrus~A Wilson, Mark~A Tsuchida, Greg~M Allen, Erin~L Barnhart, Kathryn~T
+  Applegate, Patricia~T Yam, Lin Ji, Kinneret Keren, Gaudenz Danuser, and
+  Julie~A Theriot.
+\newblock Myosin ii contributes to cell-scale actin network treadmilling
+  through network disassembly.
+\newblock {\em Nature}, 465(7296):373--377, 2010.
+
+\bibitem{mackintosh1995}
+F.C. MacKintosh, J.~K{\"a}s, and P.A. Janmey.
+\newblock Elasticity of semiflexible biopolymer networks.
+\newblock {\em Physical Review Letters}, 75(24):4425, 1995.
+
+\bibitem{head2003}
+D.~A. Head, A.~J. Levine, and F.~C. MacKintosh.
+\newblock Distinct regimes of elastic response and deformation modes of
+  cross-linked cytoskeletal and semiflexible polymer networks.
+\newblock {\em Phys. Rev. E}, 68:061907, Dec 2003.
+
+\bibitem{wilhelm2003}
+Jan Wilhelm and Erwin Frey.
+\newblock Elasticity of stiff polymer networks.
+\newblock {\em Physical Review Letters}, 91(10):108103, 2003.
+
+\bibitem{kim2009}
+Taeyoon Kim, Wonmuk Hwang, Hyungsuk Lee, and Roger~D. Kamm.
+\newblock Computational analysis of viscoelastic properties of crosslinked
+  actin networks.
+\newblock 2009.
+
+\bibitem{nedelec2007}
+Francois Nedelec and Dietrich Foethke.
+\newblock Collective langevin dynamics of flexible cytoskeletal fibers.
+\newblock {\em New Journal of Physics}, 9(11):427, 2007.
+
+\bibitem{erdmann2012}
+Thorsten Erdmann and Ulrich~S. Schwarz.
+\newblock Stochastic force generation by small ensembles of myosin ii motors.
+\newblock {\em Physical Review Letters}, 108(18):188101, 2012.
+
+\bibitem{stam2015}
+Samantha Stam, Jon Alberts, Margaret~L. Gardel, and Edwin Munro.
+\newblock Isoforms confer characteristic force generation and mechanosensation
+  by myosin ii filaments.
+\newblock {\em Biophysical journal}, 108(8):1997--2006, 2015.
+
+\bibitem{gordon2012}
+Daniel Gordon, Anne Bernheim-Groswasser, Chen Keasar, and Oded Farago.
+\newblock Hierarchical self-organization of cytoskeletal active networks.
+\newblock {\em Physical Biology}, 9(2):026005, 2012.
+
+\bibitem{kim2014}
+Taeyoon Kim.
+\newblock Determinants of contractile forces generated in disorganized
+  actomyosin bundles.
+\newblock {\em Biomechanics and modeling in mechanobiology}, 14(2):345--355,
+  2014.
+
+\bibitem{koenderink2006}
+G.H. Koenderink, M.~Atakhorrami, F.C. MacKintosh, and C.F. Schmidt.
+\newblock High-frequency stress relaxation in semiflexible polymer solutions
+  and networks.
+\newblock {\em Physical Review Letters}, 96(13):138307, 2006.
+
+\bibitem{kasza2009}
+KE~Kasza, GH~Koenderink, YC~Lin, CP~Broedersz, W~Messner, F~Nakamura,
+  TP~Stossel, FC~MacKintosh, and DA~Weitz.
+\newblock Nonlinear elasticity of stiff biopolymers connected by flexible
+  linkers.
+\newblock {\em Physical Review E}, 79(4):041928, 2009.
+
+\bibitem{lin2010}
+Yi-Chia Lin, Norman~Y. Yao, Chase~P. Broedersz, Harald Herrmann, Fred~C.
+  MacKintosh, and David~A. Weitz.
+\newblock Origins of elasticity in intermediate filament networks.
+\newblock {\em Physical Review Letters}, 104(5):058101, 2010.
+
+\bibitem{evans1984}
+Denis~J. Evans and G.P. Morriss.
+\newblock Nonlinear-response theory for steady planar couette flow.
+\newblock {\em Physical Review A.}, 30(3):1528, 1984.
+
+\bibitem{allen}
+Mike~P. Allen and Dominic~J. Tildesley.
+\newblock {\em Computer simulation of liquids}.
+\newblock Oxford university press, 1989.
+
+\bibitem{shokef2012}
+Yair Shokef and Samuel~A Safran.
+\newblock Scaling laws for the response of nonlinear elastic media with
+  implications for cell mechanics.
+\newblock {\em Physical review letters}, 108(17):178103, 2012.
+
+\bibitem{riveline1998}
+Daniel Riveline, Albrecht Ott, Frank J{\"u}licher, Donald~A Winkelmann, Olivier
+  Cardoso, Jean-Jacques Lacap{\`e}re, Soffia Magn{\'u}sd{\'o}ttir, Jean-Louis
+  Viovy, Laurence Gorre-Talini, and Jacques Prost.
+\newblock Acting on actin: the electric motility assay.
+\newblock {\em European biophysics journal}, 27(4):403--408, 1998.
+
+\bibitem{walcott2012}
+Sam Walcott, David~M. Warshaw, and Edward~P. Debold.
+\newblock Mechanical coupling between myosin molecules causes differences
+  between ensemble and single-molecule measurements.
+\newblock {\em Biophysical journal}, 103(3):501--510, 2012.
+
+\bibitem{harris1993}
+David~E. Harris and D.M. Warshaw.
+\newblock Smooth and skeletal muscle myosin both exhibit low duty cycles at
+  zero load in vitro.
+\newblock {\em Journal of Biological Chemistry}, 268(20):14764--14768, 1993.
+
+\bibitem{umemoto1990}
+Seiji Umemoto and James~R Sellers.
+\newblock Characterization of in vitro motility assays using smooth muscle and
+  cytoplasmic myosins.
+\newblock {\em Journal of Biological Chemistry}, 265(25):14864--14869, 1990.
+
+\bibitem{kron1986}
+Stephen~J. Kron and James~A. Spudich.
+\newblock Fluorescent actin filaments move on myosin fixed to a glass surface.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  83(17):6272--6276, 1986.
+
+\bibitem{schaller2010}
+Volker Schaller, Christoph Weber, Christine Semmrich, Erwin Frey, and Andreas~R
+  Bausch.
+\newblock Polar patterns of driven filaments.
+\newblock {\em Nature}, 467(7311):73--77, 2010.
+
+\bibitem{gittes1998}
+F.~Gittes and F.C. MacKintosh.
+\newblock Dynamic shear modulus of a semiflexible polymer network.
+\newblock {\em Physical Review E}, 58(2):R1241, 1998.
+
+\bibitem{didonna2007}
+BA~DiDonna and Alex~J Levine.
+\newblock Unfolding cross-linkers as rheology regulators in f-actin networks.
+\newblock {\em Physical Review E}, 75(4):041909, 2007.
+
+\bibitem{muller2014}
+Kei~W M{\"u}ller, Robijn~F Bruinsma, Oliver Lieleg, Andreas~R Bausch,
+  Wolfgang~A Wall, and Alex~J Levine.
+\newblock Rheology of semiflexible bundle networks with transient linkers.
+\newblock {\em Physical review letters}, 112(23):238102, 2014.
+
+\bibitem{vieregg2016}
+Jeffrey Vieregg, Michael Lueckheide, Lorraine Leon, Amanda Marciel, and Matthew
+  Tirrell.
+\newblock Nucleic acid-peptide complex phase controlled by dna hybridization.
+\newblock {\em Bulletin of the American Physical Society}, 2016.
+
+\bibitem{kim2009b}
+Taeyoon Kim, W~Hwang, and RD~Kamm.
+\newblock Computational analysis of a cross-linked actin-like network.
+\newblock {\em Experimental Mechanics}, 49(1):91--104, 2009.
+
+\bibitem{scholz2016}
+Monika Scholz, Stanislav Burov, Kimberly~L Weirich, Bj{\"o}rn~J Scholz, SM~Ali
+  Tabei, Margaret~L Gardel, and Aaron~R Dinner.
+\newblock Cycling state that can lead to glassy dynamics in intracellular
+  transport.
+\newblock {\em Physical Review X}, 6(1):011037, 2016.
+
+\bibitem{murrellTalk}
+M.~Murrell.
+\newblock personal communication.
+
+\bibitem{fraley2005}
+Tamara~S Fraley, Clifford~B Pereira, Thuan~C Tran, CoreyAyne Singleton, and
+  Jeffrey~A Greenwood.
+\newblock Phosphoinositide binding regulates $\alpha$-actinin dynamics
+  mechanism for modulating cytoskeletal remodeling.
+\newblock {\em Journal of Biological Chemistry}, 280(15):15479--15482, 2005.
+
+\bibitem{odijk1983}
+Theo Odijk.
+\newblock The statistics and dynamics of confined or entangled stiff polymers.
+\newblock {\em Macromolecules}, 16(8):1340--1344, 1983.
+
+\bibitem{rubinstein}
+Michael Rubinstein and Ralph~H. Colby.
+\newblock {\em Polymer Physics}.
+\newblock OUP Oxford, 2003.
+
+\bibitem{kojima1994}
+H.~Kojima, A.~Ishijima, and T.~Yanagida.
+\newblock Direct measurement of stiffness of single actin filaments with and
+  without tropomyosin by in vitro nanomanipulation.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  91(26):12962--12966, 1994.
+
+\bibitem{higuchi1995}
+Hideo Higuchi, Toshio Yanagida, and Yale~E. Goldman.
+\newblock Compliance of thin filaments in skinned fibers of rabbit skeletal
+  muscle.
+\newblock {\em Biophysical Journal}, 69(3):1000, 1995.
+
+\bibitem{frontali1979}
+C.~Frontali, E.~Dore, A.~Ferrauto, E.~Gratton, A.~Bettini, M.R. Pozzan, and
+  E.~Valdevit.
+\newblock An absolute method for the determination of the persistence length of
+  native dna from electron micrographs.
+\newblock {\em Biopolymers}, 18(6):1353--1373, 1979.
+
+\bibitem{everaers1999}
+R.~Everaers, F.~J{\"u}licher, A.~Ajdari, and A.C. Maggs.
+\newblock Dynamic fluctuations of semiflexible filaments.
+\newblock {\em Physical Review Letters}, 82(18):3717, 1999.
+
+\bibitem{finer1994}
+Jeffrey~T. Finer, Robert~M. Simmons, James~A. Spudich, et~al.
+\newblock Single myosin molecule mechanics: piconewton forces and nanometre
+  steps.
+\newblock {\em Nature}, 368(6467):113--119, 1994.
+
+\bibitem{niederman1975}
+Richard Niederman and Thomas~D. Pollard.
+\newblock Human platelet myosin. ii. in vitro assembly and structure of myosin
+  filaments.
+\newblock {\em The Journal of Cell Biology}, 67(1):72--92, 1975.
+
+\bibitem{leimkuhler2012}
+Benedict Leimkuhler and Charles Matthews.
+\newblock Rational construction of stochastic numerical methods for molecular
+  sampling.
+\newblock {\em Applied Mathematics Research eXpress}, page abs010, 2012.
+
+\bibitem{leimkuhler2013}
+Benedict Leimkuhler and Charles Matthews.
+\newblock Robust and efficient configurational molecular sampling via langevin
+  dynamics.
+\newblock {\em The Journal of Chemical Physics}, 138(17):174102, 2013.
+
+\bibitem{ott1993}
+A.~Ott, M.~Magnasco, A.~Simon, and A.~Libchaber.
+\newblock Measurement of the persistence length of polymerized actin using
+  fluorescence microscopy.
+\newblock {\em Physical Review E}, 48(3):R1642, 1993.
+
+\bibitem{veigel2003}
+Claudia Veigel, Justin~E. Molloy, Stephan Schmitz, and John Kendrick-Jones.
+\newblock Load-dependent kinetics of force production by smooth muscle myosin
+  measured with optical tweezers.
+\newblock {\em Nature Cell Biology}, 5(11):980--986, 2003.
+
+\bibitem{ferrer2008}
+Jorge~M. Ferrer, Hyungsuk Lee, Jiong Chen, Benjamin Pelz, Fumihiko Nakamura,
+  Roger~D. Kamm, and Matthew~J. Lang.
+\newblock Measuring molecular rupture forces between single actin filaments and
+  actin-binding proteins.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  105(27):9221--9226, 2008.
+
+\bibitem{stricker2010}
+Jonathan Stricker, Tobias Falzone, and Margaret~L. Gardel.
+\newblock Mechanics of the f-actin cytoskeleton.
+\newblock {\em Journal of biomechanics}, 43(1):9--14, 2010.
+
+\end{thebibliography}
