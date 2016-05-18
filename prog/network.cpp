@@ -31,8 +31,8 @@ int main(int argc, char* argv[]){
     int xgrid, ygrid;
     double grid_factor; 
     
-    int    count = 0, nframes, nmsgs, n_bw_shear;                                  //Time 
-    double tinit = 0.0, t = tinit, tfinal, dt;
+    int    count, nframes, nmsgs, n_bw_shear;                                  //Time 
+    double t, tinit, tfinal, dt;
     
     double viscosity, temperature;                                          //Environment
     string bnd_cnd;                                         //Allowed values: NONE, PERIODIC, REFLECTIVE
@@ -57,7 +57,8 @@ int main(int argc, char* argv[]){
 
     double strain_pct, time_of_strain, pre_strain, d_strain_pct, d_strain_amp;                                      //External Force
     double d_strain, prev_d_strain, d_strain_freq, time_of_dstrain;
-    bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag;
+    bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
+    bool diff_strain_flag, osc_strain_flag;
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
 
@@ -80,10 +81,11 @@ int main(int argc, char* argv[]){
         ("grid_factor", po::value<double>(&grid_factor)->default_value(2), "number of grid boxes per um^2")
         
         ("dt", po::value<double>(&dt)->default_value(0.0001), "length of individual timestep in seconds")
+        ("tinit", po::value<double>(&tinit)->default_value(0), "time that recording of simulation starts")
         ("tfinal", po::value<double>(&tfinal)->default_value(0.01), "length of simulation in seconds")
         ("nframes", po::value<int>(&nframes)->default_value(1000), "number of times between actin/link/motor positions to are printed to file")
         ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of times simulation progress is printed to stdout")
-        ("n_bw_shears", po::value<int>(&n_bw_shear)->default_value(1000000000), "number of timesteps between subsequent shears")
+        ("n_bw_shear", po::value<int>(&n_bw_shear)->default_value(1000000000), "number of timesteps between subsequent shears")
        
         ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
@@ -151,6 +153,12 @@ int main(int argc, char* argv[]){
         
         ("p_dead_head_flag", po::value<bool>(&p_dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all crosslinks")
         ("p_dead_head", po::value<int>(&p_dead_head)->default_value(0), "index of head to kill")
+        
+        ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
+        ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
+        
+        ("diff_strain_flag", po::value<bool>(&diff_strain_flag)->default_value(false), "flag to turn on linear differential strain")
+        ("osc_strain_flag", po::value<bool>(&osc_strain_flag)->default_value(false), "flag to turn on oscillatory differential strain")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -196,8 +204,9 @@ int main(int argc, char* argv[]){
     cout<<"\nDEBUG: actin_density = "<<actin_density; 
     double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
-    int n_bw_stdout = max(int((tfinal - tinit)/(dt*double(nmsgs))),1);
+    int n_bw_stdout = max(int(tfinal/(dt*double(nmsgs))),1);
     int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
+    int unprinted_count = int(double(tinit)/dt);
 
     // To Read positions from input strings in config file
     vector<array<double,3> > actin_position_arrs, a_motor_position_arrs, p_motor_position_arrs;
@@ -276,6 +285,7 @@ int main(int argc, char* argv[]){
    
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
     if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 
+    if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding active motors...";
     motor_ensemble<ATfilament_ensemble> * myosins;
@@ -303,21 +313,6 @@ int main(int argc, char* argv[]){
                 p_m_kend, actin_length, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
-    cout<<"\nUpdating motors, filaments and crosslinks in the network..";
-
-    string time_str = "t = 0";
-
-    file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
-    net->write_actins(file_a);
-    file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
-    net->write_links(file_l);
-    file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
-    myosins->motor_write(file_am);
-    file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
-    crosslks->motor_write(file_pm);
-    file_th << time_str;
-    net->write_thermo(file_th);
-
     // Write the output configuration file
     string output_file                         =   dir + "/data/output.txt";
     o_file.open(output_file.c_str());
@@ -334,6 +329,10 @@ int main(int argc, char* argv[]){
     o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
     o_file.close();
     
+    cout<<"\nUpdating motors, filaments and crosslinks in the network..";
+    string time_str; 
+    count=0;
+    t = 0;
     pre_strain = strain_pct * xrange;
     d_strain_amp = d_strain_pct * xrange;
     prev_d_strain = 0;
@@ -346,55 +345,12 @@ int main(int argc, char* argv[]){
         net->update_shear();
     }
     while (t < tfinal) {
-        //print time count
-
-        if (time_of_strain!=0 && close(t, time_of_strain, dt/(10*time_of_strain))){
-            //Perform the shear here
-            cout<<"\nDEBUG: t = "<<t<<"; adding pre_strain of "<<pre_strain<<" um here";
-            net->update_delrx( pre_strain );
-            net->update_shear();
-        }
-
-        if (t >= time_of_dstrain){
-            d_strain = d_strain_amp * sin(2*pi*d_strain_freq * ( t - time_of_dstrain) );
-            net->update_delrx( pre_strain + d_strain );
-            net->update_d_strain( d_strain - prev_d_strain );
-            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<d_strain<<" um here";
-            prev_d_strain = d_strain;
-        }
         
-        if (count%n_bw_shear==0){
-            net->update_delrx( pre_strain + d_strain_amp );
-            net->update_d_strain( d_strain_amp );
-            pre_strain += d_strain_amp;
-            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<d_strain_amp<<" um here; total strain = "<<pre_strain<<" um";
-        }
-
-        if (count%n_bw_stdout==0) {
-			cout<<"\nTime counts: "<<count;
-		    //net->print_filament_thermo();
-            net->print_network_thermo();
-            crosslks->print_ensemble_thermo();
-            myosins->print_ensemble_thermo();
-        }
-
-        //update network
-        net->update();//updates all forces, velocities and positions of filaments
-
-        //update motors and cross linkers
-        crosslks->motor_walk(t);
-        myosins->motor_walk(t);
-        
-        //clear the vector of fractured filaments
-        net->clear_broken();
-
-        t+=dt;
-		count++;
-
         //print to file
-	    if (count%n_bw_print==0) {
+	    if (t+dt/100 >= tinit && (count-unprinted_count)%n_bw_print==0) {
 	        
-            time_str = "\nt = "+to_string(t);
+            if (t>tinit) time_str ="\n";
+            time_str += "t = "+to_string(t);
             
             file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
             net->write_actins(file_a);
@@ -414,6 +370,57 @@ int main(int argc, char* argv[]){
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
 		}
+        
+        //print time count
+        if (time_of_strain!=0 && close(t, time_of_strain, dt/(10*time_of_strain))){
+            //Perform the shear here
+            cout<<"\nDEBUG: t = "<<t<<"; adding pre_strain of "<<pre_strain<<" um here";
+            net->update_delrx( pre_strain );
+            net->update_shear();
+        }
+
+        if (osc_strain_flag && t >= time_of_dstrain){
+            d_strain = d_strain_amp * sin(2*pi*d_strain_freq * ( t - time_of_dstrain) );
+            net->update_delrx( pre_strain + d_strain );
+            net->update_d_strain( d_strain - prev_d_strain );
+            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<(d_strain-prev_d_strain)<<" um here; total strain = "<<(pre_strain+d_strain);
+            prev_d_strain = d_strain;
+        }
+        
+        if (diff_strain_flag && count%n_bw_shear==0){
+            net->update_delrx( pre_strain + d_strain_amp );
+            net->update_d_strain( d_strain_amp );
+            pre_strain += d_strain_amp;
+            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<d_strain_amp<<" um here; total strain = "<<pre_strain<<" um";
+        }
+
+        if (count%n_bw_stdout==0) {
+			cout<<"\nTime counts: "<<count;
+		    //net->print_filament_thermo();
+            net->print_network_thermo();
+            crosslks->print_ensemble_thermo();
+            myosins->print_ensemble_thermo();
+        }
+
+        //update network
+        net->update();//updates all forces, velocities and positions of filaments
+
+        //update cross linkers
+        if (static_cl_flag)
+            crosslks->motor_update();
+        else
+            crosslks->motor_walk(t);
+       
+        //update motors
+        myosins->motor_walk(t);
+        
+        //clear the vector of fractured filaments
+        net->clear_broken();
+
+        
+        t+=dt;
+		count++;
+
         
     }
 

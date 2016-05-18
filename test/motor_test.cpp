@@ -1310,6 +1310,138 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_a_end), tol);
 
 }   
+
+//Check for attaching at different parts of a filament
+
+BOOST_AUTO_TEST_CASE( attach_difft_spots )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    array<int, 2> nq = {100,100}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    vector<vector<double> > actin_sets;
+
+    double dt = 1, temp = 0, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 0.5, koff = 0, kend = 0;
+    double frac_force = 0;
+    
+    //pos_sets.push_back({0,0,0});
+    vector<double> pos1={0,0,actin_rad,0},pos2={1,0,actin_rad,0},pos3={2,0,actin_rad,0}, pos4={3,0,actin_rad,0};
+    int nactin = 16;
+    vector<double> pos;
+    for (int i =0; i<nactin; i++){
+        pos = {double(i), 0, actin_rad, 0};
+        actin_sets.push_back(pos);
+    }
+    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    
+    //attachment
+    double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15;
+    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+    array<int, 15> num_attached; 
+    int nevents = 10000;
+    int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
+    for (int i = 0; i < nactin-1; i++){
+        mx = i + 0.5;
+        num_attached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            num_attached[i] += m.get_states()[0];
+        }
+        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+    }
+    
+    kon=0.05;
+    nevents = 10000;
+    threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
+    for (int i = 0; i < nactin-1; i++){
+        mx = i + 0.5;
+        num_attached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            num_attached[i] += m.get_states()[0];
+        }
+        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+    }
+    
+    kon=0.9;
+    nevents = 10000;
+    threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
+    for (int i = 0; i < nactin-1; i++){
+        mx = i + 0.5;
+        num_attached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            num_attached[i] += m.get_states()[0];
+        }
+        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+    }
+    
+    //detachment
+    array<int,15> num_detached;
+    koff = 0.1;
+    kend = 0.1;
+    nevents = 10000;
+    threesig = int(3*sqrt(koff*(1-koff)*double(nevents)));
+    state = {1,0};
+    findex = {0,-1};
+    for (int i = 0; i < nactin-1; i++){
+        mx = i + 0.5;
+        lindex = {i, -1};
+        num_detached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            num_detached[i] += pr(m.get_states()[0]);
+        }
+        BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
+    }
+    
+    koff = 0.5;
+    kend = 0.5;
+    nevents = 10000;
+    threesig = int(3*sqrt(koff*(1-koff)*double(nevents)));
+    state = {1,0};
+    findex = {0,-1};
+    for (int i = 0; i < nactin-1; i++){
+        mx = i + 0.5;
+        lindex = {i, -1};
+        num_detached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            num_detached[i] += pr(m.get_states()[0]);
+        }
+        BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
+    }
+    
+    koff = 0.85;
+    kend = 0.85;
+    nevents = 10000;
+    threesig = int(3*sqrt(koff*(1-koff)*double(nevents)));
+    state = {1,0};
+    findex = {0,-1};
+    for (int i = 0; i < nactin-1; i++){
+        mx = i + 0.5;
+        lindex = {i, -1};
+        num_detached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, actin_rad, vis, bc);
+            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            num_detached[i] += pr(m.get_states()[0]);
+        }
+        BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
+    }
+}   
 /* Functions to test : 
         void attach(int hd);
 

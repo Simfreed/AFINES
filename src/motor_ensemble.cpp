@@ -182,6 +182,28 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
     
 }
 
+/* Used for static, contstantly attached, motors -- ASSUMES both heads are ALWAYS attached */
+template <class filament_ensemble_type>
+void motor_ensemble<filament_ensemble_type>::motor_update()
+{
+
+    this->check_broken_filaments();
+    int nmotors_sz = int(n_motors.size());
+    //#pragma omp parallel for
+    
+    for (int i=0; i<nmotors_sz; i++) {
+       
+            n_motors[i]->update_position_attached(0);
+            n_motors[i]->update_position_attached(1);
+            n_motors[i]->update_angle();
+            n_motors[i]->update_force();
+            //n_motors[i]->update_force_fraenkel_fene();
+            n_motors[i]->actin_update();
+    
+    }
+    this->update_energies();
+    
+}
 template <class filament_ensemble_type>
 void motor_ensemble<filament_ensemble_type>::motor_write(ostream& fout)
 {

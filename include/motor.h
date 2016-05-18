@@ -50,6 +50,8 @@ class motor
 
         void kill_head( int hd);
         
+        void update_position_attached(int hd);
+        
         void update_force();
         
         void update_force_fraenkel_fene();

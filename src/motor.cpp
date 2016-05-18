@@ -367,7 +367,13 @@ void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
     else {
         pos_a_end[hd] = pos;
     }
-   
+       
+    update_position_attached(hd);
+}
+
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::update_position_attached(int hd){
+
     double posx = actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
     double posy = actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
 

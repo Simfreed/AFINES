@@ -154,12 +154,14 @@ class filament_ensemble
         
         void update_energies();
         
+        void turn_quads_off();
+    
     protected:
 
         double t, dt, temperature, link_ld, visc, min_time;
         double gamma, shear_stop, shear_dt, shear_speed, delrx;
         double max_links_per_quad_per_filament, max_links_per_quad; 
-        bool straight_filaments = false;
+        bool straight_filaments = false, quad_off_flag;
         double pe_stretch, pe_bend, ke;
 
         array<double,2> fov, view;

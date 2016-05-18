@@ -43,11 +43,11 @@ class motor_ensemble
 
         void motor_walk(double t);
 
+        void motor_update();
+        
         void update_energies();
         
         double get_potential_energy();
-
-        void reshape();
 
         void motor_write(ostream& fout);
 

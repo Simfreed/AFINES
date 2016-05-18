@@ -50,6 +50,12 @@ filament_type * filament_ensemble<filament_type>::get_filament(int index)
 }
 
 template<class filament_type>
+void filament_ensemble<filament_type>::turn_quads_off()
+{
+    quad_off_flag = true;
+}
+
+template<class filament_type>
 void filament_ensemble<filament_type>::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
@@ -478,9 +484,9 @@ void filament_ensemble<filament_type>::update()
         network[f]->update_positions();
     }
     
-    //this->quad_update();
-
-    this->quad_update_serial();
+    if (!quad_off_flag)
+        this->quad_update_serial();
+    
     this->update_energies();
     
     t += dt;
@@ -579,6 +585,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
     }
     
     //Neighbor List Initialization
+    quad_off_flag = false;
     max_links_per_quad              = npolymer*(nactins-1);
     max_links_per_quad_per_filament = nactins - 1;
     
@@ -634,6 +641,7 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
     for (j = 0; j < sa; j++) delete avec[j];
     avec.clear();
    
+    quad_off_flag = false;
     max_links_per_quad              = actins.size();
     max_links_per_quad_per_filament = int(ceil(actins.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
