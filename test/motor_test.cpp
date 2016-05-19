@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     delete f;
 }
 
-BOOST_AUTO_TEST_CASE( move_end_detach )
+BOOST_AUTO_TEST_CASE( update_pos_a_end )
 {
     //Filament ENSEMBLE
     double tol = 0.001, zero = 1e-10;   
@@ -178,10 +178,11 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
@@ -192,10 +193,12 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    
+    m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.125, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
     
@@ -209,20 +212,24 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
+    
+    m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.875, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
     
     // Else ( new position isn't more than filament length
     //  (a) motor moves to appropriate new position
     pos = 0.375;
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
+    
+    m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.625, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
    
@@ -250,10 +257,11 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
@@ -264,10 +272,12 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    
+    m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
@@ -281,20 +291,24 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
+    
+    m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], -0.875, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
     // Else ( new position isn't more than filament length
     //  (a) motor moves to appropriate new position
     pos = 0.375;
-    m.move_end_detach(0, pos); 
+    m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
+    
+    m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], -0.625, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -320,10 +334,11 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.move_end_detach(1, pos); 
+    m.update_pos_a_end(1, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], 0);
+    
     BOOST_CHECK_CLOSE(m.get_hx()[1], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], my + 0.5*mlen*sin(mang), tol);
     
@@ -334,10 +349,12 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.move_end_detach(1, pos); 
+    m.update_pos_a_end(1, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    
+    m.update_position_attached(1);
     BOOST_CHECK_CLOSE(m.get_hx()[1], 0.125, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
     
@@ -351,20 +368,24 @@ BOOST_AUTO_TEST_CASE( move_end_detach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.move_end_detach(1, pos); 
+    m.update_pos_a_end(1, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.125, tol);
+    
+    m.update_position_attached(1);
     BOOST_CHECK_CLOSE(m.get_hx()[1], 0.875, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
     
     // Else ( new position isn't more than filament length
     //  (a) motor moves to appropriate new position
     pos = 0.375;
-    m.move_end_detach(1, pos); 
+    m.update_pos_a_end(1, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], pos, tol);
+    
+    m.update_position_attached(1);
     BOOST_CHECK_CLOSE(m.get_hx()[1], 0.625, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
     delete f;
@@ -1459,7 +1480,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
 
         void detach_head(int hd);
 
-        void move_end_detach(int hd, double pos);
+        void update_pos_a_end(int hd, double pos);
 
 */
 // EOF
