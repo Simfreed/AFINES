@@ -508,10 +508,15 @@ non-equilibrium molecular dynamics framework of this simulation can be used to
 model and study many open questions in active matter and biophysics.
 \section{Methods}  
 \subsection{Actin Filaments}
-Actin filaments are treated as a worm-like chain, with each filament represented as a set of $N+1$ beads connected by $N$ harmonic springs (links), with an additional harmonic angular potential applied on the $N-1$ angles along the chain, as depicted in \Cref{fig:filament}(A). The linear springs 
-penalize stretching of individual subunits and the $N-1$ angular harmonic springs penalize bending and enforce the length scale over which the filaments are semi-flexible. 
-
-The internal forces on actin filaments can be obtained from the gradient of the potential energy $U_f$
+Actin filaments are treated as a worm-like chain, with each filament represented
+as a set of $N+1$ beads connected by $N$ harmonic springs (links), with an 
+additional harmonic angular potential applied on the $N-1$ angles along the
+chain, as depicted in \Cref{fig:t0}B. The linear springs 
+penalize stretching of individual subunits and the $N-1$ angular harmonic
+springs penalize bending and enforce the length scale over which the filaments
+are semi-flexible. 
+The internal forces on actin filaments can be obtained from the gradient of the
+potential energy $U_f$
 \begin{eqnarray}
   U_f &=& U_{stretch} + U_{bend}\\
   U_{stretch}&=&{k_a\over2}\sum_{i=1}^{N}{(|d_i| - l_a)^2}\\\nonumber
@@ -519,130 +524,100 @@ The internal forces on actin filaments can be obtained from the gradient of the 
   \label{eqn:Ufil}
 \end{eqnarray}
 where $d_i = r_i-r_{i-1}$, $\theta_i = \arccos{\left({d_i\cdot d_{i-1}\over |d_i||d_{i-1}|}\right)}$, $k_a$ is the
-stretching force constant, $\kappa_B$ is the bending modulus, and $l_a$ is the equilibrium length of a
-link. 
+stretching force constant, $\kappa_B$ is the bending modulus, and $l_a$ is the
+equilibrium length of a link. 
 \par
-For a confined semiflexible filament, it has been show that for a polymer of a given persistence length $L_p$, the shortest length that should be considered as unbending ($l_a$) is given by $l_a\approx A^{2/3}L_p^{1/3}$ where $A$ is a length scale associated with the confinement of the
-filament \cite{odijk1983}. In these simulations, filaments were confined by nearby motors and crosslinkers. Since the smallest motor or crosslinker density used was $\rho_m=0.1\mu m^{-2}$, $A\ge1/\sqrt{0.1\mu m^{-2}}\Rightarrow l_a\ge5\mu m$. In general, we used $l_a=1\mu m$.
-The bending force constant is derived from the persistence length $L_p$ such that
-$\kappa_B = L_p k_B T$ where $k_B$ is Boltzmann's constant and $T$ is the temperature \cite{rubinstein}. Experimentally,
-the stretching force constant has been measured to be in the approximate range $k_a=40-70pN/nm$ \cite{kojima1994, higuchi1995}; however, simulating a
-network of filaments with this large of a stiffness is computationally inefficient since the maximum timestep of a
-simulation is inversely proportional to the largest stiffness in the simulation. Therefore, we chose ${\kappa_B\over
-l_a} <<k_a$, so that the filaments were still much easier to bend than to stretch, enabling us to run simulations of
-experimentally relevant dimension. We show that our simple filament model exhibits expected behavior for a semiflexible
-filament in the next section and we have further verified that $k_a$ did not effect the persistence length of the
-filament, as seen in the Supplement. 
-\par
-Since actin bending is instrumental for actomyosin contraction, and simulating precise bending moduli is non-trivial, we tested our filaments by measuring spatial and temporal fluctuations and comparing with theoretical predictions.
-In a two dimensional WLC, a bending of two adjacent segments is expected to result in a local change in free energy of ${\kappa_B\over2l_a\theta_i^2}$, and it is predicted that \cite{frontali1979}
-\begin{equation}
-  \langle\theta^2(l)\rangle = {l\over L_p}
-  \label{eqn:thsq}
-\end{equation}
-\begin{equation} 
-  \langle\cos(\theta(l))\rangle = \exp{(-l/2L_p)}
-  \label{eqn:costh}
-\end{equation} 
-where $\theta(l) = \theta_j - \theta_i$ where $1<i<j\le N$, $l = l_a(j-i)$ and $L_p$ is the persistence length. To test our model against these equations, we simulate $100$ filaments of $L=200\mu m$ and $\kappa_B=0.08 pN\mu m^2$ at $T=300K$ for $T_f = 100s$ and measured the resulting filament configuration every $1s$. We discard the first $10$ seconds of each simulation to allow equilibration, and we used only the middle $150 \mu m$ of the filament to calculate these correlation functions.
-%For each of the $90000$ filament configurations, and for each $l\in{0,1,2,..,150}\mu m$,
-%$\theta^2(l)$ and $\cos(\theta(l))$ were calculated, and their respective averages are plotted in 
-%\Cref{fig:avgTh}, along with the expected behavior given the input $\kappa_B$.  
-We have also shown (Supplement) that the measured persistence length, obtained by performing a least squares fit to
-plots of $\log{(\langle cos(\theta(l))\rangle )} $ for various values of $\kappa_B$ yields the expected result over at
-least $3$ orders of magnitude. Further measurements of the persistence length as well as verifications of its
-independence on other filament parameters is available in the supplement.
-\par
-An additional prediction for semiflexible filaments is the scaling of fluctuations with time. 
-Fluctuations transverse to the filament orientation have been 
-shown to increase as a function of time as $\langle dr_{\perp}^2\rangle\propto t^{3/4}$ while longitudinal fluctuations have been shown to follow the power law
-$\langle dr_{||}^2\rangle\propto t^{7/8}$ \cite{everaers1999}. To tests these predictions, we followed the procedure outlined in
-\cite{everaers1999} and generated $N = 100$ initial filament configurations of a $20\mu m$ filament. For each configuration we ran $M = 100$ simulations of the filament fluctuating for $1s$. At each time step we collected the $2N$ positions of the filament ends, $r_e(t)$. We then calculated the eigenvalues of the covariance matrix $cov(r_e(t)\cdot \hat{i},r_e(t)\cdot \hat{j})$ where
-$i,j\in\{x,y\}$.
-The larger eigenvalue $\lambda_1(t)$ corresponds to the slower longitudinal fluctuations
-(i.e., $\lambda_1(t)\propto t^{7/8}$) while the smaller eigenvalue corresponded to the faster perpendicular fluctuations
-($\lambda_2(t)\propto t^{3/4}$). We show  in \Cref{fig:filament}(C) that the our simulation exhibits scaling of these eigenvalues in good agreement with the prediction of Ref. \cite{everaers1999}.
+The value for $\kappa_B$ was chosen based on the
+persistence length of F-actin, $L_p\approx20\mu m$, since $\kappa_B=L_p*k_BT$ 
+where $T$ is the temperature and $k_B$ is Boltzmann's constant\cite{rubinstein}.
+We verified that the measured persistence length of the model filaments agreed with our input 
+bending modulus as seen in \Cref{fig:filament}A. A second (\Cref{fig:filament}B)
+test was performed to verify that the temporal fluctuations of our filaments corresponded to 
+theoretical predictions for semiflexible filaments\cite{everaers1999}. 
+Details of these measurements, as well as explanations for the parameter 
+value choices for $l_a$, and $k_a$ are available in the supplement.  
 \begin{figure}[H] 
   \centering
    \includegraphics[scale=1]{figs/filament/pl_fig.pdf}
   \caption{\label{fig:filament}
   Correlations of actin filaments in space and time.
-  (A) Decorrelation of tangent vectors (red dots) and fluctuations in angles between links (blue dots) 
-  as a function of the arc length between them. Red dashed
-  line is $e^{-s/2L_p}$ shows the expected behavior from the input bending modulus of $0.08 pN-\mu m^2$ and blue
-  dashed line has slope $1/L_p$.
-  (B) Eigenvalues of covariance matrices for the positions of endpoints of filaments as a function of time. We analyze fluctuations of $N=100$ filaments, with each point the average over the $2N$ eigenvalues for $\lambda_1(t)$ and $\lambda_2(t)$ and error bars showing the standard deviations for the
-distribution of these values. Blue
-  dots shows the longitudinal fluctuations and the red dots shows the transverse fluctuations. Red dashed line is
+  (A) Decorrelation of tangent vectors (red dots) and fluctuations in angles
+  between links (blue dots) as a function of the arc length between them. Red 
+  dashed line is $e^{-s/2L_p}$ shows the expected behavior from the input
+  bending modulus of $0.08 pN-\mu m^2$ and blue dashed line has slope $1/L_p$.
+  (B) Eigenvalues of covariance matrices for the positions of endpoints of
+  filaments as a function of time. Blue dots shows the longitudinal fluctuations and
+  the red dots shows the transverse fluctuations. Red dashed line is
   $t^{3/4}$ and blue dashed line is $t^{7/8}$ as predicted by \cite{everaers1999}. 
 }
 \end{figure} 
 \subsection{Crosslinkers}
-Crosslinker proteins dynamically connect actin filaments, thereby propogating force from one to
-another. Thus model crosslinkers, must be able to attach and detach from actin filaments,
-and be compliant in order to propagate force. They are therefore modeled as hookean springs, with stiffness
-$k_{cl}$ and rest length $l_{cl}$. Like actin filaments, the Young's modulus of
-most crosslinkers is significantly higher than would be reasonable to simulate; therefore we set $k_{cl} = 1-100pN/\mu m$ was
-so that the bending mode of actin filaments was signicantly softer than the stretching mode of
-crosslinkers. Their rest length $l_{cl}$ differs by the type of cross-linker and ranges from $~10 nm$ for fascin to $150 nm$
-for filamin. 
+Crosslinker proteins dynamically connect actin filaments, thereby propogating
+force from one to
+another. Thus model crosslinkers, must be able to attach and detach from actin
+filaments,
+and be compliant in order to propagate force. They are therefore modeled as
+hookean springs, with stiffness $k_{cl}$ and rest length $l_{cl}$. Like actin
+filaments, the Young's modulus of most crosslinkers is significantly higher than
+would be reasonable to simulate; therefore we set $k_{cl} = 1-100pN/\mu m$ was
+so that the bending mode of actin filaments was signicantly softer than the
+stretching mode of crosslinkers. Their rest length $l_{cl}$ differs by the type
+of cross-linker and ranges from $~10 nm$ for fascin to $150 nm$ for filamin. 
 \par
-At each time step of the simulation an unattached crosslinker head is allowed to attach to nearby
-filaments and an attached crosslinker head can detach. 
-The probability of a head attaching to an actin filament is a Gaussian distributed random variable, such that
+At each time step of the simulation an unattached crosslinker head is allowed to
+attach to nearby filaments and an attached crosslinker head can detach. 
+The probability of a head attaching to an actin filament is a Gaussian
+distributed random variable, such that
 \begin{equation}
   P_{cl}^{on} = k_{cl}^{on}dt\exp(-r^2/R^2)
   \label{eqn:cl_on}
 \end{equation} 
 where $r$ is the shortest distance from the head to the actin filament and $R = \sqrt{2k_B T\over k_{cl}}$ 
 where $k_B$ is Boltzmann's constant and $T$ is the temperature. 
-For crosslinker detachment we assume that the behavior is that of a slip bond, such that a higher
-tensile force along the crosslinker backbone will result in a higher probability of detachment. Thus, 
-\begin{equation}
+For crosslinker detachment we model the behavior as that of a slip bond,
+such that a higher tensile force along the crosslinker backbone will result in a 
+higher probability of detachment\cite{bell1978}. Thus, 
+\begin{equation} 
   P_{cl}^{off} = k_{cl}^{off} dt\exp{\left(  F x_{cl}/k_B T\right)}  
   \label{eqn:cl_off}
 \end{equation}
-where $F$ is the force along the crosslinker backbone, and $x_{cl}$ is a characteristic bond length \cite{stam2015}. 
+where $F$ is the force along the crosslinker backbone, and $x_{cl}$ is a
+characteristic bond length \cite{stam2015}. 
 \par
-When a crosslinker is bound to a filaments at both ends, it will necessarily be stretched or compressed. 
-If it were allowed to relax independently of the actin filaments to which it is bound. 
-it would no longer lie on those filaments. Therefore, the tensile force stored on a stretched or compressed
-crosslinker is propagated onto those actin filaments via the lever rule outlined in 
-\cite{nedelec2002, gordon2012}. Thus, if the tensile force of a motor at point $r_j$ between filament beads $i$ and $i+1$ is
-$F_{cl}$, then, 
+When a crosslinker is bound to a filaments at both ends, it will necessarily be
+stretched or compressed. If it were allowed to relax independently of the actin
+filaments to which it is bound it would no longer lie on those filaments.
+Therefore, the tensile force stored on a stretched or compressed crosslinker is
+propagated onto those actin filaments via the lever rule outlined in 
+\cite{nedelec2002, gordon2012}. Thus, if the tensile force of a motor at point
+$r_j$ between filament beads $i$ and $i+1$ is$F_{cl}$, then, 
 \begin{eqnarray} 
   F_i &=& F_{cl}\left|\left( {r_j - r_i \over r_{i+1} - r_i }\right)\right|\\\nonumber
   F_{i+1} &=& F-F_i 
   \label{eqn:lever}
 \end{eqnarray}
 will be the forces on beads $i$ and $i+1$ respectively due to the crosslinker.
-\subsection{Motors}\label{sec:methods_motors}
-Within the cytoskeleton, tens of myosin II motors aggregate into bipolar ensembles called myosin minifilaments
-\cite{stam2015}. While the mechanochemical process through which individual myosin motors walk along actin filaments is complex, 
-motility assay experiments have shown that on average bound myosin II heads walk at an unloaded speed of $v_0\approx1\mu m/s$ along actin
-filaments\cite{finer1994}. To a first approximation, minifilaments therefore should also 
-have a mean speed of $1\mu m/s$ (although see \cite{stam2015} and \cite{walcott2012} for higher order measurements). 
-Since myosin also functions to increase the local elasticity of networks wherever it is bound, the myosin is modeled
-similarly to a crosslinker, in that it behaves like a hookean spring with two heads, a stiffness $k_{m}$ and a rest
-length $l_m$. It should be noted, however, that the two heads of this spring do not correspond directly to individual
-molecular myosin heads; rather each of them represents tens of myosin molecules, and their rate constants will reflect
-that notion. 
-It would be undesirable for a myosin minifilament to stretch, 
-since experimentally they have a very high
-Young's modulus and it is unlikely that their length would change noticably in the cytoskeleton. Thus we set $k_m\gg\kappa_B/l_a$
-so that the bending of actin is still the softest mode. 
-The rest length was set to the average length of minifilaments \cite{niederman1975}.
-Attachment and detachment kinetics for motors are the same as for crosslinkers, subscripted with $m$
-instead of $cl$ in \Cref{eqn:cl_on,eqn:cl_off}. One extra parameter is needed $k_m^{end}$ for the
-detachment of myosin from the barbed end of a filament, as detachment from the end is significantly more probable than
-from the rest of the filament.
-Similarly, force propogation onto minifilaments is done using the lever rule described in \Cref{eqn:lever}.
+\subsection{Motors}\label{sec:methods_motors} 
+Within the cytoskeleton, tens of myosin II motors aggregate into bipolar
+ensembles called myosin minifilaments \cite{stam2015}.  
+Since myosin also functions to increase the local elasticity of networks
+wherever it is bound, the myosin is modeled similarly to a crosslinker, 
+with the subscript $m$ replacing the subscript $cl$ in \Cref{eqn:cl_on,eqn:cl_off,eqn:lever}
+One extra parameter is needed $k_m^{end}$ for the detachment of myosin from the
+barbed end of a filament, as detachment from the end occurs at different rates 
+than from the rest of the filament. 
 \par
 Unlike crosslinkers, motors process towards the barbed end of actin filaments to which they are bound 
-at speeds that vary depending on the tensile force along the crosslinker. 
-The relationship between motor velocity and tensile force is modeled linearly, such that the motor head 
-will speed up if the minifilament is
-compressed (pre-powerstroke) and slow down if the minifilament is stretched (post powerstroke) going to
+at speeds that vary depending on the tensile force along the crosslinker\cite{stam2015}.
+While the mechanochemical process through which individual myosin molecules walk
+along actin filaments is complex, motility assay experiments have shown that on
+average bound myosin II walk at an unloaded speed of $v_0\approx1\mu m/s$
+along actin filaments\cite{finer1994}. A mean field approximation would therefore yield
+that minifilaments would also precess toward filament barbed ends at $1\mu m/s$
+(although see \cite{stam2015} and \cite{walcott2012} for higher order measurements). 
+Therefore the relationship between motor velocity and tensile force is modeled linearly, 
+such that the motor head will speed up if the minifilament is compressed 
+(pre-powerstroke) and slow down if the minifilament is stretched (post powerstroke) going to
 $0$ when the force on the minifilament is the stall force $F_s\approx 3.85pN$ \cite{nedelec2002, gordon2012}; i.e.,  
 \begin{equation} 
   v(F_{||}) = v_0\left( 1-{F_{||}\over F_s}) \right)
@@ -652,44 +627,40 @@ where $F_{||}$ is the force on the motor, projected along the tangent vector of 
 actin filaments.
 The minor differences between crosslinkers and motors allow us treat them equivalently, by 
 setting $v_0 = 0$ for the crosslinkers.  
-
-\subsection{Dynamics}
-We Langevin dynamics to solve for the motion of actin filaments, myosin minifilaments and crosslinkers.
-The Langevin equations of motion for a spherical bead of
-mass $m$ and radius $R$ at position $r(t)$ at time $t$ can be written,
-\begin{equation}
-  m\ddot{r}(t) = F(t) + B(t) - 4\pi R\nu \dot{r}(t)
-  \label{eqn:lang}
-\end{equation} 
-where $F(t)$ is the force on the particle due to its interactions and $B(t)$ is Brownian forcing term, to simulate a temperature, $\nu$ is the dynamic viscosity of the bead's
-environment, and we have used the Einstein relation for the damping term.  
-Since the fastest motion in this simulation is that of the myosin, and a $0.4\mu m$ myosin minifilament moving at
-a speed of $1\mu m/s$ in a liquid at least as viscous as water ($\nu_D=10^6\mu m^2/s$ dynamic viscosity) has a very low Reynold's
-number ($Re \approx 4*10^{-7}$) we can treat the dynamics in the overdamped limit where the equation of motion is \Cref{eqn:lang} without the acceleration term, i.e. with $m=0$.
-Furthermore, in the limit of small $\Delta t$, we may write $\dot{r(t)} \approx {r(t+\Delta t)-r(t)\over \Delta t}$. These two
-approximations allow us to rewrite \Cref{eqn:lang} as 
+\subsection{Dynamics and Environment}
+We solve for the motion of actin filaments using Brownian dynamics (see 
+Supplement for justification), so that at
+each time, the position of each filament bead and motor (crosslinker) head is 
+updated via the equation
 \begin{equation}  
   r(t+\Delta t) = r(t) + F(t)\mu \Delta t + B(t) \mu \Delta t
 \label{eqn:overdamped}
 \end{equation}
-where $\mu = (4\pi R\nu)^{-1}$. For the Brownian term, we use the form of Leimkuhler and Matthews \cite{leimkuhler2012,leimkuhler2013} that has
-been shown to minimize deviations from canonical averages in harmonic systems,
+where $F(t)$ is the sum of internal and external forces on the bead (head), 
+and $\mu = (4\pi R\nu)^{-1}$ where $\nu$ is the environment's dynamics viscosity. 
+For the Brownian term, we use the form of
+Leimkuhler and Matthews \cite{leimkuhler2012,leimkuhler2013} that has
+been shown to minimize deviations from canonical averages in harmonic systems, 
 \begin{equation}
   B(t)=\sqrt{2k_BT\over\mu \Delta t}\left({W(t)+W(t-\Delta t)\over2}\right)
   \label{eqn:baoab_brownian}
 \end{equation} 
-where $W(t)$ is a Wiener process, in this case a random number drawn from the normal distribution with mean zero and standard deviation of unity.
-
-\subsection{Environment}
+where $W(t)$ is a Wiener process, in this case a random number drawn from the
+normal distribution with mean zero and standard deviation of unity.
 \par
-Because the probability of motor attachment decays as a Gaussian function of distance from the filament, it would be highly inefficient to attempt motor attachments with every filament in the simulation.  Rather, we choose to test for connections only within a cutoff distance
-$r_c>3R/2$ (where $R$ is defined above as in \Cref{eqn:cl_on}). A grid of lattice size $2r_c$ is drawn in the $2D$ plane of the simulation, and the position of a filament is approximated as the points on the grid nearest to the beads of the filament. Thus, to determine if a motor will bind to a filament at time $t$, it is sufficient to only attempt attachment to filaments that are indexed at the four nearest grid points to a motor. 
-\par
-In general, we use periodic boundary conditions so as to limit effects of a boundary and to mimic a system larger than the one we simulate. Lees-Edwards boundaries \cite{allen} were used for shearing simulations, and hard wall boundaries have also been implemented.
-The value for $\Delta t$ in \Cref{eqn:overdamped} generally depends on both the unloaded myosin speed
-$v_0$ and the largest stiffness in the simulation $k_f$. For $k_f = 10pN/\mu m$ and $v_0=1\mu m/s$ a value of $\Delta t = 0.00001 s$ was sufficiently low to solve \Cref{eqn:overdamped} for hundreds of seconds without spuriously generating configurations of very large energy.
-The length and width of the simulations were chosen so as to be high enough to avoid boundary artifacts. 
-A complete list of simulation parameters used throughout this article is provided in \Cref{tab:params}. 
+We use periodic boundary conditions so as to limit effects of a
+boundary and to mimic a system larger than the one we simulate. The value for 
+$\Delta t$ in\Cref{eqn:overdamped} generally depends on both the unloaded myosin 
+speed
+$v_0$ and the largest stiffness in the simulation $k_f$. For $k_f = 1pN/\mu m$
+and $v_0=1\mu m/s$ a value of $\Delta t = 0.0001 s$ was sufficiently low to
+solve \Cref{eqn:overdamped} for hundreds of seconds without spuriously
+generating configurations of very large energy. The length and width of the
+simulations were chosen so as to be high enough to avoid boundary artifacts. 
+Pseudocode of the complete simulation and a description of the neighbor list 
+implementation, used to calculate motor (crosslinker) binding, is available in 
+the supplement. A complete list of simulation parameters used throughout this
+article is provided in \Cref{tab:params}. 
 \begin{table}
   \caption{Parameter Values}
   \centering
@@ -738,12 +709,138 @@ A complete list of simulation parameters used throughout this article is provide
   \label{tab:params}
 \end{table}
 
-
-
 \section{Acknowledgements}  
-We thank M. Gardel, J. Weare, C. Matthews, F. Nedelec, F. Mackintosh, and M. Murrell for helpful conversations. This research was supported in part by the University of Chicago Materials Research Science and Engineering Center (NSF Grant No. 1420709). S.L.F. was supported by the Department of Defense (DoD) through the National Defense Science \& Engineering Graduate Fellowship (NDSEG) Program. G.M.H. was supported by an NIH Ruth L. Kirschstein NRSA award (1F32GM113415-01).
+We thank M. Gardel, J. Weare, C. Matthews, F. Nedelec, F. Mackintosh, and M.
+Murrell for helpful conversations. This research was supported in part by the
+University of Chicago Materials Research Science and Engineering Center
+(NSF Grant No. 1420709). S.L.F. was supported by the DoD
+through the NDSEG Program. G.M.H. was supported by an NIH Ruth L. Kirschstein
+NRSA award (1F32GM113415-01).
 \bibliography{actosim}
 \bibliographystyle{unsrt}
-
 \beginsupplement
+\section{Supplement}
+\subsection{Results}
+\subsubsection{Bundling dependence on crosslinker density}
+\subsubsection{Polarity sorting dependence on motor detachment rate}
+\subsubsection{Contractile dependence on motor detachment rate}
+\subsection{Methods}
+\subsubsection{Actin Filament Parameter Value Choices}
+For a confined semiflexible filament, it has been show that for a polymer of a
+given persistence length $L_p$, the shortest length that should be considered as
+unbending ($l_a$) is given by $l_a\approx A^{2/3}L_p^{1/3}$ where $A$ is a
+length scale associated with the confinement of the
+filament \cite{odijk1983}. In these simulations, filaments were confined by
+nearby motors and crosslinkers. Since the smallest motor or crosslinker density
+used was $\rho_m=0.1\mu m^{-2}$, $A\ge1/\sqrt{0.1\mu m^{-2}}\Rightarrow l_a\ge5\mu m$.
+In general, we used $l_a=1\mu m$. The bending force constant is derived from the
+persistence length $L_p$ such that $\kappa_B = L_p k_B T$ where $k_B$ is
+Boltzmann's constant and $T$ is the temperature . 
+\par
+Experimentally, the stretching force constant has been measured to be in the approximate range
+$k_a=40-70pN/nm$ \cite{kojima1994, higuchi1995}; however, simulating a
+network of filaments with this large of a stiffness is computationally
+inefficient since the maximum timestep of a simulation is inversely proportional
+to the largest stiffness in the simulation. Therefore, we chose ${\kappa_B\over
+l_a} <<k_a$, so that the filaments were still much easier to bend than to
+stretch, enabling us to run simulations of
+experimentally relevant dimension. We show that our simple filament model
+exhibits expected behavior for a semiflexible filament in the next section and
+we have further verified that $k_a$ did not effect the persistence length of the
+filament.
+\subsubsection{Explanation of \Cref{fig:filament}}
+Since actin bending is instrumental for actomyosin contraction, and simulating
+precise bending moduli is non-trivial, we tested our filaments by measuring 
+spatial and temporal fluctuations and comparing with theoretical predictions.
+In a two dimensional WLC, a bending of two adjacent segments is expected to
+result in a local change in free energy of ${\kappa_B\over2l_a\theta_i^2}$, and
+it is predicted that \cite{frontali1979}
+\begin{equation}
+  \langle\theta^2(l)\rangle = {l\over L_p}
+  \label{eqn:thsq}
+\end{equation}
+\begin{equation} 
+  \langle\cos(\theta(l))\rangle = \exp{(-l/2L_p)}
+  \label{eqn:costh}
+\end{equation} 
+where $\theta(l) = \theta_j - \theta_i$ where $1<i<j\le N$, $l = l_a(j-i)$ and
+$L_p$ is the persistence length. To test our model against these equations, we
+simulate $100$ filaments of $L=200\mu m$ and $\kappa_B=0.08 pN\mu m^2$ at
+$T=300K$ for $T_f = 100s$ and measured the resulting filament configuration
+every $1s$. We discard the first $10$ seconds of each simulation to allow
+equilibration, and we used only the middle $150 \mu m$ of the filament to
+calculate these correlation functions.
+We have also shown that the measured persistence length, obtained
+by performing a least squares fit to
+plots of $\log{(\langle cos(\theta(l))\rangle )} $ for various values of
+$\kappa_B$ yields the expected result over $3$ orders of magnitude. 
+\par
+An additional prediction for semiflexible filaments is the scaling of
+fluctuations with time. 
+Fluctuations transverse to the filament orientation have been 
+shown to increase as a function of time as $\langle dr_{\perp}^2\rangle\propto t^{3/4}$
+while longitudinal fluctuations have been shown to follow the power law
+$\langle dr_{||}^2\rangle\propto t^{7/8}$ \cite{everaers1999}. To tests these
+predictions, we followed the procedure outlined in
+\cite{everaers1999} and generated $N = 100$ initial filament configurations of a
+$20\mu m$ filament. For each configuration we ran $M = 100$ simulations of the
+filament fluctuating for $1s$. At each time step we collected the $2N$ positions
+of the filament ends, $r_e(t)$. We then calculated the eigenvalues of the
+covariance matrix $cov(r_e(t)\cdot \hat{i},r_e(t)\cdot \hat{j})$ where
+$i,j\in\{x,y\}$.
+The larger eigenvalue $\lambda_1(t)$ corresponds to the slower longitudinal fluctuations
+(i.e., $\lambda_1(t)\propto t^{7/8}$) while the smaller eigenvalue corresponded
+to the faster perpendicular fluctuations
+($\lambda_2(t)\propto t^{3/4}$). We show  in \Cref{fig:filament}B that our
+simulation exhibits scaling of these eigenvalues in good agreement with the
+prediction of Ref. \cite{everaers1999}.
+\subsection{Dynamics}
+The Langevin equations of motion for a spherical
+bead of mass $m$ and radius $R$ at position $r(t)$ at time $t$ can be written,
+\begin{equation}
+  m\ddot{r}(t) = F(t) + B(t) - 4\pi R\nu \dot{r}(t)
+  \label{eqn:lang}
+\end{equation} 
+where $F(t)$ is the force on the particle due to its interactions and $B(t)$ is
+Brownian forcing term, to simulate a temperature, $\nu$ is the dynamic viscosity
+of the bead's environment, and we have used the Einstein relation for the
+damping term. Since the fastest motion in this simulation is that of the myosin,
+and a $0.4\mu m$ myosin minifilament moving at a speed of $1\mu m/s$ in a liquid
+at least as viscous as water ($\nu_D=10^6\mu m^2/s$ dynamic viscosity) has a
+very low Reynold's number ($Re \approx 4*10^{-7}$) we can treat the dynamics in
+the overdamped limit where the equation of motion is \Cref{eqn:lang} without the
+acceleration term, i.e. with $m=0$. Furthermore, in the limit of small
+$\Delta t$, we may write $\dot{r(t)} \approx {r(t+\Delta t)-r(t)\over \Delta t}$.
+These two approximations allow us to rewrite \Cref{eqn:lang} as \Cref{eqn:overdamped} 
+\subsection{Neighbor list implementation}
+Because the probability of motor attachment decays as a Gaussian function of
+distance from the filament, it would be highly inefficient to attempt motor
+attachments with every filament in the simulation.  Rather, we choose to test
+for connections only within a cutoff distance
+$r_c>3R/2$ (where $R$ is defined above as in \Cref{eqn:cl_on}). A grid of
+lattice size $2r_c$ is drawn in the $2D$ plane of the simulation, and the
+position of a filament is approximated as the points on the grid nearest to the
+beads of the filament. Thus, to determine if a motor will bind to a filament at
+time $t$, it is sufficient to only attempt attachment to filaments that are
+indexed at the four nearest grid points to a motor. 
+\subsection{Algorithm Pseudocode}
+In pseudocode we can describe each timestep of the simulation as follows
+\begin{verbatim}
+For Each Bead on Each Filament:
+    Update force from filament stretching
+    Update force from filament bending\end{verbatim}
+\verb|    Update position via | \Cref{eqn:overdamped}\begin{verbatim}
+For Each Head on each Motor (cross-linker)
+    If head is unattached
+        try to attach
+        Add up forces (stretching)\end{verbatim}
+\verb|    Update position via | \Cref{eqn:overdamped}\begin{verbatim}
+    If head is attached\end{verbatim}
+\verb|        Update position via | \Cref{eqn:overdamped}\begin{verbatim}
+        Try to detach
+        If not detached 
+            Step toward barbed end
+            Update attached actin with stretch force
+Update neighbor lists
+\end{verbatim}
 \end{document}
