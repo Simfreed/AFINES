@@ -111,6 +111,7 @@ motor<filament_ensemble_type>::motor( array<double, 4> pos, double mlen, filamen
     hx[1] = posH1[0];
     hy[1] = posH1[1];
     
+    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     if (state[0]){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
