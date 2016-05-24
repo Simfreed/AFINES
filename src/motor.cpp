@@ -111,6 +111,7 @@ motor<filament_ensemble_type>::motor( array<double, 4> pos, double mlen, filamen
     hx[1] = posH1[0];
     hy[1] = posH1[1];
     
+    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     if (state[0]){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
@@ -306,7 +307,64 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
     //if(rnd()<0.5) vm *=-1;
 
     if (event(offrate)) this->detach_head(hd);
-    else                      move_end_detach(hd, pos_a_end[hd]+dt*vm);
+    else{
+        //(if vm > 0 ) update relative position
+       // if still attached: update absolute position
+        this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm);
+        if (state[hd]!=0) update_position_attached(hd);
+    }
+}
+
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::update_pos_a_end(int hd, double pos)
+{
+//    cout<<"\nDEBUG: new pos = "<<pos;
+    double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
+    if (pos >= link_length) { // "passed" the link
+        if (l_index[hd] == 0){ // the barbed end of the filament
+            if (event(kend)) {
+                this->detach_head(hd);
+            }
+            //else don't change pos_a_end
+        }
+        else{ 
+            /*Move the motor to the next link on the filament
+             *At the projected new position along that filament*/
+            l_index[hd] = l_index[hd] - 1;
+            pos_a_end[hd] = pos - link_length;
+    
+        }
+    }
+    else if (pos < 0) { //this shouldn't be possible, ftr
+        if (l_index[hd] == (actin_network->get_filament(f_index[hd])->get_nlinks() - 1)){ // the pointed end of the filament
+            if (event(koff)) {
+                this->detach_head(hd);
+            }
+            //else don't change pos_a_end
+        }
+        else{ 
+            /*Move the motor to the previous link on the filament
+             *At the projected new position along that filament*/
+            l_index[hd] = l_index[hd] + 1;
+            pos_a_end[hd] = pos + actin_network->get_llength(f_index[hd],l_index[hd]);    
+        }
+    }   
+    else {
+        pos_a_end[hd] = pos;
+    }
+       
+}
+
+template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::update_position_attached(int hd){
+
+    double posx = actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
+    double posy = actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
+
+    array<double, 2> newpos = boundary_check(hd, posx, posy);
+    
+    hx[hd] = newpos[0];
+    hy[hd] = newpos[1];
 
 }
 
@@ -341,47 +399,6 @@ void motor<filament_ensemble_type>::detach_head(int hd)
     pos_a_end[hd]=0;
     this->relax_head(hd);
     
-}
-
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::move_end_detach(int hd, double pos)
-{
-//    cout<<"\nDEBUG: new pos = "<<pos;
-    double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
-    if (pos >= link_length) { // "passed" the link
-        if (l_index[hd] == 0){ // the barbed end of the filament
-            if (event(kend)) {
-                this->detach_head(hd);
-                return;
-            }
-            //else don't change pos_a_end
-        }
-        else{ 
-            /*Move the motor to the next link on the filament
-             *At the projected new position along that filament*/
-            l_index[hd] = l_index[hd] - 1;
-            pos_a_end[hd] = pos - link_length;
-    
-        }
-    }
-    else {
-        pos_a_end[hd] = pos;
-    }
-       
-    update_position_attached(hd);
-}
-
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_position_attached(int hd){
-
-    double posx = actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
-    double posy = actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
-
-    array<double, 2> newpos = boundary_check(hd, posx, posy);
-    
-    hx[hd] = newpos[0];
-    hy[hd] = newpos[1];
-
 }
 
 template <class filament_ensemble_type>
