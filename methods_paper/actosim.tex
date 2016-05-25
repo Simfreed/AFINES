@@ -25,14 +25,14 @@
 
 \begin{document}
 
-\title{A versatile method for simulating the dynamic mechanical structure of cytoskeletal networks}
+\title{A versatile framework for simulating the dynamic mechanical structure of cytoskeletal networks}
 \author{Simon L. Freedman, Shiladitya Banerjee, Glen M. Hocky, Aaron R. Dinner}
 \date{}
 \maketitle
-\begin{abstract}
+\begin{abstract} 
   The cooperative mechanics of filamentous actin and myosin in the cytoskeleton comprise one of three active polymer
   networks that give the cell its shape, size, and motion. We have developed a computational model to study this network that incorporates 
-  the mechanical interactions of actin filaments, actin crosslinkers, and myosin motors to further
+  the mechanical properties of actin filaments, and interactions with actin crosslinkers,4 and myosin motors to further
   probe their behavior in a disordered ensemble, such as in vitro reconstitutions that mimic the cytoskeleton of non-muscle cells. 
   We will show that this model can reproduce the underlying mechanisms of reorganization
   present in crosslinked actomyosin networks. We benchmark this model against well established experimental results regarding fluctuations of
@@ -57,7 +57,8 @@ sarcomeres together, resulting in muscle contraction\cite{huxley1969}.
 However, in the cytoskeleton of nonmuscle cells, there is no inherent ordering of actin or myosin filaments, so while
 interactions between individual myosin and actin filaments exist, how 
 they act in concert to produce a variety of behaviors is an active area of research 
-that coule be further elucidated with an accurate computational model of the system\cite{murrell2012, stam2015, murrell2015}. 
+that could be further elucidated with an accurate computational model of the 
+system\cite{murrell2012, stam2015, murrell2015}. 
 \par
 The goal of this work is to present a mathematical model, in the form of a non-equilibrium molecular dynamics
 simulation, that can efficiently explore the structural and dynamical phase space of 
@@ -65,31 +66,34 @@ disordered ensembles of semiflexible filaments, molecular motors, and crosslinki
 This mathematical model can guide our understanding of the relationship between
 the microscopic biochemical protein-protein interactions and the macroscopic mechanical functionality of the ensemble. Additionally,
 because the model simulates filaments, motors, and crosslinkers in space and time, it will enable us to learn the trajectory
-of an ensemble, and how intermediate mesoscopic structures tune network functionality.
+of an ensemble, and the role intermediate mesoscopic structures play in tuning network functionality.
 \par
-The key achievements of this model are that it is well bench-marked to reproduce known experimental results for actin
+In this work, we demonstrate through a series of benchmarks, that our model 
+reproduces known experimental results for actin
 filaments, ensembles of actin and crosslinkers (passive networks), and ensembles of actin and myosin 
-(active networks). 
-At the polymer level, we will reproduce predicted spatio-temporal fluctuations of actin filaments. 
-For passive crosslinked networks we will reproduce known stress strain
-relationships. For active networks, we will reproduce well-understood velocity distributions of actin
-filaments in a myosin motility assay. Separately, we use the simulation to demonstrate how disordered ensembles of 
+(active networks): 
+for single polymers, we will reproduce predicted spatio-temporal fluctuations of actin filaments;
+for passive crosslinked networks we will reproduce known stress strain
+relationships; for active networks, we will reproduce well-understood velocity distributions of actin
+filaments in a myosin motility assay. In a subsequent study, we have applied this model to 
+demonstrate how disordered ensembles of 
 actin filaments and crosslinkers can be rearranged by myosin motors to form tunable structures with distinct biophysical and
 mechanical functionality\cite{freedman2016}.  
 \par
-While our simulation is primarily motivated by \textit{in vitro} and \textit{in vivo} experiments, the implementation 
+While the purpose of our simulation is to gain insight into the mechanisms
+underlying \textit{in vitro} and \textit{in vivo} experiments, the implementation 
 has been influenced by several other computational models of actin and myosin. 
 We briefly review these various computational models to show how other models have
-influenced ours, and where we differ.
+informed ours, and where we differ.
 Most prominently, a number of publications have dealt with understanding the rheological properties of crosslinked actin
 networks\cite{mackintosh1995, head2003, wilhelm2003, kim2009}.  
 For example, to study the viscoelasticity of passive networks,  Head, et al., simulated distributed actin filaments randomly 
 on a $2D$ plane, crosslinked filament intersections to form a force-propogating network, sheared 
-this network and let it relax to a minimum energy, corresponding to a chemical equilibrium \cite{head2003}. 
+this network and let it relax to a minimum energy, corresponding to a quasi-static equilibrium \cite{head2003}. 
 From this model, they were able to identify three elastic regimes,
 characterized by the mean distance between crosslinkers and the temperature. 
 Dasanyake, et. al., extended this model to include a term in the potential energy that corresponded to
-myosin motor activity, and observed the emergence of force chains that tramsmit stress throughout the network,
+myosin motor activity, and observed the emergence of force chains that transmit stress throughout the network,
 which could help understand how contractile stress can emerge from a disordered network \cite{dasanyake2011}.
 These models predict the mechanical equilibrium behavior of the actin / crosslinker and the actin / myosin
 systems; i.e., at a particular time, they answer questions such as, how well can this cytoskeletal network propogate
@@ -126,8 +130,7 @@ crosslinkers and myosins binding and unbinding, and the precessive activity of m
 Force propagation rules and binding kinetic equations will be similar to those of
 \cite{nedelec2007, gordon2012}. Our simulations will be most similar to those
 performed in references \cite{kim2014, ennomani2016} and we hope to expand on
-their methods of exploring actomyosin via agent based molecular dynamics by
-showing how they can shed light on a variety of systems of current experimental interest.
+their work to further shed light on a variety of systems of current experimental interest. 
 \section{Model}  
 In the interest of computational efficiency we have chosen to coarse grain actin filaments, myosin minifilaments, and
 crosslinker proteins at length scales relevant for network behavior. Actin filaments are
@@ -139,9 +142,9 @@ which is understood to increase the length-scale of network contraction \cite{mu
 into force propogating chains as observed in experiment \cite{gardel2004, murrell2012, murrell2014, freedman2016}. 
 Molecular motors are modeled as crosslinkers such
 that a head bound to a filament will walk toward the filament's barbed end. Thus motors can slide filaments,
-translocate across filaments, and increase network connectivity, which are instrumental mechanisms when determining
+translocate across filaments, and increase network connectivity, which are instrumental in determining
 network behavior\cite{murrell2014}. We chose to parameterize our model in $2D$ as the in vitro experiments we wish to
-interpret are relatively flat and
+interpret are quasi two-dimensional \cite{murrellTalk} and
 approximating the system as $2D$ allows us to simulate larger systems for longer times. Because we use a $2D$ system to
 represent a $3D$ experiment, we exclude steric interaction for our filaments and crosslinkers, to account for
 some of the freedom lost from the reduction in dimensionality. This implementation of filaments, motors and crosslinkers allows for 
@@ -154,13 +157,11 @@ both of which are instrumental for actomyosin contractility \cite{murrell2012}.
   \label{fig:toys}%
   Time series of three antiparallel $10\mu m$ filaments (red) interacting with a
   minimal set of motors (white) and crosslinkers (yellow) for $10s$. Barbed ends
-  of filaments are marked by a blue dot.  
+  of filaments are marked by a blue dot. Model is detailed in Section II.   
   (A) Filaments are semiflexible ($21$ bead-spring chain) and pinned on the left
   by a crosslinker, so the motor-filament interaction yields contraction via buckling. 
   (B) Filaments are rigid ($2$-bead-spring chains) and unpinned, so 
-  motor-filament interaction yields unimpeded sliding of filaments. As a result,
-  they transition from an initially extended state, to a contracted state
-  at $t=3s$ and back to a fully extended polarity sorted state at $t=10s$.
+  motor-filament interaction yields unimpeded sliding of filaments.
   (C) Filaments and motor are the same as (B) but with a population of
 crosslinkers near the filaments that arrests the filaments in a contracted state. } 
 \end{figure}
@@ -187,14 +188,16 @@ length scale associated with the confinement of the
 filament \cite{odijk1983}. In these simulations, filaments were confined by
 nearby motors and crosslinkers. Since the smallest motor or crosslinker density
 used was $\rho_m=0.1\mu m^{-2}$, $A\ge1/\sqrt{0.1\mu m^{-2}}\Rightarrow l_a\ge5\mu m$.
-In general, we used $l_a=1\mu m$. 
+In general, we used a smaller value, $l_a=1\mu m$, as motor induced buckling has been
+observed to lower the persistence length of F-actin. 
 \par
 The bending force constant is derived from the persistence length $L_p$ such that
 $\kappa_B = L_p k_B T$ where $k_B$ is Boltzmann's constant and $T$ is the temperature \cite{rubinstein}.
 Experimentally, the stretching force constant has been measured $k_a=40-70pN/nm$ \cite{kojima1994, higuchi1995};
 however, simulating a network of filaments with this large of a stiffness would
 have been computationally infeasible since the maximum timestep of a simulation is inversely
-proportional to the largest stiffness in the simulation. Therefore, we set ${\kappa_B\over l_a} <<k_a$, so that the filaments
+proportional to the largest stiffness in the simulation\cite{leimkuhler2015}. Therefore, we set
+${\kappa_B\over l_a} \ll k_a$, so that the filaments
 were much easier to bend than to stretch, enabling us to run network sized 
 simulations. We verified that $k_a$ did not effect the persistence length of the
 filament, as seen in the Supplement.
@@ -261,7 +264,7 @@ Attachment and detachment kinetics for motors are the same as for crosslinkers, 
 instead of $cl$ in \Cref{eqn:cl_on,eqn:cl_off}. One extra parameter is needed $k_m^{end}$ for the
 detachment of myosin from the barbed end of a filament, as detachment from the end is significantly more probable than
 from the rest of the filament.
-Similarly, force propogation onto minifilaments is done using the lever rule described in \Cref{eqn:lever}.
+Force propogation onto minifilaments is done using the lever rule described in \Cref{eqn:lever}.
 \par
 Unlike crosslinkers, motors precess towards the barbed end of actin filaments to which they are bound 
 at speeds that linearly decrease with tensile force along the motor. 
@@ -288,8 +291,8 @@ where $B(t)$ is Brownian forcing term, to simulate a temperature, $\nu$ is the d
 environment, and we have used the Einstein relation for the damping term.  
 Since the fastest motion in this simulation is that of the myosin, and a $0.4\mu m$ myosin minifilament moving at
 a speed of $1\mu m/s$ in a liquid at least as viscous as water ($\nu_D=10^6\mu m^2/s$ dynamic viscosity) has a very low Reynold's
-number ($Re \approx 4*10^{-7}$) we assume the dynamics are overdamped and set $m=0$ in \Cref{eqn:lang}.
-Furthermore, in the limit of small $\Delta t$, we may write $\dot{r(t)} \approx {r(t+\Delta t)-r(t)\over \Delta t}$. These two
+number ($Re \approx 4*10^{-7}$) we treat the dynamics as overdamped and set $m=0$ in \Cref{eqn:lang}.
+Furthermore, in the limit of small $\Delta t$, we may write $\dot{r}(t) \approx {r(t+\Delta t)-r(t)\over \Delta t}$. These two
 approximations allow us to rewrite \Cref{eqn:lang} as 
 \begin{equation}  
   r(t+\Delta t) = r(t) + F(t)\mu \Delta t + B(t) \mu \Delta t
@@ -413,7 +416,7 @@ that the horizontal position of every actin bead ($x_a$) was shifted according t
   x_a \rightarrow x_a + \delta\gamma \left( {y_a\over Y} \right)
   \label{eqn:sllod}
 \end{equation} 
-following the overdamped \"Sllod\" equations of motion \cite{evans1984}. The 
+following the overdamped ``Sllod'' equations of motion \cite{evans1984}. The 
 periodic boundary was simulatenously shifted following the the Lees-Edwards 
 convention \cite{allen}. The mesh was then allowed to relax for
 $t_{relax} =0.001 s$ before the next strain of $\gamma$. This protocol was 
@@ -467,10 +470,10 @@ $w\propto\gamma^{3.5}$, as previously reported in experiments\cite{gardel2004, k
 While the force dependent detachment and speed of an individual myosin motor is
 a model input (Methods) the ensemble behavior of many motors could provide
 a benchmark that the simulation is capable of reproducing dynamics observed in 
-actin motility assays \cite{riveline1998, walcott2012}. In a classical motility
-assay experiment, a layer of myosin is adhered to a plate, and actin filaments
+actin motility assays \cite{riveline1998, walcott2012}. In a classic motility
+assay, a layer of myosin is adhered to a plate, and actin filaments
 are placed on top of the motoros. Because the myosin cannot diffuse, they
-instead slide the actin filament across the assay. Although this experiment
+instead slide the actin filament. Although this experiment
 typically involves single myosin heads, and not myosin minifilaments, we believe
 that functionally the situations would be equivalent, with the substitution that
 each model motor head approximates the activity of dozens of single molecule
@@ -505,21 +508,21 @@ head\cite{kron1986}. \Cref{fig:motility}(C) shows that aside from being
 propelled, filaments are also buckled in the presence of a large number of
 motors, as filament strain, defined as
 \begin{equation} 
-  \Delta s = \left(1 - {|r_{15}-r_0|\over\sum_{i=1}^{15}{|r_i-r_{i-1}|}}\right) 
+  \Delta s = \left(1 - {|r_N-r_0|\over\sum_{i=1}^N{|r_i-r_{i-1}|}}\right) 
   \label{eqn:fil_strain}
 \end{equation} 
-where $r_i$ is the position of the $i^{th}$ bead on a filament, increases with 
+where $r_i$ is the position of the $i^{th}$ bead on an $N$ bead filament, increases with 
 increasing $\rho_m L^2 r_D$.
 Although there are no explicit crosslinkers, at a high enough concentration, 
 motors near the barbed end of a filament will pin the filaments for a short 
 time, and induce buckling the same way crosslinkers do in contractile networks, 
-similar to the effects observed in experiment \cite{schaller2010}.
+as observed in experiment \cite{schaller2010}.
 \begin{figure}[H] 
     \centering
     \includegraphics[scale=1.2]{figs/motility/mot_fig.pdf}
   \caption{%
   \label{fig:motility}%
-  Driving filament motion by increasing the duty ratio of motors in a motility assay. 
+  Increasing probability of motor-filament interaction drives filament motion in a motility assay. 
   (A) Position of a filament for $\rho_m = 10\mu m^{-2}$ and $L = 16\mu m$ for
   different values of the duty ratio. White filament is the configuration at
   $t=0$ and dark red represents $t=90s$. Blue dot marks the barbed end of
@@ -535,16 +538,18 @@ similar to the effects observed in experiment \cite{schaller2010}.
  }
 \end{figure}
 \section{Discussion}
-The goal of this paper is to introduce a framework that could accurately and efficiently simulate active networks of F-actin,
+The goal of this paper is to introduce a framework that can accurately and efficiently simulate active networks of F-actin,
 myosin, and crosslinker proteins to explore the various structural phases that this system can produce. In doing so, we
-have shown that our model passes a series of tests. We use a widely tunable semiflexible polymer model, that
+have shown that our model passes a series of representative tests. We use a widely tunable semiflexible polymer model, that
 reproduces experimental and theoretical predictions of spatiotemporal fluctuations. We have reproduced the strain stiffening
 behaviors observed in experimental assays, and shown how their stiffness could be related to the relative energy
 contributions of filaments and crosslinkers. We have qualitatively reproduced sliding filament assays and predicted
 crossover points between transversely diffusive and longitudinally precessive motion. 
+Separately we address a number of possible actomyosin networks that include collective behavior 
+and show that we can effectively explore them using our model \cite{freedman2016,stam2016}.
 \par
-While this model is thorough in what it aims to simulate it is limited by a few experimental observations that are
-currently not implemented. First, the structure of myosin minifilaments is significantly more complex than a two headed
+While this model is thorough in what it aims to simulate, it is limited by a few experimental observations that are
+not included in this version. First, the structure of myosin minifilaments is significantly more complex than a two headed
 spring. As mentioned, these minifilaments have dozens of heads, which allows them to walk along multiple filaments and
 could result in subdiffusive behavior \cite{scholz2016} and significantly increase local network elasticity
 \cite{murrellTalk}.
@@ -556,16 +561,14 @@ dimensionality and volume exclusion may play important roles. While we intend to
 works, we believe that the successful benchmarking of the simulation at various levels is a significant argument in favor of the
 current setup.
 \par 
-Separately we address a number of possible actomyosin networks that include collective behavior 
-and show that we can effectively explore them using our model \cite{freedman2016,stam2016}.
-We believe this simulation can shed light on other active polymer assemblies as well,
+We believe this framework can be used to shed light on other active polymer assemblies as well,
 such as microtubule-kinesin-dynein networks, and that it can help 
 elucidate the coupling between microscopic machinery and the biological scaffold 
-that comprises the active cytoskeleton. Since the model is parameterized using many 
+that comprise the active cytoskeleton. Since the model is parameterized using many 
 experimentally manipulateable variables, we also hope that this simulation can be used
 by experimentalists to efficiently zero in on biologically relevant and structurally interesting
 polymer network phases. 
-We believe this simulation can also be used to design biologically-based active
+Additionally, this simulation can be used to design biologically-based active
 materials and guide our understanding a variety of systems outside the 
 cytoskeleton that involve collective dynamics and self-assembly.
 \section{Acknowledgements}  
