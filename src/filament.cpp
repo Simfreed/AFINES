@@ -209,7 +209,7 @@ void filament::update_positions()
     int sa = int(actins.size());
     int la = int(links.size());
     for (int i = 0; i < sa; i++){
-       
+
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
         new_rnds = {rng_n(), rng_n()};

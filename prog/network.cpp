@@ -42,11 +42,12 @@ int main(int argc, char* argv[]){
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force, bending_fracture_force; // Links
 
-    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff;// Active Motors (i.e., "myosin")
+    double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
+           a_m_stall, a_m_break, a_m_bind;// Active Motors (i.e., "myosin")
     string a_motor_pos_str; 
     
     double p_motor_length, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
-            p_motor_v=0, p_m_kon, p_m_kend, p_m_koff; 
+            p_motor_v=0, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_break, p_m_bind; 
     string p_motor_pos_str;
     
     string config_file, filament_type, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
@@ -113,7 +114,15 @@ int main(int argc, char* argv[]){
         ("p_m_kend", po::value<double>(&p_m_kend)->default_value(1000),"passive motor off rate at filament end")
         ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.150),"passive motor rest length (um) (default: filamin)")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(10),"passive motor spring stiffness (pN/um)")
-        
+       
+        ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
+        ("p_m_break", po::value<double>(&p_m_break)->default_value(40),"force at which xlinks will almost definitely detach (pN)")
+        ("p_m_bind", po::value<double>(&p_m_bind)->default_value(0.04),"binding energy of xlink (pN-um) (10kT by default)")
+
+        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(3.85),"force beyond which motors don't walk (pN)")
+        ("a_m_break", po::value<double>(&a_m_break)->default_value(40),"force at which motors will almost definitely detach (pN)")
+        ("a_m_bind", po::value<double>(&a_m_bind)->default_value(0.04),"binding energy of motor (pN-um) (10kT by default)")
+
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
@@ -293,11 +302,11 @@ int main(int argc, char* argv[]){
     if (a_motor_pos_vec.size() == 0)
         myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, actin_length, viscosity, a_motor_position_arrs, bnd_cnd);
+                a_m_kend, a_m_stall, a_m_break, a_m_bind, viscosity, a_motor_position_arrs, bnd_cnd);
     else
         myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, actin_length, viscosity, bnd_cnd);
+                a_m_kend, a_m_stall, a_m_break, a_m_bind, viscosity, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
@@ -306,11 +315,11 @@ int main(int argc, char* argv[]){
     if(p_motor_pos_vec.size() == 0)
         crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
-                p_m_kend, actin_length, viscosity, p_motor_position_arrs, bnd_cnd);
+                p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
-                p_m_kend, actin_length, viscosity, bnd_cnd);
+                p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
     // Write the output configuration file

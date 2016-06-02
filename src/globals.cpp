@@ -40,6 +40,7 @@ double rng_exp(double mean)
 
 void set_seed(int s){
     generator.seed(s);
+    srand(s);
 }
 
 double rng_n()

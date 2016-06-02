@@ -15,8 +15,10 @@
 //motor_ensemble class
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
-        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, double ron, double roff, double rend, 
-        double actin_len, double vis, vector<array<double,3> > positions, string BC) {
+        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, 
+        double ron, double roff, double rend, 
+        double fstall, double fbreak, double bindEng,
+        double vis, vector<array<double,3> > positions, string BC) {
     
     fov = myfov;
     mld =mlen;
@@ -47,15 +49,17 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
         motor_pos = {motorx, motory, mang};
 
         n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
-                    v0, stiffness, max_ext_ratio, ron, roff, rend, actin_len, vis, BC));
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
         
     }
 }
 
 template <class filament_ensemble_type>
 motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
-        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, double ron, double roff, double rend, 
-        double actin_len, double vis, string BC) {
+        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, 
+        double ron, double roff, double rend, 
+        double fstall, double fbreak, double bindEng,
+        double vis, string BC) {
     
     fov = myfov;
     mld = mlen;
@@ -64,6 +68,9 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
     f_network=network;
     v = v0;
 
+    ke = 0;
+    pe = 0;
+    
     int nm = motors.size();
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
 
@@ -80,7 +87,7 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
 
         n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
-                    v0, stiffness, max_ext_ratio, ron, roff, rend, actin_len, vis, BC));
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
     }
 }
 
@@ -148,6 +155,7 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 
     this->check_broken_filaments();
     int nmotors_sz = int(n_motors.size());
+    bool attached;
     //#pragma omp parallel for
     
     for (int i=0; i<nmotors_sz; i++) {
@@ -157,24 +165,28 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
         
         if (t >= tMove){
            
-            if (s[0] == 1)         n_motors[i]->step_onehead(0);
-            else if (s[0] == 0)    n_motors[i]->brownian_relax(0);
-            if (s[1] == 1)         n_motors[i]->step_onehead(1);
-            else if (s[1] == 0)    n_motors[i]->brownian_relax(1);
+            if (s[0] == 1)         
+                n_motors[i]->step_onehead(0);
+            else if (s[0] == 0)    
+            {
+                attached = n_motors[i]->attach(0);
+                if (!attached)
+                    n_motors[i]->brownian_relax(0);
+            }
             
+            if (s[1] == 1)         
+                n_motors[i]->step_onehead(1);
+            else if (s[1] == 0)
+            {
+                attached = n_motors[i]->attach(1);
+                if (!attached) 
+                    n_motors[i]->brownian_relax(1);
+            }
+
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
             //n_motors[i]->update_force_fraenkel_fene();
             n_motors[i]->actin_update();
-        }
-        
-        if (!s[0]){
-            n_motors[i]->attach(0);
-            //if(attached && s[1] == 0) n_motors[i]->relax_head(1);
-        }
-        if (!s[1]){
-            n_motors[i]->attach(1);
-            //if(attached && s[0] == 0) n_motors[i]->relax_head(0);
         }
     
     }

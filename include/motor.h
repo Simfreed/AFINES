@@ -29,20 +29,20 @@ class motor
         motor(array<double, 3> pos, double mlen, filament_ensemble_type* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
                 array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio, 
-                double ron, double roff,
-                double rend, double actin_len, double vis, string BC);
+                double ron, double roff, double rend, 
+                double fstall, double fbreak, double bindEng,
+                double vis, string BC);
         
         motor(array<double, 4> pos, double mlen, filament_ensemble_type* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
                 array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio,
-                double ron, double roff,
-                double rend, double actin_len, double vis, string BC);
+                double ron, double roff, double rend, 
+                double fstall, double fbreak, double bindEng,
+                double vis, string BC);
 
         ~motor();
 
         string get_BC();
-
-        double tension();
 
         bool attach( int hd);
 
@@ -105,8 +105,8 @@ class motor
         string write();
     private:
 
-        double mphi,mld, mobility, vs, dm, stall_force, mk, kon, koff, kend, dt, temperature, 
-               actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor;
+        double mphi,mld, mobility, vs, stall_force, break_force, binding_eng, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
+               actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
         
