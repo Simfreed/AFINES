@@ -19,6 +19,8 @@ LIB := -L /software/boost-1.50-el6-x86_64/lib/ -L lib -lboost_unit_test_framewor
 # LIB := 
 INC := -I include  -I /usr/include/ -I /usr/local/include/
 
+NOW := $(shell date +"%c" | tr ' :' '_')
+
 $(TARGET): $(OBJECTS)
 	  @echo " Linking..."
 	    @echo " $(CC) $^ -o $(TARGET) $(LIB)"; $(CC) $^ -o $(TARGET) $(LIB)
@@ -38,6 +40,9 @@ clean:
 clean_debug:
 	  @echo " Cleaning..."; 
 	    @echo " $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)"; $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)
+
+tar:
+	tar cfv tars/amxbd.tar src/*.cpp include/*.h
 
 # Programs
 persistence_length: $(OBJECTS)
