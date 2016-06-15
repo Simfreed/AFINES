@@ -105,7 +105,7 @@ class motor
         string write();
     private:
 
-        double mphi,mld, mobility, vs, stall_force, break_force, binding_eng, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
+        double mphi,mld, mobility, vs, stall_force, break_force, var_bind_dist, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
                actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;

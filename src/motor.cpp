@@ -34,8 +34,8 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos,
     
     stall_force   = fstall;
     break_force   = fbreak;
-    binding_eng   = engBind;
-    max_bind_dist = 1.5*sqrt(engBind/stiffness);
+    max_bind_dist = sqrt(engBind/stiffness);
+    var_bind_dist = (2.0/3.0)*engBind/stiffness;
 
     mld         = mlen;
     dt          = delta_t;
@@ -107,8 +107,8 @@ motor<filament_ensemble_type>::motor( array<double, 4> pos,
     
     stall_force = fstall;
     break_force = fbreak;
-    binding_eng = engBind;
-    max_bind_dist = 1.5*sqrt(engBind/stiffness);
+    max_bind_dist = sqrt(engBind/stiffness);
+    var_bind_dist = (2.0/3.0)*engBind/stiffness;
     
     mld         = mlen;
     dt          = delta_t;
@@ -224,7 +224,7 @@ bool motor<filament_ensemble_type>::attach(int hd)
                 break;
             else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 
-                onrate=kon*exp(-0.5*mk*mf_dist*mf_dist/binding_eng);
+                onrate=kon*exp(-mf_dist*mf_dist/var_bind_dist);
                 
                 //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
                 

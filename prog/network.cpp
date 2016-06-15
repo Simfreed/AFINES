@@ -103,15 +103,15 @@ int main(int argc, char* argv[]){
         ("p_motor_pos_str", po::value<string> (&p_motor_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
         ("a_m_kon", po::value<double>(&a_m_kon)->default_value(9000),"active motor on rate")
-        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1000),"active motor off rate")
-        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(1000),"active motor off rate at filament end")
+        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1),"active motor off rate")
+        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(1),"active motor off rate at filament end")
         ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.4),"active motor rest length (um)")
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(10),"active motor spring stiffness (pN/um)")
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
         
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(9000),"passive motor on rate")
-        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(1000),"passive motor off rate")
-        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(1000),"passive motor off rate at filament end")
+        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(1),"passive motor off rate")
+        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(1),"passive motor off rate at filament end")
         ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.150),"passive motor rest length (um) (default: filamin)")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(10),"passive motor spring stiffness (pN/um)")
        
@@ -119,8 +119,8 @@ int main(int argc, char* argv[]){
         ("p_m_break", po::value<double>(&p_m_break)->default_value(40),"force at which xlinks will almost definitely detach (pN)")
         ("p_m_bind", po::value<double>(&p_m_bind)->default_value(0.04),"binding energy of xlink (pN-um) (10kT by default)")
 
-        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(3.85),"force beyond which motors don't walk (pN)")
-        ("a_m_break", po::value<double>(&a_m_break)->default_value(40),"force at which motors will almost definitely detach (pN)")
+        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(10),"force beyond which motors don't walk (pN)")
+        ("a_m_break", po::value<double>(&a_m_break)->default_value(10),"force at which motors will almost definitely detach (pN)")
         ("a_m_bind", po::value<double>(&a_m_bind)->default_value(0.04),"binding energy of motor (pN-um) (10kT by default)")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
