@@ -116,11 +116,11 @@ int main(int argc, char* argv[]){
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(10),"passive motor spring stiffness (pN/um)")
        
         ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
-        ("p_m_break", po::value<double>(&p_m_break)->default_value(40),"force at which xlinks will almost definitely detach (pN)")
+        ("p_m_break", po::value<double>(&p_m_break)->default_value(10),"force constant for xlink detachment (related to rupture force F_r, P(detach | F_r) -> 1) (pN)")
         ("p_m_bind", po::value<double>(&p_m_bind)->default_value(0.04),"binding energy of xlink (pN-um) (10kT by default)")
 
         ("a_m_stall", po::value<double>(&a_m_stall)->default_value(10),"force beyond which motors don't walk (pN)")
-        ("a_m_break", po::value<double>(&a_m_break)->default_value(10),"force at which motors will almost definitely detach (pN)")
+        ("a_m_break", po::value<double>(&a_m_break)->default_value(10),"force constant for motor detachment (pN)")
         ("a_m_bind", po::value<double>(&a_m_bind)->default_value(0.04),"binding energy of motor (pN-um) (10kT by default)")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
