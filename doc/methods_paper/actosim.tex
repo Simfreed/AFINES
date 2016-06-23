@@ -151,7 +151,7 @@ motor-driven filament sliding and filament buckling, as seen in \Cref{fig:toys},
 both of which are instrumental for actomyosin contractility \cite{murrell2012}.
 \begin{figure}[H]  
   \centering
-  \includegraphics[width=\textwidth]{figs/minimal.pdf}
+  \includegraphics[width=\textwidth]{figs/minimal_white.pdf}
   \caption{
   \label{fig:toys}%
   Time series of three antiparallel $10\mu m$ filaments (red) interacting with a
@@ -218,19 +218,21 @@ At each time step of the simulation an unattached crosslinker head is allowed to
 filaments and an attached crosslinker head can detach. 
 The probability of a head attaching to an actin filament is a Gaussian distributed random variable, such that
 \begin{equation}
-  P_{cl}^{on} = k_{cl}^{on}\Delta t\exp(-k_{cl}r^2/2a_{cl}k_BT)
+  P_{cl}^{on} = k_{cl}^{on}\Delta t\exp(-k_{cl}r^2/U_{cl}^B)
   \label{eqn:cl_on}
 \end{equation} 
-where $r$ is the shortest distance from the head to the actin filament and $k_B$ is Boltzmann's constant
-$T$ is the temperature and $a_{cl}$ is dimensionless and related to the chemical potential of the bond. 
-For crosslinker detachment we assume that the behavior is that of a slip bond with Bell's law behavior, 
-such that a higher
+where $r$ is the shortest distance from the head to the actin filament and $U_{cl}^B$ 
+is the binding energy of the crosslinker. 
+For crosslinker detachment we assume that the behavior is that of a slip bond i
+with Bell's law behavior, such that a higher
 tensile force along the crosslinker backbone will result in a higher probability of detachment\cite{bell1978}. Thus, 
 \begin{equation}
-  P_{cl}^{off} = k_{cl}^{off} dt\exp{\left(  F_{cl} x_{cl}/k_B T\right)}  
+  P_{cl}^{off} = k_{cl}^{off} dt\exp{\left(max\{T_{cl},0\}/F_{cl}^{rup}\right)}
   \label{eqn:cl_off}
 \end{equation}
-where $F$ is the force along the crosslinker backbone, and $x_{cl}$ is a characteristic bond length \cite{stam2015}. 
+where $T_{cl}$ is the tension along the crosslinker backbone, and $F_{cl}^{rup}$
+is the force required to rupture the bond that a crosslinker form between two 
+actin filaments \cite{ferrer2008}. 
 \par
 When a crosslinker is bound to a filaments at both ends, it will necessarily be stretched or compressed. 
 If it were allowed to relax independently of the actin filaments to which it is bound, 
@@ -268,7 +270,7 @@ Unlike crosslinkers, motors precess towards the barbed end of actin filaments to
 at speeds that linearly decrease with tensile force along the motor. 
 The motor head therefore is fastest if the minifilament is
 compressed (pre-powerstroke) and slowest if the minifilament is stretched (post powerstroke) 
-going to $0$ when the force on the minifilament is the stall force $F_s\approx 3.85pN$ \cite{nedelec2002, gordon2012}; i.e.,  
+going to $0$ when the force on the minifilament is the stall force $F_s\approx 10pN$ \cite{nedelec2002, gordon2012}; i.e.,  
 \begin{equation} 
   v(F_{||}) = v_0\left( 1-{F_{||}\over F_s} \right)
     \label{eqn:myo_vel}
@@ -280,11 +282,11 @@ setting $v_0 = 0$ for the crosslinkers.
 \subsection{Dynamics}
 We use overdamped Langevin dynamics to solve for the motion of actin filaments, myosin minifilaments and crosslinkers.
 The Langevin equations of motion for a spherical bead of
-mass $m$, radius $R$ at position $r(t)$ at time $t$, being forced by an external force $F(t)$ is
+mass $m$, radius $R$ at position $r(t)$ at time $t$, forced by $F(t)$ is
 \begin{equation}
   m\ddot{r}(t) = F(t) + B(t) - 4\pi R\nu \dot{r}(t)
   \label{eqn:lang}
-\end{equation} 
+\end{equation}  
 where $B(t)$ is a Brownian forcing term, to simulate temperature, $\nu$ is the dynamic viscosity of the bead's
 environment, and we have used the Einstein relation for the damping term.  
 Since the fastest motion in this simulation is that of the myosin, and a $0.4\mu m$ myosin minifilament moving at
@@ -292,7 +294,7 @@ a speed of $1\mu m/s$ in a liquid at least as viscous as water ($\nu_D=10^6\mu m
 number ($Re \approx 4\dot10^{-7}$) we treat the dynamics as overdamped and set $m=0$ in \Cref{eqn:lang}.
 Furthermore, in the limit of small $\Delta t$, we may write $\dot{r}(t) \approx {r(t+\Delta t)-r(t)\over \Delta t}$. These two
 approximations allow us to rewrite \Cref{eqn:lang} as 
-\begin{equation}  
+\begin{equation}   
   r(t+\Delta t) = r(t) + F(t)\mu \Delta t + B(t) \mu \Delta t
   \label{eqn:overdamped}
 \end{equation}
@@ -406,19 +408,26 @@ filaments in a $(75\mu m)^2$ cell. A $0.150\mu m$ crosslink
 intersection.  
 To inhibit network restructuring, the detachment rate of the crosslinkers was 
 set to zero. $24$ shear simulations were performed, each with a different 
-crosslinker stiffness. An affine strain of $\delta\gamma=0.001$ was applied such
-that the horizontal position of every actin bead ($x_a$) was shifted according to  
+crosslinker stiffness. 
+Planar Couette flow was simulated using the ``Sllod'' equations by substituting
 \begin{equation}
-  x_a \rightarrow x_a + \delta\gamma \left( {y_a\over Y} \right)
+  F_x(t)\rightarrow F_x(t) + \dot{gamma}y(t)
+  \label{eqn:evans}
+\end{equation}
+for the $x$ component of equation \Cref{eqn:lang} for the actin beads 
+\cite{evans1984}. In an overdamped, periodic system, this substitution 
+simplifies to shifting the horizontal position of a bead ($x_i$) by 
+\begin{equation}
+  x_i \rightarrow x_i + \delta\gamma \left( {y_i\over Y} \right)
   \label{eqn:sllod}
-\end{equation} 
-following the overdamped ``Sllod'' equations of motion \cite{evans1984}. The 
-periodic boundary was simulatenously shifted following the the Lees-Edwards 
-convention \cite{allen}. The mesh was then allowed to relax for
-$t_{relax} =0.001 s$ before the next strain of $\gamma$. This protocol was 
-continued for $T_f=0.5s$ allowing the total strain to reach a value:
-$\gamma T_f/t_{relax}=0.5$. Increasing $t_{relax}$ did not significantly change 
-the simulation results as seen in the Supplement.
+\end{equation}
+where $\delta gamma=\Delta t \dot{gamma}$ and $Y$ is the simulation cell height,
+and shifting the boundary conditions following the Lees-Edwards convention 
+\cite{allen}. We found that using $\delta gamma=0.001$, and allowing the mesh
+to relax for $t_{relax} =0.001 s$ after each strain
+maintained a thermodynamically stable planar Couette flow (see Supplement for 
+details). This protocol was performed for $T_f=0.5s$ allowing the total strain 
+to reach a value: $\gamma T_f/t_{relax}=0.5$. 
 \par
 The elastic behavior of the network for each crosslinker stiffness was measured
 by calculating $w$, the strain energy density at each timestep
@@ -440,7 +449,7 @@ as well as the strain stiffening regimes of $w\propto\gamma^3$ and
 $w\propto\gamma^{3.5}$, previously reported in experiments\cite{gardel2004, kasza2009}. 
 \begin{figure}[H]
   \centering
-  \includegraphics[scale=1.2]{figs/shear_result.pdf}
+  \includegraphics[scale=1.2]{figs/shear_result_white.pdf}
   \caption{%
     \label{fig:stress}%
     Tunable elasticity of crosslinked actin meshes. 
@@ -602,6 +611,58 @@ polymer network phases.
 Additionally, this simulation can be used to design biologically-based active
 materials and guide our understanding of a variety of systems outside the 
 cytoskeleton that involve collective dynamics and self-assembly.
+\section{Implementation}
+The model is implemented as an OpenSource C++ package which is available to the public
+through BitBucket.org. Installation instructions are available in the README.txt 
+file in the top directory of the package. Once one has compiled the executable and created
+the output directories, one can run a simulation. 
+\par
+For example, if one wants to run a simulation of a cell that is $(75\mu m)^2$, with $500$ actin 
+filaments that are each $15\mu m$, $5\ \textrm{motors}/\mu m^2$, and $1\ \textrm{crosslinker}/\mu m^2$,
+of a $100s$ long trajectory, then first one would write a ``config'' file 
+my\_config.cfg
+\begin{verbatim}
+xrange=75
+yrange=75
+
+npolymer=500
+nmonomer=16
+
+a_motor_density=5
+p_motor_density=1
+
+tf=100
+dir=``test''
+\end{verbatim}
+In general, myosin are described as active motors (a\_motor) and crosslinkers as
+passive motors (p\_motor) in these arguments. One should then create the directories 
+test/txt\_stack and test/data. 
+If the executable file's name is bin/nt (default) then to run this program, one would enter
+\begin{verbatim}
+./bin/nt -c my_config.cfg
+\end{verbatim}
+into a Unix style command line interface. 
+or, equivalently,
+\begin{verbatim}
+./bin/nt --xrange 75 --yrange 75 --npolymer 500 --nmonomer 16 \
+--a_motor_density 5 --p_motor_density 1 --tf 100 --dir test
+\end{verbatim}
+When all other parameters were left as defaults (see \Cref{tab:options}),
+the executable was compiled using ``g++'' with the ``-O3'' optimization flag,
+and the simulation was run on an Intel E5-2670 node with $2GB$ of memory and a $2.6GHz$ 
+processor, this example finished in less than 3 days. In general, the simulation 
+scales linearly with the number of components, so that a simulation with 
+$\textrm{npolymer} = 1000$, $\textrm{a\_motor\_density}=5\sqrt{2}$ and $\textrm{p\_motor\_density}=\sqrt{2}$ 
+will run twice as long. 
+\par
+The total kinetic, stretching potential and bending potential energies of all actin 
+filaments, all crosslinkers, and all myosins are displayed at set intervals
+(see ``nmsgs'' parameter in \Cref{tab:options}) to stdout.
+Additional output of the simulation is written to 5 files. The trajectories of 
+actin beads (actins.txt), actin links (links.txt), crosslinkers (pmotors.txt) 
+and myosin motors (amotors.txt) are written to the directory test/txt\_stack.
+The total bending, stretching, and kinetic energies on individual actin filaments
+are written to the file test/data/thermo.txt. 
 \section{Acknowledgements}  
 We thank M. Gardel, J. Weare, C. Matthews, F. Nedelec, F.C. Mackintosh, and M. Murrell for helpful conversations. 
 This research was supported in part by the
@@ -635,8 +696,8 @@ NRSA award (1F32GM113415-01).
     $k^{on}_m\Delta t$ & Attachment probability at distance $r=0$& n/a & n/a &$[0.000025, 1]$ & $0.9$\\
     $k^{off}_m\Delta t$ & Detachment probability at force $F_{m}=0$& n/a & n/a & $0.05$ & $0.05$\\
     $k^{end}_m\Delta t$ & Detachment probability at filament barbed end for $F_m=0$ & n/a & n/a & $1$ & $0.5$ \\
-    $a_m$ & Chemical potential factor& n/a & n/a & 5 & 5\\
-    $x_m$ & characteristic bond length ($\mu m$) \cite{stam2015}& n/a & n/a & $0.001$ & $0.001$\\
+    $U_m^B$ & Binding energy ($pN\mu m$)& n/a & n/a & $0.04$ & $0.04$\\
+    $F_m^{rup}$ & Rupture force ($pN$) & n/a & n/a & $10$ & $10$\\
     $v_0$ & Unloaded speed ($\mu m/s$) \cite{kron1986}&  n/a & n/a & $1$ & $1$\\
     $F_s$ & Stall force of myosin ($pN$)\cite{veigel2003}& n/a & n/a & $3.85$ & $3.85$\\
     \hline
@@ -646,8 +707,8 @@ NRSA award (1F32GM113415-01).
     $k_{cl}$ & Stiffness ($pN/\mu m$)& n/a & $[0.1,1000]$ & n/a & $1$ \\
     $k^{on}_{cl}\Delta t$ & Attachment probability at distance $r=0$ & n/a & $1$ & n/a & $0.9$ \\
     $k^{off}_{cl}\Delta t$ & Detachment probability at force $F_{cl}=0$& n/a & $0$ & n/a & $0.00005$ \\
-    $a_{cl}$ & Chemical potential factor& n/a & 5 &n/a & 5\\
-    $x_{cl}$& characteristic bond length ($\mu m$) & n/a & $0.05$ & n/a & $0.05$ \\
+    $U_{cl}^B$ & Chemical potential factor& n/a & $0.04$ &n/a & $0.04$\\
+    $F_{cl}^{rup}$& Rupture force ($pN$) \cite{ferrer2008}& n/a & $10$ & n/a & $10$ \\
     \hline
     &\bf{Environment} & & & &\\
     \hline
@@ -663,4 +724,43 @@ NRSA award (1F32GM113415-01).
   \end{tabular}
   \label{tab:params}
 \end{table}
+\begin{table}
+  \caption{Program Options}
+  \centering
+  \begin{tabular}{|C{1.5cm}|L{7cm}|C{1.5cm}|C{1.5cm}|C{2cm}|C{1.5cm}|}
+    \hline\hline
+    Symbol & Description (units) [ref] & $L_p$ & Shear & Motility Assay & Network \\
+    \hline
+  \end{tabular}
+  \label{tab:options}
+\end{table}
+\section{Derivation of \Cref{eqn:sllod}}
+Planar Couette flow can be simulated using equations $4.1$ in 
+\cite{evans1984} which reads
+\begin{eqnarray}
+  \ddot{x}_i&=&F_{xi}+\dot{gamma}y_i\\\nonumber
+  \ddot{y}_i&=&F_{yi}\nonumber
+  \label{eqn:evans_full}
+\end{eqnarray}
+Comparing with \Cref{eqn:lang} for Langevin dynamics, we can substitute 
+$F_{xi} = F_x(t) + B_x(t) - 4\pi R\nu\dot{r}(t)$. With the Brownian dynamics
+approximation of $\ddot{x}_i=0$, we can then see that equation $4.1$ of 
+\cite{evans1984} becomes a combination of \Cref{eqn:overdamped,eqn:sllod}. 
+\section{Stability of Filament Model}
+While the only 
+\begin{figure}[H]
+  \centering
+  \includegraphics{figs/pl_supp.pdf}
+  \caption{Dependence of semiflexible filament on input parameters 
+  (A) $<\theta^2>$ as a function of countour distance between tangent angles for
+  different input bending moduli. Plotted on log scale, to highlight increased 
+  persistence length for higher bending moduli. Black line has slope $1$.
+ (B) Value of $L_p$ obtained by fitting a line to plots in (A).
+ (C) Dependence of $L_p$ on stiffness of Hookean springs that connect
+ filament beads. 
+ (D) Dependence of $L_p$ on length of the springs that connect filament beads. 
+ }
+  \label{fig:pl_supp}
+\end{figure}
+
 \end{document}
