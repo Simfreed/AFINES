@@ -7,8 +7,8 @@
 ### System Requirements ###
 Minimally, this system requires gcc+11 and boost which you can load on midway via the commands:
 
-    >>>module load gcc
-    >>>module load boost
+    >module load gcc
+    >module load boost
 
 ### QUICKSTART GUIDE ###
 
@@ -49,11 +49,14 @@ Minimally, this system requires gcc+11 and boost which you can load on midway vi
     * output/data/output.txt //some metadata about the simulation
 
     All files are tab delimited
-    txt_stack/actins.txt has the format
-    x y r idx
+   txt_stack/actins.txt has the format
+
+```
+   x y r idx
         (x, y)  = bead position, 
         r  = bead radius 
         idx = index of filament that the bead is on
+```
 
     txt_stack/links.txt has the format
     x y dx dy idx
