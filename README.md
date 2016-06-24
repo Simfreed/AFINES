@@ -10,6 +10,12 @@ Minimally, this system requires gcc+11 and boost which you can load on midway vi
     > module load gcc
     > module load boost
 ```
+
+On a Mac, you can install Boost via MacPorts, with the command
+```
+sudo port install boost
+```
+
 ### QUICKSTART GUIDE ###
 
 * If you don't already have a bin directory, create one with:
@@ -22,34 +28,39 @@ Minimally, this system requires gcc+11 and boost which you can load on midway vi
     ```
  * [clean] will delete the old executable
  * [tar] will generate the file tars/amxbd.tar.gz
+ * IF this doesn't work, then there's probably a dependency or linker issue. 
+   * Make sure you have Boost installed
+   * Find the folder with the "*boost*.dylib" or "*boost*.a" folders; when I installed Boost using MacPorts, it was
+     `/opt/local/lib/` . Add `-L <mylibraryfolder>` to the line that begins `LIB:=` in the makefile
+   * Find the folder with the boost/*.h files; when I installed Boost using MacPorts, it was `/opt/local/include/`. 
+   Add `-I <myincludefolder>` to the line that begins `INC :=` in the makefile.
 
 * You should now have an executable file called bin/nt. NOTE: you only need to recreate this file if you edit the source
   code.
 
-* Create an output directory for your simulation (not necessarily named "output") as well as the "txt_stack" and "data"
+* Create an output directory for your simulation (not necessarily named "out/test") as well as the "txt_stack" and "data"
   directories (necessarily named "txt_stack" and "data") e.g. with the commands:
 
     ```
-    >mkdir output
-    >mkdir output/txt_stack
-    >mkdir output/data
+    >mkdir -p out/test/txt_stack
+    >mkdir -p out/test/data
     ```
 
 * Run your simulation in the specified output output directory, e.g., 
     ``` 
-    >./bin/nt --dir output
+    >./bin/nt --dir out/test
     ```
 
 * See below for other simulation configuration options that you can set from the command line or from a configuration
   file
 
 * Once your simulation has completed, the following files will have been generated:
- * output/txt_stack/actins.txt //the trajectories of every actin bead
- * output/txt_stack/links.txt //the trajectories of every link 
- * output/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
- * output/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
- * output/data/thermo.txt //the energies of actin filaments
- * output/data/output.txt //some metadata about the simulation
+ * out/test/txt_stack/actins.txt //the trajectories of every actin bead
+ * out/test/txt_stack/links.txt //the trajectories of every link 
+ * out/test/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
+ * out/test/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
+ * out/test/data/thermo.txt //the energies of actin filaments
+ * out/test/data/output.txt //some metadata about the simulation
 
 All files are tab delimited 
 
