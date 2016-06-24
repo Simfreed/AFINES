@@ -18,7 +18,7 @@ Minimally, this system requires gcc+11 and boost which you can load on midway vi
 
 * If you don't already have an executable, run the command: 
   
-    >>> make [clean] [tar] network 
+    >make [clean] [tar] network 
     
     [clean] will delete the old executable
     [tar] will generate the file tars/amxbd.tar.gz
@@ -29,13 +29,13 @@ Minimally, this system requires gcc+11 and boost which you can load on midway vi
 * Create an output directory for your simulation (not necessarily named "output") as well as the "txt_stack" and "data"
   directories (necessarily named "txt_stack" and "data") e.g. with the commands:
 
-    >>>mkdir output
-    >>>mkdir output/txt_stack
-    >>>mkdir output/data
+    >mkdir output
+    >mkdir output/txt_stack
+    >mkdir output/data
 
 * Run your simulation in the specified output output directory, e.g., 
     
-    >>>./bin/nt --dir output
+    >./bin/nt --dir output
 
 * See below for other simulation configuration options that you can set from the command line or from a configuration
   file
