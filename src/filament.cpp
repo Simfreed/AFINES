@@ -397,7 +397,7 @@ vector<actin *> filament::get_actins(unsigned int first, unsigned int last)
     vector<actin *> newactins;
     for (unsigned int i = first; i < last; i++)
     {
-        if (i < 0 || i >= actins.size())
+        if (i >= actins.size())
             break;
         else
             newactins.push_back(new actin(*(actins[i])));

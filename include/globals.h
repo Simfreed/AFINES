@@ -38,7 +38,7 @@
 #include <unordered_set>
 #include <limits>
 #include <cstddef>
-#include <omp.h>
+// #include <omp.h>
 #include <random>
 
 using namespace std;

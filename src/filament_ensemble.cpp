@@ -198,7 +198,7 @@ void filament_ensemble<filament_type>::update_positions()
     int net_sz = int(network.size());
     for (int f = 0; f < net_sz; f++)
     {
-        if (f==0) cout<<"\nDEBUG: update_positions: using "<<omp_get_num_threads()<<" cores";  
+        //if (f==0) cout<<"\nDEBUG: update_positions: using "<<omp_get_num_threads()<<" cores";  
         network[f]->update_positions();
     }
 
@@ -415,8 +415,7 @@ void filament_ensemble<filament_type>::update_bending()
     
     for (int f = 0; f < net_sz; f++)
     {
-        if (f==0) cout<<"\nDEBUG: update_bending: using "<<omp_get_num_threads()<<" cores";  
-     
+        //if (f==0) cout<<"\nDEBUG: update_bending: using "<<omp_get_num_threads()<<" cores";  
         network[f]->update_bending(t);
     }
 }
@@ -428,7 +427,7 @@ void filament_ensemble<filament_type>::update_stretching(){
     int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
     for (int f = 0; f < s; f++)
     {
-        if (f==0) cout<<"\nDEBUG: update_stretching: using "<<omp_get_num_threads()<<" cores";  
+        //if (f==0) cout<<"\nDEBUG: update_stretching: using "<<omp_get_num_threads()<<" cores";  
         this->update_filament_stretching(f);
     }
 }
