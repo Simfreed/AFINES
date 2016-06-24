@@ -12,13 +12,14 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
-# CFLAGS := -O3 -Wall -std=c++0x -DBOOST_TEST_DYN_LINK -openmp # -pg
- CFLAGS := -O3 -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -fopenmp # -g
-#CFLAGS := -O3 -Wall -std=c++11 -fopenmp # -g
-CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -fopenmp -pg
-LIB := -L /software/boost-1.61-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options
-# LIB := 
-INC := -I include  -I /usr/include/ -I /usr/local/include/
+
+CFLAGS := -O3 -Wall -Wno-missing-braces -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp # -g
+CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp -pg
+
+# LIB := -L /software/boost-1.61-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options # FOR MIDWAY
+LIB := -L /opt/local/lib/ -lboost_unit_test_framework-mt -lboost_program_options-mt # FOR MAC
+
+INC := -I include  -I /usr/include/ -I /usr/local/include/ -I /opt/local/include/
 
 NOW := $(shell date +"%c" | tr ' :' '_')
 
