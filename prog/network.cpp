@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
     double actin_length, npolymer, nmonomer;                                // Actin 
     string actin_pos_str;
     
-    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force, bending_fracture_force; // Links
+    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
            a_m_stall, a_m_break, a_m_bind;// Active Motors (i.e., "myosin")
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
             p_motor_v=0, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_break, p_m_bind; 
     string p_motor_pos_str;
     
-    string config_file, filament_type, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
+    string config_file, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
     
     string   dir,    afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
@@ -102,18 +102,18 @@ int main(int argc, char* argv[]){
         ("a_motor_pos_str", po::value<string> (&a_motor_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
         ("p_motor_pos_str", po::value<string> (&p_motor_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
-        ("a_m_kon", po::value<double>(&a_m_kon)->default_value(9000),"active motor on rate")
-        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(1),"active motor off rate")
-        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(1),"active motor off rate at filament end")
+        ("a_m_kon", po::value<double>(&a_m_kon)->default_value(100),"active motor on rate")
+        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(20),"active motor off rate")
+        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(20),"active motor off rate at filament end")
         ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.4),"active motor rest length (um)")
-        ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(10),"active motor spring stiffness (pN/um)")
+        ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(1),"active motor spring stiffness (pN/um)")
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
         
-        ("p_m_kon", po::value<double>(&p_m_kon)->default_value(9000),"passive motor on rate")
-        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(1),"passive motor off rate")
-        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(1),"passive motor off rate at filament end")
+        ("p_m_kon", po::value<double>(&p_m_kon)->default_value(100),"passive motor on rate")
+        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(20),"passive motor off rate")
+        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(20),"passive motor off rate at filament end")
         ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.150),"passive motor rest length (um) (default: filamin)")
-        ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(10),"passive motor spring stiffness (pN/um)")
+        ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(1),"passive motor spring stiffness (pN/um)")
        
         ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
         ("p_m_break", po::value<double>(&p_m_break)->default_value(10),"force constant for xlink detachment (related to rupture force F_r, P(detach | F_r) -> 1) (pN)")
@@ -126,8 +126,7 @@ int main(int argc, char* argv[]){
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
-        ("bending_fracture_force", po::value<double>(&bending_fracture_force)->default_value(1000000), "pN-- filament breaking point")
-        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(10), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
+        ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
         
         ("strain_pct", po::value<double>(&strain_pct)->default_value(0), "pct that the boundarys get sheared")
@@ -147,10 +146,6 @@ int main(int argc, char* argv[]){
         
         ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
         ("myseed", po::value<int>(&myseed)->default_value(time(NULL)), "Random number generator myseed")
-        ("filament_type", po::value<string>(&filament_type)->default_value("BAOAB"), "type of filament / integrator to use.\
-                                                                            Options: (1) BD = Ermak Yeh Brownian Dynamics\
-                                                                                     (2) BAOAB = Charlie's Overdamped BAOAB\
-                                                                                     (3) LLF = Langevin Leap Frog")
         
         ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "flag to put a cross link at all filament intersections")
         ("motor_intersect_flag", po::value<bool>(&motor_intersect_flag)->default_value(false), "flag to put a motor at all filament intersections")
