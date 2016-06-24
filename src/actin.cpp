@@ -2,8 +2,7 @@
  *  actin.cpp
  *  
  *
- *  Created by Shiladitya Banerjee on 9/3/13.
- *  Adapted into spherical setting by Simon Freedman, 3/2015
+ *  Created by Simon Freedman and Shiladitya Banerjee
  *  Copyright 2013 University of Chicago. All rights reserved.
  *
  */

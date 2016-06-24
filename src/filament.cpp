@@ -2,7 +2,7 @@
  *  filament.cpp
  *  
  *
- *  Created by Simon Freedman on 12/22/2014
+ *  Created by Simon Freedman and Shiladitya Banerjee
  *  Copyright 2014 University of Chicago. All rights reserved.
  *
  */

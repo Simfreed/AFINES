@@ -2,8 +2,7 @@
  *  globals.cpp
  *  
  *
- *  Adapted by Simon Freedman on 9/12/14
- *  Created by Shiladitya Banerjee on 9/3/13.
+ *  Created by Simon Freedman and Shiladitya Banerjee
  *  Copyright 2013 University of Chicago. All rights reserved.
  *
  */

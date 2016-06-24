@@ -1,9 +1,8 @@
 /*
- *  actin.cpp
+ *  filament_ensemble.cpp
  *  
  *
- *  Created by Shiladitya Banerjee on 9/3/13.
- *  Modified by Simon Freedman 9/2014
+ *  Created by Simon Freedman and Shiladitya Banerjee
  *  Copyright 2013 University of Chicago. All rights reserved.
  *
  */
