@@ -10,13 +10,6 @@ Minimally, this system requires gcc+11 and boost which you can load on midway vi
     >>>module load gcc
     >>>module load boost
 
-If you'd like to use my plotter, then you need Mathematica. 
-Assuming you're accessing midway through ThinLinc, you can open mathematica through an interactive
-computing node with the commands:
-
-    >>>module load mathematica/9.0
-    >>>mathematica
-
 ### QUICKSTART GUIDE ###
 
 * If you don't already have a bin directory, create one with:
@@ -25,7 +18,10 @@ computing node with the commands:
 
 * If you don't already have an executable, run the command: 
   
-    >>> make network 
+    >>> make [clean] [tar] network 
+    
+    [clean] will delete the old executable
+    [tar] will generate the file tars/amxbd.tar.gz
 
 * you should now have an executable file called bin/nt. NOTE: you only need to recreate this file if you edit the source
   code.
@@ -37,7 +33,7 @@ computing node with the commands:
     >>>mkdir output/txt_stack
     >>>mkdir output/data
 
-* Run your simulation by executing your executable and specifying your output directory, e.g., 
+* Run your simulation in the specified output output directory, e.g., 
     
     >>>./bin/nt --dir output
 
@@ -45,31 +41,53 @@ computing node with the commands:
   file
 
 * Once your simulation has completed, the following files will have been generated:
-    * output/txt_stack/rods.txt //the positions of every rod (actin) at every time step
-    * output/txt_stack/links.txt //the positions of every link (these connect actin rods to make actin filaments) at
-                                    every time step)
-    * output/txt_stack/a_motors.txt //the positions of all active motors (e.g., myosin) at every time step
-    * output/txt_stack/p_motors.txt //the positions of all passive motors (e.g., pmotors) at every time step
+    * output/txt_stack/actins.txt //the trajectories of every actin bead
+    * output/txt_stack/links.txt //the trajectories of every link 
+    * output/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
+    * output/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
+    * output/data/thermo.txt //the energies of actin filaments
     * output/data/output.txt //some metadata about the simulation
 
-    "position" in each case is a 4 tuple: (xcm, ycm, dx, dy)
-    i.e., the center of mass position as well as the length in both dimensions of the particle. 
-    Thus, the angle of the rod phi = ArcTan[dy/dx]
-          it's length l = Sqrt[dy^2 + dx^2]
-          the position of the pointed end = (xcm + l/2 Cos[phi], ycm + l/2 Sin[phi])
-          the position fo the barbed  end = (xcm - l/2 Cos[phi], ycm - l/2 Sin[phi])
+    All files are tab delimited
+    txt_stack/actins.txt has the format
+    x y r idx
+        (x, y)  = bead position, 
+        r  = bead radius 
+        idx = index of filament that the bead is on
+
+    txt_stack/links.txt has the format
+    x y dx dy idx
+        (x, y) = end position of link closer to the barbed end of filament 
+        (x + dx, y + dy) = end position of link farther from barbed end 
+        idx = index of filament the link is on
+
+    txt_stack/amotors.txt and txt_stack/pmotors.txt have the format
+    x y dx dy fidx0 fidx1 lidx0 lidx1
+        (x, y) = position of head 0 of motor
+        (x + dx, y + dy) = position of head 1 of motor
+        fidx0 = index of filament that head 0 is attached to (-1 if not attached)
+        fidx1 = index of filament that head 1 is attached to (-1 if not attached)
+        lidx0 = index of link that head 0 is attached to (-1 if fidx0 = -1)
+        lidx1 = index of link that head 1 is attached to (-1 if fidx1 = -1)
+
+    data/thermo.txt has the format 
+    KE PE TE idx
+        KE = total v^2 of filament 
+        PE = total potential energy of filament
+        TE = KE + PE
+        idx = filament index
     
-    The time associated with the positions is on it's own line before each list of positions within the file. 
-    thus the structure of these files is:
+    The time associated with the positions/energies is on it's own line before 
+    each list of positions within the file. Thus the structure of actins.txt is:
 
     t = t1
-    x1, y1, dx1, dy1
+    x1, y1, r1, idx1
     .
     .
     .
-    xn, yn, dxn, dyn
+    xn, yn, rn, idxn
     t=t2
-    x1, y1, dx1, dy1,
+    x1, y1, r1, idx1,
     .
     .
     .
@@ -77,15 +95,9 @@ computing node with the commands:
     .
     .
     .
-    xn, yn, dxn, dyn
+    xn, yn, rn, idxn
 
-* To plot the simulations, I wrote a mathematica script located at 
-
-    analysis/simPlot.nb
-
- that can be opened within Mathematica. It was written using Mathematica 9.0, but I think will work with any version 8.0
- or higher. You're free to plot the simulations with your favorite plotter, in case you don't like Mathematica.  
-
+    And similarly for other output files
 ### Configurable settings ###
 
 Currently the following options for a simulation can be set upon execution, either from the command line, or within a
@@ -100,48 +112,83 @@ of 0.05 you would enter the command:
 
 For an example configuration file, see below:
 
-* xrange (double)  [default : 50] = size of cell in horizontal direction (um)
-* yrange (double)  [default : 50] = size of cell in vertical direction (um)
-         
-* dt (double)  [default : 0.001] = length of individual timestep in seconds
-* tfinal (double)  [default : 10] = length of simulation in seconds
-* nframes (int)  [default : 1000] = number of frames of actin/link/motor positions printed to file (equally distant in
+***********ENVIRONMENT**************
+
+* xrange (double)  [default : 50um] = size of cell in horizontal direction
+* yrange (double)  [50um] = size of cell in vertical direction 
+* grid_factor (double) [1um^(-2)] = number of grid boxes 
+* dt (double)  [0.0001s] = length of individual timestep
+* tinit (double) [0s] = time that recording of simulation starts
+* tfinal (double)  [10s] = length of simulation
+* nframes (int)  [1000] = number of frames of actin/link/motor positions printed to file (equally distant in
   time)
-* nmsgs (int)  [default : 10000] = number of timesteps between printing simulation progress to stdout
-        
-* viscosity (double)  [default : 0.5] = Implicity viscosity to determine friction [um^2 / s]
-* temperature,temp (double)  [default : 0.004] = Temp in kT [pN-um] that effects magnituded of Brownian component of simulation
-* bnd_cnd,bc (string)  [default : "NONE"] = boundary conditions
+* nmsgs (int)  [10000] = number of timesteps between printing simulation progress to stdout
+* viscosity (double)  [0.001 mg/um*s]  = Dynamic viscosity
+* temperature,temp (double)  [0.004 pN-um] = Temp in energy units 
+* bnd_cnd,bc (string)  ["PERIODIC"] = boundary conditions
+* dir (string) ["out/test"] = directory for output files
+* myseed int (time(NULL)) = seed of random number generator
          
-* nmonomer (double)  [default : 1] = number of monomers per filament
-* npolymer (double)  [default : 3] = number of polymers in the network
-* actin_length (double)  [default : 10] = Length of a single actin monomer
-* actin_pos_str (string)   [default : ""] = Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions
+***********ACTIN PROPERTIES**********
+
+* nmonomer (double)  [11] = number of beads per filament
+* npolymer (double)  [3] = number of polymers in the network
+* actin_length (double)  [0.5um] = Length of a single actin monomer
+* actin_pos_str (string)   [""] = Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions
+* link_length (double)  [0] = Length of links connecting monomers
+* polymer_bending_modulus (double)  [0.04pn*um^2] = Bending modulus of a filament
+* fracture_force (double)  [1000000pN] = filament breaking point
+* bending_fracture_force (double)  [1000000pN] = filament breaking point
+* link_stretching_stiffness,ks (double)  [1 pN/um] = stiffness of link
          
-* a_motor_density (double)  [default : 0.001] = number of active motors / area
-* p_motor_density (double)  [default : 0.001] = number of passive motors / area
-* a_motor_pos_str (string)   [default : ""] = Starting positions of motors, commas delimit coordinates; semicolons delimit positions
-         
-* a_m_kon (double)  [default : 90.0] = active motor on rate
-* a_m_koff (double)  [default : 1] = active motor off rate
-* a_m_kend (double)  [default : 5] = active motor off rate at filament end
-* a_motor_stiffness (double)  [default : 50] = active motor spring stiffness (pN/um)
-         
-* p_m_kon (double)  [default : 90] = passive motor on rate
-* p_m_koff (double)  [default : 0] = passive motor off rate
-* p_m_kend (double)  [default : 0] = passive motor off rate at filament end
-* p_motor_stiffness (double)  [default : 50] = passive motor spring stiffness (pN/um)
-         
-* link_length (double)  [default : 0] = Length of links connecting monomers
-* polymer_bending_modulus (double)  [default : 0.04] = Bending modulus of a filament
-* fracture_force (double)  [default : 1000000] = pN-- filament breaking point
-* bending_fracture_force (double)  [default : 1000000] = pN-- filament breaking point
-* link_stretching_stiffness,ks (double)  [default : 10] = stiffness of link, pN/um
-* use_linear_bending,linear (bool)  [default : true] =option to send spring type of bending springs
-* shear_rate (double)  [default : 0] = shear rate in pN/(um-s)
-         
-* dir (string)  [default : "out/test"] = output directory
-* seed (int)  [default : time(NULL] )= Random number generator seed
+
+***********MOTOR PROPERTIES**********
+
+* a_motor_density (double)  [0.05 um^(-2)] = number of active motors 
+* a_motor_pos_str (string)   [""] = Starting positions of motors, commas delimit coordinates; semicolons delimit positions
+* a_m_kon (double)  [100 s^(-1)] = active motor on rate
+* a_m_koff (double)  [20 s^(-1)] = active motor off rate
+* a_m_kend (double)  [20 s^(-1)] = active motor off rate at filament end
+* a_motor_stiffness (double)  [10 (pN/um)] = active motor spring stiffness
+* a_motor_length (double)  [0.4 um] = length of motor
+* a_m_stall (double) [10pN] = stall force of motors
+* a_m_break (double) [10pN] = rupture force of motors
+* a_m_bind (double) [0.04pN*um] = binding energy
+* a_motor_v (double) [1um/s] = velocity along filaments towards barbed end when attached
+* motor_intersect_flag (boolean) [false] = if true, then motors are placed at filament intersections
+* a_linkage_prob (double) [1] = probability that filaments are linked by a motor if motor_intersect_flag = true
+* dead_head_flag (boolean) [false] = if true, then head [dead_head] of all motors remains stationary throughout sim
+* dead_head (int) [0] = can be 0 or 1; head that remains stationary if dead_head_flag=true
+
+***********XLINK PROPERTIES**********
+
+* p_motor_density (double)  [0.05] = number of passive motors / um^2
+* p_motor_pos_str (string)   [""] = Starting positions of xlinks, commas delimit coordinates; semicolons delimit positions
+* p_m_kon (double)  [100 s^(-1)] = passive motor on rate
+* p_m_koff (double)  [20 s^(-1)] = passive motor off rate
+* p_m_kend (double)  [20 s^(-1)] = passive motor off rate at filament end
+* p_motor_stiffness (double)  [50 s^(-1)] = xlink spring stiffness (pN/um)
+* p_motor_length (double)  [0.4 s^(-1)] = length of xlink
+* p_m_stall (double) [0pN] = stall force
+* p_m_break (double) [10pN] = rupture force
+* p_m_bind (double) [0.04pN*um] = binding energy
+* link_intersect_flag (boolean) [false] = if true, then crosslinks are placed at filament intersections
+* p_linkage_prob (double) [1] = probability that filaments are crosslinked if link_intersect_flag = true
+* p_dead_head_flag (boolean) [false] = if true, then head [p_dead_head] of all xlinks remains stationary throughout sim
+* p_dead_head (int) [0] = can be 0 or 1; head that remains stationary if p_dead_head_flag=true
+* static_cl_flag (boolean) [false] = should be set to true if xlinks start off attached to filaments and never detach
+
+*********SHEAR PROPERTIES**************
+
+* strain_pct (double)  [0] = pre-strain (e.g., 0.5 means a strain of 0.5*xrange)
+* time_of_strain (double) [0] = time of pre-strain
+
+* d_strain_pct (double)  [0] = differential strain (e.g., 0.5 means a strain of 0.5*xrange)
+* time_of_dstrain (double) [10000] = time when differential strain begins
+* diff_strain_flag (boolean) [false] = flag to use if differential strain should be linear (in one direction)
+* osc_strain_flag (boolean) [false] = flag to use if differential strain should be oscillatory (like Gardel, Science 2004)
+* n_bw_shear (int) [10^8] = number of timesteps between subsequent differential strains 
+* d_strain_freq (double) [1] = frequency of differential oscillatory strain
 
 ### Configuration file Example ###
 The following is an example of a configuration file named example.cfg 
@@ -156,12 +203,13 @@ nmonomer=1
 dt=0.001
 nframes=2000
 tfinal=100
-actin_length=10
+actin_length=0.5
 a_motor_density=0.05
 p_motor_density=0.5
 actin_pos_str=0,0,0
 
 /////Example ends at the line above////
+
 ### Contribution guidelines ###
 
 * None yet, I should make some!
