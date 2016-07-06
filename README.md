@@ -26,14 +26,23 @@ sudo port install boost
     ```
     > make [clean] [tar] network 
     ```
- * [clean] will delete the old executable
- * [tar] will generate the file tars/amxbd.tar.gz
- * IF this doesn't work, then there's probably a dependency or linker issue. 
-   * Make sure you have Boost installed
-   * Find the folder with the "*boost*.dylib" or "*boost*.a" folders; when I installed Boost using MacPorts, it was
-     `/opt/local/lib/` . Add `-L <mylibraryfolder>` to the line that begins `LIB:=` in the makefile
-   * Find the folder with the boost/*.h files; when I installed Boost using MacPorts, it was `/opt/local/include/`. 
-   Add `-I <myincludefolder>` to the line that begins `INC :=` in the makefile.
+    * [clean] will delete the old executable
+    * [tar] will generate the file tars/amxbd.tar.gz
+    * IF this doesn't work, then there's probably a dependency or linker issue. Try each of the following solutions in the order prescribed, and attempt to compile in between. 
+        1. Make sure you have Boost installed 
+        2. Find the folder with the "*boost*.dylib" or "*boost*.a" folders; when I installed Boost using MacPorts, it was `/opt/local/lib/` . Run the command:
+
+                 export BOOST_ROOT=<my boost folder>
+
+              With the Macports installation, <my boost folder>=/opt/local/lib . 
+
+        3. Within BOOST_ROOT, identify if the library folders have a suffix, such as "-mt" or "-d" (e.g., the program-options library on my Mac is named "libboost_program_options-mt.dylib", instead of "libbbost_program_options.dylib"). If so, run the command:
+            
+                export BOOST_SUFFIX=<my boost suffix>
+            
+             With the Macports installation, <my boost suffix>=-mt
+
+        4. Find the folder with the boost/*.h files; with MacPorts installation, it was `/opt/local/include/`. Add `-I <myincludefolder>` to the line that begins `INC :=` in the makefile.
 
 * You should now have an executable file called bin/nt. NOTE: you only need to recreate this file if you edit the source
   code.
@@ -41,14 +50,14 @@ sudo port install boost
 * Create an output directory for your simulation (not necessarily named "out/test") as well as the "txt_stack" and "data"
   directories (necessarily named "txt_stack" and "data") e.g. with the commands:
 
-    ```
-    >mkdir -p out/test/txt_stack
-    >mkdir -p out/test/data
-    ```
+```
+> mkdir -p out/test/txt_stack
+> mkdir -p out/test/data
+```
 
 * Run your simulation in the specified output output directory, e.g., 
     ``` 
-    >./bin/nt --dir out/test
+    > bin/nt --dir out/test
     ```
 
 * See below for other simulation configuration options that you can set from the command line or from a configuration
@@ -66,32 +75,32 @@ All files are tab delimited
 
 * txt_stack/actins.txt has the format
 
- * x y r idx
-  * (x, y)  = bead position, 
-  * r  = bead radius 
-  * idx = index of filament that the bead is on
+    * x y r idx
+        * (x, y)  = bead position, 
+        * r  = bead radius 
+        * idx = index of filament that the bead is on
 
 * txt_stack/links.txt has the format
- * x y dx dy idx
-  * (x, y) = end position of link closer to the barbed end of filament 
-  * (x + dx, y + dy) = end position of link farther from barbed end 
-  * idx = index of filament the link is on
+     * x y dx dy idx
+         * (x, y) = end position of link closer to the barbed end of filament 
+         * (x + dx, y + dy) = end position of link farther from barbed end 
+         * idx = index of filament the link is on
 
 * txt_stack/amotors.txt and txt_stack/pmotors.txt have the format
- * x y dx dy fidx0 fidx1 lidx0 lidx1
-  * (x, y) = position of head 0 of motor
-  * (x + dx, y + dy) = position of head 1 of motor
-  * fidx0 = index of filament that head 0 is attached to (-1 if not attached)
-  * fidx1 = index of filament that head 1 is attached to (-1 if not attached)
-  * lidx0 = index of link that head 0 is attached to (-1 if fidx0 = -1)
-  * lidx1 = index of link that head 1 is attached to (-1 if fidx1 = -1)
+    * x y dx dy fidx0 fidx1 lidx0 lidx1
+        * (x, y) = position of head 0 of motor
+        * (x + dx, y + dy) = position of head 1 of motor
+        * fidx0 = index of filament that head 0 is attached to (-1 if not attached)
+        * fidx1 = index of filament that head 1 is attached to (-1 if not attached)
+        * lidx0 = index of link that head 0 is attached to (-1 if fidx0 = -1)
+        * lidx1 = index of link that head 1 is attached to (-1 if fidx1 = -1)
 
 * data/thermo.txt has the format 
- * KE PE TE idx
-  * KE = total v^2 of filament 
-  * PE = total potential energy of filament
-  * TE = KE + PE
-  * idx = filament index
+    * KE PE TE idx
+        * KE = total v^2 of filament 
+        * PE = total potential energy of filament
+        * TE = KE + PE
+        * idx = filament index
     
 The time associated with the positions/energies is on it's own line before 
 each list of positions within the file. Thus the structure of actins.txt is:
