@@ -14,10 +14,12 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 CFLAGS := -O3 -Wall -Wno-missing-braces -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp # -g
-CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp -pg
+CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -pg # -fopenmp -pg
 
-# LIB := -L /software/boost-1.61-el6-x86_64/lib/ -L lib -lboost_unit_test_framework -lboost_program_options # FOR MIDWAY
-LIB := -L /opt/local/lib/ -lboost_unit_test_framework-mt -lboost_program_options-mt # FOR MAC
+#BOOSTSUFFIX := "-mt"
+LIB := -L ${BOOST_ROOT} -lboost_unit_test_framework${BOOST_SUFFIX} -lboost_program_options${BOOST_SUFFIX}
+# FOR MIDWAY
+# LIB := -L /opt/local/lib/ -lboost_unit_test_framework-mt -lboost_program_options-mt # FOR MAC
 
 INC := -I include  -I /usr/include/ -I /usr/local/include/ -I /opt/local/include/
 
@@ -57,10 +59,6 @@ network_pull: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/network_pull.cpp $(INC) $(LIB) -o bin/ntp
 debug: $(OBJECTS_DEBUG)
 	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
-baoab_network: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) prog/baoab_network.cpp $(INC) $(LIB) -o bin/baoab_nt
-llf_network: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) prog/llf_network.cpp $(INC) $(LIB) -o bin/llf_nt
 2fil: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/2fil.cpp $(INC) $(LIB) -o bin/2f
 
