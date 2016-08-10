@@ -87,6 +87,8 @@ double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
 double dot(const array<double, 2>& v1, const array<double, 2>& v2);
 
+double angBC(double ang);
+
 double var(const vector<double>& vals);
 double mode_var(const vector<double>& vals, double m);
 bool close(double e, double a, double r);

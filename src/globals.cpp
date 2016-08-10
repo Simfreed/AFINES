@@ -560,6 +560,11 @@ int coord2quad(double fov, int nq, double coord)
     return min(int(round((coord+fov/2)*nq/fov)), nq);
 }
 
+double angBC(double ang)
+{
+    return ang - 2*pi*floor(ang / (2*pi) + 0.5);
+}
+
 template int sgn<int>(int);
 template int sgn<double>(double);
 template int sgn<float>(float);

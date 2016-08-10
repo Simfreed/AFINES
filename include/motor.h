@@ -66,6 +66,8 @@ class motor
 
         void step_twoheads();
 
+        void actin_update_hd(int hd, array<double, 2> f);
+        
         void actin_update();
 
         void update_shape();
@@ -103,7 +105,8 @@ class motor
         string to_string();
         
         string write();
-    private:
+    
+    public:
 
         double mphi,mld, mobility, vs, stall_force, break_force, var_bind_dist, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
                actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;

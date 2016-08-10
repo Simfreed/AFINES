@@ -406,21 +406,18 @@ void motor<filament_ensemble_type>::update_position_attached(int hd){
 
 // Using the lever rule to propagate force as outlined in Nedelec F 2002
 template <class filament_ensemble_type>
+void motor<filament_ensemble_type>::actin_update_hd(int hd, array<double, 2> f)
+{
+    double pos_ratio = pos_a_end[hd]/actin_network->get_llength(f_index[hd], l_index[hd]);
+    actin_network->update_forces(f_index[hd], l_index[hd],   f[0] *    pos_ratio , f[1] *    pos_ratio );
+    actin_network->update_forces(f_index[hd], l_index[hd]+1, f[0] * (1-pos_ratio), f[1] * (1-pos_ratio));
+}
+
+template <class filament_ensemble_type>
 void motor<filament_ensemble_type>::actin_update()
 {
-    double pos_ratio;
-
-    if (state[0]==1){ 
-        pos_ratio = pos_a_end[0]/actin_network->get_llength(f_index[0], l_index[0]);
-        actin_network->update_forces(f_index[0], l_index[0],   force[0] *    pos_ratio , force[1] *    pos_ratio );
-        actin_network->update_forces(f_index[0], l_index[0]+1, force[0] * (1-pos_ratio), force[1] * (1-pos_ratio));
-    }
-    if (state[1]==1) {
-        pos_ratio = pos_a_end[1]/actin_network->get_llength(f_index[1], l_index[1]);
-        actin_network->update_forces(f_index[1], l_index[1],   -force[0] *    pos_ratio , -force[1] *    pos_ratio );
-        actin_network->update_forces(f_index[1], l_index[1]+1, -force[0] * (1-pos_ratio), -force[1] * (1-pos_ratio));
-    }
-
+    if (state[0]==1) this->actin_update_hd(0, force);
+    if (state[1]==1) this->actin_update_hd(1, {-force[0], -force[1]});
 }
 
 template <class filament_ensemble_type>
