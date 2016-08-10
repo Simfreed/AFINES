@@ -13,9 +13,9 @@
 #include "filament_ensemble.h"
 
 //motor_ensemble class
-template <class filament_ensemble_type>
-motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
-        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, 
+
+motor_ensemble::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
+        double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio, 
         double ron, double roff, double rend, 
         double fstall, double fbreak, double bindEng,
         double vis, vector<array<double,3> > positions, string BC) {
@@ -48,15 +48,15 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(double mdensity, array<do
         }
         motor_pos = {motorx, motory, mang};
 
-        n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+        n_motors.push_back(new motor( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
         
     }
 }
 
-template <class filament_ensemble_type>
-motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
-        double mlen, filament_ensemble_type * network, double v0, double stiffness, double max_ext_ratio, 
+
+motor_ensemble::motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
+        double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio, 
         double ron, double roff, double rend, 
         double fstall, double fbreak, double bindEng,
         double vis, string BC) {
@@ -86,13 +86,13 @@ motor_ensemble<filament_ensemble_type>::motor_ensemble(vector<vector<double> > m
 
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
 
-        n_motors.push_back(new motor<filament_ensemble_type>( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
+        n_motors.push_back(new motor( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
     }
 }
 
-template <class filament_ensemble_type>
-motor_ensemble<filament_ensemble_type>::~motor_ensemble( ){ 
+
+motor_ensemble::~motor_ensemble( ){ 
     cout<<"DELETING MOTOR ENSEMBLE\n";
     int s = n_motors.size();
     for (int i = 0; i < s; i++){
@@ -101,13 +101,13 @@ motor_ensemble<filament_ensemble_type>::~motor_ensemble( ){
     n_motors.clear();
 };
 
-template <class filament_ensemble_type>
-int motor_ensemble<filament_ensemble_type>::get_nmotors( ){ 
+
+int motor_ensemble::get_nmotors( ){ 
     return n_motors.size();
 }
 
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::kill_heads(int hd){
+
+void motor_ensemble::kill_heads(int hd){
     for (unsigned int i = 0; i < n_motors.size(); i++)
         n_motors[i]->kill_head(hd);
 }
@@ -122,8 +122,8 @@ void motor_ensemble<filament_ensemble_type>::kill_heads(int hd){
 // so this loop should rarely if ever be accessed.
     
 
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::check_broken_filaments()
+
+void motor_ensemble::check_broken_filaments()
 {
     vector<int> broken_filaments = f_network->get_broken();
     array<int, 2> f_index;
@@ -149,8 +149,8 @@ void motor_ensemble<filament_ensemble_type>::check_broken_filaments()
 
 }
 
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
+
+void motor_ensemble::motor_walk(double t)
 {
 
     this->check_broken_filaments();
@@ -195,8 +195,8 @@ void motor_ensemble<filament_ensemble_type>::motor_walk(double t)
 }
 
 /* Used for static, contstantly attached, motors -- ASSUMES both heads are ALWAYS attached */
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_update()
+
+void motor_ensemble::motor_update()
 {
 
     this->check_broken_filaments();
@@ -216,22 +216,22 @@ void motor_ensemble<filament_ensemble_type>::motor_update()
     this->update_energies();
     
 }
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::motor_write(ostream& fout)
+
+void motor_ensemble::motor_write(ostream& fout)
 {
     for (unsigned int i=0; i<n_motors.size(); i++) {
         fout<<n_motors[i]->write();
     } 
 }
 
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::add_motor(motor<filament_ensemble_type> * m)
+
+void motor_ensemble::add_motor(motor * m)
 {
     n_motors.push_back(m);
 }
 
-template <class filament_ensemble_type>
-void motor_ensemble<filament_ensemble_type>::set_shear(double g)
+
+void motor_ensemble::set_shear(double g)
 {
     for (unsigned int i=0; i<n_motors.size(); i++)
         n_motors[i]->set_shear(g);
@@ -239,8 +239,8 @@ void motor_ensemble<filament_ensemble_type>::set_shear(double g)
     gamma = g;
 }
 
-template <class filament_ensemble_type> 
-void motor_ensemble<filament_ensemble_type>::update_energies()
+ 
+void motor_ensemble::update_energies()
 {
     ke = 0;
     pe = 0;
@@ -252,14 +252,12 @@ void motor_ensemble<filament_ensemble_type>::update_energies()
     }
 }
 
-template <class filament_ensemble_type> 
-double motor_ensemble<filament_ensemble_type>::get_potential_energy(){
+ 
+double motor_ensemble::get_potential_energy(){
     return pe;
 }
 
-template <class filament_ensemble_type> 
-void motor_ensemble<filament_ensemble_type>::print_ensemble_thermo(){
+ 
+void motor_ensemble::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
 }
-
-template class motor_ensemble<ATfilament_ensemble>;

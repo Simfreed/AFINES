@@ -13,11 +13,11 @@
 #include "filament_ensemble.h"
 //actin network class
 
-template <class filament_type> 
-filament_ensemble<filament_type>::filament_ensemble(){}
+ 
+filament_ensemble::filament_ensemble(){}
 
-template <class filament_type> 
-filament_ensemble<filament_type>::~filament_ensemble(){ 
+ 
+filament_ensemble::~filament_ensemble(){ 
     cout<<"DELETING FILAMENT_ENSEMBLE\n";
     
     int s = network.size();
@@ -36,26 +36,26 @@ filament_ensemble<filament_type>::~filament_ensemble(){
     
 }
 
-template <class filament_type>
-vector<filament_type *>* filament_ensemble<filament_type>::get_network()
+
+vector<filament *>* filament_ensemble::get_network()
 {
     return &network;
 }
 
-template <class filament_type>
-filament_type * filament_ensemble<filament_type>::get_filament(int index)
+
+filament * filament_ensemble::get_filament(int index)
 {
     return network[index];
 }
 
-template<class filament_type>
-void filament_ensemble<filament_type>::turn_quads_off()
+
+void filament_ensemble::turn_quads_off()
 {
     quad_off_flag = true;
 }
 
-template<class filament_type>
-void filament_ensemble<filament_type>::nlist_init_serial()
+
+void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
         links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]+1));   
@@ -67,8 +67,8 @@ void filament_ensemble<filament_type>::nlist_init_serial()
     }
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::quad_update_serial()
+ 
+void filament_ensemble::quad_update_serial()
 {
     int n_quads, net_sz = int(network.size());
     vector<vector<array<int, 2> > > q;
@@ -92,14 +92,14 @@ void filament_ensemble<filament_type>::quad_update_serial()
 
 }
 
-template <class filament_type>
-void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mq, double x, double y){
+
+void filament_ensemble::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
     double dist;
     if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
         
-        for (unsigned int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
+        for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
 
             fl = links_per_quad[mq[0]]->at(mq[1])->at(i);
             dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y);
@@ -114,8 +114,8 @@ void filament_ensemble<filament_type>::update_dist_map(map<array<int,2>, double>
 //given motor head position, return a map between  
 //  the INDICES (i.e., {i, j} where i is the filament index and j is the link index)
 //  and their corresponding DISTANCES to the link at that distance 
-template <class filament_type>
-map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, double y)
+
+map<array<int,2>,double> filament_ensemble::get_dist(double x, double y)
 {
     map<array<int, 2>, double> t_map;
     int mqx = min(coord2quad_floor(fov[0], nq[0], x), nq[0] - 1);
@@ -131,11 +131,11 @@ map<array<int,2>,double> filament_ensemble<filament_type>::get_dist(double x, do
     return t_map;
 }
 
-template <class filament_type>
-map<array<int,2>,double> filament_ensemble<filament_type>::get_dist_all(double x, double y)
+
+map<array<int,2>,double> filament_ensemble::get_dist_all(double x, double y)
 {
     map<array<int, 2>, double> t_map;
-    for (int f = 0; f < network.size(); f++){
+    for (unsigned int f = 0; f < network.size(); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
             t_map[{f,l}]=network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y);
         }
@@ -144,56 +144,56 @@ map<array<int,2>,double> filament_ensemble<filament_type>::get_dist_all(double x
     return t_map;
 }
 
-template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_intpoints(int fil, int link, double xp, double yp)
+
+array<double,2> filament_ensemble::get_intpoints(int fil, int link, double xp, double yp)
 {
     return network[fil]->get_link(link)->get_intpoint(network[0]->get_BC(), delrx, xp, yp);
 }
 
-template <class filament_type> 
-double filament_ensemble<filament_type>::get_angle(int fil, int link)
+ 
+double filament_ensemble::get_angle(int fil, int link)
 {
     return network[fil]->get_link(link)->get_angle();
 }
 
-template <class filament_type> 
-double filament_ensemble<filament_type>::get_llength(int fil, int link)
+ 
+double filament_ensemble::get_llength(int fil, int link)
 {
     return network[fil]->get_link(link)->get_length();
 }
 
-template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_start(int fil, int link)
+
+array<double,2> filament_ensemble::get_start(int fil, int link)
 {
     return {network[fil]->get_link(link)->get_hx()[0] , network[fil]->get_link(link)->get_hy()[0]};
 }
 
-template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_end(int fil, int link)
+
+array<double,2> filament_ensemble::get_end(int fil, int link)
 {
     return {network[fil]->get_link(link)->get_hx()[1] , network[fil]->get_link(link)->get_hy()[1]};
 }
 
-template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_force(int fil, int actin)
+
+array<double,2> filament_ensemble::get_force(int fil, int actin)
 {
     return network[fil]->get_actin(actin)->get_force();
 }
 
-template <class filament_type>
-array<double,2> filament_ensemble<filament_type>::get_direction(int fil, int link)
+
+array<double,2> filament_ensemble::get_direction(int fil, int link)
 {
     return network[fil]->get_link(link)->get_direction();
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::set_straight_filaments(bool is_straight)
+ 
+void filament_ensemble::set_straight_filaments(bool is_straight)
 {
     straight_filaments = is_straight;
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_positions()
+ 
+void filament_ensemble::update_positions()
 {
     int net_sz = int(network.size());
     for (int f = 0; f < net_sz; f++)
@@ -204,8 +204,8 @@ void filament_ensemble<filament_type>::update_positions()
 
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_positions_range(int lo, int hi)
+ 
+void filament_ensemble::update_positions_range(int lo, int hi)
 {
     for (unsigned int f = 0; f < network.size(); f++)
     {
@@ -214,31 +214,31 @@ void filament_ensemble<filament_type>::update_positions_range(int lo, int hi)
 
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::write_actins(ofstream& fout)
+ 
+void filament_ensemble::write_actins(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
         fout<<network[i]->write_actins(i);
     } 
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::write_links(ofstream& fout)
+ 
+void filament_ensemble::write_links(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
         fout<<network[i]->write_links(i);
     } 
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::write_thermo(ofstream& fout){
+ 
+void filament_ensemble::write_thermo(ofstream& fout){
     for (unsigned int f = 0; f < network.size(); f++)
         fout<<network[f]->write_thermo(f);
     
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::set_shear_rate(double g)
+ 
+void filament_ensemble::set_shear_rate(double g)
 {
     if (network.size() > 0)
         if (network[0]->get_nactins() > 0)
@@ -250,14 +250,14 @@ void filament_ensemble<filament_type>::set_shear_rate(double g)
     }
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::set_y_thresh(double y)
+ 
+void filament_ensemble::set_y_thresh(double y)
 {
     for (unsigned int f = 0; f < network.size(); f++) network[f]->set_y_thresh(y);
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_delrx(double drx)
+ 
+void filament_ensemble::update_delrx(double drx)
 {
     //cout<<"\nDEBUG: SHEARING"; 
     delrx = drx;
@@ -267,8 +267,8 @@ void filament_ensemble<filament_type>::update_delrx(double drx)
     }
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_d_strain(double g)
+ 
+void filament_ensemble::update_d_strain(double g)
 {
     //cout<<"\nDEBUG: SHEARING"; 
     for (unsigned int f = 0; f < network.size(); f++)
@@ -277,8 +277,8 @@ void filament_ensemble<filament_type>::update_d_strain(double g)
     }
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_shear()
+ 
+void filament_ensemble::update_shear()
 {
     //cout<<"\nDEBUG: SHEARING"; 
     for (unsigned int f = 0; f < network.size(); f++)
@@ -287,8 +287,8 @@ void filament_ensemble<filament_type>::update_shear()
     }
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::print_filament_thermo(){
+ 
+void filament_ensemble::print_filament_thermo(){
     
     for (unsigned int f = 0; f < network.size(); f++)
     {
@@ -298,8 +298,8 @@ void filament_ensemble<filament_type>::print_filament_thermo(){
 
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_energies(){
+ 
+void filament_ensemble::update_energies(){
     pe_stretch = 0;
     pe_bend = 0;
     ke = 0;
@@ -311,23 +311,23 @@ void filament_ensemble<filament_type>::update_energies(){
     }
 }
 
-template <class filament_type> 
-double filament_ensemble<filament_type>::get_stretching_energy(){
+ 
+double filament_ensemble::get_stretching_energy(){
     return pe_stretch;
 }
 
-template <class filament_type> 
-double filament_ensemble<filament_type>::get_bending_energy(){
+ 
+double filament_ensemble::get_bending_energy(){
     return pe_bend;
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::print_network_thermo(){
+ 
+void filament_ensemble::print_network_thermo(){
     cout<<"\nAll Fs\t:\tKE = "<<ke<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tTE = "<<(ke+pe_stretch+pe_bend);
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::print_filament_lengths(){
+ 
+void filament_ensemble::print_filament_lengths(){
     for (unsigned int f = 0; f < network.size(); f++)
     {
         cout<<"\nF"<<f<<" : "<<network[f]->get_end2end()<<" um";
@@ -335,70 +335,70 @@ void filament_ensemble<filament_type>::print_filament_lengths(){
 }
 
 
-template <class filament_type> 
-bool filament_ensemble<filament_type>::is_polymer_start(int fil, int actin){
+ 
+bool filament_ensemble::is_polymer_start(int fil, int actin){
 
     return !(actin);
 
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::set_fov(double fovx, double fovy){
+ 
+void filament_ensemble::set_fov(double fovx, double fovy){
     fov[0] = fovx;
     fov[1] = fovy;
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::set_nq(double nqx, double nqy){
+ 
+void filament_ensemble::set_nq(double nqx, double nqy){
     nq[0] = nqx;
     nq[1] = nqy;
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::set_visc(double nu){
+ 
+void filament_ensemble::set_visc(double nu){
     visc = nu;
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::update_forces(int f_index, int a_index, double f1, double f2){
+ 
+void filament_ensemble::update_forces(int f_index, int a_index, double f1, double f2){
     network[f_index]->update_forces(a_index, f1,f2);
 }
 
-template <class filament_type> 
-vector<int> filament_ensemble<filament_type>::get_broken(){
+ 
+vector<int> filament_ensemble::get_broken(){
     return broken_filaments;
 }
 
-template <class filament_type> 
-void filament_ensemble<filament_type>::clear_broken(){
+ 
+void filament_ensemble::clear_broken(){
     broken_filaments.clear();
 }
 
-template <class filament_type> 
-int filament_ensemble<filament_type>::get_nactins(){
+ 
+int filament_ensemble::get_nactins(){
     int tot = 0;
     for (unsigned int f = 0; f < network.size(); f++)
         tot += network[f]->get_nactins();
     return tot;
 }
 
-template <class filament_type> 
-int filament_ensemble<filament_type>::get_nlinks(){
+ 
+int filament_ensemble::get_nlinks(){
     return this->get_nactins() - network.size();
 }
 
-template <class filament_type> 
-int filament_ensemble<filament_type>::get_nfilaments(){
+ 
+int filament_ensemble::get_nfilaments(){
     return network.size();
 }
 
-template <class filament_type> 
-double filament_ensemble<filament_type>::get_delrx(){
+ 
+double filament_ensemble::get_delrx(){
     return delrx;
 }
 
-template <class filament_type> 
-double filament_ensemble<filament_type>::get_actin_friction(){
+ 
+double filament_ensemble::get_actin_friction(){
     
     if (network.size() > 0)
         if (network[0]->get_nactins() > 0)
@@ -408,8 +408,8 @@ double filament_ensemble<filament_type>::get_actin_friction(){
 }
 
 // Update bending forces between monomers
-template <class filament_type>
-void filament_ensemble<filament_type>::update_bending()
+
+void filament_ensemble::update_bending()
 {
     int net_sz = int(network.size());
     
@@ -420,10 +420,10 @@ void filament_ensemble<filament_type>::update_bending()
     }
 }
 
-template <class filament_type>
-void filament_ensemble<filament_type>::update_stretching(){
+
+void filament_ensemble::update_stretching(){
     
-//    vector<filament_type *> newfilaments;
+//    vector<filament *> newfilaments;
     int s = network.size(); //keep it to one fracture per filament per timestep, or things get messy
     for (int f = 0; f < s; f++)
     {
@@ -432,9 +432,9 @@ void filament_ensemble<filament_type>::update_stretching(){
     }
 }
 
-template <class filament_type>
-void filament_ensemble<filament_type>::update_filament_stretching(int f){
-    vector<filament_type *> newfilaments = network[f]->update_stretching(t);
+
+void filament_ensemble::update_filament_stretching(int f){
+    vector<filament *> newfilaments = network[f]->update_stretching(t);
 
     if (newfilaments.size() > 0){ //fracture event occured
 
@@ -450,26 +450,26 @@ void filament_ensemble<filament_type>::update_filament_stretching(int f){
     }
 }
 
-template <class filament_type>
-void filament_ensemble<filament_type>::set_shear_stop(double stopT){
+
+void filament_ensemble::set_shear_stop(double stopT){
     shear_stop = stopT; 
 }
 
-template <class filament_type>
-void filament_ensemble<filament_type>::set_shear_dt(double delT){
+
+void filament_ensemble::set_shear_dt(double delT){
     shear_dt = delT; 
 }
 
-template <class filament_type>
-void filament_ensemble<filament_type>::update_int_forces()
+
+void filament_ensemble::update_int_forces()
 {
     this->update_stretching();
     this->update_bending();
 }
 
 /* Overdamped Langevin Dynamics Integrator (Leimkuhler, 2013) */
-template <class filament_type>
-void filament_ensemble<filament_type>::update()
+
+void filament_ensemble::update()
 
 {      
     int net_sz = network.size();
@@ -491,8 +491,8 @@ void filament_ensemble<filament_type>::update()
 
 }
 
-template<class filament_type>
-vector<vector<double> > filament_ensemble<filament_type>::link_link_intersections(double len, double prob){
+
+vector<vector<double> > filament_ensemble::link_link_intersections(double len, double prob){
 
     vector< vector<double> > itrs;
     double ang;
@@ -502,14 +502,14 @@ vector<vector<double> > filament_ensemble<filament_type>::link_link_intersection
     string bcf1; 
     for (unsigned int f1 = 0; f1 < network.size(); f1++){
         
-        for (unsigned int l1 = 0; l1 < network[f1]->get_nlinks(); l1++){
+        for (int l1 = 0; l1 < network[f1]->get_nlinks(); l1++){
 
             r1 = {network[f1]->get_link(l1)->get_hx()[0], network[f1]->get_link(l1)->get_hy()[0]};
             r2 = {network[f1]->get_link(l1)->get_hx()[1], network[f1]->get_link(l1)->get_hy()[1]};
             bcf1 = network[f1]->get_BC();
             for (unsigned int f2 = f1+1; f2 < network.size(); f2++){
                 
-                for (unsigned int l2 = 0; l2 < network[f2]->get_nlinks(); l2++){
+                for (int l2 = 0; l2 < network[f2]->get_nlinks(); l2++){
 
                     if (f1 == f2 && fabs(double(l1) - double(l2)) < 2){ //links should be at least two away to get crosslinked
                         continue;
@@ -535,7 +535,7 @@ vector<vector<double> > filament_ensemble<filament_type>::link_link_intersection
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
 
-ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+filament_ensemble::filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
     
@@ -596,7 +596,7 @@ ATfilament_ensemble::ATfilament_ensemble(double density, array<double,2> myfov, 
 
 }
 
-ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc) {
     
     fov = myfov;
@@ -645,5 +645,3 @@ ATfilament_ensemble::ATfilament_ensemble(vector<vector<double> > actins, array<d
     //this->nlist_init();
     this->nlist_init_serial();
 } 
-
-template class filament_ensemble<filament>;

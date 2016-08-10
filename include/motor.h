@@ -14,32 +14,33 @@
 
 //=====================================
 // forward declared dependencies
-//template <class filament_ensemble_type> class filament_ensemble;
+class filament_ensemble;
 
 //=====================================
 //included dependences
 #include "globals.h"
 
 //motor class
-template <class filament_ensemble_type>
 class motor 
 {
     public:
 
-        motor(array<double, 3> pos, double mlen, filament_ensemble_type* network, 
+        motor(array<double, 3> pos, double mlen, filament_ensemble* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
                 array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio, 
                 double ron, double roff, double rend, 
                 double fstall, double fbreak, double bindEng,
                 double vis, string BC);
         
-        motor(array<double, 4> pos, double mlen, filament_ensemble_type* network, 
+        motor(array<double, 4> pos, double mlen, filament_ensemble* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
                 array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio,
                 double ron, double roff, double rend, 
                 double fstall, double fbreak, double bindEng,
                 double vis, string BC);
-
+        
+        motor();
+        
         ~motor();
 
         string get_BC();
@@ -119,7 +120,7 @@ class motor
         
         string BC;
         
-        filament_ensemble_type* actin_network;
+        filament_ensemble* actin_network;
         
 };
 

@@ -13,9 +13,11 @@
 //#include "actin.h"
 
 //motor class
-template <class filament_ensemble_type>
-motor<filament_ensemble_type>::motor( array<double, 3> pos, 
-        double mlen, filament_ensemble_type * network, 
+
+motor::motor(){}
+
+motor::motor( array<double, 3> pos, 
+        double mlen, filament_ensemble * network, 
         array<int, 2> mystate, 
         array<int, 2> myfindex, 
         array<int, 2> mylindex,
@@ -86,9 +88,9 @@ motor<filament_ensemble_type>::motor( array<double, 3> pos,
 
 }
 
-template <class filament_ensemble_type>
-motor<filament_ensemble_type>::motor( array<double, 4> pos, 
-        double mlen, filament_ensemble_type * network, 
+
+motor::motor( array<double, 4> pos, 
+        double mlen, filament_ensemble * network, 
         array<int, 2> mystate, 
         array<int, 2> myfindex, 
         array<int, 2> mylindex,
@@ -160,17 +162,17 @@ motor<filament_ensemble_type>::motor( array<double, 4> pos,
 }
 
 
-template <class filament_ensemble_type> motor<filament_ensemble_type>::~motor(){};
+ motor::~motor(){};
 
 //return motor state with a given head number
-template <class filament_ensemble_type>
-array<int, 2> motor<filament_ensemble_type>::get_states() 
+
+array<int, 2> motor::get_states() 
 {
     return state;
 }
 
-/*template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_implicit_vars(t)
+/*
+void motor::update_implicit_vars(t)
 {
  * Update implicit variables from explicit ones
  * explicitly updated: angle, stretch, center
@@ -179,33 +181,33 @@ void motor<filament_ensemble_type>::update_implicit_vars(t)
  * seemingly easier to keep center fixed and update hx and hy here for boundary conditions
  *
 }*/
-template <class filament_ensemble_type>
-array<double, 2> motor<filament_ensemble_type>::get_hx()
+
+array<double, 2> motor::get_hx()
 {
     return hx;
 }
 
-template <class filament_ensemble_type>
-array<double, 2> motor<filament_ensemble_type>::get_hy()
+
+array<double, 2> motor::get_hy()
 {
     return hy;
 }
 
-template <class filament_ensemble_type>
-string motor<filament_ensemble_type>::get_BC()
+
+string motor::get_BC()
 {
     return BC;
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::set_shear(double gamma)
+
+void motor::set_shear(double gamma)
 {
     shear = gamma;
 }
 
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
-template <class filament_ensemble_type>
-bool motor<filament_ensemble_type>::attach(int hd)
+
+bool motor::attach(int hd)
 {
 //    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
@@ -255,8 +257,8 @@ bool motor<filament_ensemble_type>::attach(int hd)
     return false;
 } 
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_force()
+
+void motor::update_force()
 { 
     //force = {mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))};
     tension = mk*(hypot(disp[0], disp[1]) - mld);
@@ -265,8 +267,8 @@ void motor<filament_ensemble_type>::update_force()
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
  * Adapted by placing a cutoff, similar to how it's done in LAMMPS src/bond_fene.cpp*/
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_force_fraenkel_fene()
+
+void motor::update_force_fraenkel_fene()
 {
     double ext = abs(mld - hypot(disp[0], disp[1]));
     double scaled_ext, mkp;
@@ -281,8 +283,8 @@ void motor<filament_ensemble_type>::update_force_fraenkel_fene()
 
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::brownian_relax(int hd)
+
+void motor::brownian_relax(int hd)
 {
     
     double new_rnd_x= rng_n(0,1), new_rnd_y = rng_n(0,1);
@@ -299,36 +301,36 @@ void motor<filament_ensemble_type>::brownian_relax(int hd)
 
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::kill_head(int hd)
+
+void motor::kill_head(int hd)
 {
     state[hd] = -1;
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::relax_head(int hd)
+
+void motor::relax_head(int hd)
 {
     array<double, 2> newpos = boundary_check(hd, hx[pr(hd)] - pow(-1, hd)*mld*cos(mphi), hy[pr(hd)] - pow(-1, hd)*mld*sin(mphi));
     hx[hd] = newpos[0];
     hy[hd] = newpos[1];
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_angle()
+
+void motor::update_angle()
 {
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     mphi=atan2(disp[1],disp[0]);
 }
 
-template <class filament_ensemble_type>
-array<double, 2> motor<filament_ensemble_type>::boundary_check(int i, double x, double y)
+
+array<double, 2> motor::boundary_check(int i, double x, double y)
 {
     return pos_bc(BC, actin_network->get_delrx(), dt, fov, {(x - hx[i])/dt, (y - hy[i])/dt}, {x, y});
 }
 
 //stepping and detachment kinetics of a single bound head 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::step_onehead(int hd)
+
+void motor::step_onehead(int hd)
 {
 
     double vm = vs, offrate = koff;
@@ -351,8 +353,8 @@ void motor<filament_ensemble_type>::step_onehead(int hd)
     }
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_pos_a_end(int hd, double pos)
+
+void motor::update_pos_a_end(int hd, double pos)
 {
 //    cout<<"\nDEBUG: new pos = "<<pos;
     double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
@@ -391,8 +393,8 @@ void motor<filament_ensemble_type>::update_pos_a_end(int hd, double pos)
        
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_position_attached(int hd){
+
+void motor::update_position_attached(int hd){
 
     double posx = actin_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[0];
     double posy = actin_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*actin_network->get_direction(f_index[hd],l_index[hd])[1];
@@ -405,23 +407,23 @@ void motor<filament_ensemble_type>::update_position_attached(int hd){
 }
 
 // Using the lever rule to propagate force as outlined in Nedelec F 2002
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::actin_update_hd(int hd, array<double, 2> f)
+
+void motor::actin_update_hd(int hd, array<double, 2> f)
 {
     double pos_ratio = pos_a_end[hd]/actin_network->get_llength(f_index[hd], l_index[hd]);
     actin_network->update_forces(f_index[hd], l_index[hd],   f[0] *    pos_ratio , f[1] *    pos_ratio );
     actin_network->update_forces(f_index[hd], l_index[hd]+1, f[0] * (1-pos_ratio), f[1] * (1-pos_ratio));
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::actin_update()
+
+void motor::actin_update()
 {
     if (state[0]==1) this->actin_update_hd(0, force);
     if (state[1]==1) this->actin_update_hd(1, {-force[0], -force[1]});
 }
 
-template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::detach_head(int hd)
+
+void motor::detach_head(int hd)
 {
    
     state[hd]=0;
@@ -432,33 +434,33 @@ void motor<filament_ensemble_type>::detach_head(int hd)
     
 }
 
-template <class filament_ensemble_type>
-array<int, 2> motor<filament_ensemble_type>::get_f_index(){
+
+array<int, 2> motor::get_f_index(){
     return f_index;
 }
 
-template <class filament_ensemble_type>
-array<int, 2> motor<filament_ensemble_type>::get_l_index(){
+
+array<int, 2> motor::get_l_index(){
     return l_index;
 }
 
-template <class filament_ensemble_type>
-array<double, 2> motor<filament_ensemble_type>::get_pos_a_end(){
+
+array<double, 2> motor::get_pos_a_end(){
     return pos_a_end;
 }
 
-template <class filament_ensemble_type>
-array<double, 2> motor<filament_ensemble_type>::get_force(){
+
+array<double, 2> motor::get_force(){
     return force;
 }
 
-template <class filament_ensemble_type>
-double motor<filament_ensemble_type>::get_stretching_energy(){
+
+double motor::get_stretching_energy(){
     return (force[0]*force[0]+force[1]*force[1])/(2*mk);
 }
 
-template <class filament_ensemble_type>
-double motor<filament_ensemble_type>::get_stretching_energy_fene()
+
+double motor::get_stretching_energy_fene()
 {
     double ext = abs(mld - hypot(disp[0], disp[1]));
     
@@ -469,13 +471,13 @@ double motor<filament_ensemble_type>::get_stretching_energy_fene()
     
 }
 
-template <class filament_ensemble_type>
-double motor<filament_ensemble_type>::get_kinetic_energy(){
+
+double motor::get_kinetic_energy(){
     return kinetic_energy;
 }
 
-template <class filament_ensemble_type>
-string motor<filament_ensemble_type>::to_string()
+
+string motor::to_string()
 {
     char buffer[1000];
     string out ="";
@@ -495,14 +497,11 @@ string motor<filament_ensemble_type>::to_string()
     return buffer;
 }
 
-template <class filament_ensemble_type>
-string motor<filament_ensemble_type>::write()
+
+string motor::write()
 {
     return "\n" + std::to_string(hx[0]) + "\t" + std::to_string(hy[0]) 
         +  "\t" + std::to_string(disp[0]) + "\t" + std::to_string(disp[1]) 
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1]) 
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
-
-
-template class motor<ATfilament_ensemble>;

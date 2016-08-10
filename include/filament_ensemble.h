@@ -26,12 +26,20 @@
 #include <boost/scoped_array.hpp>
 //=====================================
 //filament network class
-template <class filament_type>
 class filament_ensemble
 {
     public:
+        
         filament_ensemble();
 
+        filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
+                double len, double vis, int nactin,
+                double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
+                string bc, double seed);
+        
+        filament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+                double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc); 
+        
         ~filament_ensemble();
         
         void nlist_init();
@@ -50,9 +58,9 @@ class filament_ensemble
 
         void update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
         
-        vector<filament_type *> * get_network();
+        vector<filament *> * get_network();
 
-        filament_type * get_filament(int index);
+        filament * get_filament(int index);
 
         map<array<int,2>, double> get_dist(double x, double y);
         
@@ -183,79 +191,7 @@ class filament_ensemble
         */
         
         vector<array<int, 2>* > all_quads;
-        vector<filament_type *> network;
+        vector<filament *> network;
 };
 
-class ATfilament_ensemble:
-    public filament_ensemble<filament>
-{
-
-    public:
-        
-        ATfilament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
-                double len, double vis, int nactin,
-                double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
-                string bc, double seed);
-        
-        ATfilament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-                double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc); 
-        
-};
-
-class baoab_filament_ensemble:
-    public filament_ensemble<baoab_filament>
-{
-    public:
-
-        baoab_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
-                double len, double vis, int nactin,
-                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
-                string bc, double seed);
-
-        void update_velocities_B();
-
-        void update_velocities_O();
-
-        void update();
-
-};
-
-class lammps_filament_ensemble:
-    public filament_ensemble<lammps_filament>
-{
-    public:
-
-        lammps_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
-                double len, double vis, int nactin,
-                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
-                string bc, double seed);
-
-        void set_mass(double m);
-
-        void update_drag();
-
-        void update_brownian();
-
-        void update();
-};
-
-class langevin_leapfrog_filament_ensemble:
-    public filament_ensemble<langevin_leapfrog_filament>
-{
-    public:
-
-        langevin_leapfrog_filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
-                double len, double vis, int nactin,
-                double link_len, vector<array<double, 3> > pos_sets, double stretching, double bending, double frac_force, 
-                string bc, double seed);
-
-        void set_mass(double m);
-
-        void update_velocities();
-
-        void update_positions();
-
-        void update();
-    
-};
 #endif

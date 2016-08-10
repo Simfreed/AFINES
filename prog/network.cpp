@@ -273,15 +273,15 @@ int main(int argc, char* argv[]){
 
     // Create Network Objects
     cout<<"\nCreating actin network..";
-    ATfilament_ensemble * net;
+    filament_ensemble * net;
     if (actin_pos_vec.size() == 0){
-        net = new ATfilament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
+        net = new filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd, myseed); 
     }else{
-        net = new ATfilament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
+        net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd); 
@@ -292,27 +292,27 @@ int main(int argc, char* argv[]){
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding active motors...";
-    motor_ensemble<ATfilament_ensemble> * myosins;
+    motor_ensemble * myosins;
     
     if (a_motor_pos_vec.size() == 0)
-        myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_density, {xrange, yrange}, dt, temperature, 
+        myosins = new motor_ensemble( a_motor_density, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_break, a_m_bind, viscosity, a_motor_position_arrs, bnd_cnd);
     else
-        myosins = new motor_ensemble<ATfilament_ensemble>( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
+        myosins = new motor_ensemble( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_break, a_m_bind, viscosity, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble<ATfilament_ensemble> * crosslks; 
+    motor_ensemble * crosslks; 
     
     if(p_motor_pos_vec.size() == 0)
-        crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_density, {xrange, yrange}, dt, temperature, 
+        crosslks = new motor_ensemble( p_motor_density, {xrange, yrange}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
                 p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, p_motor_position_arrs, bnd_cnd);
     else
-        crosslks = new motor_ensemble<ATfilament_ensemble>( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
+        crosslks = new motor_ensemble( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
                 p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);

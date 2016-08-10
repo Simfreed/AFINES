@@ -27,9 +27,9 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double frac_force = 0;
     
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, 
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, 
             actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
-    motor<ATfilament_ensemble>  m = motor<ATfilament_ensemble>(array<double, 3>{1, 1, 3.1416/2}, motor_len, f, state, 
+    motor  m = motor(array<double, 3>{1, 1, 3.1416/2}, motor_len, f, state, 
             findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
 
     BOOST_CHECK_CLOSE( m.get_hx()[0],  1, tol);                   // 1 //
@@ -44,15 +44,15 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 
     delete f;
 
-    f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     state = {1,0};
 
-    motor<ATfilament_ensemble> m2 = motor<ATfilament_ensemble>(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m2 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL( m2.get_states()[0], 1);
     BOOST_CHECK_EQUAL( m2.get_states()[1], 0);
     
     state = {0,1};
-    motor<ATfilament_ensemble> m3 = motor<ATfilament_ensemble>(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m3 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL( m3.get_states()[0], 0);
     BOOST_CHECK_EQUAL( m3.get_states()[1], 1);
    
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     double frac_force = 0;
     
     pos_sets.push_back({-0.4,0,0});
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     //MOTOR
     double mx = 0.5, my = 0.5, mang = pi/2, mlen = 1;
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
      *  rate*timestep > 1 ==> "event" returns 1
      *  rate*timestep < 0 ==> "event" returns 0
      */
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
 
     //IF detach check that:
     //(a) new state of head is correct (was 1, now 0)
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     // (a) new position is correct
     koff = -1;
     kend = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     double frac_force = 0;
     
     pos_sets.push_back({0,0,0});
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     //MOTOR
     double mx = 0.125, my = 0.5, mang = pi/2, mlen = 1;
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
      *  rate*timestep > 1 ==> "event" returns 1
      *  rate*timestep < 0 ==> "event" returns 0
      */
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
 
     // IF position is greater than filament length
     double pos = 1.125;
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //      else (don't detach): 
     //          stay
     kend = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //  Else (not last rod in filament)
     mx = 1.125;
     lindex = {1, -1};
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     
     //      (a) motor moves to next rod in filament
     //      (b) motor moves appropriate distance
@@ -236,14 +236,14 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //Test 2 : Motor on filament facing left, so, moves right
     pos_sets.clear();
     pos_sets.push_back({0,0,pi});
-    f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     //MOTOR
     mx = -0.125;
     findex = {0,-1}, lindex = {0, -1}; 
     kon = 0, koff = 2, kend = 2; 
 
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
 
     // IF position is greater than filament length
     pos = 1.125;
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //      else (don't detach): 
     //          stay
     kend = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //  Else (not last rod in filament)
     mx = -1.125;
     lindex = {1, -1};
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     
     //      (a) motor moves to next rod in filament
     //      (b) motor moves appropriate distance
@@ -318,9 +318,9 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     kon = 0, koff = 2, kend = 2; 
     pos_sets.clear();
     pos_sets.push_back({0,0,0});
-    f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
 
     // IF position is greater than filament length
     pos = 1.125;
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //      else (don't detach): 
     //          stay
     kend = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //  Else (not last rod in filament)
     mx = 1.125;
     lindex = {-1, 1};
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     
     //      (a) motor moves to next rod in filament
     //      (b) motor moves appropriate distance
@@ -415,11 +415,11 @@ BOOST_AUTO_TEST_CASE( attach )
     //pos_sets.push_back({1,1,pi/2});
     pos_sets.push_back({0,0,0});
     //pos_sets.push_back({-2,3,pi});
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     f->quad_update_serial(); 
     //MOTOR
     double mx = 2.35, my = 0.5, mang = pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
     
     kon = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     actin_sets.push_back(pos1);
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
 //    cout<<f->get_filament(0)->to_string();
     //MOTOR
     double mx = -24.875, my = 0.5, mang = pi/2, mlen = 1;
@@ -488,7 +488,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
      *  rate*timestep > 1 ==> "event" returns 1
      *  rate*timestep < 0 ==> "event" returns 0
      */
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     cout<<m.to_string();
     //IF detach check that:
     //(a) new state of head is correct (was 1, now 0)
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     // (a) new position is correct
     koff = -1;
     kend = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
@@ -551,12 +551,12 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
     double mx = 2.35, my = -24.625, mang = pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -573,7 +573,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
     
     kon = -1;
-    m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -622,13 +622,13 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     actin_sets.push_back(pos7);
     actin_sets.push_back(pos8);
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
     //MOTOR
     double mx = 2.35, my = -24.625, mang = pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     //cout<<m.to_string();
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
@@ -723,13 +723,13 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     actin_sets.push_back(pos7);
     actin_sets.push_back(pos8);
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
     //MOTOR
     double mx = 0.25, my = sqrt(3)/4, mang = (pi/2.+pi/6.), mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
@@ -808,13 +808,13 @@ BOOST_AUTO_TEST_CASE( force_attached )
     actin_sets.push_back(pos7);
     actin_sets.push_back(pos8);
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
     //MOTOR
     double mx = 0.25, my = sqrt(3)/4, mang = (pi/2.+pi/6.), mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
@@ -887,12 +887,12 @@ BOOST_AUTO_TEST_CASE( dead_head )
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
     double mx = 0.45, my = 0.5, mang = pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     //m.kill_head(1);
     
@@ -1019,12 +1019,12 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
     double mx = 0.25, my = -0.5, mang = -pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     //m.kill_head(1);
     
@@ -1122,12 +1122,12 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
     double mx = 1.5, my = 0.5, mang = pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     //m.kill_head(1);
     
@@ -1252,12 +1252,12 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
     double mx = 1.5, my = -0.5, mang = 3*pi/2, mlen = 1;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     //m.kill_head(1);
     
@@ -1359,12 +1359,12 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         pos = {double(i), 0, actin_rad, 0};
         actin_sets.push_back(pos);
     }
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //attachment
     double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15, posx, posy;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     array<int, 15> num_attached; 
     int nevents = 1000;
     int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1374,7 +1374,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         posx=0;
         posy=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
             if (m.get_states()[0] == 1){
@@ -1394,7 +1394,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         mx = i + 0.5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1408,7 +1408,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         mx = i + 0.5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1428,7 +1428,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         lindex = {i, -1};
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
@@ -1446,7 +1446,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         lindex = {i, -1};
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
@@ -1465,7 +1465,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         lindex = {i, -1};
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
@@ -1495,13 +1495,13 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     actin_sets.push_back(pos1);
     actin_sets.push_back(pos2);
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     cout<<f->get_filament(0)->to_string();
     
     //attachment
     double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15, posx, posy;
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     array<int, 11> num_attached; 
     int nevents = 10000;
     int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1511,7 +1511,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
         posx=0;
         posy=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.attach(0);
             num_attached[i] += m.get_states()[0];
             if (m.get_states()[0] == 1){
@@ -1530,7 +1530,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1544,7 +1544,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1578,13 +1578,13 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
 //    cout<<f->get_filament(0)->to_string();
     
     //attachment
     double mx = -4.5, my = 0, mang = 0, mlen = 0.15;//, posx, posy
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     array<int, 2> num_attached; 
     int nevents = 10000;
     //int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1592,7 +1592,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1613,14 +1613,14 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
     
-    f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     num_attached[0]=0;
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1657,13 +1657,13 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
     
-    ATfilament_ensemble * f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
 //    cout<<f->get_filament(0)->to_string();
     
     //attachment
     double mx = -4.5, my = 0, mang = 0, mlen = 0.15;//, posx, posy
-    motor<ATfilament_ensemble> m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
     array<int, 2> num_attached; 
     int nevents = 10000;
     //int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1671,7 +1671,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1692,14 +1692,14 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     actin_sets.push_back(pos3);
     actin_sets.push_back(pos4);
     
-    f = new ATfilament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     num_attached[0]=0;
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor<ATfilament_ensemble>(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
