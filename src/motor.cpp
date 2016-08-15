@@ -169,16 +169,6 @@ array<int, 2> motor<filament_ensemble_type>::get_states()
     return state;
 }
 
-/*template <class filament_ensemble_type>
-void motor<filament_ensemble_type>::update_implicit_vars(t)
-{
- * Update implicit variables from explicit ones
- * explicitly updated: angle, stretch, center
- * implicitly: hx / hy of both heads, force
- * or the opposite...
- * seemingly easier to keep center fixed and update hx and hy here for boundary conditions
- *
-}*/
 template <class filament_ensemble_type>
 array<double, 2> motor<filament_ensemble_type>::get_hx()
 {
@@ -208,12 +198,14 @@ template <class filament_ensemble_type>
 bool motor<filament_ensemble_type>::attach(int hd)
 {
 //    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
-    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
-    double onrate, mf_dist;
+    double onrate, mf_dist, mf_rand;
     array<double, 2> intpoint;
-    
     multimap<double, array<int, 2> > dist_sorted;
-
+    
+    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
+    onrate = 0;
+    mf_rand = rng(0,1.0);
+    
     if(!dist.empty()){
         dist_sorted = flip_map(dist);
         
@@ -222,13 +214,14 @@ bool motor<filament_ensemble_type>::attach(int hd)
             mf_dist = it->first;
             if (mf_dist > max_bind_dist)
                 break;
+            
             else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 
-                onrate=kon*exp(-mf_dist*mf_dist/var_bind_dist);
+                onrate += kon*exp(-mf_dist*mf_dist/var_bind_dist);
                 
                 //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
                 
-                if (event(onrate)) {
+                if (mf_rand < onrate) {
                     //update state
                     state[hd] = 1;
                     f_index[hd] = (it->second).at(0);
