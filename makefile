@@ -1,11 +1,8 @@
-#
-## TODO: Move `libmongoclient.a` to /usr/local/lib so this can work on production servers
- 
 CC := g++ # This is the main compiler
 SRCDIR := src
 BUILDDIR := build
 BUILDDIR_DEBUG := build_debug
-TARGET := bin/nt
+TARGET := bin/afines
 
 #  
 
@@ -48,9 +45,9 @@ tar:
 
 # Programs
 network: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/nt
+	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/afines
 debug: $(OBJECTS_DEBUG)
-	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
+	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/afines_debug
 
 # THE FOLLOWING PROGRAMS MAY OR MAY NOT EXIST; CHECK YOUR PROG FOLDER
 filament_force_extension: $(OBJECTS)
