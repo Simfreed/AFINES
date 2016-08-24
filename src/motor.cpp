@@ -497,3 +497,8 @@ string motor::write()
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1]) 
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
+
+void motor::identify()
+{
+    cout<<"\nI am a motor";
+}

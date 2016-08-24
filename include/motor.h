@@ -51,6 +51,8 @@ class motor
 
         void kill_head( int hd);
         
+        void identify();
+
         void update_position_attached(int hd);
         
         void update_force();
