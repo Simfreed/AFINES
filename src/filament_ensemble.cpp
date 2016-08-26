@@ -118,15 +118,19 @@ void filament_ensemble::update_dist_map(map<array<int,2>, double>& t_map, const 
 map<array<int,2>,double> filament_ensemble::get_dist(double x, double y)
 {
     map<array<int, 2>, double> t_map;
-    int mqx = min(coord2quad_floor(fov[0], nq[0], x), nq[0] - 1);
-    int mqy = min(coord2quad_floor(fov[1], nq[1], y), nq[1] - 1);
+    int mqx = coord2quad_floor(fov[0], nq[0], x);
+    int mqy = coord2quad_floor(fov[1], nq[1], y);
+    
+    int xp1 = mqx + 1;
+    int yp1 = mqy + 1;
+
+    if (xp1 >= nq[0]) xp1 = 0;
+    if (yp1 >= nq[1]) yp1 = 0;
+    
     update_dist_map(t_map, {mqx, mqy}, x, y);
-    if (mqx + 1 < nq[0])
-        update_dist_map(t_map, {mqx + 1, mqy}, x, y);
-    if (mqy + 1 < nq[1])
-        update_dist_map(t_map, {mqx, mqy + 1}, x, y);
-    if (mqx + 1 < nq[0] && mqy + 1 < nq[1])
-        update_dist_map(t_map, {mqx + 1, mqy + 1}, x, y);
+    update_dist_map(t_map, {xp1, mqy}, x, y);
+    update_dist_map(t_map, {mqx, yp1}, x, y);
+    update_dist_map(t_map, {xp1, yp1}, x, y);
 
     return t_map;
 }

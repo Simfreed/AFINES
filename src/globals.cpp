@@ -352,22 +352,22 @@ template <typename T> int sgn(T val){
 vector<int> int_range(int lo, int hi)
 {
     vector<int> out;
-    for (int i = lo; i< hi; i++) out.push_back(i);
+    for (int i = lo; i<= hi; i++) out.push_back(i);
     return out;
 }
 
 vector<int> int_range(int lo, int hi, int di)
 {
     vector<int> out;
-    for (int i = lo; i != hi; i+=di) out.push_back(i);
+    for (int i = lo; i != hi + di; i+=di) out.push_back(i);
     return out;
 }
 
 vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi)
 {
     vector<int> out;
-    if (hi > topq) hi = hi - (topq-botq);
-    if (lo < botq) lo = lo + (topq-botq);
+    if (hi > topq) hi = hi - (topq-botq+1);
+    if (lo < botq) lo = lo + (topq-botq+1);
 
     if (lo <= hi)
         out = int_range(lo, hi);
@@ -386,8 +386,8 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
 vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi, int di)
 {
     vector<int> out;
-    if (hi > topq) hi = hi - (topq-botq);
-    if (lo < botq) lo = lo + (topq-botq);
+    if (hi > topq) hi = hi - (topq-botq+1);
+    if (lo < botq) lo = lo + (topq-botq+1);
 
     if ((lo <= hi && di > 0) || (lo > hi && di < 0))
         out = int_range(lo, hi, di);
@@ -552,7 +552,13 @@ int coord2quad_floor(double fov, int nq, double coord)
 
 int coord2quad_ceil(double fov, int nq, double coord)
 {
-    return min(int(ceil((coord+fov/2)*nq/fov)), nq);
+    int n = int(ceil((coord+fov/2)*nq/fov));
+    if (n == nq) 
+        return 0;
+    else 
+        return n;
+
+    //return min(int(ceil((coord+fov/2)*nq/fov)), nq);
 }
 
 int coord2quad(double fov, int nq, double coord)

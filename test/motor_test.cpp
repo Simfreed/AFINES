@@ -396,6 +396,7 @@ BOOST_AUTO_TEST_CASE( attach )
     //Filament ENSEMBLE
     array<double, 2> fov = {50,50};
     array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    nq={2,2};
     vector<array<double, 3> > pos_sets;
     int nactin = 5;
     int nfil = 1;//3;
