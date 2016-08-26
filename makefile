@@ -11,7 +11,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-CFLAGS := -O3 -Wall -Wno-missing-braces -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp
+CFLAGS := -O3 -Wall -Wno-missing-braces -Wno-unused-local-typedef -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp
 CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -pg 
 
 #BOOSTSUFFIX := "-mt"
