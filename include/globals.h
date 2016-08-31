@@ -114,5 +114,5 @@ void intarray_printer(array<int,2> a);
 
 boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
 boost::optional<array<double, 2> > seg_seg_intersection_bc(string, double, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&, const array<double, 2>&);
-
+std::string quads_error_message(std::string, array<int, 2>, array<int, 2>);
 #endif

@@ -547,12 +547,12 @@ boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double del
 
 int coord2quad_floor(double fov, int nq, double coord)
 {
-    return int(floor((coord+fov/2)*nq/fov));
+    return int(floor((coord+fov/2.0)*double(nq)/fov));
 }
 
 int coord2quad_ceil(double fov, int nq, double coord)
 {
-    int n = int(ceil((coord+fov/2)*nq/fov));
+    int n = int(ceil((coord+fov/2.0)*double(nq)/fov));
     if (n == nq) 
         return 0;
     else 
@@ -570,6 +570,18 @@ double angBC(double ang)
 {
     return ang - 2*pi*floor(ang / (2*pi) + 0.5);
 }
+
+std::string quads_error_message(std::string title, vector<array<int, 2> > equads, vector< array<int, 2> > aquads)
+{
+
+    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal Link Quadrants : \n";
+    cout<<"\nActual Quadrants:"; 
+    for_each(aquads.begin(), aquads.end(), intarray_printer);
+    cout<<"\nExpected Quadrants:"; 
+    for_each(equads.begin(), equads.end(), intarray_printer);
+    return "";
+}
+
 
 template int sgn<int>(int);
 template int sgn<double>(double);
