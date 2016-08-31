@@ -14,24 +14,26 @@ or gives weird results, try compiling and using that version of the code.
 In all of these cases, you have to specify and create the output directory  just as you would for 
 any simulation. I.e., to fullly run the simulation for figure 1D, 
 
+```
  > mkdir slide
  > mkdir slide/txt_stack
  > mkdir slide/data
  > ./bin/afines -c versatile_framework_paper/config/slide.cfg --dir slide
+```
 
 To actually create any of the figure panels, see plots.nb
 
 
 
 ### Figure 1 ### 
-* D
-
-    > ./bin/afines -c versatile_framework_paper/config/slide.cfg
-
-* E
-
-     > ./bin/afines -c versatile_framework_paper/config/buckle.cfg
-
+#### D ####
+```
+> ./bin/afines -c versatile_framework_paper/config/slide.cfg
+```
+#### E ####
+```
+> ./bin/afines -c versatile_framework_paper/config/buckle.cfg
+```
 
 ### Figure 2 ###
 * A
