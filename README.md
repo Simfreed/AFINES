@@ -1,8 +1,17 @@
 # README #
 
-### What is this repository for? ###
+### AFiNeS: Active Filament Network Simulation ###
 
-* Coarse-grained model of actomyosin networks
+##### as detailed in : #####
+#### A versatile framework for simulating the dynamics mechanical structure of cytoskeletal networks ####
+
+### Authors / Contributors ###
+
+* Simon Freedman (University of Chicago) 
+* Shiladitya Banerjee (University College London) 
+* Glen Hocky (University of Chicago)
+* Aaron Dinner (University of Chicago)
+
 
 ### System Requirements ###
 Minimally, this system requires gcc+11 and boost which you can load on midway via the commands
@@ -207,7 +216,7 @@ of 0.05 you would enter the command:
 |d_strain_freq              |double |1              |Hz     |frequency of differential oscillatory strain|
 
 ### Configuration file Example ###
-Below is an example of a configuration file named example.cfg 
+Below is an example of a configuration file named example.cfg. 
 To run a simulation using this configuration, enter the command
      ```   
     >./bin/afines -c example.cfg
@@ -227,11 +236,9 @@ actin_pos_str=0,0,0:1,2,3.141
 
 ### Contribution guidelines ###
 
-* None yet, I should make some!
-* Code review
-* Other guidelines
+* Email: dinner@uchicago.edu
 
 ### Who do I talk to? ###
 
-* Simon Freedman
-* GCIS E126
+* Simon Freedman (simonfreedman@uchicago.edu)
+* Aaron Dinner (dinner@uchicago.edu)
