@@ -135,7 +135,7 @@ map<array<int,2>,double> filament_ensemble::get_dist(double x, double y)
 map<array<int,2>,double> filament_ensemble::get_dist_all(double x, double y)
 {
     map<array<int, 2>, double> t_map;
-    for (unsigned int f = 0; f < network.size(); f++){
+    for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
             t_map[{f,l}]=network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y);
         }
