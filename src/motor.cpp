@@ -468,6 +468,10 @@ double motor::get_kinetic_energy(){
     return kinetic_energy;
 }
 
+double motor::get_angle(){
+    return mphi;
+}
+
 
 string motor::to_string()
 {

@@ -185,6 +185,7 @@ void spacer::update_bending(int hd)
     double th, thdiff1, thdiff2, Cam1am1, Caa, Caam1, Crat1, Crat2, coef1, coef2;
     array<double, 2> ram1, ra, fAct, fHd;
 
+    //cout<<"\nDEBUG: (hx["<<hd<<"],hy["<<hd<<"]) = ("<<hx[hd]<<" , "<<hy[hd]<<");";
     ram1 = rij_bc(BC, 
             hx[hd] - actin_network->get_end(f_index[hd], l_index[hd])[0],
             hy[hd] - actin_network->get_end(f_index[hd], l_index[hd])[1],
@@ -196,37 +197,45 @@ void spacer::update_bending(int hd)
     Caa     = ra[0]*ra[0]   + ra[1]*ra[1];
     Caam1   = ram1[0]*ra[0]   + ram1[1]*ra[1];
 
+    //cout<<"\nDEBUG: (Ca-1a-1, Ca-1a, Caa) = ("<<Cam1am1<<" , "<<Caam1<<" , "<<Caa<<");";
     Crat1   = Caam1 / Caa;
     Crat2   = Caam1 / Cam1am1;
+    //cout<<"\nDEBUG: (Crat1, Crat2) = "<<Crat1<<" , "<<Crat2<<";";
 
     th      = angBC(atan2(ra[1], ra[0]) - atan2(ram1[1], ram1[0]));
     thdiff1 = angBC( th - th0);
     thdiff2 = angBC(-th - th0);
-    
+  //  cout<<"\nDEBUG: (th, thdiff1, thdiff2) = ("<<th<<" , "<<thdiff1<<" , "<<thdiff2<<")";
     //cout<<"\nDEBUG: Cam1am1, Caam1, Caa = ( "<<Cam1am1<<" , "<<Caam1<<" , "<<Caa<<" )";
-
-    if( fabs(thdiff1) < maxSmallAngle )
-        coef1 = -kb*(1.0/sqrt(Caam1  *Caa  ));
-    else
-        coef1 = -kb*( thdiff1 / sin( thdiff1 ) )*(1.0/sqrt(Caam1  *Caa  ));
     
+    coef1 = -kb*1.0/sqrt(Cam1am1*Caa);
+    coef2 = coef1;
 
-    if( fabs(thdiff2) < maxSmallAngle )
-        coef2 = -kb*(1.0/sqrt(Cam1am1*Caam1));
-    else
-        coef2 = -kb*( thdiff2 / sin( thdiff2 ) )*(1.0/sqrt(Cam1am1*Caam1));
+    if( fabs(th) > maxSmallAngle ){
+        coef1 *= thdiff1 / sin( th);
+        coef2 *= thdiff2 / sin(-th);
+    }
+    else{
+        coef1 *= thdiff1 / sin(sgn( th)*maxSmallAngle);
+        coef2 *= thdiff2 / sin(sgn(-th)*maxSmallAngle);
+    }
+
+    if( fabs(thdiff2) > maxSmallAngle )
+
+//    cout<<"\nDEBUG: (kb, C1, C2) = ("<<kb<< " , "<<coef1<<" , "<<coef2<<")";
     
 //    cout<<"\nDEBUG:coefs = ( "<<coef1<<" , "<<coef2<<" )";
 
     fHd  = {coef1 * (Crat1 * ra[0] - ram1[0]), coef1 * (Crat1 * ra[1] - ram1[1])};
     fAct = {coef2 * (ra[0] - Crat2 * ram1[0]), coef2 * (ra[1] - Crat2 * ram1[1])};
+    cout<<"\nDEBUG: fHd =  ("<<fHd[0]<<" , "<<fHd[1]<<")"; 
+    cout<<"\nDEBUG: fAct = ("<<fAct[0]<<" , "<<fAct[1]<<")"; 
 
     // Update actin bead and xlink bead
-    actin_network->update_forces(f_index[hd], l_index[hd], fAct[0], fAct[1]);
-    
+    actin_network->update_forces(f_index[hd], l_index[hd] + 1, fAct[0], fAct[1]);
     int h2 = pr(hd);
     if (state[h2] == 1)
-        actin_update_hd(pr(h2), fHd);
+        actin_update_hd(h2, fHd);
     else{
         array<double, 2> pos = boundary_check(h2, hx[h2] + fHd[0]*dt/damp, hy[h2] + fHd[1]*dt/damp);
         hx[h2] = pos[0];

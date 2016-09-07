@@ -104,7 +104,9 @@ class motor
         double get_stretching_energy_fene();
 
         double get_kinetic_energy();
-        
+
+        double get_angle();
+
         string to_string();
         
         string write();

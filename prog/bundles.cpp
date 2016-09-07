@@ -103,7 +103,7 @@ int main(int argc, char* argv[]){
         ("s1_kend", po::value<double>(&s1_kend)->default_value(20),"xlink 1 off rate at filament end")
         ("spacer1_length", po::value<double>(&spacer1_length)->default_value(0.15),"filamin rest length (um)")
         ("spacer1_stiffness", po::value<double>(&spacer1_stiffness)->default_value(1),"xlink 1 spring stiffness (pN/um)")
-        ("spacer1_v", po::value<double>(&spacer1_v)->default_value(1),"xlink 1 velocity (um/s)")
+        ("spacer1_v", po::value<double>(&spacer1_v)->default_value(0),"xlink 1 velocity (um/s)")
         
         ("s2_kon", po::value<double>(&s2_kon)->default_value(100),"xlink 2 on rate")
         ("s2_koff", po::value<double>(&s2_koff)->default_value(20),"xlink 2 off rate")
@@ -278,29 +278,31 @@ int main(int argc, char* argv[]){
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding xlink 1s...";
-    motor_ensemble<spacer> * big_xlinks;
+    spacer_ensemble * big_xlinks;
     
     if (spacer1_pos_vec.size() == 0)
-        big_xlinks = new motor_ensemble<spacer>( spacer1_density, {xrange, yrange}, dt, temperature, 
+        big_xlinks = new spacer_ensemble( spacer1_density, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
                 s1_kend, s1_stall, s1_break, s1_bind, viscosity, spacer1_position_arrs, bnd_cnd);
     else
-        big_xlinks = new motor_ensemble<spacer>( spacer1_pos_vec, {xrange, yrange}, dt, temperature, 
+        big_xlinks = new spacer_ensemble( spacer1_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
                 s1_kend, s1_stall, s1_break, s1_bind, viscosity, bnd_cnd);
+    big_xlinks->set_bending(0.04, pi/2);
     if (dead_head_flag) big_xlinks->kill_heads(dead_head);
 
     cout<<"Adding xlink 2s (crosslinkers) ...\n";
-    motor_ensemble<spacer> * small_xlinks; 
+    spacer_ensemble * small_xlinks; 
     
     if(spacer2_pos_vec.size() == 0)
-        small_xlinks = new motor_ensemble<spacer>( spacer2_density, {xrange, yrange}, dt, temperature, 
+        small_xlinks = new spacer_ensemble( spacer2_density, {xrange, yrange}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
                 s2_kend, s2_stall, s2_break, s2_bind, viscosity, spacer2_position_arrs, bnd_cnd);
     else
-        small_xlinks = new motor_ensemble<spacer>( spacer2_pos_vec, {xrange, yrange}, dt, temperature, 
+        small_xlinks = new spacer_ensemble( spacer2_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
                 s2_kend, s2_stall, s2_break, s2_bind, viscosity, bnd_cnd);
+    small_xlinks->set_bending(0.04, pi/2);
     if (p_dead_head_flag) small_xlinks->kill_heads(p_dead_head);
 
     // Write the output configuration file
