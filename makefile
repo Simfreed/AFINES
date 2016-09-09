@@ -53,6 +53,8 @@ debug: $(OBJECTS_DEBUG)
 	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/nt_debug
 bundles: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/bundles.cpp $(INC) $(LIB) -o bin/bun
+bundles_debug: $(OBJECTS_DEBUG)
+	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/bundles.cpp $(INC) $(LIB) -o bin/bun_debug
 
 # THE FOLLOWING PROGRAMS MAY OR MAY NOT EXIST; CHECK YOUR PROG FOLDER
 filament_force_extension: $(OBJECTS)

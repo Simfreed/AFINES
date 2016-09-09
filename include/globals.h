@@ -87,7 +87,7 @@ double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
 double dot(const array<double, 2>& v1, const array<double, 2>& v2);
 
-double angBC(double ang);
+double angBC(double ang, double max);
 
 double var(const vector<double>& vals);
 double mode_var(const vector<double>& vals, double m);
@@ -100,6 +100,7 @@ vector<array<double,3> > str2arrvec(string, string, string);
 vector<vector<double> > file2vecvec(string path, string delim);
 
 template <typename T> int sgn(T val);
+int mysgn(double);
 
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
 multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &p);

@@ -52,10 +52,18 @@ class spacer : public motor {
         
         void update_bending(int);
 
+        array<array<double, 2>,2> get_b_force();
+
+        void brownian_relax(int hd);
+
+        void actin_update();
+
+        void step_onehead(int hd);
+
     private:
 
         double kb, th0; 
-        
+        array<array<double, 2>,2 > b_force;        
 };
 
 #endif

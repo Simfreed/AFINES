@@ -43,11 +43,11 @@ int main(int argc, char* argv[]){
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double spacer1_length, spacer1_v=0, spacer1_density, spacer1_stiffness, s1_kon, s1_kend, s1_koff,
-           s1_stall, s1_break, s1_bind;// Active Motors (i.e., "myosin")
+           s1_stall, s1_break, s1_bind, s1_bend, s1_ang;// Active Motors (i.e., "myosin")
     string spacer1_pos_str; 
     
     double spacer2_length, spacer2_density, spacer2_stiffness, // Passive Mtors (i.e., cross_linkers)
-            spacer2_v=0, s2_kon, s2_kend, s2_koff, s2_stall, s2_break, s2_bind; 
+            spacer2_v=0, s2_kon, s2_kend, s2_koff, s2_stall, s2_break, s2_bind, s2_bend, s2_ang; 
     string spacer2_pos_str;
     
     string config_file, actin_in, spacer1_in, spacer2_in;                                                // Input configuration
@@ -118,6 +118,12 @@ int main(int argc, char* argv[]){
         ("s1_stall", po::value<double>(&s1_stall)->default_value(10),"force beyond which motors don't walk (pN)")
         ("s1_break", po::value<double>(&s1_break)->default_value(10),"force constant for motor detachment (pN)")
         ("s1_bind", po::value<double>(&s1_bind)->default_value(0.04),"binding energy of motor (pN-um) (10kT by default)")
+        
+        ("s1_bend", po::value<double>(&s1_bend)->default_value(0.04),"bending force constant of spacer  (pN) (10kT/um by default)")
+        ("s1_ang", po::value<double>(&s1_ang)->default_value(pi/2),"equilibrium angle of spacer1-filament system")
+        
+        ("s2_bend", po::value<double>(&s2_bend)->default_value(0.04),"bending force constant of spacer 2  (pN) (10kT/um by default)")
+        ("s2_ang", po::value<double>(&s2_ang)->default_value(pi/2),"equilibrium angle of spacer2-filament system")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
@@ -288,7 +294,7 @@ int main(int argc, char* argv[]){
         big_xlinks = new spacer_ensemble( spacer1_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
                 s1_kend, s1_stall, s1_break, s1_bind, viscosity, bnd_cnd);
-    big_xlinks->set_bending(0.04, pi/2);
+    big_xlinks->set_bending(s1_bend, s1_ang);
     if (dead_head_flag) big_xlinks->kill_heads(dead_head);
 
     cout<<"Adding xlink 2s (crosslinkers) ...\n";
@@ -302,7 +308,7 @@ int main(int argc, char* argv[]){
         small_xlinks = new spacer_ensemble( spacer2_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
                 s2_kend, s2_stall, s2_break, s2_bind, viscosity, bnd_cnd);
-    small_xlinks->set_bending(0.04, pi/2);
+    small_xlinks->set_bending(s2_bend, s2_ang);
     if (p_dead_head_flag) small_xlinks->kill_heads(p_dead_head);
 
     // Write the output configuration file
