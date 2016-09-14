@@ -175,8 +175,15 @@ void spacer::set_bending(double force_constant, double ang){
 
 void spacer::update_force()
 { 
-    update_bending(0);
-    update_bending(1);
+    if (state[0] == 1 && state[1] == 1){
+        update_bending(0);
+        update_bending(1);
+    }
+    else
+    {
+        b_force[0] = {0,0};
+        b_force[1] = {0,0};
+    }
 
     update_angle(); // need to recalculate this, since heads might've moved
 
@@ -187,10 +194,6 @@ void spacer::update_force()
 
 void spacer::update_bending(int hd)
 {
-    if (state[hd] != 1){
-        b_force[pr(hd)] = {0, 0};
-        return;
-    }
     
     double th, thdiff1, thdiff2, Cam1am1, Caa, Caam1, Crat1, Crat2, coef1, coef2;
     array<double, 2> ram1, ra, fAct;
