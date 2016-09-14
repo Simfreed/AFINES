@@ -59,6 +59,8 @@ class spacer : public motor {
         void actin_update();
 
         void step_onehead(int hd);
+        
+        bool attach(int hd);
 
     private:
 

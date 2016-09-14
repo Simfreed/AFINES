@@ -335,4 +335,57 @@ array<array<double, 2>,2> spacer::get_b_force()
     return b_force;
 }
 
+// Unlike xlinks and motors, spacers CANNOT bind to the same filament on two different links
+bool spacer::attach(int hd)
+{
+//    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
+    double onrate, mf_dist, mf_rand;
+    array<double, 2> intpoint;
+    multimap<double, array<int, 2> > dist_sorted;
+    
+    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
+    onrate = 0;
+    mf_rand = rng(0,1.0);
+    
+    if(!dist.empty()){
+        dist_sorted = flip_map(dist);
+        
+        for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
+        {
+            mf_dist = it->first;
+            if (mf_dist > max_bind_dist)
+                break;
+            
+            else if(f_index[pr(hd)] != (it->second).at(0)) {
+                
+                onrate += kon*exp(-mf_dist*mf_dist/var_bind_dist);
+                
+                //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
+                
+                if (mf_rand < onrate) {
+                    //update state
+                    state[hd] = 1;
+                    f_index[hd] = (it->second).at(0);
+                    l_index[hd] = (it->second).at(1);
+                    //cout<<"DEBUG: hit "<<f_index[hd]<<endl;   
+                    //cout<<"\nDEBUG: motor head pos ("<<hx[hd]<<" , "<<hy[hd]<<").";
+
+                    //update head position
+                    intpoint = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
+                    hx[hd] = intpoint[0];
+                    hy[hd] = intpoint[1];
+
+                    pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
+                                              actin_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
+                                              actin_network->get_delrx());
+                    //cout<<"\nDEBUG: attaching at intpoint ("<<intpoint[0]<<" , "<<intpoint[1]<<").\tpos_a_end = "<<pos_a_end[hd];
+                    return true;
+                }
+                //else
+                  //  cout<<"DEBUG: missed "<< (it->second).at(0)<<endl;
+            }
+        }
+    }	
+    return false;
+} 
 
