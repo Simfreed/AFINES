@@ -40,16 +40,20 @@ motor::motor( array<double, 3> pos,
     
     stall_force   = fstall;
     break_force   = fbreak;
-    max_bind_dist = sqrt(engBind/stiffness);
-    var_bind_dist = (2.0/3.0)*engBind/stiffness;
+    //max_bind_dist = sqrt(engBind/stiffness);
+    
+    //var_bind_dist = (2.0/3.0)*engBind/stiffness;
+    temperature = temp;
+    var_bind_dist = 2.0*temperature/stiffness;
+    max_bind_dist = sqrt(3.0*var_bind_dist/2.0);
+    double partition_func = sqrt(pi * temperature / stiffness); 
 
     mld         = mlen;
     dt          = delta_t;
-    kon         = ron*dt;
-    koff        = roff*dt;
-    kend        = rend*dt;
+    kon         = ron*dt/partition_func;
+    koff        = roff*dt/partition_func;
+    kend        = rend*dt/partition_func;
     mphi        = pos[2];
-    temperature = temp;
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //link index for each head
@@ -57,7 +61,6 @@ motor::motor( array<double, 3> pos,
     BC          = bc; 
     actin_network = network;
     damp=(4*pi*vis*mld);
-    
     
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
@@ -113,16 +116,19 @@ motor::motor( array<double, 4> pos,
     
     stall_force = fstall;
     break_force = fbreak;
-    max_bind_dist = sqrt(engBind/stiffness);
-    var_bind_dist = (2.0/3.0)*engBind/stiffness;
+    //max_bind_dist = sqrt(engBind/stiffness);
+    //var_bind_dist = (2.0/3.0)*engBind/stiffness;
+    temperature = temp;
+    var_bind_dist = 2.0*temperature/stiffness;
+    max_bind_dist = sqrt(3.0*var_bind_dist/2.0);
+    double partition_func = sqrt(pi * temperature / stiffness); 
     
     mld         = mlen;
     dt          = delta_t;
-    kon         = ron*dt;
-    koff        = roff*dt;
-    kend        = rend*dt;
+    kon         = ron*dt/partition_func;
+    koff        = roff*dt/partition_func;
+    kend        = rend*dt/partition_func;
     mphi        = pos[2];
-    temperature = temp;
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //link index for each head
@@ -130,6 +136,7 @@ motor::motor( array<double, 4> pos,
     BC          = bc; 
     actin_network = network;
     damp=(4*pi*vis*mld);
+    
     
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
@@ -203,7 +210,7 @@ void motor::set_shear(double gamma)
 bool motor::attach(int hd)
 {
 //    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
-    double onrate, mf_dist, mf_rand;
+    double onrate, stretch, mf_rand, delE;
     array<double, 2> intpoint;
     multimap<double, array<int, 2> > dist_sorted;
     
@@ -216,14 +223,16 @@ bool motor::attach(int hd)
         
         for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
-            mf_dist = it->first;
-            if (mf_dist > max_bind_dist)
+            if (it->first > max_bind_dist)
                 break;
             
             else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 
-                onrate += kon*exp(-mf_dist*mf_dist/var_bind_dist);
-                
+                intpoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
+                stretch  = dist_bc(BC, intpoint[0] - hx[pr(hd)], intpoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
+                delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
+                onrate += kon*exp(-delE/temperature);
+                 
                 //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
                 
                 if (mf_rand < onrate) {
@@ -235,7 +244,6 @@ bool motor::attach(int hd)
                     //cout<<"\nDEBUG: motor head pos ("<<hx[hd]<<" , "<<hy[hd]<<").";
 
                     //update head position
-                    intpoint = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
                     hx[hd] = intpoint[0];
                     hy[hd] = intpoint[1];
 
@@ -337,8 +345,8 @@ void motor::step_onehead(int hd)
                 pow(-1, hd)*dot(force, actin_network->get_direction(f_index[hd], l_index[hd])), 
                 stall_force);
         
-        if (tension > 0) 
-            offrate = koff*exp(tension/break_force);
+//       if (tension > 0) 
+//           offrate = koff*exp(tension/break_force);
         
     }
     
@@ -426,7 +434,7 @@ void motor::detach_head(int hd)
     f_index[hd]=-1;
     l_index[hd]=-1;
     pos_a_end[hd]=0;
-    this->relax_head(hd);
+    //this->relax_head(hd);
     
 }
 
