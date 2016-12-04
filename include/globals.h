@@ -47,8 +47,8 @@ using namespace std;
  * --> Temp in pN-um                                   */
 //const double pi, eps, dt, temperature;
 const double pi = 3.14159265358979323;
-const double maxSmallAngle = pi/12; //Small angles DEFINED as such that sin(t) = t to 2 SigFigs
-const double eps = 1e-10;
+const double maxSmallAngle = 0.001; //pi/12.0; //Small angles DEFINED as such that sin(t) = t to 2 SigFigs
+const double eps = 1e-4;
 const double infty = 1e10;
 const double actin_mass_density = 2.6e-14; //miligram / micron
 /*generic functions to be used below*/

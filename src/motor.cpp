@@ -40,19 +40,15 @@ motor::motor( array<double, 3> pos,
     
     stall_force   = fstall;
     break_force   = fbreak;
-    //max_bind_dist = sqrt(engBind/stiffness);
+    temperature   = temp;
     
-    //var_bind_dist = (2.0/3.0)*engBind/stiffness;
-    temperature = temp;
-    var_bind_dist = 2.0*temperature/stiffness;
-    max_bind_dist = sqrt(3.0*var_bind_dist/2.0);
-    double partition_func = sqrt(pi * temperature / stiffness); 
+    max_bind_dist = 3.0*sqrt(temperature / stiffness);
 
     mld         = mlen;
     dt          = delta_t;
-    kon         = ron*dt/partition_func;
-    koff        = roff*dt/partition_func;
-    kend        = rend*dt/partition_func;
+    kon         = ron*dt;
+    koff        = roff*dt;
+    kend        = rend*dt;
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
@@ -116,18 +112,15 @@ motor::motor( array<double, 4> pos,
     
     stall_force = fstall;
     break_force = fbreak;
-    //max_bind_dist = sqrt(engBind/stiffness);
-    //var_bind_dist = (2.0/3.0)*engBind/stiffness;
     temperature = temp;
-    var_bind_dist = 2.0*temperature/stiffness;
-    max_bind_dist = sqrt(3.0*var_bind_dist/2.0);
-    double partition_func = sqrt(pi * temperature / stiffness); 
+
+    max_bind_dist = 3.0*sqrt(temperature / stiffness);
     
     mld         = mlen;
     dt          = delta_t;
-    kon         = ron*dt/partition_func;
-    koff        = roff*dt/partition_func;
-    kend        = rend*dt/partition_func;
+    kon         = ron*dt;
+    koff        = roff*dt;
+    kend        = rend*dt;
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
