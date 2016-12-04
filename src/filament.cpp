@@ -628,7 +628,7 @@ double filament::get_bending_energy(){
         sum += theta*theta;
     }
     
-    return kb*sum; //doubled because of backward and forward bending updates
+    return kb*sum/2;
 
 }
 
