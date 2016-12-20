@@ -1728,7 +1728,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
     double kon = 2, koff = 0, kend = 0, fstall = 1, fbreak = 3.85, ebind = 0.04;
     double frac_force = 0;
-    double tol = 0.001, zero = 1e-10;   
+    double zero = 1e-10;   
 
     vector<double> pos;
     for (int i = 15; i >=0; i--)
