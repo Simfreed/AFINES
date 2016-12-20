@@ -1,11 +1,15 @@
-/*
- * motor.cpp
- *  
- *
- *  Created by Simon Freedman and Shiladitya Banerjee
- *  Copyright 2013 University of Chicago. All rights reserved.
- *
- */
+/*------------------------------------------------------------------
+ motor_ensemble.cpp : container class for motors
+ 
+ Copyright (C) 2016 
+ Created by: Simon Freedman, Shiladitya Banerjee, Glen Hocky, Aaron Dinner
+ Contact: dinner@uchicago.edu
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version. See ../LICENSE for details. 
+-------------------------------------------------------------------*/
 
 #include "globals.h"
 #include "motor.h"

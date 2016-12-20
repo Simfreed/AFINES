@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
     string a_motor_pos_str; 
     
     double p_motor_length, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
-            p_motor_v=0, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_break, p_m_bind; 
+            p_motor_v, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_break, p_m_bind; 
     string p_motor_pos_str;
     
     string config_file, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
@@ -102,18 +102,19 @@ int main(int argc, char* argv[]){
         ("a_motor_pos_str", po::value<string> (&a_motor_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
         ("p_motor_pos_str", po::value<string> (&p_motor_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
-        ("a_m_kon", po::value<double>(&a_m_kon)->default_value(100),"active motor on rate")
-        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(20),"active motor off rate")
-        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(20),"active motor off rate at filament end")
+        ("a_m_kon", po::value<double>(&a_m_kon)->default_value(1),"active motor on rate")
+        ("a_m_koff", po::value<double>(&a_m_koff)->default_value(0.1),"active motor off rate")
+        ("a_m_kend", po::value<double>(&a_m_kend)->default_value(0.1),"active motor off rate at filament end")
         ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.4),"active motor rest length (um)")
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(1),"active motor spring stiffness (pN/um)")
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
         
-        ("p_m_kon", po::value<double>(&p_m_kon)->default_value(100),"passive motor on rate")
-        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(20),"passive motor off rate")
-        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(20),"passive motor off rate at filament end")
+        ("p_m_kon", po::value<double>(&p_m_kon)->default_value(1),"passive motor on rate")
+        ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.1),"passive motor off rate")
+        ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0.1),"passive motor off rate at filament end")
         ("p_motor_length", po::value<double>(&p_motor_length)->default_value(0.150),"passive motor rest length (um) (default: filamin)")
         ("p_motor_stiffness", po::value<double>(&p_motor_stiffness)->default_value(1),"passive motor spring stiffness (pN/um)")
+        ("p_motor_v", po::value<double>(&p_motor_v)->default_value(0),"passive motor velocity (um/s)")
        
         ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
         ("p_m_break", po::value<double>(&p_m_break)->default_value(10),"force constant for xlink detachment (related to rupture force F_r, P(detach | F_r) -> 1) (pN)")

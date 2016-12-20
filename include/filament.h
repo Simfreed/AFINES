@@ -104,9 +104,9 @@ class filament
        
         inline double angle_between_links(int i, int j);
 
-        void fwd_bending_update(double);
+        void fwd_bwd_bending_update();
         
-        void bwd_bending_update(double);
+        void lammps_bending_update();
         
         int get_nactins();
 

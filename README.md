@@ -1,8 +1,18 @@
 # README #
 
-### What is this repository for? ###
+### AFiNeS: Active Filament Network Simulation ###
 
-* Coarse-grained model of actomyosin networks
+##### as detailed in : #####
+#### A versatile framework for simulating the dynamics mechanical structure of cytoskeletal networks ####
+
+### Authors / Contributors ###
+
+* Simon Freedman (University of Chicago) 
+* Shiladitya Banerjee (University College London) 
+* Glen Hocky (University of Chicago)
+* Aaron Dinner (University of Chicago)
+
+#### created at the University of Chicago ####
 
 ### System Requirements ###
 Minimally, this system requires gcc+11 and boost which you can load on midway via the commands
@@ -44,7 +54,7 @@ sudo port install boost
 
         4. Find the folder with the boost/*.h files; with MacPorts installation, it was `/opt/local/include/`. Add `-I <myincludefolder>` to the line that begins `INC :=` in the makefile.
 
-* You should now have an executable file called bin/nt. NOTE: you only need to recreate this file if you edit the source
+* You should now have an executable file called bin/afines. NOTE: you only need to recreate this file if you edit the source
   code.
 
 * Create an output directory for your simulation (not necessarily named "out/test") as well as the "txt_stack" and "data"
@@ -57,7 +67,7 @@ sudo port install boost
 
 * Run your simulation in the specified output output directory, e.g., 
     ``` 
-    > bin/nt --dir out/test
+    > bin/afines --dir out/test
     ```
 
 * See below for other simulation configuration options that you can set from the command line or from a configuration
@@ -132,7 +142,7 @@ configuration file:
 For example, to run a 500 second of simulation of 10 rigid actin filaments, an active motor density of 0.5 and a crosslinker density
 of 0.05 you would enter the command:
     ```
-    > ./bin/nt --tf 500 --npolymer 10 --a_motor_density 0.5 --p_motor_density 0.05
+    > ./bin/afines --tf 500 --npolymer 10 --a_motor_density 0.5 --p_motor_density 0.05
     ```
 (this would write to the default output directory)
 
@@ -161,7 +171,7 @@ of 0.05 you would enter the command:
 |actin_pos_str              |string |               |       |Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions|
 |link_length                |double |0              |       |Length of links connecting monomers|
 |polymer_bending_modulus    |double |0.04           |pn*um^2|Bending modulus of a filament|
-|fracture_force             |double |1000000        |pN     |filament breaking point|
+|fracture_force             |double |1000000        |pN     |filament breaking poiafines|
 |bending_fracture_force     |double |1000000        |pN     |filament breaking point|
 |link_stretching_stiffness  |double |1              |pN/um  |stiffness of link|
 |**MOTORS**                 |       |               |       ||
@@ -207,10 +217,10 @@ of 0.05 you would enter the command:
 |d_strain_freq              |double |1              |Hz     |frequency of differential oscillatory strain|
 
 ### Configuration file Example ###
-Below is an example of a configuration file named example.cfg 
+Below is an example of a configuration file named example.cfg. 
 To run a simulation using this configuration, enter the command
      ```   
-    >./bin/nt -c example.cfg
+    >./bin/afines -c example.cfg
     ```
 #### example.cfg ####
 ```
@@ -227,11 +237,9 @@ actin_pos_str=0,0,0:1,2,3.141
 
 ### Contribution guidelines ###
 
-* None yet, I should make some!
-* Code review
-* Other guidelines
+* Email: dinner@uchicago.edu
 
 ### Who do I talk to? ###
 
-* Simon Freedman
-* GCIS E126
+* Simon Freedman (simonfreedman@uchicago.edu)
+* Aaron Dinner (dinner@uchicago.edu)
