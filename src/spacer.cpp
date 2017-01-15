@@ -191,88 +191,69 @@ void spacer::update_force()
     force = {tension*cos(mphi), tension*sin(mphi)};
     
 }
+  //Measure distance to FARTHER END of actin filament that the spacer is bound to
+  //
+int spacer::get_further_end(int hd, int findex, int lindex)
+{
+    return (pos_a_end[hd] > 0.5*actin_network->get_llength(findex, lindex));
+}
+
+array<double, 2> spacer::disp_from_actin(int hd, int findex, int aindex)
+{
+  return rij_bc(BC,
+          actin_network->get_filament(findex)->get_actin(aindex)->get_xcm() - hx[hd],
+          actin_network->get_filament(findex)->get_actin(aindex)->get_ycm() - hy[hd],
+          fov[0], fov[1], actin_network->get_delrx());
+}
 
 void spacer::update_bending(int hd)
 {
+  array<double, 2> delr1, delr2;
+  double f1[2], f3[2];
+  double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
+  
+  int actin_further_end = get_further_end(hd, f_index[hd], l_index[hd]);
+
+  // 1st bond
+  delr1 = disp_from_actin(hd, f_index[hd], l_index[hd] + actin_further_end); 
+  rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
+  r1    = sqrt(rsq1);
+
+  // 2nd bond
+  delr2 = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
+  rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
+  r2    = sqrt(rsq2);
+
+  // angle (cos and sin)
+  c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
     
-    double th, thdiff1, thdiff2, Cam1am1, Caa, Caam1, Crat1, Crat2, coef1, coef2;
-    array<double, 2> ram1, ra, fAct;
-    int actin_further_end; //0 or 1
-    //cout<<"\nDEBUG: (hx["<<hd<<"],hy["<<hd<<"]) = ("<<hx[hd]<<" , "<<hy[hd]<<");";
-    
-    //Measure distance to FARTHER END of actin filament that the spacer is bound to
-    if (pos_a_end[hd] < 0.5*actin_network->get_llength(f_index[hd], l_index[hd])){
-        actin_further_end = 0;
-        ram1 = rij_bc(BC,
-                hx[hd] - actin_network->get_start(f_index[hd], l_index[hd])[0],
-                hy[hd] - actin_network->get_start(f_index[hd], l_index[hd])[1],
-                fov[0], fov[1], actin_network->get_delrx());
-    }else{
-        actin_further_end = 1;
-        ram1 = rij_bc(BC,
-                hx[hd] - actin_network->get_end(f_index[hd], l_index[hd])[0],
-                hy[hd] - actin_network->get_end(f_index[hd], l_index[hd])[1],
-                fov[0], fov[1], actin_network->get_delrx());
-    }
-    
-    //cout<<"\nDEBUG: pos_a_end[hd], actin_further_end = "<<pos_a_end[hd]<<" , "<<actin_further_end; 
-    //ra = hd == 0 ? disp : {-(disp[0]), -(disp[1])};
-    ra = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
+  if (c > 1.0) c = 1.0;
+  if (c < -1.0) c = -1.0;
 
-    Cam1am1 = ram1[0]*ram1[0] + ram1[1]*ram1[1];
-    Caa     = ra[0]*ra[0]   + ra[1]*ra[1];
-    Caam1   = ram1[0]*ra[0]   + ram1[1]*ra[1];
-    
-    //MAYBE A BAD FIX: 
-    //If length Caa or Cam1am1 is 0, then there's no angle, so exit the function in those cases
-    if (Cam1am1 < eps || Caa < eps) return;
+  s = sqrt(1.0 - c*c);
+  if (s < maxSmallAngle) s = maxSmallAngle;
 
-   // cout<<"\nDEBUG: (Ca-1a-1, Ca-1a, Caa) = ("<<Cam1am1<<" , "<<Caam1<<" , "<<Caa<<");";
-    Crat1   = Caam1 / Caa;
-    Crat2   = Caam1 / Cam1am1;
-    //cout<<"\nDEBUG: (Crat1, Crat2) = "<<Crat1<<" , "<<Crat2<<";";
+  // force
+  a   = -kb * (acos(c) - th0) / s; 
+  a11 = a*c / rsq1;
+  a12 = -a / (r1*r2);
+  a22 = a*c / rsq2;
 
-    th      = angBC(atan2(ra[1], ra[0]) - atan2(ram1[1], ram1[0]), 2*pi);
-    thdiff1 = angBC( th - th0, pi);
-    thdiff2 = angBC(-th - th0, pi);
-    //cout<<"\nDEBUG: (th, thdiff1, thdiff2) = ("<<th<<" , "<<thdiff1<<" , "<<thdiff2<<")";
-    
-    coef1 = -kb*1.0/sqrt(Cam1am1*Caa);
-    coef2 = coef1;
+  f1[0] = a11*delr1[0] + a12*delr2[0];
+  f1[1] = a11*delr1[1] + a12*delr2[1];
+  f3[0] = a22*delr2[0] + a12*delr1[0];
+  f3[1] = a22*delr2[1] + a12*delr1[1];
 
-    if( fabs(th) > maxSmallAngle ){
-        coef1 *= thdiff1 / sin( th);
-        coef2 *= thdiff2 / sin(-th);
-    }
-    else{
-        coef1 *= thdiff1 / sin(mysgn( th)*maxSmallAngle);
-        coef2 *= thdiff2 / sin(mysgn(-th)*maxSmallAngle);
-    }
-
-//    cout<<"\nDEBUG: (kb, C1, C2) = ("<<kb<< " , "<<coef1<<" , "<<coef2<<")";
-//    cout<<"\nDEBUG:coefs = ( "<<coef1<<" , "<<coef2<<" )";
-
-    b_force[pr(hd)]  = {coef1 * (Crat1 * ra[0] - ram1[0]), coef1 * (Crat1 * ra[1] - ram1[1])};
-    
-    fAct = {coef2 * (ra[0] - Crat2 * ram1[0]), coef2 * (ra[1] - Crat2 * ram1[1])};
-//    cout<<"\nDEBUG: fHd =  ("<<fHd[0]<<" , "<<fHd[1]<<")"; 
-//    cout<<"\nDEBUG: fAct = ("<<fAct[0]<<" , "<<fAct[1]<<")"; 
-
-    // Update actin bead and xlink bead
-    actin_network->update_forces(f_index[hd], l_index[hd] + actin_further_end, fAct[0], fAct[1]);
-   /* 
-    int h2 = pr(hd);
-    if (state[h2] == 1)
-        actin_update_hd(h2, fHd);
-    else{
-        array<double, 2> pos = boundary_check(h2, hx[h2] + fHd[0]*dt/damp, hy[h2] + fHd[1]*dt/damp);
-        hx[h2] = pos[0];
-        hy[h2] = pos[1];
-    }
-    */
+  // apply force to each of 3 atoms
+  
+  actin_network->update_forces(f_index[hd], l_index[hd] + actin_further_end, f1[0], f1[1]);
+  b_force[hd][0] += (-f1[0] - f3[0]);
+  b_force[hd][1] += (-f1[1] - f3[1]);
+  b_force[pr(hd)][0] += f3[0];
+  b_force[pr(hd)][1] += f3[1];
+  
 
 }
-
 double spacer::get_kb(){
     return kb;
 }
@@ -328,6 +309,10 @@ void spacer::actin_update()
 {
     if (state[0]==1) this->actin_update_hd(0, { force[0] + b_force[0][0],  force[1] + b_force[0][1]});
     if (state[1]==1) this->actin_update_hd(1, {-force[0] + b_force[1][0], -force[1] + b_force[1][1]});
+    
+    //reset bending force
+    b_force[0] = {0,0};
+    b_force[1] = {0,0};
 }
 
 array<array<double, 2>,2> spacer::get_b_force()
@@ -339,8 +324,9 @@ array<array<double, 2>,2> spacer::get_b_force()
 bool spacer::attach(int hd)
 {
 //    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
-    double onrate, mf_dist, mf_rand;
-    array<double, 2> intpoint;
+    double onrate, stretch, mf_rand, delE;
+    double dth = 0, avgl = mld, r1, r2, c;
+    array<double, 2> intpoint, delr1, delr2;
     multimap<double, array<int, 2> > dist_sorted;
     
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
@@ -352,14 +338,38 @@ bool spacer::attach(int hd)
         
         for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
-            mf_dist = it->first;
-            if (mf_dist > max_bind_dist)
+            if (it->first > max_bind_dist)
                 break;
             
             else if(f_index[pr(hd)] != (it->second).at(0)) {
+            //else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 
-                onrate += kon*exp(-mf_dist*mf_dist/var_bind_dist);
+                intpoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
+                stretch  = dist_bc(BC, intpoint[0] - hx[pr(hd)], intpoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
                 
+                // Calculate additional bending energy from that'd come from the preferred angle force
+                if (state[pr(hd)] == 1){
+                    
+                    // 1st bond
+                    delr1 = disp_from_actin(hd, it->second.at(0), it->second.at(1) + get_further_end(hd, it->second.at(0), it->second.at(1))); 
+                    r1  = sqrt(delr1[0]*delr1[0] + delr1[1]*delr1[1]);
+
+                    // 2nd bond
+                    delr2 = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
+                    r2  = sqrt(delr2[0]*delr2[0] + delr2[1]*delr2[1]);
+
+                    // cos
+                    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
+
+                    if (c > 1.0) c = 1.0;
+                    if (c < -1.0) c = -1.0;
+                    dth = acos(c) - th0;
+                    avgl = 0.5*(r1+r2);
+
+                }
+                delE = 0.5*mk*stretch*stretch + 0.5*kb*dth*dth/avgl - this->get_stretching_energy();
+                onrate += kon*exp(-delE/temperature);
+                 
                 //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
                 
                 if (mf_rand < onrate) {
@@ -371,7 +381,6 @@ bool spacer::attach(int hd)
                     //cout<<"\nDEBUG: motor head pos ("<<hx[hd]<<" , "<<hy[hd]<<").";
 
                     //update head position
-                    intpoint = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
                     hx[hd] = intpoint[0];
                     hy[hd] = intpoint[1];
 
@@ -388,4 +397,5 @@ bool spacer::attach(int hd)
     }	
     return false;
 } 
+
 
