@@ -678,3 +678,32 @@ double filament::get_end2end()
         return dist_bc(BC, actins[actins.size() - 1]->get_xcm() - actins[0]->get_xcm(),  
                            actins[actins.size() - 1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
 } 
+
+void filament::reconstruct(int nm)
+{
+
+}
+
+void filament::grow(double dl)
+{
+    
+    double len = links[0]->get_l0() + dl / links.size();
+    
+    if ( len >= maxL0 || len <= minL0 )
+        this->reconstruct( len*links.size());
+    
+    else{
+        damp = 2*pi*len*visc;
+        for (unsigned int l = 0; l < links.size(); l++)
+        {
+            links[l]->set_l0(len);
+            links[l]->set_k(Y/len);
+            actins[l]->set_radius(len/2.0);
+        }
+        actins[actins.size()-1]->set_radius(len/2.0);
+    }
+
+}
+
+
+
