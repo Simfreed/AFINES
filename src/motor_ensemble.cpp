@@ -35,7 +35,7 @@ motor_ensemble<motor_type>::motor_ensemble(double mdensity, array<double, 2> myf
     tMove=0;//10;
     f_network=network;
     v = v0;
-    
+
     ke = 0;
     pe = 0;
 
@@ -149,12 +149,12 @@ void motor_ensemble<motor_type>::check_broken_filaments()
             f_index = n_motors[j]->get_f_index();
 
             if(f_index[0] == broken_filaments[i]){
-                n_motors[j]->detach_head(0);
+                n_motors[j]->detach(0);
                 //cout<<"\nDEBUG: detaching head 0 of motor "<<j<<" from broken filament "<<broken_filaments[i];
             }
 
             if(f_index[1] == broken_filaments[i]){
-                n_motors[j]->detach_head(1);
+                n_motors[j]->detach(1);
                 //cout<<"\nDEBUG: detaching head 1 of motor "<<j<<" from broken filament "<<broken_filaments[i];
             }
         }

@@ -91,8 +91,10 @@ class motor
 
         array<double, 2> get_hy();
 
-        void detach_head(int hd);
+        void detach(int hd, double rate);
 
+        void detach(int hd);
+        
         void update_pos_a_end( int hd, double pos);
 
         inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);

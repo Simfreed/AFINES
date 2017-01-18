@@ -283,28 +283,6 @@ void spacer::brownian_relax(int hd)
 
 }
 
-void spacer::step_onehead(int hd)
-{
-
-    double vm = vs, offrate = koff;
-    
-    if (state[pr(hd)] != 0){
-        
-        vm = my_velocity(vs, 
-                dot({pow(-1, hd)*force[0] + b_force[hd][0], pow(-1, hd)*force[1] + b_force[hd][1] } , 
-                    actin_network->get_direction(f_index[hd], l_index[hd])), 
-                stall_force);
-        
-        offrate *= exp( (fmax(0, tension) + hypot(b_force[hd][0], b_force[hd][1])) / break_force); 
-    }
-    
-    if ( event(offrate) ) this->detach_head(hd);
-    else{
-        this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
-        if (state[hd]!=0) update_position_attached(hd);  // update absolute position
-    }
-}
-
 void spacer::actin_update()
 {
     if (state[0]==1) this->actin_update_hd(0, { force[0] + b_force[0][0],  force[1] + b_force[0][1]});
@@ -398,4 +376,38 @@ bool spacer::attach(int hd)
     return false;
 } 
 
+void spacer::detach(int hd, double rate)
+{
+  
+    double delE;
+    double dth = 0, avgl = mld, r1, r2, c;
+    array<double, 2> delr1, delr2;
+    
+    delr1 = disp_from_actin(hd, f_index[hd], l_index[hd] + get_further_end(hd, f_index[hd], l_index[hd])); 
+    r1  = sqrt(delr1[0]*delr1[0] + delr1[1]*delr1[1]);
 
+    // 2nd bond
+    delr2 = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
+    r2  = sqrt(delr2[0]*delr2[0] + delr2[1]*delr2[1]);
+
+    // cos
+    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
+
+    if (c > 1.0) c = 1.0;
+    if (c < -1.0) c = -1.0;
+    dth = acos(c) - th0;
+    avgl = 0.5*(r1+r2);
+    delE = -0.5*kb*dth*dth/avgl;
+ 
+    if (event(rate*exp(-delE/temperature))){
+        state[hd]=0;
+        f_index[hd]=-1;
+        l_index[hd]=-1;
+        pos_a_end[hd]=0;
+    }
+
+}
+
+void spacer::detach(int hd){
+    detach(hd, koff);
+}

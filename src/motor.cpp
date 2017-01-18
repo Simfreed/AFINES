@@ -330,7 +330,7 @@ array<double, 2> motor::boundary_check(int i, double x, double y)
 void motor::step_onehead(int hd)
 {
 
-    double vm = vs, offrate = koff;
+    double vm = vs;
     
     if (state[pr(hd)] != 0){
         
@@ -338,13 +338,10 @@ void motor::step_onehead(int hd)
                 pow(-1, hd)*dot(force, actin_network->get_direction(f_index[hd], l_index[hd])), 
                 stall_force);
         
-//       if (tension > 0) 
-//           offrate = koff*exp(tension/break_force);
-        
     }
     
-    if ( event(offrate) ) this->detach_head(hd);
-    else{
+    this->detach(hd, koff);
+    if(state[hd] == 1){
         this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         if (state[hd]!=0) update_position_attached(hd);  // update absolute position
     }
@@ -357,9 +354,7 @@ void motor::update_pos_a_end(int hd, double pos)
     double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
     if (pos >= link_length) { // "passed" the link
         if (l_index[hd] == 0){ // the barbed end of the filament
-            if (event(kend)) {
-                this->detach_head(hd);
-            }
+            this->detach(hd, kend);
             //else don't change pos_a_end
         }
         else{ 
@@ -372,9 +367,7 @@ void motor::update_pos_a_end(int hd, double pos)
     }
     else if (pos < 0) { //this shouldn't be possible, ftr
         if (l_index[hd] == (actin_network->get_filament(f_index[hd])->get_nlinks() - 1)){ // the pointed end of the filament
-            if (event(koff)) {
-                this->detach_head(hd);
-            }
+            this->detach(hd, koff);
             //else don't change pos_a_end
         }
         else{ 
@@ -420,17 +413,22 @@ void motor::actin_update()
 }
 
 
-void motor::detach_head(int hd)
+void motor::detach(int hd, double rate)
 {
-   
-    state[hd]=0;
-    f_index[hd]=-1;
-    l_index[hd]=-1;
-    pos_a_end[hd]=0;
-    //this->relax_head(hd);
-    
+  
+    if (event(rate)){
+        state[hd]=0;
+        f_index[hd]=-1;
+        l_index[hd]=-1;
+        pos_a_end[hd]=0;
+    }
+
 }
 
+void motor::detach(int hd)
+{
+    detach(hd, koff);  
+}
 
 array<int, 2> motor::get_f_index(){
     return f_index;
