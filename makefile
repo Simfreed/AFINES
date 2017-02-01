@@ -41,7 +41,7 @@ clean_debug:
 	    @echo " $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)"; $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)
 
 tar:
-	tar cfv tars/amxbd.tar src/*.cpp include/*.h
+	tar -cvzf tars/afines.tar.gz src/*.cpp include/*.h prog/network.cpp makefile
 
 # Programs
 network: $(OBJECTS)
