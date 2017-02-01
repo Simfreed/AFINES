@@ -170,7 +170,7 @@ of 0.05 you would enter the command:
 |actin_length               |double |0.5            |um     |Length of a single actin monomer|
 |actin_pos_str              |string |               |       |Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions|
 |link_length                |double |0              |       |Length of links connecting monomers|
-|polymer_bending_modulus    |double |0.04           |pn*um^2|Bending modulus of a filament|
+|polymer_bending_modulus    |double |0.068           |pn*um^2|Bending modulus of a filament|
 |fracture_force             |double |1000000        |pN     |filament breaking poiafines|
 |bending_fracture_force     |double |1000000        |pN     |filament breaking point|
 |link_stretching_stiffness  |double |1              |pN/um  |stiffness of link|
@@ -183,8 +183,6 @@ of 0.05 you would enter the command:
 |a_motor_stiffness          |double |10             |pN/um  |active motor spring stiffness|
 |a_motor_length             |double |0.4            |um     |length of motor|
 |a_m_stall                  |double |10             |pN     |stall force of motors|
-|a_m_break                  |double |10             |pN     |rupture force of motors|
-|a_m_bind                   |double |0.04           |pN*um  |binding energy|
 |a_motor_v                  |double |1              |um/s   |velocity along filaments towards barbed end when attached|
 |motor_intersect_flag       |boolean|false          |       |if true, then motors are placed at filament intersections|
 |a_linkage_prob             |double |1              |       |probability that filaments are linked by a motor if motor_intersect_flag = true|
@@ -199,8 +197,6 @@ of 0.05 you would enter the command:
 |p_motor_stiffness          |double |50             |s^(-1) |xlink spring stiffness (pN/um)|
 |p_motor_length             |double |0.4            |s^(-1) |length of xlink|
 |p_m_stall                  |double |0              |pN     |stall force|
-|p_m_break                  |double |10             |pN     |rupture force|
-|p_m_bind                   |double |0.04           |pN*um  |binding energy|
 |link_intersect_flag        |boolean|false          |       |if true, then crosslinks are placed at filament intersections|
 |p_linkage_prob             |double |1              |       |probability that filaments are crosslinked if link_intersect_flag = true|
 |p_dead_head_flag           |boolean|false          |       |if true, then head [p_dead_head] of all xlinks remains stationary throughout sim|
