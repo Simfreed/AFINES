@@ -167,12 +167,12 @@ where N is 34691004,1e7-20e7
 ### Figure S4 ###
 #### A ####
 ```
-/bin/sim versatile_framework_paper/actin_fiber20.cym
+/bin/sim versatile_framework_paper/config/actin_fiber20.cym
 ```
 
 #### B ####
 ```
-cp versatile_framework_paper/actin_fiber20.cym my_actin_fiber20.cym
+cp versatile_framework_paper/config/actin_fiber20.cym my_actin_fiber20.cym
 sed -i "s/rigidity = 0.068/rigidity = [N*0.001]/g" my_actin_fiber20.cym
 /bin/sim my_actin_fiber20.cym
 ```
@@ -180,7 +180,7 @@ where N is 5,10,20,50,100,200,500,1000,2000,5000,10000,20000,50000,100000,200000
 
 #### C ####
 ```
-cp versatile_framework_paper/actin_fiber20.cym my_actin_fiber20.cym
+cp versatile_framework_paper/config/actin_fiber20.cym my_actin_fiber20.cym
 sed -i "s/segmentation = 1.00/segmentation = [N*0.01]/g" my_actin_fiber20.cym
 /bin/sim my_actin_fiber20.cym
 ```
