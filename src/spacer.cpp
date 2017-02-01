@@ -210,7 +210,7 @@ void spacer::update_bending(int hd)
 {
   array<double, 2> delr1, delr2;
   double f1[2], f3[2];
-  double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
+  double rsq1,rsq2,r1,r2,c,s,dth,a,a11,a12,a22;
   
   int actin_further_end = get_further_end(hd, f_index[hd], l_index[hd]);
 
@@ -233,8 +233,10 @@ void spacer::update_bending(int hd)
   s = sqrt(1.0 - c*c);
   if (s < maxSmallAngle) s = maxSmallAngle;
 
+  dth = acos(c) - th0;
+
   // force
-  a   = -kb * (acos(c) - th0) / s; 
+  a   = -kb * dth / s; 
   a11 = a*c / rsq1;
   a12 = -a / (r1*r2);
   a22 = a*c / rsq2;
@@ -252,6 +254,7 @@ void spacer::update_bending(int hd)
   b_force[pr(hd)][0] += f3[0];
   b_force[pr(hd)][1] += f3[1];
   
+  b_eng[hd] = kb*dth*dth/(r1+r2);
 
 }
 double spacer::get_kb(){
@@ -303,7 +306,7 @@ bool spacer::attach(int hd)
 {
 //    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
     double onrate, stretch, mf_rand, delE;
-    double dth = 0, avgl = mld, r1, r2, c;
+    double r1, r2, c, dth;
     array<double, 2> intpoint, delr1, delr2;
     multimap<double, array<int, 2> > dist_sorted;
     
@@ -341,11 +344,12 @@ bool spacer::attach(int hd)
 
                     if (c > 1.0) c = 1.0;
                     if (c < -1.0) c = -1.0;
+  
                     dth = acos(c) - th0;
-                    avgl = 0.5*(r1+r2);
+                    b_eng[hd] = kb*dth*dth/(r1+r2);
 
                 }
-                delE = 0.5*mk*stretch*stretch + 0.5*kb*dth*dth/avgl - this->get_stretching_energy();
+                delE = 0.5*mk*stretch*stretch + b_eng[hd] - this->get_stretching_energy();
                 onrate += kon*exp(-delE/temperature);
                  
                 //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
@@ -379,27 +383,7 @@ bool spacer::attach(int hd)
 void spacer::detach(int hd, double rate)
 {
   
-    double delE;
-    double dth = 0, avgl = mld, r1, r2, c;
-    array<double, 2> delr1, delr2;
-    
-    delr1 = disp_from_actin(hd, f_index[hd], l_index[hd] + get_further_end(hd, f_index[hd], l_index[hd])); 
-    r1  = sqrt(delr1[0]*delr1[0] + delr1[1]*delr1[1]);
-
-    // 2nd bond
-    delr2 = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
-    r2  = sqrt(delr2[0]*delr2[0] + delr2[1]*delr2[1]);
-
-    // cos
-    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
-
-    if (c > 1.0) c = 1.0;
-    if (c < -1.0) c = -1.0;
-    dth = acos(c) - th0;
-    avgl = 0.5*(r1+r2);
-    delE = -0.5*kb*dth*dth/avgl;
- 
-    if (event(rate*exp(-delE/temperature))){
+    if (event(rate*exp(b_eng[hd]/temperature))){
         state[hd]=0;
         f_index[hd]=-1;
         l_index[hd]=-1;
