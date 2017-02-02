@@ -7,7 +7,10 @@
 #include <iterator>
 #include <array>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 template<class T>
 ostream& operator<<(ostream& os, const vector<T>& v)
@@ -52,7 +55,7 @@ int main(int argc, char* argv[]){
     
     string config_file, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
     
-    string   dir,    afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
+    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
@@ -145,7 +148,7 @@ int main(int argc, char* argv[]){
         ("restart_a_motor", po::value<bool>(&restart_a_motor)->default_value(false), "if true, input motor positions file chosen by default")
         ("restart_p_motor", po::value<bool>(&restart_p_motor)->default_value(false), "if true, input crosslinker positions file chosen by default")
         
-        ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
+        ("dir", po::value<string>(&dir)->default_value("."), "output directory")
         ("myseed", po::value<int>(&myseed)->default_value(time(NULL)), "Random number generator myseed")
         
         ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "flag to put a cross link at all filament intersections")
@@ -243,15 +246,22 @@ int main(int argc, char* argv[]){
     
     set_seed(myseed);
     
-    afile  = dir + "/txt_stack/actins.txt";
-    lfile  = dir + "/txt_stack/links.txt";
-    amfile = dir + "/txt_stack/amotors.txt";
-    pmfile = dir + "/txt_stack/pmotors.txt";
-    thfile = dir + "/data/thermo.txt";
-    pefile = dir + "/data/pe.txt";
+    tdir   = dir  + "/txt_stack";
+    ddir   = dir  + "/data";
+    afile  = tdir + "/actins.txt";
+    lfile  = tdir + "/links.txt";
+    amfile = tdir + "/amotors.txt";
+    pmfile = tdir + "/pmotors.txt";
+    thfile = ddir + "/thermo.txt";
+    pefile = ddir + "/pe.txt";
 
     if (restart_actin || restart_a_motor || restart_p_motor) write_mode = ios_base::app;
-
+    
+    //const char* path = _filePath.c_str();
+    fs::path dir1(tdir.c_str()), dir2(ddir.c_str());
+    if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
+    if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
+    
     file_a.open(afile.c_str(), write_mode);
     file_l.open(lfile.c_str(), write_mode);
     file_am.open(amfile.c_str(), write_mode);

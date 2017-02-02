@@ -57,29 +57,27 @@ sudo port install boost
 * You should now have an executable file called bin/afines. NOTE: you only need to recreate this file if you edit the source
   code.
 
-* Create an output directory for your simulation (not necessarily named "out/test") as well as the "txt_stack" and "data"
-  directories (necessarily named "txt_stack" and "data") e.g. with the commands:
+* Create an output directory for your simulation (e.g., "out") 
 
 ```
-> mkdir -p out/test/txt_stack
-> mkdir -p out/test/data
+> mkdir out
 ```
 
 * Run your simulation in the specified output output directory, e.g., 
     ``` 
-    > bin/afines --dir out/test
+    > bin/afines --dir out
     ```
 
 * See below for other simulation configuration options that you can set from the command line or from a configuration
   file
 
 * Once your simulation has completed, the following files will have been generated:
- * out/test/txt_stack/actins.txt //the trajectories of every actin bead
- * out/test/txt_stack/links.txt //the trajectories of every link 
- * out/test/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
- * out/test/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
- * out/test/data/thermo.txt //the energies of actin filaments
- * out/test/data/output.txt //some metadata about the simulation
+ * out/txt_stack/actins.txt //the trajectories of every actin bead
+ * out/txt_stack/links.txt //the trajectories of every link 
+ * out/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
+ * out/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
+ * out/data/thermo.txt //the energies of actin filaments
+ * out/data/output.txt //some metadata about the simulation
 
 All files are tab delimited 
 
@@ -162,7 +160,7 @@ of 0.05 you would enter the command:
 |viscosity                  |double |0.001          |mg/um*s|Dynamic viscosity|
 |temperature                |double |0.004          |pN*um  |Temp in energy units |
 |bnd_cnd                    |string |"PERIODIC"     |       |boundary conditions|
-|dir                        |string |"out/test"     |       |directory for output files|
+|dir                        |string |"."            |       |directory for output files|
 |myseed                     |int    |time(NULL)     |       |seed of random number generator|
 |**ACTIN**                  |||||
 |nmonomer                   |double |11             |       |number of beads per filament|
