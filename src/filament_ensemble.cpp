@@ -100,16 +100,16 @@ void filament_ensemble::quad_update_serial()
 void filament_ensemble::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
-    double dist;
     if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
         
         for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
 
-            fl = links_per_quad[mq[0]]->at(mq[1])->at(i);
-            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y);
+            fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
             
-            if (t_map.find(fl) == t_map.end() || t_map[fl] > dist)
-                t_map[fl] = dist;
+            if (t_map.find(fl) == t_map.end()){ 
+                network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+                t_map[fl] = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            }
         }
     }
 
@@ -141,20 +141,14 @@ map<array<int,2>,double> filament_ensemble::get_dist_all(double x, double y)
     map<array<int, 2>, double> t_map;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
-            t_map[{f,l}]=network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y);
+                network[f]->get_link(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+                t_map[{f,l}] = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
         }
     }
     
     return t_map;
 }
 
-
-array<double,2> filament_ensemble::get_intpoints(int fil, int link, double xp, double yp)
-{
-    return network[fil]->get_link(link)->get_intpoint(network[0]->get_BC(), delrx, xp, yp);
-}
-
- 
 double filament_ensemble::get_angle(int fil, int link)
 {
     return network[fil]->get_link(link)->get_angle();

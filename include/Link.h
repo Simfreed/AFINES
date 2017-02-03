@@ -83,7 +83,10 @@ class Link
 
         double get_int_angle(double xp, double yp);
         
-        array<double,2> get_intpoint(string bc, double shear_dist, double xp, double yp);
+//      array<double,2> get_intpoint(string bc, double shear_dist, double xp, double yp);
+        array<double,2> get_intpoint();
+
+        void calc_intpoint(string bc, double shear_dist, double xp, double yp);
         
         vector<array<int,2> > get_quadrants();
        
@@ -100,7 +103,7 @@ class Link
         double xcm, ycm, phi, l0, kl, max_ext, eps_ext;//, force;
        
         array<double,2> fov, hx, hy;
-        array<double, 2> disp, force;
+        array<double, 2> disp, force, intpoint;
 
         array<int, 2> nq, half_nq, aindex;
          

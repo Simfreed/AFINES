@@ -423,7 +423,9 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
+    cout<<"got here;";
     m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+    cout<<"\ngot here too";
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);

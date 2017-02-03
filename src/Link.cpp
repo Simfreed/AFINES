@@ -36,6 +36,7 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
     hy = {0,0};
 
     force = {0,0};
+    intpoint = {0,0};
     //this->step();
 }
 Link::~Link(){ 
@@ -220,33 +221,35 @@ void Link::quad_update(string bc, double delrx){
 //SO : 849211
 double Link::get_distance(string bc, double delrx, double xp, double yp)
 {
-    array<double, 2> ip = this->get_intpoint(bc, delrx, xp, yp);
-    return dist_bc(bc, ip[0]-xp, ip[1]-yp, fov[0], fov[1], delrx);
+    return dist_bc(bc, intpoint[0]-xp, intpoint[1]-yp, fov[0], fov[1], delrx);
 }
 
-array<double,2> Link::get_intpoint(string bc, double delrx, double xp, double yp)
+array<double,2> Link::get_intpoint()
 {
-    array<double, 2> int_point; 
+    return intpoint;
+}
+
+void Link::calc_intpoint(string bc, double delrx, double xp, double yp)
+{
     double l2 = disp[0]*disp[0]+disp[1]*disp[1];
     if (l2==0){
-        int_point = {hx[0], hy[0]};
+        intpoint = {hx[0], hy[0]};
     }else{
         //Consider the line extending the link, parameterized as h0 + tp ( h1 - h0 )
         //tp = projection of (xp, yp) onto the line
         double tp=dot_bc(bc, xp-hx[0], yp-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
         //cout<<"\nDEBUG: tp = "<<tp;
         if (tp<0){ 
-            int_point = {hx[0], hy[0]};
+            intpoint = {hx[0], hy[0]};
         }
         else if(tp>1.0){
-            int_point = {hx[1], hy[1]};
+            intpoint = {hx[1], hy[1]};
         }
         else{
             array<double, 2> proj   = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
-            int_point               = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
+            intpoint                = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
         }
     }
-    return int_point;
 }
 
 vector<array<int, 2> > Link::get_quadrants()

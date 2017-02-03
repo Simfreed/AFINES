@@ -68,8 +68,6 @@ class filament_ensemble
         
         array<double,2> get_direction(int fil, int link);
 
-        array<double,2> get_intpoints(int fil, int link, double xp, double yp);
-
         array<double,2> get_start(int fil, int link);
         
         array<double,2> get_end(int fil, int link);
