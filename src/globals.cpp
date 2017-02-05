@@ -356,22 +356,22 @@ template <typename T> int sgn(T val){
 vector<int> int_range(int lo, int hi)
 {
     vector<int> out;
-    for (int i = lo; i<= hi; i++) out.push_back(i);
+    for (int i = lo; i< hi; i++) out.push_back(i);
     return out;
 }
 
 vector<int> int_range(int lo, int hi, int di)
 {
     vector<int> out;
-    for (int i = lo; i != hi + di; i+=di) out.push_back(i);
+    for (int i = lo; i != hi; i+=di) out.push_back(i);
     return out;
 }
 
 vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi)
 {
     vector<int> out;
-    if (hi > topq) hi = hi - (topq-botq+1);
-    if (lo < botq) lo = lo + (topq-botq+1);
+    if (hi > topq) hi = hi - (topq-botq);
+    if (lo < botq) lo = lo + (topq-botq);
 
     if (lo <= hi)
         out = int_range(lo, hi);
@@ -390,8 +390,8 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
 vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi, int di)
 {
     vector<int> out;
-    if (hi > topq) hi = hi - (topq-botq+1);
-    if (lo < botq) lo = lo + (topq-botq+1);
+    if (hi > topq) hi = hi - (topq-botq);
+    if (lo < botq) lo = lo + (topq-botq);
 
     if ((lo <= hi && di > 0) || (lo > hi && di < 0))
         out = int_range(lo, hi, di);

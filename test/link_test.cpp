@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     vector<array<int,2> > expected_quads;
     expected_quads.push_back({xgrid/2 , ygrid/2});
     expected_quads.push_back({xgrid/2 + 1, ygrid/2});
-    expected_quads.push_back({xgrid/2 + 2, ygrid/2});
+//    expected_quads.push_back({xgrid/2 + 2, ygrid/2});
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 1 : Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({0+xgrid/2,0+ygrid/2});
     expected_quads.push_back({1+xgrid/2,0+ygrid/2});
     expected_quads.push_back({2+xgrid/2,0+ygrid/2});
-    expected_quads.push_back({3+xgrid/2,0+ygrid/2});
+//    expected_quads.push_back({3+xgrid/2,0+ygrid/2});
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 2 : Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -166,19 +166,19 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({0+xgrid/2,0+ygrid/2});
     expected_quads.push_back({0+xgrid/2,1+ygrid/2});
     expected_quads.push_back({0+xgrid/2,2+ygrid/2});
-    expected_quads.push_back({0+xgrid/2,3+ygrid/2});
+//    expected_quads.push_back({0+xgrid/2,3+ygrid/2});
     expected_quads.push_back({1+xgrid/2,0+ygrid/2});
     expected_quads.push_back({1+xgrid/2,1+ygrid/2});
     expected_quads.push_back({1+xgrid/2,2+ygrid/2});
-    expected_quads.push_back({1+xgrid/2,3+ygrid/2});
+//    expected_quads.push_back({1+xgrid/2,3+ygrid/2});
     expected_quads.push_back({2+xgrid/2,0+ygrid/2});
     expected_quads.push_back({2+xgrid/2,1+ygrid/2});
     expected_quads.push_back({2+xgrid/2,2+ygrid/2});
-    expected_quads.push_back({2+xgrid/2,3+ygrid/2});
-    expected_quads.push_back({3+xgrid/2,0+ygrid/2});
-    expected_quads.push_back({3+xgrid/2,1+ygrid/2});
-    expected_quads.push_back({3+xgrid/2,2+ygrid/2});
-    expected_quads.push_back({3+xgrid/2,3+ygrid/2});
+//    expected_quads.push_back({2+xgrid/2,3+ygrid/2});
+//    expected_quads.push_back({3+xgrid/2,0+ygrid/2});
+//    expected_quads.push_back({3+xgrid/2,1+ygrid/2});
+//    expected_quads.push_back({3+xgrid/2,2+ygrid/2});
+//    expected_quads.push_back({3+xgrid/2,3+ygrid/2});
     
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 3: Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     quads = l->get_quadrants();
     expected_quads.push_back({2+xgrid/2,0+ygrid/2});
     expected_quads.push_back({3+xgrid/2,0+ygrid/2});
-    expected_quads.push_back({4+xgrid/2,0+ygrid/2});
+//    expected_quads.push_back({4+xgrid/2,0+ygrid/2});
     
     
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 4: Expected Quadrants : don't equal Link Quadrants : \n");
@@ -230,11 +230,11 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({-1+xgrid/2,0+ygrid/2});
     expected_quads.push_back({-1+xgrid/2,1+ygrid/2});
     expected_quads.push_back({-1+xgrid/2,2+ygrid/2});
-    expected_quads.push_back({-1+xgrid/2,3+ygrid/2});
-    expected_quads.push_back({ 0+xgrid/2,0+ygrid/2});
-    expected_quads.push_back({ 0+xgrid/2,1+ygrid/2});
-    expected_quads.push_back({ 0+xgrid/2,2+ygrid/2});
-    expected_quads.push_back({ 0+xgrid/2,3+ygrid/2});
+//    expected_quads.push_back({-1+xgrid/2,3+ygrid/2});
+//    expected_quads.push_back({ 0+xgrid/2,0+ygrid/2});
+//    expected_quads.push_back({ 0+xgrid/2,1+ygrid/2});
+//    expected_quads.push_back({ 0+xgrid/2,2+ygrid/2});
+//    expected_quads.push_back({ 0+xgrid/2,3+ygrid/2});
 
 
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 5: Expected Quadrants : don't equal Link Quadrants : \n");
@@ -249,8 +249,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //TEST 6: Different angles, but same set of quads
     link_length = 3*sqrt(2); nactin = 2;
     set<array<int, 2> > e_quads;
-    for(int x = xgrid/2; x <=xgrid/2+6; x++)
-        for(int y = ygrid/2; y<=ygrid/2+6; y++)
+    for(int x = xgrid/2; x </*=*/xgrid/2+6; x++)
+        for(int y = ygrid/2; y</*=*/ygrid/2+6; y++)
             e_quads.insert({x,y});
     
     //A
