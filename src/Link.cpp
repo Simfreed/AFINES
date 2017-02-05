@@ -203,8 +203,6 @@ void Link::quad_update(string bc, double delrx){
         yupper = coord2quad_ceil(fov[1], nq[1], hy[0]);
     };
 
-    if (xlower == xupper) xupper++;
-    if (ylower == yupper) yupper++;
     vector<int> xcoords = range_bc(bc, delrx, 0, nq[0], xlower, xupper);
     vector<int> ycoords = range_bc(bc, delrx, 0, nq[1], ylower, yupper);
     for(int xcoord : xcoords)
