@@ -356,14 +356,14 @@ template <typename T> int sgn(T val){
 vector<int> int_range(int lo, int hi)
 {
     vector<int> out;
-    for (int i = lo; i< hi; i++) out.push_back(i);
+    for (int i = lo; i<= hi; i++) out.push_back(i);
     return out;
 }
 
 vector<int> int_range(int lo, int hi, int di)
 {
     vector<int> out;
-    for (int i = lo; i != hi; i+=di) out.push_back(i);
+    for (int i = lo; i != hi + di; i+=di) out.push_back(i);
     return out;
 }
 
@@ -376,7 +376,7 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
     if (lo <= hi)
         out = int_range(lo, hi);
     else if (bc == "PERIODIC" || bc == "LEES-EDWARDS"){
-        vector<int> A = int_range(lo, topq), B = int_range(botq, hi);
+        vector<int> A = int_range(lo, topq-1), B = int_range(botq, hi);
         out.reserve(A.size() + B.size());
         out.insert(out.end(), A.begin(), A.end());
         out.insert(out.end(), B.begin(), B.end());
