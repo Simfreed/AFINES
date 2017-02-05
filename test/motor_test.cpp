@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE( attach )
     double actin_density = nfil*nactin/(fov[0]*fov[1]);
 
     double dt = 1, temp = 0.004, vis = 0;
-    string bc = "REFLECTIVE";
+    string bc = "PERIODIC";
     double seed = -1;
     
     double actin_rad = 0.5, link_len = 1;
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
