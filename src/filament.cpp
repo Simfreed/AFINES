@@ -1,11 +1,15 @@
-/*
- *  filament.cpp
- *  
- *
- *  Created by Simon Freedman and Shiladitya Banerjee
- *  Copyright 2014 University of Chicago. All rights reserved.
- *
- */
+/*------------------------------------------------------------------
+ filament.cpp : object describing a worm-like chain filament
+ 
+ Copyright (C) 2016 
+ Created by: Simon Freedman, Shiladitya Banerjee, Glen Hocky, Aaron Dinner
+ Contact: dinner@uchicago.edu
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version. See ../LICENSE for details. 
+-------------------------------------------------------------------*/
 
 #include "filament.h"
 #include "actin.h"
@@ -26,7 +30,6 @@ filament::filament(){
     delrx=0;
     damp = infty;
     y_thresh=2;
-    kToverLp=0;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
 }
 
@@ -45,7 +48,6 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     kinetic_energy  = 0;
     damp            = infty;
     y_thresh        = 1;
-    kToverLp        = temperature * temperature / (bending_stiffness*1); // 1 is the link length, here
     bd_prefactor = sqrt(temperature/(2*dt*damp));
 
 }
@@ -69,7 +71,6 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     damp = 4*pi*actinRadius*visc;
     y_thresh = 1;
     
-    kToverLp = temperature * temperature / (kb * linkLength); 
     bd_prefactor = sqrt(temperature/(2*dt*damp));
 
     double phi, variance;
@@ -116,7 +117,6 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     nq = mynq;
     y_thresh = 1;
 
-    kToverLp = temperature * temperature / (kb * linkLength); 
 
     if (actinvec.size() > 0)
     {
@@ -484,284 +484,127 @@ inline double filament::angle_between_links(int i, int j){
     return theta - 2*pi*floor(theta/(2*pi)+0.5); // Keep angles between -Pi and Pi
 }
 
-void filament::fwd_bending_update(double t)
+/* --------------------------------------------------------------------------------- */
+/* copied and pasted and edited the following code from LAMMPS src/angle_harmonic.cpp*/
+/* --------------------------------------------------------------------------------- */
+void filament::lammps_bending_update()
 {
-    //Calculate the force at each Link position as outlined by 
-    // Allen and Tildesley in Computer Simulation of Liquids, Appendix C
-    // Here we let db = (xb, yb) = (linkx[b] - linkx[b-1], linky[b] - linky[b-1])
- 
-    array<double, 2> ram1, ra, rap1, rap2;
-    double Cam1am1, Caa, Cap1ap1, Cap2ap2, Caam1, Caap1, Cap1ap2;
-    double theta_a, theta_ap1, theta_ap2;
-    double coef1, coef2, coef3;
-    double fx1, fx2, fx3, fy1, fy2, fy3;
-    double forcex, forcey;
+  array<double, 2> delr1, delr2;
+  double f1[2], f3[2];
+  double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
     
-    //initialize all NODE forces to be 0
+  // 1st bond
+  delr1 = links[0]->get_neg_disp();
+  rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
+  r1    = sqrt(rsq1);
+
+  for (int n = 0; n < int(links.size())-1; n++) {
     
-    //single actin --> no bending energy 
-    if (actins.size() > 2)
-    { 
-        //First two actins won't have any bending forces: 
-        
-        // More than 1 actin--> bending forces to calculate
-       
-        ram1 = links[0]->get_disp();
-        ra = links[1]->get_disp();
+    // 2nd bond
+    delr2 = links[n+1]->get_disp();
+    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
+    r2    = sqrt(rsq2);
 
-        Cam1am1 = ram1[0]*ram1[0] + ram1[1]*ram1[1];
-        Caa     = ra[0]*ra[0]   + ra[1]*ra[1];
-        Caam1   = ram1[0]*ra[0]   + ram1[1]*ra[1];
+    // angle (cos and sin)
+    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
+    
+    if (c > 1.0) c = 1.0;
+    if (c < -1.0) c = -1.0;
 
-        theta_a   = angle_between_links(1,0);
+    s = sqrt(1.0 - c*c);
+    if (s < maxSmallAngle) s = maxSmallAngle;
 
-        if( fabs(theta_a) < maxSmallAngle )
-            coef1 = -kb * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
-        else
-            coef1 = -kb*theta_a   / sin(theta_a)   * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
-
-        //2 actins --> bending force on last link; only has one term
-        if (actins.size() == 3)
-        {
-
-            fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-            fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-            actins[2]->update_force(fx1, fy1);
-
-        }
-        else
-        {
-            //More than 2 actins--> more bending forces to calculate
-            rap1 = links[2]->get_disp();
-
-            Cap1ap1 = rap1[0]*rap1[0] + rap1[1]*rap1[1];
-            Caap1   = rap1[0]*ra[0]   + rap1[1]*ra[1];
-
-            theta_ap1 = angle_between_links(2,1); //links[2]->get_angle() - links[1]->get_angle();
-            
-            if ( fabs(theta_ap1) < maxSmallAngle )
-                coef2 =  kb * ( 1 / sqrt( Caa     * Cap1ap1 ) );
-            else
-                coef2 =  kb*theta_ap1 / sin(theta_ap1) * ( 1 / sqrt( Caa     * Cap1ap1 ) );
-
-            //Enter loop if more than 3 actins. For 3 actin case, the loop is skipped
-            for (unsigned int j = 2; j < actins.size() - 2; j++){
-
+    // force
+    a   = -kb * (acos(c) - pi) / s; //Note, in this implementation, Lp = kb/kT 
+    a11 = a*c / rsq1;
+    a12 = -a / (r1*r2);
+    a22 = a*c / rsq2;
+  
+    f1[0] = a11*delr1[0] + a12*delr2[0];
+    f1[1] = a11*delr1[1] + a12*delr2[1];
+    f3[0] = a22*delr2[0] + a12*delr1[0];
+    f3[1] = a22*delr2[1] + a12*delr1[1];
+    //cout<<"\nDEBUG: f1x, f1y, f3x f3y = "<<f1[0]<<" , "<<f1[1]<<" , "<<f3[0]<<" , "<<f3[1];
                 
-                rap2 = links[j+1]->get_disp();
-                
-                Cap2ap2 = rap2[0]*rap2[0] + rap2[1]*rap2[1];
-                Cap1ap2 = rap1[0]*rap2[0] + rap1[1]*rap2[1];
+    // apply force to each of 3 atoms
+    actins[n  ]->update_force(f1[0], f1[1]);
+    actins[n+1]->update_force(-f1[0] - f3[0], -f1[1] - f3[1]);
+    actins[n+2]->update_force(f3[0], f3[1]);
 
-                theta_ap2 = angle_between_links(j+1,j); //links[j+1]->get_angle() - links[j]->get_angle();
-                
-                if ( fabs(theta_ap2) < maxSmallAngle )
-                    coef3 = -kb * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
-                else
-                    coef3 = -kb*theta_ap2 / sin(theta_ap2) * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
-                
-                fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-                fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
+    // 1st bond, next iteration
+    delr1 = {-delr2[0], -delr2[1]};
+    rsq1  = rsq2;
+    r1    = r2;
 
-                fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[0] - (1 + Caap1/Caa) * ra[0] ); 
-                fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[1] - (1 + Caap1/Caa) * ra[1] ); 
-
-                fx3 = coef3 * ( rap2[0] - Cap1ap2/Cap1ap1 * rap1[0]);
-                fy3 = coef3 * ( rap2[1] - Cap1ap2/Cap1ap1 * rap1[1]);
-
-                forcex = fx1 + fx2 + fx3;
-                forcey = fy1 + fy2 + fy3;
-                
-                actins[j]->update_force(forcex, forcey);
-
-                //increment all variables for next iteration:
-                ram1 = ra;
-                ra   = rap1;
-                rap1 = rap2;
-
-                Cam1am1 = Caa;
-                Caa     = Cap1ap1;
-                Cap1ap1 = Cap2ap2;
-
-                Caam1 = Caap1;
-                Caap1 = Cap1ap2;
-
-                coef1 = -1*coef2;
-                coef2 = -1*coef3;
-
-            }
-
-            //LAST TWO actinS ON THE FILAMENT:
-            fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-            fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-            fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[0] - (1 + Caap1/Caa) * ra[0] ); 
-            fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[1] - (1 + Caap1/Caa) * ra[1] ); 
-            
-            //cout<<"\nDEBUG: 2nd to last actin: (fx1, fy1) + (fx2, fy2) = ( "<<fx1<< " , "<<fy1<<" ) + ( "<<fx2<<" , " <<fy2<<" )";
-            
-            forcex = fx1 + fx2;
-            forcey = fy1 + fy2;
-            
-            actins[ actins.size() - 2 ]->update_force(forcex, forcey);
-
-            /*INCREMENT*/
-            ram1 = ra;
-            ra   = rap1;
-
-            Caa   = Cap1ap1;
-            Caam1 = Caap1;
-
-            coef1 = -1*coef2;
-
-            fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-            fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-            
-            actins[ actins.size() - 1 ]->update_force(fx1, fy1);
-        }
-    }
+  }
 }
 
-void filament::bwd_bending_update(double t)
+void filament::fwd_bwd_bending_update()
 {
+  array<double, 2> delr1, delr2;
+  double rsq1,rsq2,r1,r2,c,c1,c2,c3,cost,sint;//,s,coeff;
+
+  // 1st bond
+  delr1 = links[0]->get_disp();
+  rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];///Caa
+  r1    = sqrt(rsq1);
+
+  for (int n = 1; n < int(actins.size())-1; n++) {
+
+    // 2nd bond
+    delr2 = links[n]->get_disp();
+    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];//Ca+1a+1
+    r2    = sqrt(rsq2); 
+
+    // angle (cos and sin)
+
+    if (r1 < eps || r2 < eps ) // bad news, probably inaccurate results
+        continue;
+
+    c  = delr1[0]*delr2[0] + delr1[1]*delr2[1];//Caa+1
     
-    //same thing as fwd_bending_update, but starting from the other end of the filament
-    array<double, 2> ram1, ra, rap1, rap2; 
-    double Cam1am1, Caa, Cap1ap1, Cap2ap2, Caam1, Caap1, Cap1ap2;
-    double theta_a, theta_ap1, theta_ap2;
-    double coef1, coef2, coef3;
-    double fx1, fx2, fx3, fy1, fy2, fy3;
+    cost = c /(r1*r2); // negative because cos(pi-theta) = -cos(theta)
+
+    if (cost > 1.0) cost = 1.0;
+    if (cost < -1.0) cost = -1.0;
+
+    sint = sqrt(1.0 - cost*cost);
+    if (sint < maxSmallAngle) sint = maxSmallAngle;
+
+    c1 = kb*acos(cost)/(sint*r1*r2);
+    c2 = c/rsq2;
+    c3 = c/rsq1;
+    actins[n]->update_force(
+            c1*( delr2[0]*(1+c2) - delr1[0]*(1+c3) ),
+            c1*( delr2[1]*(1+c2) - delr1[1]*(1+c3) )
+            );
+
+    /*
     
-    double forcex, forcey;
-    //initialize all NODE forces to be 0
-   
-    int one = links.size() - 1, two = links.size()-2, three = links.size() - 3;
-    //single actin --> no bending energy 
-    if (actins.size() > 2)
-    { 
-        //First two actins won't have any bending forces: 
-        
-        // More than 1 actin--> bending forces to calculate
-        ram1 = links[one]->get_neg_disp(); 
-        ra = links[two]->get_neg_disp(); 
+    // force
+    coeff = -2*kb*acos(cost)/s;
 
-        Cam1am1 = ram1[0]*ram1[0] + ram1[1]*ram1[1];
-        Caa     = ra[0]  *ra[0]   + ra[1]  *ra[1];
-        Caam1   = ram1[0]*ra[0]   + ram1[1]*ra[1];
+    // Allen and Tildesley Appendix C, eq C.13 middle
+    // (top and bottom of C.13 cancels out when going fwd and bwd; middle doubles
 
-        theta_a   = angle_between_links(two, one); //links[one]->get_angle() - links[zero]->get_angle();
-
-        if( fabs(theta_a) < maxSmallAngle )
-            coef1 = -kb * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
-        else
-            coef1 = -kb*theta_a   / sin(theta_a)   * ( 1 / sqrt( Cam1am1 * Caa     ) ); 
-
-        //2 actins --> bending force on last link; only has one term
-        if (actins.size() == 3)
-        {
-
-            fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-            fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-            //cout<<"\nDEBUG: magnitude of bending forces at actins: ( "<<fx1<<" , "<<fy1<<" )";
-            
-            actins[two]->update_force(fx1, fy1);
-
-        }
-        else
-        {
-            //More than 2 actins--> more bending forces to calculate
-            rap1 = links[three]->get_neg_disp();
-            Cap1ap1 = rap1[0]*rap1[0] + rap1[1]*rap1[1];
-            Caap1   = rap1[0]*ra[0]   + rap1[1]*ra[1];
-
-            theta_ap1 = angle_between_links(three, two); //links[two]->get_angle() - links[one]->get_angle();
-
-            if ( fabs(theta_ap1) < maxSmallAngle )
-                coef2 =  kb * ( 1 / sqrt( Caa     * Cap1ap1 ) );
-            else
-                coef2 =  kb*theta_ap1 / sin(theta_ap1) * ( 1 / sqrt( Caa     * Cap1ap1 ) );
-
-            //Enter loop if more than 3 actins. For 3 actin case, the loop is skipped
-            for (unsigned int j = two; j > 1; j--){
-
-                rap2 = links[j-2]->get_neg_disp();
-                Cap2ap2 = rap2[0]*rap2[0] + rap2[1]*rap2[1];
-                Cap1ap2 = rap1[0]*rap2[0] + rap1[1]*rap2[1];
-
-                theta_ap2 = angle_between_links(j-2, j-1); //links[j-1]->get_angle() - links[j]->get_angle();
-                
-                if ( fabs(theta_ap2) < maxSmallAngle )
-                    coef3 = -kb * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
-                else
-                    coef3 = -kb*theta_ap2 / sin(theta_ap2) * ( 1 / sqrt( Cap1ap1 * Cap2ap2 ) );
-                
-                fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-                fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-
-                fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[0] - (1 + Caap1/Caa) * ra[0] ); 
-                fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[1] - (1 + Caap1/Caa) * ra[1] ); 
-
-                fx3 = coef3 * ( rap2[0] - Cap1ap2/Cap1ap1 * rap1[0]);
-                fy3 = coef3 * ( rap2[1] - Cap1ap2/Cap1ap1 * rap1[1]);
-
-                forcex = fx1 + fx2 + fx3;
-                forcey = fy1 + fy2 + fy3;
-                
-                actins[j]->update_force(forcex, forcey);
-
-                //increment all variables for next iteration:
-                ram1 = ra;
-                ra   = rap1;
-                rap1 = rap2;
-
-                Cam1am1 = Caa;
-                Caa     = Cap1ap1;
-                Cap1ap1 = Cap2ap2;
-
-                Caam1 = Caap1;
-                Caap1 = Cap1ap2;
-
-                coef1 = -1*coef2;
-                coef2 = -1*coef3;
-
-            }
-
-            //LAST TWO actinS ON THE FILAMENT:
-            fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-            fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-            fx2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[0] - (1 + Caap1/Caa) * ra[0] ); 
-            fy2 = coef2 * ( (1 + Caap1/Cap1ap1) * rap1[1] - (1 + Caap1/Caa) * ra[1] ); 
-            
-            //cout<<"\nDEBUG: 2nd to last actin: (fx1, fy1) + (fx2, fy2) = ( "<<fx1<< " , "<<fy1<<" ) + ( "<<fx2<<" , " <<fy2<<" )";
-            
-            forcex = fx1 + fx2;
-            forcey = fy1 + fy2;
-            actins[1]->update_force(forcex, forcey);
-
-            /*INCREMENT*/
-            ram1 = ra;
-            ra   = rap1;
-
-            Caa   = Cap1ap1;
-            Caam1 = Caap1;
-
-            coef1 = -1*coef2;
-
-            fx1 = coef1 * ( Caam1/Caa * ra[0] - ram1[0] );
-            fy1 = coef1 * ( Caam1/Caa * ra[1] - ram1[1] );
-            //cout<<"\nDEBUG: Last actin: (fx1, fy1) = ( "<<fx1<< " , "<<fy1<<" )";
-
-            actins[0]->update_force(fx1, fy1);
-        }
-    }
+    actins[n]->update_force(
+            coeff*( c*( delr2[0] / rsq2 - delr1[0] / rsq1 ) - ( delr2[0] - delr1[0] )/( r1*r2 ) ),
+            coeff*( c*( delr2[1] / rsq2 - delr1[1] / rsq1 ) - ( delr2[1] - delr1[1] )/( r1*r2 ) )
+            );
+    */    
+    // 1st bond of next iteration
+    delr1 = delr2;
+    rsq1  = rsq2;
+    r1    = r2;
+  }
 }
-
 
 //wrapper, for fwd_bending_update (and bwd bending update if I ever make it)
 void filament::update_bending(double t)
 {
-    if(links.size() > 1){
-        this->fwd_bending_update(t);
-        this->bwd_bending_update(t);
+    if(links.size() > 1 && kb > 0){
+          this->lammps_bending_update();
+//          this->fwd_bwd_bending_update();
     }
 }
 
@@ -785,7 +628,7 @@ double filament::get_bending_energy(){
         sum += theta*theta;
     }
     
-    return kb*sum; //doubled because of backward and forward bending updates
+    return kb*sum/2;
 
 }
 

@@ -73,9 +73,17 @@ BOOST_AUTO_TEST_CASE( get_distance_test)
     
     Link * l = f->get_link(0);
     
-    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, 0.75, 2), 2, tol);
-    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, 4, -4), 5, tol);
-    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, -5, 12), 13, tol);
+    array<double, 2> p1 = {0.75,2}, p2 = {4, -4}, p3 = {-5, 12};
+    double d1 = 2, d2 = 5, d3 = 13;
+
+    l->calc_intpoint(bc, 0, p1[0], p1[1]);
+    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, p1[0], p1[1]), d1, tol);
+
+    l->calc_intpoint(bc, 0, p2[0], p2[1]);
+    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, p2[0], p2[1]), d2, tol);
+    
+    l->calc_intpoint(bc, 0, p3[0], p3[1]);
+    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, p3[0], p3[1]), d3, tol);
     
     delete f;
 }

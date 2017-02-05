@@ -1,0 +1,40 @@
+%  A confined fiber
+% F. Nedelec, April 2010
+
+set simul fiber 
+{
+    time_step = 0.0005
+    viscosity = 0.001
+    random_seed = 10
+}
+
+set space cell
+{
+    geometry = ( periodic 25 25 )
+}
+
+new space cell
+
+set fiber actin
+{
+    rigidity = 0.068
+    segmentation = 1.00
+    confine = inside, 100
+}
+
+new 20 fiber actin
+{
+    length = 20
+}
+
+write state objects.cmo 
+{ 
+    binary = 0
+    append = 0 
+} 
+
+run 4000000 simul *
+{
+    nb_frames=2000
+    binary = 0
+}

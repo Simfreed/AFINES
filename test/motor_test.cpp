@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE( attach )
     int nfil = 1;//3;
     double actin_density = nfil*nactin/(fov[0]*fov[1]);
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "REFLECTIVE";
     double seed = -1;
     
@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     array<int, 2> nq = {2,2}, state = {1,0}, findex = {0,-1}, lindex = {1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -536,7 +536,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     array<int, 2> nq = {100,100}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -600,7 +600,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -701,7 +701,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     vector<vector<double> > actin_sets;
     array<int, 2> nq = {100,100}, state = {1,1}, findex = {0,1}, lindex = {2, 2};
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -786,7 +786,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     vector<vector<double> > actin_sets;
     array<int, 2> nq = {100,100}, state = {1,1}, findex = {0,1}, lindex = {2, 2};
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -871,7 +871,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     vector<vector<double> > actin_sets;
     array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {2, -1};
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -1003,7 +1003,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     vector<vector<double> > actin_sets;
     array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {2, -1};
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -1106,7 +1106,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     vector<vector<double> > actin_sets;
     array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {1, -1};
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -1236,7 +1236,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     vector<vector<double> > actin_sets;
     array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {1, -1};
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -1342,7 +1342,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
     array<int, 2> nq = {33,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 0.5, link_len = 1;
@@ -1386,7 +1386,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         cout<<"\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )";
         BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
     }
-   
+ 
     my=0.075; mlen=0.15;
     kon=0.05;
     nevents = 10000;
@@ -1472,6 +1472,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         }
         BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
     }
+    
 }   
 
 BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
@@ -1481,7 +1482,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     array<int, 2> nq = {25,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 5, link_len = 10;
@@ -1561,7 +1562,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     array<int, 2> nq = {1,1}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 5, link_len = 10;
@@ -1640,7 +1641,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     array<int, 2> nq = {1,1}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
     double actin_rad = 5, link_len = 10;
@@ -1711,6 +1712,120 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     cout<<"\nnum_attached[0] = "<<num_attached[0]<<";\tnum_attached[1] = "<<num_attached[1]<<endl;
    delete f; 
 }
+
+BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    vector<vector<double> > actin_sets;
+    array<int, 2> nq = {100,100}, state = {1,-1}, findex = {0,-1}, lindex = {14, -1};
+
+    double dt = 1, temp = 0.004, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 2, koff = 0, kend = 0, fstall = 1, fbreak = 3.85, ebind = 0.04;
+    double frac_force = 0;
+    double zero = 1e-10;   
+
+    vector<double> pos;
+    for (int i = 15; i >=0; i--)
+    {
+        pos = {double(i),0,actin_rad,0};
+        actin_sets.push_back(pos);
+    }
+
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 0.5, my = 0.5, mang = pi/2, mlen = 1;
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    
+    /*##################################*/
+    m.step_onehead(0);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    double x = m.get_hx()[0];
+    double vel = (x - mx)/dt;
+    while(vel > zero ){
+        //cout<<"\nDEBUG: hx = "<<x<<"\tmotor speed  = "<<vel;
+        m.step_onehead(0);
+        m.update_angle();
+        m.update_force();
+        m.actin_update();
+        BOOST_CHECK((m.get_hx()[0]-x)/dt < vel);
+        vel = (m.get_hx()[0] - x)/dt;
+        x = m.get_hx()[0];
+    }
+    
+    //OTHER MOTOR HEAD
+    mang = 3*pi/2;
+    state = {-1,1}, findex = {-1,0}, lindex = {-1, 14};
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    
+    /*##################################*/
+    m.step_onehead(1);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    x = m.get_hx()[1];
+    vel = (x - mx)/dt;
+    while(fabs(vel) > zero ){
+        //cout<<"\nDEBUG: hx = "<<x<<"\tmotor speed  = "<<vel;
+        m.step_onehead(1);
+        m.update_angle();
+        m.update_force();
+        m.actin_update();
+        BOOST_CHECK((m.get_hx()[1]-x)/dt < vel);
+        vel = (m.get_hx()[1] - x)/dt;
+        x = m.get_hx()[1];
+    }
+    
+    //Filament facing the other direction
+    actin_sets.clear();
+    for (int i = 0; i <= 15; i++)
+    {
+        pos = {double(i),0,actin_rad,0};
+        actin_sets.push_back(pos);
+    }
+
+    f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f->quad_update_serial(); 
+    mx = 14.75;
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    
+    /*##################################*/
+    m.step_onehead(1);
+    m.update_angle();
+    m.update_force();
+    m.actin_update();
+    /*##################################*/
+
+    x = m.get_hx()[1];
+    vel = (x - mx)/dt;
+    while(fabs(vel) > zero ){
+        //cout<<"\nDEBUG: hx = "<<x<<"\tmotor speed  = "<<vel;
+        m.step_onehead(1);
+        m.update_angle();
+        m.update_force();
+        m.actin_update();
+        BOOST_CHECK(fabs((m.get_hx()[1]-x)/dt) < fabs(vel));
+        vel = (m.get_hx()[1] - x)/dt;
+        x = m.get_hx()[1];
+    }
+}   
 /* Functions to test : 
         void attach(int hd);
 

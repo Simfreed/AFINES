@@ -1,0 +1,64 @@
+% A contractile actin gel
+% F. Nedelec Dec. 2010
+
+set simul motility
+{
+    time_step = 0.0002
+    viscosity = 0.001
+    random_seed = 1000000
+}
+
+
+set space cell
+{
+    geometry = ( periodic 25 25 )
+}
+
+new space cell
+
+set fiber actin
+{
+    rigidity = 0.068
+    segmentation = 1
+    confine = inside, 100
+}
+
+set hand myosin
+{
+    binding_rate = 1
+    binding_range = 0.5
+    unbinding_rate = 1
+    unbinding_force = 10
+    
+    activity = move
+    max_speed = 1
+    stall_force = 10 
+}
+
+set single particle
+{
+    hand = myosin
+    diffusion = 0
+    activity = fixed
+    stiffness = 100
+}
+
+new 1 fiber actin
+{
+    length = 15
+}
+
+new 10000 single particle
+
+write state objects.cmo 
+{ 
+    binary = 0
+    append = 0 
+} 
+
+run simul *
+{   
+    nb_frames = 2000
+    nb_steps = 5000000
+    binary = 0
+}
