@@ -62,8 +62,8 @@ void filament_ensemble::turn_quads_off()
 void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
-        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]+1));   
-        n_links_per_quad.push_back(new vector<int>(nq[1]+1));
+        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
+        n_links_per_quad.push_back(new vector<int>(nq[1]));
         for (int y = 0; y < nq[1]; y++){
             links_per_quad[x]->at(y) = new vector<array<int, 2> >(max_links_per_quad);
             n_links_per_quad[x]->at(y) = 0;
@@ -128,13 +128,16 @@ map<array<int,2>,double> filament_ensemble::get_dist(double x, double y)
     int xp1 = mqx + 1;
     int yp1 = mqy + 1;
 
-    if (xp1 >= nq[0]) xp1 = 0;
-    if (yp1 >= nq[1]) yp1 = 0;
+    if (xp1 >= nq[0] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) xp1 = 0;
+    if (yp1 >= nq[1] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) yp1 = 0;
     
     update_dist_map(t_map, {mqx, mqy}, x, y);
-    update_dist_map(t_map, {xp1, mqy}, x, y);
-    update_dist_map(t_map, {mqx, yp1}, x, y);
-    update_dist_map(t_map, {xp1, yp1}, x, y);
+    if (xp1 < nq[0]) 
+        update_dist_map(t_map, {xp1, mqy}, x, y);
+    if (yp1 < nq[1]) 
+        update_dist_map(t_map, {mqx, yp1}, x, y);
+    if (xp1 < nq[0] && yp1 < nq[1])
+        update_dist_map(t_map, {xp1, yp1}, x, y);
 
     return t_map;
 }
