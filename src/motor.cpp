@@ -204,7 +204,7 @@ bool motor::attach(int hd)
 {
 //    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
     double onrate, stretch, mf_rand, delE;
-    array<double, 2> intpoint;
+    array<double, 2> intPoint;
     multimap<double, array<int, 2> > dist_sorted;
     
     map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
@@ -221,8 +221,8 @@ bool motor::attach(int hd)
             
             else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 
-                intpoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
-                stretch  = dist_bc(BC, intpoint[0] - hx[pr(hd)], intpoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
+                intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
+                stretch  = dist_bc(BC, intPoint[0] - hx[pr(hd)], intPoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
                 delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
                 onrate += kon*exp(-delE/temperature);
                  
@@ -237,8 +237,8 @@ bool motor::attach(int hd)
                     //cout<<"\nDEBUG: motor head pos ("<<hx[hd]<<" , "<<hy[hd]<<").";
 
                     //update head position
-                    hx[hd] = intpoint[0];
-                    hy[hd] = intpoint[1];
+                    hx[hd] = intPoint[0];
+                    hy[hd] = intPoint[1];
 
                     pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
                                               actin_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 

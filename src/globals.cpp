@@ -356,14 +356,14 @@ template <typename T> int sgn(T val){
 vector<int> int_range(int lo, int hi)
 {
     vector<int> out;
-    for (int i = lo; i< hi; i++) out.push_back(i);
+    for (int i = lo; i<= hi; i++) out.push_back(i);
     return out;
 }
 
 vector<int> int_range(int lo, int hi, int di)
 {
     vector<int> out;
-    for (int i = lo; i != hi; i+=di) out.push_back(i);
+    for (int i = lo; i != hi + di; i+=di) out.push_back(i);
     return out;
 }
 
@@ -376,7 +376,7 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
     if (lo <= hi)
         out = int_range(lo, hi);
     else if (bc == "PERIODIC" || bc == "LEES-EDWARDS"){
-        vector<int> A = int_range(lo, topq), B = int_range(botq, hi);
+        vector<int> A = int_range(lo, topq-1), B = int_range(botq, hi);
         out.reserve(A.size() + B.size());
         out.insert(out.end(), A.begin(), A.end());
         out.insert(out.end(), B.begin(), B.end());
@@ -551,12 +551,18 @@ boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double del
 
 int coord2quad_floor(double fov, int nq, double coord)
 {
-    return int(floor((coord+fov/2)*nq/fov));
+    return int(floor((coord+fov/2.0)*double(nq)/fov));
 }
 
 int coord2quad_ceil(double fov, int nq, double coord)
 {
-    return min(int(ceil((coord+fov/2)*nq/fov)), nq);
+    int n = int(ceil((coord+fov/2.0)*double(nq)/fov));
+    if (n == nq) 
+        return 0;
+    else 
+        return n;
+
+    //return min(int(ceil((coord+fov/2)*nq/fov)), nq);
 }
 
 int coord2quad(double fov, int nq, double coord)
@@ -568,6 +574,18 @@ double angBC(double ang)
 {
     return ang - 2*pi*floor(ang / (2*pi) + 0.5);
 }
+
+std::string quads_error_message(std::string title, vector<array<int, 2> > equads, vector< array<int, 2> > aquads)
+{
+
+    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal Link Quadrants : \n";
+    cout<<"\nActual Quadrants:"; 
+    for_each(aquads.begin(), aquads.end(), intarray_printer);
+    cout<<"\nExpected Quadrants:"; 
+    for_each(equads.begin(), equads.end(), intarray_printer);
+    return "";
+}
+
 
 template int sgn<int>(int);
 template int sgn<double>(double);

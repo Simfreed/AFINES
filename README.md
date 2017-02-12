@@ -57,29 +57,27 @@ sudo port install boost
 * You should now have an executable file called bin/afines. NOTE: you only need to recreate this file if you edit the source
   code.
 
-* Create an output directory for your simulation (not necessarily named "out/test") as well as the "txt_stack" and "data"
-  directories (necessarily named "txt_stack" and "data") e.g. with the commands:
+* Create an output directory for your simulation (e.g., "out") 
 
 ```
-> mkdir -p out/test/txt_stack
-> mkdir -p out/test/data
+> mkdir out
 ```
 
 * Run your simulation in the specified output output directory, e.g., 
     ``` 
-    > bin/afines --dir out/test
+    > bin/afines --dir out
     ```
 
 * See below for other simulation configuration options that you can set from the command line or from a configuration
   file
 
 * Once your simulation has completed, the following files will have been generated:
- * out/test/txt_stack/actins.txt //the trajectories of every actin bead
- * out/test/txt_stack/links.txt //the trajectories of every link 
- * out/test/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
- * out/test/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
- * out/test/data/thermo.txt //the energies of actin filaments
- * out/test/data/output.txt //some metadata about the simulation
+ * out/txt_stack/actins.txt //the trajectories of every actin bead
+ * out/txt_stack/links.txt //the trajectories of every link 
+ * out/txt_stack/amotors.txt //the trajectories of all active motors (e.g., myosin) at every time step
+ * out/txt_stack/pmotors.txt //the trajectories of all passive motors (e.g., crosslinkers) at every time step
+ * out/data/thermo.txt //the energies of actin filaments
+ * out/data/output.txt //some metadata about the simulation
 
 All files are tab delimited 
 
@@ -162,7 +160,7 @@ of 0.05 you would enter the command:
 |viscosity                  |double |0.001          |mg/um*s|Dynamic viscosity|
 |temperature                |double |0.004          |pN*um  |Temp in energy units |
 |bnd_cnd                    |string |"PERIODIC"     |       |boundary conditions|
-|dir                        |string |"out/test"     |       |directory for output files|
+|dir                        |string |"."            |       |directory for output files|
 |myseed                     |int    |time(NULL)     |       |seed of random number generator|
 |**ACTIN**                  |||||
 |nmonomer                   |double |11             |       |number of beads per filament|
@@ -170,7 +168,7 @@ of 0.05 you would enter the command:
 |actin_length               |double |0.5            |um     |Length of a single actin monomer|
 |actin_pos_str              |string |               |       |Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions|
 |link_length                |double |0              |       |Length of links connecting monomers|
-|polymer_bending_modulus    |double |0.04           |pn*um^2|Bending modulus of a filament|
+|polymer_bending_modulus    |double |0.068           |pn*um^2|Bending modulus of a filament|
 |fracture_force             |double |1000000        |pN     |filament breaking poiafines|
 |bending_fracture_force     |double |1000000        |pN     |filament breaking point|
 |link_stretching_stiffness  |double |1              |pN/um  |stiffness of link|
@@ -183,8 +181,6 @@ of 0.05 you would enter the command:
 |a_motor_stiffness          |double |10             |pN/um  |active motor spring stiffness|
 |a_motor_length             |double |0.4            |um     |length of motor|
 |a_m_stall                  |double |10             |pN     |stall force of motors|
-|a_m_break                  |double |10             |pN     |rupture force of motors|
-|a_m_bind                   |double |0.04           |pN*um  |binding energy|
 |a_motor_v                  |double |1              |um/s   |velocity along filaments towards barbed end when attached|
 |motor_intersect_flag       |boolean|false          |       |if true, then motors are placed at filament intersections|
 |a_linkage_prob             |double |1              |       |probability that filaments are linked by a motor if motor_intersect_flag = true|
@@ -199,8 +195,6 @@ of 0.05 you would enter the command:
 |p_motor_stiffness          |double |50             |s^(-1) |xlink spring stiffness (pN/um)|
 |p_motor_length             |double |0.4            |s^(-1) |length of xlink|
 |p_m_stall                  |double |0              |pN     |stall force|
-|p_m_break                  |double |10             |pN     |rupture force|
-|p_m_bind                   |double |0.04           |pN*um  |binding energy|
 |link_intersect_flag        |boolean|false          |       |if true, then crosslinks are placed at filament intersections|
 |p_linkage_prob             |double |1              |       |probability that filaments are crosslinked if link_intersect_flag = true|
 |p_dead_head_flag           |boolean|false          |       |if true, then head [p_dead_head] of all xlinks remains stationary throughout sim|
