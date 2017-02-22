@@ -679,9 +679,30 @@ double filament::get_end2end()
                            actins[actins.size() - 1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
 } 
 
-void filament::reconstruct(int nm)
+void filament::reconstruct(double len)
 {
 
+    vector< actin* > newActins;
+    vector< link* > newlinks;
+
+    double excess = L - links.size()*links[0]->get_l0();
+/*
+    for (int j = 1; j < nactin; j++) {
+
+        //next_pos = boundary_check(j-1, actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi));
+        next_pos = pos_bc(BC, delrx, dt, fov, 
+                {linkLength*cos(phi)/dt, linkLength*sin(phi)/dt},
+                {actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi)});
+        actins.push_back( new actin(next_pos[0], next_pos[1], actinRadius, visc) );
+        prv_rnds.push_back({0,0});
+        links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
+        links[j-1]->step(BC, delrx);  
+        
+        // Calculate the Next angle on the actin polymer
+        if (!isStraight) phi += rng_n(0, variance);
+    
+    }
+    */
 }
 
 void filament::grow(double dl)
@@ -690,7 +711,7 @@ void filament::grow(double dl)
     double len = links[0]->get_l0() + dl / links.size();
     
     if ( len >= maxL0 || len <= minL0 )
-        this->reconstruct( len*links.size());
+        this->reconstruct( len );
     
     else{
         damp = 2*pi*len*visc;
