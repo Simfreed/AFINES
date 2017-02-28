@@ -7,6 +7,8 @@
 #include <iterator>
 #include <array>
 #include <boost/program_options.hpp>
+#include <boost/any.hpp>
+#include <typeinfo>
 
 namespace po = boost::program_options;
 
@@ -360,22 +362,28 @@ int main(int argc, char* argv[]){
                 p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
-    // Write the output configuration file
-    string output_file                         =   dir + "/data/output.txt";
+    // Write the full configuration file
+    string output_file  =   dir + "/data/config_full.cfg";
     o_file.open(output_file.c_str());
-    o_file << " FILE: "                 << output_file     <<"\n";
-    o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
-    o_file << " Active Motor Density: "        << a_motor_density   << ", Active Motor Rest Length: "          << a_motor_length              << ", Active Motor Stiffness: "       << a_motor_stiffness        <<"\n";
-    o_file << " Active Motor unloaded speed: " << a_motor_v          << ", Active Motor binding rate: "         << a_m_kon                     <<"\n";
-    o_file << " Active Motor unbinding rate: " << a_m_koff          << ", Active Motor end detachment rate: "  << a_m_kend                    <<"\n";
-    o_file << " Passive Motor Density: "        << p_motor_density   << ", Passive Motor Rest Length: "          << p_motor_length              << ", Passive Motor Stiffness: "       << p_motor_stiffness        <<"\n";
-    o_file << " Passive Motor unloaded speed: " << p_motor_v          << ", Passive Motor binding rate: "         << p_m_kon                     <<"\n";
-    o_file << " Passive Motor unbinding rate: " << p_m_koff          << ", Passive Motor end detachment rate: "  << p_m_kend                    <<"\n";
-    o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
-    o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", dt between output files: "<< n_bw_print*dt<<", Viscosity: " << viscosity              <<"\n";
-    o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
-    o_file.close();
     
+    boost::any val;
+    for(po::variables_map::const_iterator it=vm.begin(); it!=vm.end(); ++it){
+        
+        if (it->first == "config") continue;
+
+        val=it->second.value();
+        
+        if(typeid(bool) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<bool>(val) <<endl;
+        else if(typeid(int) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<int>(val) <<endl;
+        else if(typeid(double) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<double>(val) <<endl;
+        else if(typeid(string) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<string>(val) <<endl;
+    }
+   
+    // Run the simulation
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     string time_str; 
     count=0;
