@@ -7,10 +7,8 @@
 #include <iterator>
 #include <array>
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
 
 template<class T>
 ostream& operator<<(ostream& os, const vector<T>& v)
@@ -66,7 +64,8 @@ int main(int argc, char* argv[]){
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
 
-    bool restart_actin, restart_a_motor, restart_p_motor;
+    bool restart;
+    double restart_time;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -144,10 +143,9 @@ int main(int argc, char* argv[]){
         ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
         ("p_motor_in", po::value<string>(&p_motor_in)->default_value(""), "input crosslinker positions file")
         
-        ("restart_actin", po::value<bool>(&restart_actin)->default_value(false), "if true, input actin positions file chosen by default")
-        ("restart_a_motor", po::value<bool>(&restart_a_motor)->default_value(false), "if true, input motor positions file chosen by default")
-        ("restart_p_motor", po::value<bool>(&restart_p_motor)->default_value(false), "if true, input crosslinker positions file chosen by default")
-        
+        ("restart", po::value<bool>(&restart)->default_value(false), "if true, will restart simulation from last timestep recorded")
+        ("restart_time", po::value<double>(&restart_time)->default_value(-1), "time to restart simulation from")
+
         ("dir", po::value<string>(&dir)->default_value("."), "output directory")
         ("myseed", po::value<int>(&myseed)->default_value(time(NULL)), "Random number generator myseed")
         
@@ -212,10 +210,24 @@ int main(int argc, char* argv[]){
     cout<<"\nDEBUG: actin_density = "<<actin_density; 
     double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
-    int n_bw_stdout = max(int(tfinal/(dt*double(nmsgs))),1);
-    int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
+    int n_bw_stdout = max(int((tfinal)/(dt*double(nmsgs))),1);
+    int n_bw_print  = max(int((tfinal)/(dt*double(nframes))),1);
     int unprinted_count = int(double(tinit)/dt);
 
+    tdir   = dir  + "/txt_stack";
+    ddir   = dir  + "/data";
+    fs::path dir1(tdir.c_str()), dir2(ddir.c_str());
+    
+    afile  = tdir + "/actins.txt";
+    lfile  = tdir + "/links.txt";
+    amfile = tdir + "/amotors.txt";
+    pmfile = tdir + "/pmotors.txt";
+    thfile = ddir + "/thermo.txt";
+    pefile = ddir + "/pe.txt";
+    
+    if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
+    if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
+    
     // To Read positions from input strings in config file
     vector<array<double,3> > actin_position_arrs, a_motor_position_arrs, p_motor_position_arrs;
     if (actin_pos_str.size() > 0)
@@ -226,17 +238,10 @@ int main(int argc, char* argv[]){
         p_motor_position_arrs = str2arrvec(p_motor_pos_str, ":", ",");
    
 
-    // To Read positions from input files
+    // To get positions from input files: 
     vector<vector<double> > actin_pos_vec;
     vector<vector<double> > a_motor_pos_vec, p_motor_pos_vec;
-    
-    if (restart_actin)
-        actin_in = dir + "/restart/in/actins.txt";
-    if (restart_a_motor)
-        a_motor_in = dir + "/restart/in/amotors.txt";
-    if (restart_p_motor)
-        p_motor_in = dir + "/restart/in/pmotors.txt";
-    
+   
     if (actin_in.size() > 0)
         actin_pos_vec   = file2vecvec(actin_in, "\t");
     if (a_motor_in.size() > 0)
@@ -244,23 +249,49 @@ int main(int argc, char* argv[]){
     if (p_motor_in.size() > 0)
         p_motor_pos_vec = file2vecvec(p_motor_in, "\t");
     
+    // To restart a whole trajectory from it's last full timestep : 
+    if (restart){
+        
+        double tf_prev  = 
+            min(last_full_timestep(afile), 
+                min(last_full_timestep(amfile), 
+                    min(last_full_timestep(pmfile),last_full_timestep(lfile))));
+
+        if (restart_time == -1 || restart_time > tf_prev)
+            restart_time = tf_prev;
+
+        cout<<"\nRestarting from t = "<<restart_time<<endl;
+
+        double nprinted = restart_time / (dt*n_bw_print);
+
+        actin_pos_vec   = traj2vecvec(afile, "\t ", restart_time);
+        a_motor_pos_vec = traj2vecvec(amfile, "\t ", restart_time);
+        p_motor_pos_vec = traj2vecvec(pmfile, "\t ", restart_time);
+        
+        // for actins, links, amotors, pmotors: 
+        // do: 
+        //   copy whole file into temp
+        //   while hasn't reached tf in temp file:
+        //      write from copy into afile
+        write_first_tsteps(afile,  restart_time);
+        write_first_tsteps(lfile,  restart_time);
+        write_first_tsteps(amfile, restart_time);
+        write_first_tsteps(pmfile, restart_time);
+        
+        write_first_tsteps(thfile, restart_time);
+        write_first_nlines( pefile, (int) nprinted);
+
+    
+        tinit       = restart_time;
+        write_mode  = ios_base::app;
+    }
+    
+    
     set_seed(myseed);
     
-    tdir   = dir  + "/txt_stack";
-    ddir   = dir  + "/data";
-    afile  = tdir + "/actins.txt";
-    lfile  = tdir + "/links.txt";
-    amfile = tdir + "/amotors.txt";
-    pmfile = tdir + "/pmotors.txt";
-    thfile = ddir + "/thermo.txt";
-    pefile = ddir + "/pe.txt";
 
-    if (restart_actin || restart_a_motor || restart_p_motor) write_mode = ios_base::app;
     
     //const char* path = _filePath.c_str();
-    fs::path dir1(tdir.c_str()), dir2(ddir.c_str());
-    if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
-    if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
     
     file_a.open(afile.c_str(), write_mode);
     file_l.open(lfile.c_str(), write_mode);
@@ -347,7 +378,7 @@ int main(int argc, char* argv[]){
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     string time_str; 
     count=0;
-    t = 0;
+    t = tinit;
     pre_strain = strain_pct * xrange;
     d_strain_amp = d_strain_pct * xrange;
     prev_d_strain = 0;
@@ -359,7 +390,7 @@ int main(int argc, char* argv[]){
         net->update_delrx( pre_strain );
         net->update_shear();
     }
-    while (t < tfinal) {
+    while (t <= tfinal) {
         
         //print to file
 	    if (t+dt/100 >= tinit && (count-unprinted_count)%n_bw_print==0) {
@@ -379,7 +410,7 @@ int main(int argc, char* argv[]){
             file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
             crosslks->motor_write(file_pm);
             
-            file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
+            file_th << time_str<<"\tN = "<<to_string(net->get_nfilaments());
             net->write_thermo(file_th);
 
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<

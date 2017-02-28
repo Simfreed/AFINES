@@ -586,6 +586,176 @@ std::string quads_error_message(std::string title, vector<array<int, 2> > equads
     return "";
 }
 
+vector<vector<double> > traj2vecvec(string path, string delim, double tf)
+{
+    vector<vector<double> > out;
+    string pos_str = "";
+    vector<string> coords;
+    vector<double> pos;
+    
+    ifstream pos_file;
+    pos_file.open(path);
+    
+    double t;
+
+    while(getline(pos_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            boost::split(coords, pos_str, boost::is_any_of(delim));
+            t = (double) atof(coords[2].data());
+            continue;
+        }
+        if (t < tf) continue;
+        else if (t > tf) break;
+        else{
+            boost::trim_right(pos_str);
+            boost::split(coords, pos_str, boost::is_any_of(delim));
+
+            for(unsigned int j=0; j < coords.size(); j++) 
+                pos.push_back( (double) atof(coords[j].data()) );
+
+            out.push_back(pos);
+
+            pos.clear();
+        }
+    }
+
+    pos_file.close();
+    
+    return out;
+}
+
+double last_full_timestep(string path)
+{
+    string pos_str = "";
+    vector<string> coords;
+    
+    ifstream pos_file;
+    pos_file.open(path);
+    
+    int n = 0, pcount = 0;
+    double t = 0, tprev = 0;
+
+    while(getline(pos_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            boost::trim_right(pos_str);
+            boost::split(coords, pos_str, boost::is_any_of("\t "));
+            tprev = t;
+            
+            t = (double) atof(coords[2].data());
+            n = (int) atoi(coords[coords.size()-1].data());
+            
+            pcount = 0;
+        }
+        else pcount++;
+    }
+
+    pos_file.close();
+    if (pcount == n) 
+        return t;
+    else 
+        return tprev;
+    
+}
+
+void write_first_nlines(string src, int nlines)
+{
+
+    string tmp = src + ".tmp";
+    fs::path src_path(src), tmp_path(tmp);
+    
+    fs::copy_file(src_path, tmp_path, fs::copy_option::overwrite_if_exists);
+
+    ifstream read_file;
+    read_file.open(tmp);
+   
+    ofstream write_file;
+    write_file.open(src);
+
+    int n = 0;
+
+    string pos_str;
+    while(getline(read_file, pos_str))
+    {
+        if (n >= nlines) break;
+        write_file << pos_str <<endl;
+        n++;
+    }
+
+    read_file.close();
+    write_file.close();
+
+}
+
+void write_first_ntsteps(string src, int ntsteps)
+{
+
+    string tmp = src + ".tmp";
+    fs::path src_path(src), tmp_path(tmp);
+
+    fs::copy_file(src_path, tmp_path, fs::copy_option::overwrite_if_exists);
+
+    ifstream read_file;
+    read_file.open(tmp);
+
+    ofstream write_file;
+    write_file.open(src);
+
+
+    string pos_str;
+    int nt = 0;
+    while(getline(read_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            nt++;
+            if (nt > ntsteps) 
+                goto closefiles;
+        }
+        write_file << pos_str << endl;
+    }
+
+closefiles:
+    read_file.close();
+    write_file.close();
+
+}
+
+void write_first_tsteps(string src, double tstop)
+{
+
+    string tmp = src + ".tmp";
+    fs::path src_path(src), tmp_path(tmp);
+
+    fs::copy_file(src_path, tmp_path, fs::copy_option::overwrite_if_exists);
+    
+    vector<string> coords;
+
+    ifstream read_file;
+    read_file.open(tmp);
+
+    ofstream write_file;
+    write_file.open(src);
+
+
+    string pos_str;
+    while(getline(read_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            
+            boost::split(coords, pos_str, boost::is_any_of("\t "));
+            if ( atof(coords[2].data()) >= tstop )
+                goto closefiles;
+
+        }
+        write_file << pos_str << endl;
+    }
+
+closefiles:
+    read_file.close();
+    write_file.close();
+
+}
 
 template int sgn<int>(int);
 template int sgn<double>(double);

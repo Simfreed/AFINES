@@ -121,7 +121,7 @@ motor::motor( array<double, 4> pos,
     kon         = ron*dt;
     koff        = roff*dt;
     kend        = rend*dt;
-    mphi        = pos[2];
+    
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //link index for each head
@@ -148,8 +148,10 @@ motor::motor( array<double, 4> pos,
     hy[0] = posH0[1];
     hx[1] = posH1[0];
     hy[1] = posH1[1];
-    
-    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
+   
+    //force can be non-zero and angle is determined from disp vector
+    this->update_angle();
+    this->update_force();
 
     if (state[0]){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
