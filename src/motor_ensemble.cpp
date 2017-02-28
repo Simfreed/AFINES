@@ -93,6 +93,8 @@ motor_ensemble::motor_ensemble(vector<vector<double> > motors, array<double, 2> 
         n_motors.push_back(new motor( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
     }
+
+    this->update_energies();
 }
 
 

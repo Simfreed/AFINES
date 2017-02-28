@@ -649,4 +649,5 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     max_links_per_quad_per_filament = int(ceil(actins.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
     this->nlist_init_serial();
+    this->update_energies();
 } 
