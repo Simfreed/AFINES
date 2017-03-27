@@ -89,9 +89,11 @@ class motor
 
         array<double, 2> get_hy();
 
-        void detach_head(int hd);
+        void detach_head(int hd, array<double, 2> pos);
 
-        void update_pos_a_end( int hd, double pos);
+        void detach_head_without_moving(int hd);
+        
+        void update_pos_a_end(int hd, double pos);
 
         inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
         
@@ -103,6 +105,10 @@ class motor
 
         double get_kinetic_energy();
         
+        double metropolis_prob(int hd, array<double, 2> newpos, double maxprob);
+
+        array<double, 2> generate_off_pos(int hd);
+
         string to_string();
         
         string write();
@@ -113,10 +119,13 @@ class motor
                actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
         
         array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
-        
+
+        array<array<double, 2>, 2> ldir_bind, bind_disp;
+
         array<int,2> state, f_index, l_index;
         
         map<vector<int>, double> dist;
+        array<bool, 2> at_barbed_end;
         
         string BC;
         

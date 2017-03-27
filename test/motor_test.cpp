@@ -168,41 +168,25 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
 
     // IF position is greater than filament length
     double pos = 1.125;
-    //  If last rod in filament
-    //      try to detach
-    //      if detach:
-    //          (a) new state of head is correct (was 1, now 0)
-    //          (b) position of head relative to end of rod is correct (0)
-    //          (c) position of head is correct
+    //  If last rod in filament and pos is greater than length of link, go to barbed end
 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
     m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], link_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
-    //      else (don't detach): 
-    //          stay
-    kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    
     m.update_position_attached(0);
-    BOOST_CHECK_CLOSE(m.get_hx()[0], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
     
     //  Else (not last rod in filament)
+    kend = -1;
     mx = 1.125;
     lindex = {1, -1};
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
@@ -247,39 +231,22 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
 
     // IF position is greater than filament length
     pos = 1.125;
-    //  If last rod in filament
-    //      try to detach
-    //      if detach:
-    //          (a) new state of head is correct (was 1, now 0)
-    //          (b) position of head relative to end of rod is correct (0)
-    //          (c) position of head is correct
-
+    
+    //  If last rod in filament and pos is greater than length, move to barbed end
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
     m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 1);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
-    //      else (don't detach): 
-    //          stay
-    kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    
     m.update_position_attached(0);
-    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
-    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
     
     //  Else (not last rod in filament)
     mx = -1.125;
@@ -324,41 +291,25 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
 
     // IF position is greater than filament length
     pos = 1.125;
-    //  If last rod in filament
-    //      try to detach
-    //      if detach:
-    //          (a) new state of head is correct (was 1, now 0)
-    //          (b) position of head relative to end of rod is correct (0)
-    //          (c) position of head is correct
+    //  If last rod in filament, move to barbed end
 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
     m.update_pos_a_end(1, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[1], 0);
-    BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], 0);
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], link_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[1], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], my + 0.5*mlen*sin(mang), tol);
     
-    //      else (don't detach): 
-    //          stay
-    kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
-    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.update_pos_a_end(1, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    
     m.update_position_attached(1);
-    BOOST_CHECK_CLOSE(m.get_hx()[1], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[1], 0, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
     
     //  Else (not last rod in filament)
+    kend = -1;
     mx = 1.125;
     lindex = {-1, 1};
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
@@ -1337,6 +1288,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
 BOOST_AUTO_TEST_CASE( attach_difft_spots )
 {
     //Filament ENSEMBLE
+    
     array<double, 2> fov = {33,2};
     array<int, 2> nq = {33,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
@@ -1825,6 +1777,82 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
         x = m.get_hx()[1];
     }
 }   
+
+BOOST_AUTO_TEST_CASE( attach_detach )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    vector<array<double, 3> > pos_sets;
+    int nactin = 5;
+    int nfil = 1;//3;
+    double actin_density = nfil*nactin/(fov[0]*fov[1]);
+
+    double dt = 1, temp = 0.004, vis = 0, tol=1e-6;
+    string bc = "PERIODIC";
+    double seed = -1;
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 10000, koff = 10000, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double frac_force = 0;
+    
+    pos_sets.push_back({0,0,0});
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 2.35, my = 0.6, mang = pi/2, mlen = 1;
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+
+    BOOST_CHECK_EQUAL(m.get_hx()[0], 2.35);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0.1, tol);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
+    
+    //Attach
+    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because kon is saturated
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    BOOST_CHECK_EQUAL(m.get_hx()[0], 2.35);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
+
+    //Detach
+    m.step_onehead(0);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 2.35, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0.1, tol);
+    
+    //MOTOR: attach, walk to end, detach perpendicularly
+    v0 = 0.5;
+    kon = 10000, koff = 0, kend = 10000;
+    mx = 2.5, my = 0.6, mang = pi/2, mlen = 1;
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+
+    //Attach
+    m.attach(0); //should attach to 
+
+    //walk
+    for(int i=0; i<6; i++){
+        BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+        m.step_onehead(0);
+        m.update_angle();
+        m.update_force();
+    }
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0.1, tol);
+
+    delete f;
+}   
+
 /* Functions to test : 
         void attach(int hd);
 

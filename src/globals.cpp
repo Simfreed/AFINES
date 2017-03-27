@@ -418,42 +418,8 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
 array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 2>& fov, const array<double, 2>& vel, const array<double, 2>& pos)
 {
     double xnew = pos[0], ynew = pos[1];
-        
-    double xleft  = -fov[0] * 0.5;
-    double xright =  fov[0] * 0.5;
-    double yleft  = -fov[1] * 0.5;
-    double yright =  fov[1] * 0.5;
-
-    if(bc == "REFLECTIVE")
-    {
-        double local_shear = delrx * 2 * ynew / fov[1];
-        xleft  += local_shear; //sheared simulation bounds
-        xright += local_shear;
-        if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vel[0];
-        if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vel[1];
-
-    }
-    else if(bc == "INFINITE")
-    {
-        double local_shear = delrx * 2 * ynew / fov[1];
-        xleft  += local_shear; //sheared simulation bounds
-        xright += local_shear;
-        if      (xnew <= xleft)  xnew = xleft;
-        else if (xnew >= xright) xnew = xright;
-        if      (ynew <= yleft)  ynew = yleft;
-        else if (ynew >= yright) ynew = yright;
-
-    }
-    else if(bc == "XPERIODIC")
-    {
-        if      (xnew < xleft)  xnew += fov[0];
-        else if (xnew > xright) xnew -= fov[0];
-
-        if      (ynew < yleft)  ynew = yleft;
-        else if (ynew > yright) ynew = yright;
-
-    }
-    else if(bc == "PERIODIC")
+       
+    if(bc == "PERIODIC")
     {
         xnew = xnew - fov[0] * round(xnew / fov[0]);
         ynew = ynew - fov[1] * round(ynew / fov[1]);
@@ -464,6 +430,43 @@ array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 
         xnew = xnew - delrx  * cory;
         xnew = xnew - fov[0] * round(xnew / fov[0]);
         ynew = ynew - fov[1] * cory;
+    }
+    
+    else { 
+        double xleft  = -fov[0] * 0.5;
+        double xright =  fov[0] * 0.5;
+        double yleft  = -fov[1] * 0.5;
+        double yright =  fov[1] * 0.5;
+
+        if(bc == "REFLECTIVE")
+        {
+            double local_shear = delrx * 2 * ynew / fov[1];
+            xleft  += local_shear; //sheared simulation bounds
+            xright += local_shear;
+            if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vel[0];
+            if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vel[1];
+
+        }
+        else if(bc == "INFINITE")
+        {
+            double local_shear = delrx * 2 * ynew / fov[1];
+            xleft  += local_shear; //sheared simulation bounds
+            xright += local_shear;
+            if      (xnew <= xleft)  xnew = xleft;
+            else if (xnew >= xright) xnew = xright;
+            if      (ynew <= yleft)  ynew = yleft;
+            else if (ynew >= yright) ynew = yright;
+
+        }
+        else if(bc == "XPERIODIC")
+        {
+            if      (xnew < xleft)  xnew += fov[0];
+            else if (xnew > xright) xnew -= fov[0];
+
+            if      (ynew < yleft)  ynew = yleft;
+            else if (ynew > yright) ynew = yright;
+
+        }
     }
     
     return {xnew, ynew};

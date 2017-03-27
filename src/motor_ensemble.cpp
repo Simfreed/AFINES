@@ -141,12 +141,12 @@ void motor_ensemble::check_broken_filaments()
             f_index = n_motors[j]->get_f_index();
 
             if(f_index[0] == broken_filaments[i]){
-                n_motors[j]->detach_head(0);
+                n_motors[j]->detach_head_without_moving(0);
                 //cout<<"\nDEBUG: detaching head 0 of motor "<<j<<" from broken filament "<<broken_filaments[i];
             }
 
             if(f_index[1] == broken_filaments[i]){
-                n_motors[j]->detach_head(1);
+                n_motors[j]->detach_head_without_moving(1);
                 //cout<<"\nDEBUG: detaching head 1 of motor "<<j<<" from broken filament "<<broken_filaments[i];
             }
         }
