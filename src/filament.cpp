@@ -68,7 +68,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     kb = bending_stiffness;
     kinetic_energy  = 0;
     
-    damp = 4*pi*actinRadius*visc;
+    damp = 6*pi*actinRadius*visc;
     y_thresh = 1;
     
     bd_prefactor = sqrt(temperature/(2*dt*damp));

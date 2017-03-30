@@ -56,7 +56,7 @@ motor::motor( array<double, 3> pos,
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(4*pi*vis*mld);
+    damp=(6*pi*vis*mld);
     
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
@@ -140,7 +140,7 @@ motor::motor( array<double, 4> pos,
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(4*pi*vis*mld);
+    damp=(6*pi*vis*mld);
     
     
     max_ext     = max_ext_ratio*mlen;
