@@ -108,6 +108,8 @@ class motor
         double metropolis_prob(int hd, array<double, 2> newpos, double maxprob);
 
         array<double, 2> generate_off_pos(int hd);
+        array<double, 2> generate_off_pos_stay(int hd);
+        array<double, 2> generate_off_pos_perp(int hd);
 
         string to_string();
         

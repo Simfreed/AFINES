@@ -259,9 +259,11 @@ bool motor::attach(int hd)
                 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
                 not_off_prob += metropolis_prob(hd, intPoint, kon);
-                 
+                     
                 if (mf_rand < not_off_prob) 
                 {
+                    file_kon<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<intPoint[0]<<"\t"<<intPoint[1]<<"\t"<<1<<endl;
+                    
                     //update state
                     state[hd] = 1;
                     f_index[hd] = (it->second).at(0);
@@ -282,9 +284,12 @@ bool motor::attach(int hd)
                     
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false; 
-                 
+                    
                     return true;
                 }
+                //else
+                //    file_kon<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<intPoint[0]<<"\t"<<intPoint[1]<<"\t"<<0<<endl;
+
             }
         }
     }	
@@ -363,17 +368,35 @@ array<double, 2> motor::boundary_check(int hd, double x, double y)
 }
 
 array<double, 2> motor::generate_off_pos(int hd){
-    
+   
     array<double, 2> ldir = actin_network->get_direction(f_index[hd], l_index[hd]);
     double c = dot(ldir, ldir_bind[hd]);
     double s = sqrt(1-c*c);
 
-    array<double, 2> bind_disp_rot = {bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c};
+    array<double, 2> unbind_disp = {bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c};
     return pos_bc(BC, actin_network->get_delrx(), dt, fov, 
-            {bind_disp_rot[0]/dt, bind_disp_rot[1]/dt}, 
-            {hx[hd] - bind_disp_rot[0], hy[hd] - bind_disp_rot[1]}
+            {unbind_disp[0]/dt, unbind_disp[1]/dt}, 
+            {hx[hd] - unbind_disp[0], hy[hd] - unbind_disp[1]}
             ); 
+  
 } 
+
+array<double, 2>  motor::generate_off_pos_stay(int hd){    
+    return {hx[hd], hy[hd]};
+}
+
+array<double, 2>  motor::generate_off_pos_perp(int hd){    
+
+    double dist = rng(-0.5*max_bind_dist, 0.5*max_bind_dist);
+    array<double, 2> ldir = actin_network->get_direction(f_index[hd], l_index[hd]);
+    double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
+
+    array<double, 2> unbind_disp = {ldir[1]*dist/link_length, ldir[0]*dist/link_length};
+    return pos_bc(BC, actin_network->get_delrx(), dt, fov, 
+            {unbind_disp[0]/dt, unbind_disp[1]/dt}, 
+            {hx[hd] + unbind_disp[0], hy[hd] + unbind_disp[1]}
+            ); 
+}
 
 
 //stepping and detachment kinetics of a single bound head 
@@ -381,14 +404,16 @@ void motor::step_onehead(int hd)
 {
 
     // generate an off state
-    array<double, 2> hpos_new = generate_off_pos(hd);
+    array<double, 2> hpos_new = generate_off_pos_perp(hd);
 
     double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff);
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
-    if ( event(off_prob) ) this->detach_head(hd, hpos_new);
-    else{
-
+    if ( event(off_prob) ){
+        file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<1<<endl;
+        this->detach_head(hd, hpos_new);
+    }else{
+        //file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<0<<endl;
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){ 
             double vm = vs;

@@ -57,6 +57,10 @@ const double maxSmallAngle = 0.001; //pi/12.0; //Small angles DEFINED as such th
 const double eps = 1e-4;
 const double infty = 1e10;
 const double actin_mass_density = 2.6e-14; //miligram / micron
+
+//debugging files: 
+extern std::ofstream file_kon, file_koff;
+
 /*generic functions to be used below*/
 void set_seed(int s);
 double rng(double start, double end);

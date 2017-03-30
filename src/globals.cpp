@@ -17,6 +17,8 @@
 mt19937_64 generator;
 normal_distribution<double> distribution(0,1);
 //uniform_real_distribution<double> distribution(-0.5,0.5);
+//for debugging:
+std::ofstream file_kon, file_koff;
 
 /*generic functions to be used below*/
 double rng(double start, double end)
@@ -759,6 +761,7 @@ closefiles:
     write_file.close();
 
 }
+
 
 template int sgn<int>(int);
 template int sgn<double>(double);

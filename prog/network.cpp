@@ -227,6 +227,12 @@ int main(int argc, char* argv[]){
     thfile = ddir + "/thermo.txt";
     pefile = ddir + "/pe.txt";
     
+    /************** for debugging *****************/
+    string kon_file=ddir+"/binding.txt", koff_file=ddir+"/unbinding.txt";
+    file_kon.open(kon_file.c_str(), ios_base::out);
+    file_koff.open(koff_file.c_str(), ios_base::out);
+    /***********************************************/
+    
     if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
     if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
     
