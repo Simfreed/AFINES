@@ -222,13 +222,14 @@ void motor::set_shear(double gamma)
     shear = gamma;
 }
 
-//pseudo-metropolis algorithm
+//metropolis algorithm with rate constant
 double motor::metropolis_prob(int hd, array<double, 2> newpos, double maxprob)
 {
     double prob = maxprob;
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
     double delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
 
+    //NOTE: COMMENTING OUT NEXT LINE MAKES IT NOT A METROPOLIS
     if( delE > 0 )
         prob *= exp(-delE/temperature);
     
@@ -365,14 +366,17 @@ array<double, 2> motor::boundary_check(int hd, double x, double y)
 array<double, 2> motor::generate_off_pos(int hd){
     
     array<double, 2> ldir = actin_network->get_direction(f_index[hd], l_index[hd]);
-    double c = dot(ldir, ldir_bind[hd]);
-    double s = sqrt(1-c*c);
+    double c = dot(  ldir, ldir_bind[hd]);
+    double s = cross(ldir, ldir_bind[hd]);
 
     array<double, 2> bind_disp_rot = {bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c};
+
     return pos_bc(BC, actin_network->get_delrx(), dt, fov, 
-            {bind_disp_rot[0]/dt, bind_disp_rot[1]/dt}, 
+            {-bind_disp_rot[0]/dt, -bind_disp_rot[1]/dt}, 
             {hx[hd] - bind_disp_rot[0], hy[hd] - bind_disp_rot[1]}
             ); 
+    //array<double, 2> newpos = {hx[hd]-bind_disp_rot[0], hy[hd]-bind_disp_rot[1]};
+    //return boundary_check(hd, newpos[0], newpos[1]);
 } 
 
 
@@ -381,16 +385,21 @@ void motor::step_onehead(int hd)
 {
 
     // generate an off state
+    //array<double, 2> hpos_new = {hx[hd],hy[hd]};
+    //double off_prob = at_barbed_end[hd] ? kend : koff; 
+    
     array<double, 2> hpos_new = generate_off_pos(hd);
-
-    double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff);
+    double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff); 
+    
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
     if ( event(off_prob) ) this->detach_head(hd, hpos_new);
     else{
 
         //calculate motor velocity
+        /*new code starts here*/
         if (vs != 0 && !(at_barbed_end[hd])){ 
+        /*new code ends here */
             double vm = vs;
             if (state[pr(hd)] != 0){ 
                 vm = my_velocity(vs, 
@@ -399,8 +408,9 @@ void motor::step_onehead(int hd)
             }
             this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         }
+        if (state[hd] == 1) this->update_position_attached(hd);  // update absolute position
         
-        this->update_position_attached(hd);  // update absolute position
+        //this->update_position_attached(hd);  // update absolute position
     }
 }
 
@@ -411,10 +421,15 @@ void motor::update_pos_a_end(int hd, double pos)
     double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
     if (pos >= link_length) { // "passed" the link
         if (l_index[hd] == 0){ // the barbed end of the filament
-            //cout<<"\nDEBUG: reached barbed end\n";
+            /*old code starts here
+            if (event(kend)) {
+                this->detach_head_without_moving(hd);
+            }
+            and ends here*/
+            /* new code starts here*/
             at_barbed_end[hd] = true;
-            //move head to barbed end
             pos_a_end[hd] = link_length;
+            /*and ends here */
         }
         else{ 
             /*Move the motor to the next link on the filament
@@ -425,8 +440,14 @@ void motor::update_pos_a_end(int hd, double pos)
     }
     else if (pos < 0) { //this shouldn't be possible if vm > 0
         if (l_index[hd] == (actin_network->get_filament(f_index[hd])->get_nlinks() - 1)){ // the pointed end of the filament
-            //move head to pointed end
-            pos_a_end[hd]=0;
+            /*old code starts here
+            if (event(koff)) {
+                this->detach_head_without_moving(hd);
+            }
+            and ends here*/
+            /* new code starts here*/
+            pos_a_end[hd]=0; //move head to pointed end
+           /*and ends here */
         }
         else{ 
             /*Move the motor to the previous link on the filament
