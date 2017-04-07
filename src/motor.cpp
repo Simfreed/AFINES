@@ -228,9 +228,13 @@ double motor::metropolis_prob(int hd, array<double, 2> newpos, double maxprob)
     double prob = maxprob;
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
     double delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
+        
+    if ((maxprob==koff || maxprob==kend) && vs>0 )
+        file_kon<<delE<<endl;
 
-    if( delE > 0 )
+    if( delE > 0 ){
         prob *= exp(-delE/temperature);
+    }
     
     return prob;
 }
@@ -262,7 +266,7 @@ bool motor::attach(int hd)
                      
                 if (mf_rand < not_off_prob) 
                 {
-                    file_kon<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<intPoint[0]<<"\t"<<intPoint[1]<<"\t"<<1<<endl;
+                    //file_kon<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<intPoint[0]<<"\t"<<intPoint[1]<<"\t"<<1<<endl;
                     
                     //update state
                     state[hd] = 1;
@@ -404,7 +408,7 @@ void motor::step_onehead(int hd)
 {
 
     // generate an off state
-    array<double, 2> hpos_new = generate_off_pos_perp(hd);
+    array<double, 2> hpos_new = generate_off_pos(hd);
 
     double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff);
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
@@ -413,7 +417,7 @@ void motor::step_onehead(int hd)
         file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<1<<endl;
         this->detach_head(hd, hpos_new);
     }else{
-        //file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<0<<endl;
+        file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<0<<endl;
         //calculate motor velocity
         if (vs != 0 && !(at_barbed_end[hd])){ 
             double vm = vs;

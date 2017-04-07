@@ -1795,7 +1795,7 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     double actin_rad = 0.5, link_len = 1;
     double v0 = 0;
     
-    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double mstiff = 1, stretching = 0, bending = 0; //spring constants
     double kon = 10000, koff = 10000, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
     double frac_force = 0;
     
@@ -1814,7 +1814,8 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
     
     //Attach
-    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because kon is saturated
+    cout<<"\nAttempting attachment";
+    m.attach(0); //should attach to {f_index, l_index} = {0, 2}, because kon is saturated
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
@@ -1822,6 +1823,9 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
 
     //Detach
+    cout<<"\nAttempting detachment";
+    m.update_angle();
+    m.update_force();
     m.step_onehead(0);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
@@ -1834,16 +1838,27 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     kon = 10000, koff = 0, kend = 10000;
     mx = 2.5, my = 0.6, mang = pi/2, mlen = 1;
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    
+    m.update_angle();
+    m.update_force();
 
     //Attach
+    cout<<"\nAttempting attachment";
     m.attach(0); //should attach to 
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    BOOST_CHECK_EQUAL(m.get_hx()[0], 2.5);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
 
     //walk
     for(int i=0; i<6; i++){
         BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-        m.step_onehead(0);
         m.update_angle();
         m.update_force();
+        cout<<"\nAttempting detachment from position ("<<m.get_hx()[0]<<" , "<<m.get_hy()[0]<<")";
+        cout<<"\nPosition of other head ("<<m.get_hx()[1]<<" , "<<m.get_hy()[1]<<")";
+        m.step_onehead(0);
     }
     
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
