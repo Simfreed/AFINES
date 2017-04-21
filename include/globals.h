@@ -95,6 +95,7 @@ int coord2quad(double fov, int nq, double pos);
 double my_velocity(double vel0, double force, double fstall);
 double cross(double ax, double ay, double bx, double by);
 double dot(double x1, double y1, double x2, double y2);
+double cross(const array<double, 2>& v1, const array<double, 2>& v2);
 double dot(const array<double, 2>& v1, const array<double, 2>& v2);
 
 double angBC(double ang);

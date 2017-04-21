@@ -32,17 +32,16 @@ motor::motor( array<double, 3> pos,
         double stiffness, 
         double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double engBind,
+        double fstall, double rcut,
         double vis, string bc) {
     
     vs          = v0;
     mk          = stiffness;//rng(10,100); 
     
     stall_force   = fstall;
-    break_force   = fbreak;
     temperature   = temp;
     
-    max_bind_dist = 3.0*sqrt(temperature / stiffness);
+    max_bind_dist = rcut;
 
     mld         = mlen;
     dt          = delta_t;
@@ -56,11 +55,14 @@ motor::motor( array<double, 3> pos,
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(4*pi*vis*mld);
-    
+    damp        = (6*pi*vis*mld);
+    bd_prefactor= sqrt(temperature/(2*damp*dt)); 
+
+    /****for FENE motors******/
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    
+    /*************************/
+
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // force on the spring  
@@ -116,17 +118,16 @@ motor::motor( array<double, 4> pos,
         double stiffness, 
         double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double engBind,
+        double fstall, double rcut,
         double vis, string bc) {
     
     vs          = v0;
     mk          = stiffness;
     
     stall_force = fstall;
-    break_force = fbreak;
     temperature = temp;
 
-    max_bind_dist = 3.0*sqrt(temperature / stiffness);
+    max_bind_dist = rcut;
     
     mld         = mlen;
     dt          = delta_t;
@@ -140,12 +141,14 @@ motor::motor( array<double, 4> pos,
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(4*pi*vis*mld);
+    damp        =(6*pi*vis*mld);
+    bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
-    
+    /********for FENE springs*********/ 
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    
+    /********************************/
+
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // force on the spring  
@@ -222,7 +225,7 @@ void motor::set_shear(double gamma)
     shear = gamma;
 }
 
-//pseudo-metropolis algorithm
+//metropolis algorithm with rate constant
 double motor::metropolis_prob(int hd, array<double, 2> newpos, double maxprob)
 {
     double prob = maxprob;
@@ -232,6 +235,7 @@ double motor::metropolis_prob(int hd, array<double, 2> newpos, double maxprob)
     if ((maxprob==koff || maxprob==kend) && vs>0 )
         file_kon<<delE<<endl;
 
+    //NOTE: COMMENTING OUT NEXT LINE MAKES IT NOT A METROPOLIS
     if( delE > 0 ){
         prob *= exp(-delE/temperature);
     }
@@ -332,8 +336,8 @@ void motor::brownian_relax(int hd)
     
     double new_rnd_x= rng_n(0,1), new_rnd_y = rng_n(0,1);
     
-    double vx =  pow(-1,hd)*force[0] / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x + prv_rnd_x[hd]);
-    double vy =  pow(-1,hd)*force[1] / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y + prv_rnd_y[hd]);
+    double vx =  pow(-1,hd)*force[0] / damp + bd_prefactor*(new_rnd_x + prv_rnd_x[hd]);
+    double vy =  pow(-1,hd)*force[1] / damp + bd_prefactor*(new_rnd_y + prv_rnd_y[hd]);
     kinetic_energy = vx*vx + vy*vy;    
     array<double, 2> pos = boundary_check(hd, hx[hd] + vx*dt, hy[hd] + vy*dt);
     hx[hd] = pos[0];
@@ -374,15 +378,17 @@ array<double, 2> motor::boundary_check(int hd, double x, double y)
 array<double, 2> motor::generate_off_pos(int hd){
    
     array<double, 2> ldir = actin_network->get_direction(f_index[hd], l_index[hd]);
-    double c = dot(ldir, ldir_bind[hd]);
-    double s = sqrt(1-c*c);
+    double c = dot(  ldir, ldir_bind[hd]);
+    double s = cross(ldir, ldir_bind[hd]);
 
-    array<double, 2> unbind_disp = {bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c};
+    array<double, 2> bind_disp_rot = {bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c};
+
     return pos_bc(BC, actin_network->get_delrx(), dt, fov, 
-            {unbind_disp[0]/dt, unbind_disp[1]/dt}, 
-            {hx[hd] - unbind_disp[0], hy[hd] - unbind_disp[1]}
+            {-bind_disp_rot[0]/dt, -bind_disp_rot[1]/dt}, 
+            {hx[hd] - bind_disp_rot[0], hy[hd] - bind_disp_rot[1]}
             ); 
-  
+    //array<double, 2> newpos = {hx[hd]-bind_disp_rot[0], hy[hd]-bind_disp_rot[1]};
+    //return boundary_check(hd, newpos[0], newpos[1]);
 } 
 
 array<double, 2>  motor::generate_off_pos_stay(int hd){    
@@ -408,9 +414,12 @@ void motor::step_onehead(int hd)
 {
 
     // generate an off state
+    //array<double, 2> hpos_new = {hx[hd],hy[hd]};
+    //double off_prob = at_barbed_end[hd] ? kend : koff; 
+    
     array<double, 2> hpos_new = generate_off_pos(hd);
-
-    double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff);
+    double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff); 
+    
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
     if ( event(off_prob) ){
@@ -419,7 +428,9 @@ void motor::step_onehead(int hd)
     }else{
         file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<0<<endl;
         //calculate motor velocity
+        /*new code starts here*/
         if (vs != 0 && !(at_barbed_end[hd])){ 
+        /*new code ends here */
             double vm = vs;
             if (state[pr(hd)] != 0){ 
                 vm = my_velocity(vs, 
@@ -428,8 +439,9 @@ void motor::step_onehead(int hd)
             }
             this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         }
+        if (state[hd] == 1) this->update_position_attached(hd);  // update absolute position
         
-        this->update_position_attached(hd);  // update absolute position
+        //this->update_position_attached(hd);  // update absolute position
     }
 }
 
@@ -440,10 +452,15 @@ void motor::update_pos_a_end(int hd, double pos)
     double link_length = actin_network->get_llength(f_index[hd],l_index[hd]);
     if (pos >= link_length) { // "passed" the link
         if (l_index[hd] == 0){ // the barbed end of the filament
-            //cout<<"\nDEBUG: reached barbed end\n";
+            /*old code starts here
+            if (event(kend)) {
+                this->detach_head_without_moving(hd);
+            }
+            and ends here*/
+            /* new code starts here*/
             at_barbed_end[hd] = true;
-            //move head to barbed end
             pos_a_end[hd] = link_length;
+            /*and ends here */
         }
         else{ 
             /*Move the motor to the next link on the filament
@@ -454,8 +471,14 @@ void motor::update_pos_a_end(int hd, double pos)
     }
     else if (pos < 0) { //this shouldn't be possible if vm > 0
         if (l_index[hd] == (actin_network->get_filament(f_index[hd])->get_nlinks() - 1)){ // the pointed end of the filament
-            //move head to pointed end
-            pos_a_end[hd]=0;
+            /*old code starts here
+            if (event(koff)) {
+                this->detach_head_without_moving(hd);
+            }
+            and ends here*/
+            /* new code starts here*/
+            pos_a_end[hd]=0; //move head to pointed end
+           /*and ends here */
         }
         else{ 
             /*Move the motor to the previous link on the filament

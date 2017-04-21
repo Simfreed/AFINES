@@ -185,6 +185,11 @@ double cross(double ax, double ay, double bx, double by)
     return ax*by-bx*ay;
 }
 
+double cross(const array<double, 2>& v1, const array<double, 2>& v2)
+{
+    return v1[0]*v2[1]-v2[0]*v1[1];
+}
+
 double dot(double x1, double y1, double x2, double y2)
 {
     return x1*x2+y1*y2;
