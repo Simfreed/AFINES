@@ -409,27 +409,29 @@ int main(int argc, char* argv[]){
             
             file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
             net->write_actins(file_a);
-            file_a<<std::flush;
 
             file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_links(file_l);
-            file_l<<std::flush;
 
             file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
             myosins->motor_write(file_am);
-            file_am<<std::flush;
-
+            
             file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
             crosslks->motor_write(file_pm);
-            file_pm<<std::flush;
 
             file_th << time_str<<"\tN = "<<to_string(net->get_nfilaments());
             net->write_thermo(file_th);
-            file_th<<std::flush;
 
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
+            
+            file_a<<std::flush;
+            file_l<<std::flush;
+            file_am<<std::flush;
+            file_pm<<std::flush;
+            file_th<<std::flush;
             file_pe<<std::flush;
+            
 		}
         
         //print time count
