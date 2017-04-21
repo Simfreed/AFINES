@@ -32,17 +32,16 @@ motor::motor( array<double, 3> pos,
         double stiffness, 
         double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double engBind,
+        double fstall, double rcut,
         double vis, string bc) {
     
     vs          = v0;
     mk          = stiffness;//rng(10,100); 
     
     stall_force   = fstall;
-    break_force   = fbreak;
     temperature   = temp;
     
-    max_bind_dist = 3.0*sqrt(temperature / stiffness);
+    max_bind_dist = rcut;
 
     mld         = mlen;
     dt          = delta_t;
@@ -56,11 +55,14 @@ motor::motor( array<double, 3> pos,
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(6*pi*vis*mld);
-    
+    damp        = (6*pi*vis*mld);
+    bd_prefactor= sqrt(temperature/(2*damp*dt)); 
+
+    /****for FENE motors******/
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    
+    /*************************/
+
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // force on the spring  
@@ -116,17 +118,16 @@ motor::motor( array<double, 4> pos,
         double stiffness, 
         double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double engBind,
+        double fstall, double rcut,
         double vis, string bc) {
     
     vs          = v0;
     mk          = stiffness;
     
     stall_force = fstall;
-    break_force = fbreak;
     temperature = temp;
 
-    max_bind_dist = 3.0*sqrt(temperature / stiffness);
+    max_bind_dist = rcut;
     
     mld         = mlen;
     dt          = delta_t;
@@ -140,12 +141,14 @@ motor::motor( array<double, 4> pos,
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(6*pi*vis*mld);
+    damp        =(6*pi*vis*mld);
+    bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
-    
+    /********for FENE springs*********/ 
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    
+    /********************************/
+
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // force on the spring  
@@ -324,8 +327,8 @@ void motor::brownian_relax(int hd)
     
     double new_rnd_x= rng_n(0,1), new_rnd_y = rng_n(0,1);
     
-    double vx =  pow(-1,hd)*force[0] / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x + prv_rnd_x[hd]);
-    double vy =  pow(-1,hd)*force[1] / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y + prv_rnd_y[hd]);
+    double vx =  pow(-1,hd)*force[0] / damp + bd_prefactor*(new_rnd_x + prv_rnd_x[hd]);
+    double vy =  pow(-1,hd)*force[1] / damp + bd_prefactor*(new_rnd_y + prv_rnd_y[hd]);
     kinetic_energy = vx*vx + vy*vy;    
     array<double, 2> pos = boundary_check(hd, hx[hd] + vx*dt, hy[hd] + vy*dt);
     hx[hd] = pos[0];
