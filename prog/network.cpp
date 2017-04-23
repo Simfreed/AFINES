@@ -230,6 +230,11 @@ int main(int argc, char* argv[]){
     string kon_file=ddir+"/binding.txt", koff_file=ddir+"/unbinding.txt";
     file_kon.open(kon_file.c_str(), ios_base::out);
     file_koff.open(koff_file.c_str(), ios_base::out);
+    
+    on_accept_count=0;
+    on_reject_count=0;
+    off_accept_count = 0;
+    off_reject_count = 0;
     /***********************************************/
     
     if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
@@ -359,11 +364,11 @@ int main(int argc, char* argv[]){
     
     if(p_motor_pos_vec.size() == 0 && p_motor_in.size() == 0)
         crosslks = new motor_ensemble( p_motor_density, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
                 p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
                 p_m_kend, p_m_stall, p_m_cut, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
@@ -513,7 +518,15 @@ int main(int argc, char* argv[]){
     delete net;
     
     
-    
+    string arfile = ddir + "/on_acc_rej_off_acc_rej.txt";
+    ofstream file_ar;
+    file_ar.open(arfile.c_str(), write_mode);
+    file_ar<<on_accept_count<<"\n"<<on_reject_count<<"\n"<<off_accept_count<<"\n"<<off_reject_count<<endl;
+    file_ar.close();
+
+    file_kon.close();
+    file_koff.close();
+
     cout<<"\nTime counts: "<<count;
 	cout<<"\nExecuted";
 	cout<<"\n Done\n";

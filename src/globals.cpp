@@ -19,6 +19,7 @@ normal_distribution<double> distribution(0,1);
 //uniform_real_distribution<double> distribution(-0.5,0.5);
 //for debugging:
 std::ofstream file_kon, file_koff;
+int on_accept_count, on_reject_count, off_accept_count, off_reject_count;
 
 /*generic functions to be used below*/
 double rng(double start, double end)

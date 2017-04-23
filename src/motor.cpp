@@ -232,8 +232,8 @@ double motor::metropolis_prob(int hd, array<double, 2> newpos, double maxprob)
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
     double delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
         
-    if ((maxprob==koff || maxprob==kend) && vs>0 )
-        file_kon<<delE<<endl;
+//    if ((maxprob==koff || maxprob==kend) && vs>0 )
+//        file_kon<<delE<<endl;
 
     //NOTE: COMMENTING OUT NEXT LINE MAKES IT NOT A METROPOLIS
     if( delE > 0 ){
@@ -292,7 +292,7 @@ bool motor::attach(int hd)
                     
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false; 
-                    
+                    on_accept_count += 1; 
                     return true;
                 }
                 //else
@@ -300,6 +300,8 @@ bool motor::attach(int hd)
 
             }
         }
+        if (not_off_prob > 0)
+            on_reject_count += 1;
     }	
     return false;
 } 
@@ -420,13 +422,15 @@ void motor::step_onehead(int hd)
     array<double, 2> hpos_new = generate_off_pos(hd);
     double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff); 
     
-    //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
+    file_koff<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
     if ( event(off_prob) ){
-        file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<1<<endl;
+        off_accept_count += 1;
+        //file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<1<<endl;
         this->detach_head(hd, hpos_new);
     }else{
-        file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<0<<endl;
+        off_reject_count += 1;
+        //file_koff<<hx[pr(hd)]<<"\t"<<hy[pr(hd)]<<"\t"<<hx[hd]<<"\t"<<hy[hd]<<"\t"<<hpos_new[0]<<"\t"<<hpos_new[1]<<"\t"<<0<<endl;
         //calculate motor velocity
         /*new code starts here*/
         if (vs != 0 && !(at_barbed_end[hd])){ 

@@ -60,6 +60,8 @@ const double actin_mass_density = 2.6e-14; //miligram / micron
 
 //debugging files: 
 extern std::ofstream file_kon, file_koff;
+//acceptance ratio calculations
+extern int on_accept_count, on_reject_count, off_accept_count, off_reject_count;
 
 /*generic functions to be used below*/
 void set_seed(int s);
