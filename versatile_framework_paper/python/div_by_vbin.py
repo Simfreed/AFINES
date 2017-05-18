@@ -18,10 +18,9 @@ parser.add_argument("--rbfunc", type=str, help="radial basis function", default=
 parser.add_argument("--rbeps", type=float, help="epsilon for radial basis function (e.g., R0 if rbfunc='gaussian')",default=5)
 parser.add_argument("--dr", type=float, nargs=2, help="mesh grid size", default=[1,1])
 parser.add_argument("--dt", type=int, help="number of timesteps to use when calculating velocity", default=10)
-parser.add_argument("--padding", type=float, help="padding in x and y directions in fraction of cell", default=1)
-parser.add_argument("--nbins", type=int, help="number of bins to use in smoothing data", default=10);
+parser.add_argument("--padding", type=float, help="padding in x and y directions in fraction of cell", default=0.5)
+parser.add_argument("--nbins", type=int, help="number of bins with which to divide up args.fov, to use in smoothing data", default=10);
 parser.add_argument("--minpts", type=int, help="min # of points to use when calculating means", default=10);
-parser.add_argument("--div_lsc", type=float, help="size of a bin to calculating total divergence", default=10);
 
 def thresh_mean(myarr):
     if len(myarr) < args.minpts:
@@ -60,8 +59,8 @@ xyall = np.concatenate([xyt, rxyt, lxyt, uxyt, dxyt, urxyt, ulxyt, drxyt, dlxyt]
 uvall = np.concatenate([drpt/args.dt]*9, axis=1)
 
 f      = args.padding+0.5
-edgesx = np.linspace(-f*xsz, f*xsz, args.nbins+1)
-edgesy = np.linspace(-f*ysz, f*ysz, args.nbins+1)
+edgesx = np.linspace(-f*xsz, f*xsz, 2*f*args.nbins+1)
+edgesy = np.linspace(-f*ysz, f*ysz, 2*f*args.nbins+1)
 print 'imported data'
 mxt = np.stack([binned_statistic_2d(xyall[t,:,0], xyall[t,:,1], xyall[t,:,0], statistic=thresh_mean, bins=[edgesx, edgesy])[0].flatten() 
     for t in range(len(drpt))])
@@ -84,18 +83,11 @@ xmid = 0.5*(xi[1:]+xi[:-1])
 ymid = 0.5*(yi[1:]+yi[:-1])
 
 partname = args.parts if args.parts != 'actins' else '';
-divxydir='{0}/analysis/xyuvd_nbins{1}_lsc{2}_dt{3}_thresh{4}{5}'.format(args.directory,args.nbins,args.div_lsc,args.dt,args.minpts,partname) 
-weightsdir='{0}/analysis/vfield_weights_nbins{1}_lsc{2}_dt{3}_thresh{4}{5}'.format(args.directory,args.nbins,args.div_lsc,args.dt,args.minpts,partname) 
+weightsdir='{0}/analysis/vfield_weights_nbins{1}_dt{2}_thresh{3}{4}'.format(args.directory,args.nbins,args.dt,args.minpts,partname) 
 
 div_bins = []
-if not os.path.exists(divxydir):
-    os.makedirs(divxydir)
 if not os.path.exists(weightsdir):
     os.makedirs(weightsdir)
-
-f      = 0.5
-edgesx = np.arange(-f*xsz, f*xsz + args.div_lsc, args.div_lsc)
-edgesy = np.arange(-f*ysz, f*ysz + args.div_lsc, args.div_lsc)
 
 for t in range(len(mxyt)):
 
