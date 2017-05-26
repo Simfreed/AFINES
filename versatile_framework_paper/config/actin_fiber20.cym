@@ -3,7 +3,7 @@
 
 set simul fiber 
 {
-    time_step = 0.0005
+    time_step = 0.00001
     viscosity = 0.001
     random_seed = 10
 }
@@ -33,8 +33,8 @@ write state objects.cmo
     append = 0 
 } 
 
-run 4000000 simul *
+run 200000000 simul *
 {
-    nb_frames=2000
+    nb_frames=100000
     binary = 0
 }

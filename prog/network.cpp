@@ -223,7 +223,7 @@ int main(int argc, char* argv[]){
     lfile  = tdir + "/links.txt";
     amfile = tdir + "/amotors.txt";
     pmfile = tdir + "/pmotors.txt";
-    thfile = ddir + "/thermo.txt";
+    thfile = ddir + "/filament_e.txt";
     pefile = ddir + "/pe.txt";
     
     if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;

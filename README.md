@@ -103,13 +103,12 @@ All files are tab delimited
         * lidx0 = index of link that head 0 is attached to (-1 if fidx0 = -1)
         * lidx1 = index of link that head 1 is attached to (-1 if fidx1 = -1)
 
-* data/thermo.txt has the format 
+* data/filament_e.txt is the energetics of each filament, and has the format 
     * KE PE TE idx
         * KE = total v^2 of filament 
         * PE = total potential energy of filament
         * TE = KE + PE
         * idx = filament index
-    
 The time associated with the positions/energies is on it's own line before 
 each list of positions within the file. Thus the structure of actins.txt is:
 ```
@@ -130,7 +129,16 @@ each list of positions within the file. Thus the structure of actins.txt is:
     .
     xn, yn, rn, idxn
 ```
-    And similarly for other output files
+
+* data/pe.txt is the total potential energy of all particles at a given time step and has the format
+    * U(filament_stretch)  U(filament_bend) U(xlink_stretch) U(motor_stretch) where each U is total at that timestep
+    * time isn't delineated in these files; rather line 1 is t=t1, line 2, is t=t2, etc. 
+
+* data/config_full.cfg is the full set of configuration options used for the simulation. Thus if a simulation did not
+  complete, you can restart with 
+```
+./bin/afines -c data/config_full.cfg --restart true
+```
 
 ### Configurable settings ###
 
@@ -151,7 +159,7 @@ of 0.05 you would enter the command:
 |**ENVIRONMENT**            |||||
 |xrange                     |double |50             |um     |size of cell in horizontal direction|
 |yrange                     |double |50             |um     |size of cell in vertical direction  |
-|grid_factor                |double |1              |um^(-2)|number of grid boxes                |
+|grid_factor                |double |1              |um^(-1)|number of grid boxes per micron     |
 |dt                         |double |0.0001         |s      |length of individual timestep       |
 |tinit                      |double |0              |s      |time that recording of simulation starts|
 |tfinal                     |double |10             |s      |length of simulation|
@@ -170,10 +178,9 @@ of 0.05 you would enter the command:
 |link_length                |double |0              |       |Length of links connecting monomers|
 |polymer_bending_modulus    |double |0.068           |pn*um^2|Bending modulus of a filament|
 |fracture_force             |double |1000000        |pN     |filament breaking poiafines|
-|bending_fracture_force     |double |1000000        |pN     |filament breaking point|
 |link_stretching_stiffness  |double |1              |pN/um  |stiffness of link|
 |**MOTORS**                 |       |               |       ||
-|a_motor_density            |double |0.05           |um^(-2)|number of active motors |
+|a_motor_density            |double |0.05           |um^(-2)|density of active motors |
 |a_motor_pos_str            |string |               |       |Starting positions of motors, commas delimit coordinates; semicolons delimit positions|
 |a_m_kon                    |double |100            |s^(-1) |active motor on rate|
 |a_m_koff                   |double |20             |s^(-1) |active motor off rate|
@@ -196,7 +203,7 @@ of 0.05 you would enter the command:
 |p_motor_length             |double |0.4            |s^(-1) |length of xlink|
 |p_m_stall                  |double |0              |pN     |stall force|
 |link_intersect_flag        |boolean|false          |       |if true, then crosslinks are placed at filament intersections|
-|p_linkage_prob             |double |1              |       |probability that filaments are crosslinked if link_intersect_flag = true|
+|p_linkage_prob             |double |1              |     |probability that filaments are crosslinked if link_intersect_flag = true|
 |p_dead_head_flag           |boolean|false          |       |if true, then head [p_dead_head] of all xlinks remains stationary throughout sim|
 |p_dead_head                |int    |0              |       |can be 0 or 1; head that remains stationary if p_dead_head_flag=true|
 |static_cl_flag             |boolean|false          |       |should be set to true if xlinks start off attached to filaments and never detach|
