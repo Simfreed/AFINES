@@ -46,17 +46,17 @@ where [dir] is the top directory of the simulation output (e.g., "slide") in the
 #### A #### 
 ##### Red ##### 
 ```bash
-./bin/afines -c versatile_framework_paper/config/contracting_short_r1.cfg --npolymer [N]
+./bin/afines -c versatile_framework_paper/config/contracting_short.cfg --npolymer [N]
 ```   
 where N is 1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000,50000
 ##### Blue ##### 
 ```bash
-./bin/afines -c versatile_framework_paper/config/contracting_short_r1.cfg --a_motor_density [0.001*N]
+./bin/afines -c versatile_framework_paper/config/contracting_short.cfg --a_motor_density [0.001*N]
 ```
 where N is 1,2,5,10,20,50,100,200,500,1000,2000,5000,10000,20000,50000
 ##### Black ##### 
 ```bash
-./bin/afines -c versatile_framework_paper/config/contracting_short_r1.cfg --npolymer [N] --a_motor_density [0.01*N] --p_motor_density [0.01*N]
+./bin/afines -c versatile_framework_paper/config/contracting_short.cfg --npolymer [N] --a_motor_density [0.01*N] --p_motor_density [0.01*N]
 ```
 where N is 1,2,5,10,20,50,100,200,500,1000,2000,5000,10000
 #### B ####  
@@ -67,7 +67,7 @@ where N is 1,2,5,10,20,50,100,200,500,1000,2000,5000,10000
 where N is 1,2,3,4,5,6,7,8,9,10
 ##### Red ##### 
 ```
- ./bin/afines -c versatile_framework_paper/config/contracting_short_hi_dens.cfg --grid_factor [0.01*N]
+ ./bin/afines -c versatile_framework_paper/config/contracting_short.cfg --grid_factor [0.01*N]
 ```
 where N is 0,2,4,6,8,10,20,30,40,50,60,70,80,90,100,150,200,250,300,350,400,450
 ### Figure 3 ###
@@ -147,7 +147,7 @@ and {shear\_equil\_[N]} is the directory containing the corresponding equilibrat
 
 ### Figure S3 ###
 ```
-./bin/afines -c versatile_framework_paper/config/shear_intersected.cfg --n_bw_shear [N] --tf [N*0.00005] --actin_in in/actins.txt --p_motor_in in/pmotors.txt 
+./bin/afines -c versatile_framework_paper/config/shear.cfg --n_bw_shear [N] --tf [N*0.00005] --actin_in in/actins.txt --p_motor_in in/pmotors.txt 
 ```
 where N is 2,5,10,20,50,100,200,500,1000,2000,5000,10000
 and in/actins.txt and in/pmotors.txt were generated from the N=10000 equilibration case above. 
