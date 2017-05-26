@@ -747,7 +747,7 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_test )
     double  temp                = 0;
     double  link_length         = 1;
     double  actin_length        = link_length/2;
-    double  viscosity           = 1/(4*pi*actin_length);
+    double  viscosity           = 1/(6*pi*actin_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -792,7 +792,7 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_pos_test )
     double  temp                = 0;
     double  link_length         = 1;
     double  actin_length        = link_length/2;
-    double  viscosity           = 1/(4*pi*actin_length);
+    double  viscosity           = 1/(6*pi*actin_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -836,7 +836,7 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_pos_test )
     double  temp                = 0;
     double  link_length         = 1;
     double  actin_length        = link_length/2;
-    double  viscosity           = 1/(4*pi*actin_length);
+    double  viscosity           = 1/(6*pi*actin_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -884,7 +884,7 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_stretch_test )
     double  temp                = 0;
     double  link_length         = 1;
     double  actin_length        = link_length/2;
-    double  viscosity           = 1/(4*pi*actin_length);
+    double  viscosity           = 1/(6*pi*actin_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -926,7 +926,7 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
     double  temp                = 0;
     double  link_length         = 1;
     double  actin_length        = link_length/2;
-    double  viscosity           = 1/(4*pi*actin_length);
+    double  viscosity           = 1/(6*pi*actin_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -984,7 +984,7 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     double  temp                = 0;
     double  link_length         = 1;
     double  actin_length        = link_length/2;
-    double  viscosity           = 1/(4*pi*actin_length);
+    double  viscosity           = 1/(6*pi*actin_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;

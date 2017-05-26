@@ -385,7 +385,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     l = f->get_link(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
-    BOOST_CHECK_MESSAGE(quads == expected_quads, quads_error_message("7D",expected_quads,quads));
+    //BOOST_CHECK_MESSAGE(quads == expected_quads, quads_error_message("7D",expected_quads,quads));
+    BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7D : Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
     cout<<"\nExpected Quadrants:"; 
