@@ -31,6 +31,13 @@ FileExistsQ[fname],
 Map[Internal`StringToDouble/@(StringSplit[StringTake[#,{2,-2}],", "])&,ToExpression[Import[fname,"TSV"]],{2}];,
 Print[fname<>" doesn't exist"];{}
 ];
+(*cytosim*)
+ptsCS[dir_,name_]:=
+If[
+FileExistsQ[dir<>"/"<>name<>".dat"],
+ToExpression[Import[dir<>"/"<>name<>".dat","TSV"]],
+Print[dir<>"/"<>name<>".dat doesn't exist"];{}
+];
 
 
 (* ::Subsection:: *)
@@ -381,7 +388,6 @@ Clear[xcm,ycm,xydxdy,xydxdyg,costh];
 
 (* ::Subsection:: *)
 (*Filament Strain*)
-
 
 
 filstrain[acts_,fov_:{50,50},nparts_:500,arcLength_:10]:=
