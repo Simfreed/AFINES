@@ -26,7 +26,7 @@ template <class motor_type>
 motor_ensemble<motor_type>::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
         double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double bindEng,
+        double fstall, double rcut,
         double vis, vector<array<double,3> > positions, string BC) {
     
     fov = myfov;
@@ -57,8 +57,8 @@ motor_ensemble<motor_type>::motor_ensemble(double mdensity, array<double, 2> myf
         }
         motor_pos = {motorx, motory, mang};
 
-        n_motors.push_back(new motor_type( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
-                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
+        n_motors.push_back(new motor( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
         
     }
 }
@@ -68,7 +68,7 @@ template <class motor_type>
 motor_ensemble<motor_type>::motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
         double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double bindEng,
+        double fstall, double rcut,
         double vis, string BC) {
     
     fov = myfov;
@@ -96,9 +96,11 @@ motor_ensemble<motor_type>::motor_ensemble(vector<vector<double> > motors, array
 
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
 
-        n_motors.push_back(new motor_type( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
-                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, fbreak, bindEng, vis, BC));
+        n_motors.push_back(new motor( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
+                    v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
     }
+
+    this->update_energies();
 }
 
 
@@ -149,12 +151,12 @@ void motor_ensemble<motor_type>::check_broken_filaments()
             f_index = n_motors[j]->get_f_index();
 
             if(f_index[0] == broken_filaments[i]){
-                n_motors[j]->detach(0);
+                n_motors[j]->detach_head_without_moving(0);
                 //cout<<"\nDEBUG: detaching head 0 of motor "<<j<<" from broken filament "<<broken_filaments[i];
             }
 
             if(f_index[1] == broken_filaments[i]){
-                n_motors[j]->detach(1);
+                n_motors[j]->detach_head_without_moving(1);
                 //cout<<"\nDEBUG: detaching head 1 of motor "<<j<<" from broken filament "<<broken_filaments[i];
             }
         }

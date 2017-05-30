@@ -73,9 +73,17 @@ BOOST_AUTO_TEST_CASE( get_distance_test)
     
     Link * l = f->get_link(0);
     
-    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, 0.75, 2), 2, tol);
-    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, 4, -4), 5, tol);
-    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, -5, 12), 13, tol);
+    array<double, 2> p1 = {0.75,2}, p2 = {4, -4}, p3 = {-5, 12};
+    double d1 = 2, d2 = 5, d3 = 13;
+
+    l->calc_intpoint(bc, 0, p1[0], p1[1]);
+    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, p1[0], p1[1]), d1, tol);
+
+    l->calc_intpoint(bc, 0, p2[0], p2[1]);
+    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, p2[0], p2[1]), d2, tol);
+    
+    l->calc_intpoint(bc, 0, p3[0], p3[1]);
+    BOOST_CHECK_CLOSE(l->get_distance(bc, 0, p3[0], p3[1]), d3, tol);
     
     delete f;
 }
@@ -96,7 +104,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
-    string  bc                  = "REFLECTIVE";
+    string  bc                  = "PERIODIC";
     
     //TEST 1
     double  startx = 0, starty = 0, startphi = 0;
@@ -114,6 +122,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     vector<array<int,2> > expected_quads;
     expected_quads.push_back({xgrid/2 , ygrid/2});
     expected_quads.push_back({xgrid/2 + 1, ygrid/2});
+    expected_quads.push_back({xgrid/2 + 2, ygrid/2});
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 1 : Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -135,6 +144,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({0+xgrid/2,0+ygrid/2});
     expected_quads.push_back({1+xgrid/2,0+ygrid/2});
     expected_quads.push_back({2+xgrid/2,0+ygrid/2});
+    expected_quads.push_back({3+xgrid/2,0+ygrid/2});
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 2 : Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -156,12 +166,20 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({0+xgrid/2,0+ygrid/2});
     expected_quads.push_back({0+xgrid/2,1+ygrid/2});
     expected_quads.push_back({0+xgrid/2,2+ygrid/2});
+    expected_quads.push_back({0+xgrid/2,3+ygrid/2});
     expected_quads.push_back({1+xgrid/2,0+ygrid/2});
     expected_quads.push_back({1+xgrid/2,1+ygrid/2});
     expected_quads.push_back({1+xgrid/2,2+ygrid/2});
+    expected_quads.push_back({1+xgrid/2,3+ygrid/2});
     expected_quads.push_back({2+xgrid/2,0+ygrid/2});
     expected_quads.push_back({2+xgrid/2,1+ygrid/2});
     expected_quads.push_back({2+xgrid/2,2+ygrid/2});
+    expected_quads.push_back({2+xgrid/2,3+ygrid/2});
+    expected_quads.push_back({3+xgrid/2,0+ygrid/2});
+    expected_quads.push_back({3+xgrid/2,1+ygrid/2});
+    expected_quads.push_back({3+xgrid/2,2+ygrid/2});
+    expected_quads.push_back({3+xgrid/2,3+ygrid/2});
+    
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 3: Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -185,6 +203,9 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     quads = l->get_quadrants();
     expected_quads.push_back({2+xgrid/2,0+ygrid/2});
     expected_quads.push_back({3+xgrid/2,0+ygrid/2});
+    expected_quads.push_back({4+xgrid/2,0+ygrid/2});
+    
+    
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 4: Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -209,6 +230,13 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({-1+xgrid/2,0+ygrid/2});
     expected_quads.push_back({-1+xgrid/2,1+ygrid/2});
     expected_quads.push_back({-1+xgrid/2,2+ygrid/2});
+    expected_quads.push_back({-1+xgrid/2,3+ygrid/2});
+    expected_quads.push_back({ 0+xgrid/2,0+ygrid/2});
+    expected_quads.push_back({ 0+xgrid/2,1+ygrid/2});
+    expected_quads.push_back({ 0+xgrid/2,2+ygrid/2});
+    expected_quads.push_back({ 0+xgrid/2,3+ygrid/2});
+
+
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 5: Expected Quadrants : don't equal Link Quadrants : \n");
     cout<<"\nLink Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -219,10 +247,11 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     
     //TEST 6: Different angles, but same set of quads
-    link_length = 3*sqrt(2); nactin = 2;
+    link_length = 3*sqrt(2) - 0.01; 
+    nactin = 2;
     set<array<int, 2> > e_quads;
-    for(int x = xgrid/2; x <xgrid/2+6; x++)
-        for(int y = ygrid/2; y<ygrid/2+6; y++)
+    for(int x = xgrid/2; x <= xgrid/2+6; x++)
+        for(int y = ygrid/2; y <= ygrid/2+6; y++)
             e_quads.insert({x,y});
     
     //A
@@ -289,6 +318,80 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
     
     BOOST_CHECK_MESSAGE(a_quads == e_quads, "\nTEST 6D: Expected Quadrants : don't equal Link Quadrants : \n");
+    delete f;
+    
+    //TEST 7: periodic boundaries
+    //A : right
+    startx = 24.5, starty = 0, startphi = 0, link_length=1, actin_length=0.5;
+    
+    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+
+    l = f->get_link(0);
+    l->quad_update(bc, 0);
+    quads = l->get_quadrants();
+    
+    expected_quads.push_back({xgrid - 1 , ygrid/2});
+    expected_quads.push_back({0         , ygrid/2});
+    expected_quads.push_back({1         , ygrid/2});
+    BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7A : Expected Quadrants : don't equal Link Quadrants : \n");
+    quads.clear();
+    delete f;
+    
+    //B : left
+    startx = -24.5, starty = 0, startphi = pi;
+    
+    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+
+    l = f->get_link(0);
+    l->quad_update(bc, 0);
+    quads = l->get_quadrants();
+    BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7B : Expected Quadrants : don't equal Link Quadrants : \n");
+    quads.clear();
+    expected_quads.clear();
+    delete f;
+    
+    //B : top
+    startx = 0, starty = 24.5, startphi = pi/2.0;
+    
+    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+
+    l = f->get_link(0);
+    l->quad_update(bc, 0);
+    quads = l->get_quadrants();
+    
+    expected_quads.push_back({xgrid/2 , 99});
+    expected_quads.push_back({xgrid/2 , 0});
+    expected_quads.push_back({xgrid/2 , 1});
+    BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7C : Expected Quadrants : don't equal Link Quadrants : \n");
+    cout<<"\nLink Quadrants:"; 
+    for_each(quads.begin(), quads.end(), intarray_printer);
+    cout<<"\nExpected Quadrants:"; 
+    for_each(expected_quads.begin(), expected_quads.end(), intarray_printer);
+    quads.clear();
+    delete f;
+    
+    startx = 0, starty = -24.5, startphi = 3*pi/2.0;
+    
+    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+
+    l = f->get_link(0);
+    l->quad_update(bc, 0);
+    quads = l->get_quadrants();
+    //BOOST_CHECK_MESSAGE(quads == expected_quads, quads_error_message("7D",expected_quads,quads));
+    BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7D : Expected Quadrants : don't equal Link Quadrants : \n");
+    cout<<"\nLink Quadrants:"; 
+    for_each(quads.begin(), quads.end(), intarray_printer);
+    cout<<"\nExpected Quadrants:"; 
+    for_each(expected_quads.begin(), expected_quads.end(), intarray_printer);
+    quads.clear();
     delete f;
 }
 BOOST_AUTO_TEST_CASE( friction_test )

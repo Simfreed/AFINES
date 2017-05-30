@@ -31,13 +31,13 @@ class motor_ensemble
         motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, double mlen, filament_ensemble* network, double v0,
                 double stiffness, double max_ext_ratio, 
                 double ron, double roff, double rend, 
-                double fstall, double fbreak, double engBind,
+                double fstall, double rcut,
                 double vis, vector<array<double,3> > positions, string BC);
 
         motor_ensemble(vector<vector<double> > motors, array<double, 2> myfov, double delta_t, double temp, 
                 double mlen, filament_ensemble * network, double v0, double stiffness, double max_ext_ratio, 
                 double ron, double roff, double rend, 
-                double fstall, double fbreak, double engBind,
+                double fstall, double rcut,
                 double vis, string BC); 
         
         motor_ensemble();

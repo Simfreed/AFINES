@@ -183,6 +183,11 @@ double cross(double ax, double ay, double bx, double by)
     return ax*by-bx*ay;
 }
 
+double cross(const array<double, 2>& v1, const array<double, 2>& v2)
+{
+    return v1[0]*v2[1]-v2[0]*v1[1];
+}
+
 double dot(double x1, double y1, double x2, double y2)
 {
     return x1*x2+y1*y2;
@@ -360,14 +365,14 @@ int mysgn(double d){
 vector<int> int_range(int lo, int hi)
 {
     vector<int> out;
-    for (int i = lo; i< hi; i++) out.push_back(i);
+    for (int i = lo; i<= hi; i++) out.push_back(i);
     return out;
 }
 
 vector<int> int_range(int lo, int hi, int di)
 {
     vector<int> out;
-    for (int i = lo; i != hi; i+=di) out.push_back(i);
+    for (int i = lo; i != hi + di; i+=di) out.push_back(i);
     return out;
 }
 
@@ -380,7 +385,7 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
     if (lo <= hi)
         out = int_range(lo, hi);
     else if (bc == "PERIODIC" || bc == "LEES-EDWARDS"){
-        vector<int> A = int_range(lo, topq), B = int_range(botq, hi);
+        vector<int> A = int_range(lo, topq-1), B = int_range(botq, hi);
         out.reserve(A.size() + B.size());
         out.insert(out.end(), A.begin(), A.end());
         out.insert(out.end(), B.begin(), B.end());
@@ -422,42 +427,8 @@ vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi
 array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 2>& fov, const array<double, 2>& vel, const array<double, 2>& pos)
 {
     double xnew = pos[0], ynew = pos[1];
-        
-    double xleft  = -fov[0] * 0.5;
-    double xright =  fov[0] * 0.5;
-    double yleft  = -fov[1] * 0.5;
-    double yright =  fov[1] * 0.5;
-
-    if(bc == "REFLECTIVE")
-    {
-        double local_shear = delrx * 2 * ynew / fov[1];
-        xleft  += local_shear; //sheared simulation bounds
-        xright += local_shear;
-        if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vel[0];
-        if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vel[1];
-
-    }
-    else if(bc == "INFINITE")
-    {
-        double local_shear = delrx * 2 * ynew / fov[1];
-        xleft  += local_shear; //sheared simulation bounds
-        xright += local_shear;
-        if      (xnew <= xleft)  xnew = xleft;
-        else if (xnew >= xright) xnew = xright;
-        if      (ynew <= yleft)  ynew = yleft;
-        else if (ynew >= yright) ynew = yright;
-
-    }
-    else if(bc == "XPERIODIC")
-    {
-        if      (xnew < xleft)  xnew += fov[0];
-        else if (xnew > xright) xnew -= fov[0];
-
-        if      (ynew < yleft)  ynew = yleft;
-        else if (ynew > yright) ynew = yright;
-
-    }
-    else if(bc == "PERIODIC")
+       
+    if(bc == "PERIODIC")
     {
         xnew = xnew - fov[0] * round(xnew / fov[0]);
         ynew = ynew - fov[1] * round(ynew / fov[1]);
@@ -468,6 +439,43 @@ array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 
         xnew = xnew - delrx  * cory;
         xnew = xnew - fov[0] * round(xnew / fov[0]);
         ynew = ynew - fov[1] * cory;
+    }
+    
+    else { 
+        double xleft  = -fov[0] * 0.5;
+        double xright =  fov[0] * 0.5;
+        double yleft  = -fov[1] * 0.5;
+        double yright =  fov[1] * 0.5;
+
+        if(bc == "REFLECTIVE")
+        {
+            double local_shear = delrx * 2 * ynew / fov[1];
+            xleft  += local_shear; //sheared simulation bounds
+            xright += local_shear;
+            if (xnew <= xleft || xnew >= xright) xnew -= 2*dt*vel[0];
+            if (ynew <= yleft || ynew >= yright) ynew -= 2*dt*vel[1];
+
+        }
+        else if(bc == "INFINITE")
+        {
+            double local_shear = delrx * 2 * ynew / fov[1];
+            xleft  += local_shear; //sheared simulation bounds
+            xright += local_shear;
+            if      (xnew <= xleft)  xnew = xleft;
+            else if (xnew >= xright) xnew = xright;
+            if      (ynew <= yleft)  ynew = yleft;
+            else if (ynew >= yright) ynew = yright;
+
+        }
+        else if(bc == "XPERIODIC")
+        {
+            if      (xnew < xleft)  xnew += fov[0];
+            else if (xnew > xright) xnew -= fov[0];
+
+            if      (ynew < yleft)  ynew = yleft;
+            else if (ynew > yright) ynew = yright;
+
+        }
     }
     
     return {xnew, ynew};
@@ -555,12 +563,18 @@ boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double del
 
 int coord2quad_floor(double fov, int nq, double coord)
 {
-    return int(floor((coord+fov/2)*nq/fov));
+    return int(floor((coord+fov/2.0)*double(nq)/fov));
 }
 
 int coord2quad_ceil(double fov, int nq, double coord)
 {
-    return min(int(ceil((coord+fov/2)*nq/fov)), nq);
+    int n = int(ceil((coord+fov/2.0)*double(nq)/fov));
+    if (n == nq) 
+        return 0;
+    else 
+        return n;
+
+    //return min(int(ceil((coord+fov/2)*nq/fov)), nq);
 }
 
 int coord2quad(double fov, int nq, double coord)
@@ -571,6 +585,188 @@ int coord2quad(double fov, int nq, double coord)
 double angBC(double ang, double max)
 {
     return ang - max*floor(ang / max + 0.5);
+}
+
+std::string quads_error_message(std::string title, vector<array<int, 2> > equads, vector< array<int, 2> > aquads)
+{
+
+    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal Link Quadrants : \n";
+    cout<<"\nActual Quadrants:"; 
+    for_each(aquads.begin(), aquads.end(), intarray_printer);
+    cout<<"\nExpected Quadrants:"; 
+    for_each(equads.begin(), equads.end(), intarray_printer);
+    return "";
+}
+
+vector<vector<double> > traj2vecvec(string path, string delim, double tf)
+{
+    vector<vector<double> > out;
+    string pos_str = "";
+    vector<string> coords;
+    vector<double> pos;
+    
+    ifstream pos_file;
+    pos_file.open(path);
+    
+    double t;
+
+    while(getline(pos_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            boost::split(coords, pos_str, boost::is_any_of(delim));
+            t = (double) atof(coords[2].data());
+            continue;
+        }
+        if (t < tf) continue;
+        else if (t > tf) break;
+        else{
+            boost::trim_right(pos_str);
+            boost::split(coords, pos_str, boost::is_any_of(delim));
+
+            for(unsigned int j=0; j < coords.size(); j++) 
+                pos.push_back( (double) atof(coords[j].data()) );
+
+            out.push_back(pos);
+
+            pos.clear();
+        }
+    }
+
+    pos_file.close();
+    
+    return out;
+}
+
+double last_full_timestep(string path)
+{
+    string pos_str = "";
+    vector<string> coords;
+    
+    ifstream pos_file;
+    pos_file.open(path);
+    
+    int n = 0, pcount = 0;
+    double t = 0, tprev = 0;
+
+    while(getline(pos_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            boost::trim_right(pos_str);
+            boost::split(coords, pos_str, boost::is_any_of("\t "));
+            tprev = t;
+            
+            t = (double) atof(coords[2].data());
+            n = (int) atoi(coords[coords.size()-1].data());
+            
+            pcount = 0;
+        }
+        else pcount++;
+    }
+
+    pos_file.close();
+    if (pcount == n) 
+        return t;
+    else 
+        return tprev;
+    
+}
+
+void write_first_nlines(string src, int nlines)
+{
+
+    string tmp = src + ".tmp";
+    fs::path src_path(src), tmp_path(tmp);
+    
+    fs::copy_file(src_path, tmp_path, fs::copy_option::overwrite_if_exists);
+
+    ifstream read_file;
+    read_file.open(tmp);
+   
+    ofstream write_file;
+    write_file.open(src);
+
+    int n = 0;
+
+    string pos_str;
+    while(getline(read_file, pos_str))
+    {
+        if (n >= nlines) break;
+        write_file << pos_str <<endl;
+        n++;
+    }
+
+    read_file.close();
+    write_file.close();
+
+}
+
+void write_first_ntsteps(string src, int ntsteps)
+{
+
+    string tmp = src + ".tmp";
+    fs::path src_path(src), tmp_path(tmp);
+
+    fs::copy_file(src_path, tmp_path, fs::copy_option::overwrite_if_exists);
+
+    ifstream read_file;
+    read_file.open(tmp);
+
+    ofstream write_file;
+    write_file.open(src);
+
+
+    string pos_str;
+    int nt = 0;
+    while(getline(read_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            nt++;
+            if (nt > ntsteps) 
+                goto closefiles;
+        }
+        write_file << pos_str << endl;
+    }
+
+closefiles:
+    read_file.close();
+    write_file.close();
+
+}
+
+void write_first_tsteps(string src, double tstop)
+{
+
+    string tmp = src + ".tmp";
+    fs::path src_path(src), tmp_path(tmp);
+
+    fs::copy_file(src_path, tmp_path, fs::copy_option::overwrite_if_exists);
+    
+    vector<string> coords;
+
+    ifstream read_file;
+    read_file.open(tmp);
+
+    ofstream write_file;
+    write_file.open(src);
+
+
+    string pos_str;
+    while(getline(read_file, pos_str))
+    {
+        if (pos_str[0]=='t'){
+            
+            boost::split(coords, pos_str, boost::is_any_of("\t "));
+            if ( atof(coords[2].data()) >= tstop )
+                goto closefiles;
+
+        }
+        write_file << pos_str << endl;
+    }
+
+closefiles:
+    read_file.close();
+    write_file.close();
+
 }
 
 template int sgn<int>(int);

@@ -23,7 +23,7 @@ actin::actin(double xcm, double ycm, double len, double vis)
     y=ycm;
     ld=len; //radius
     a_vis=vis;
-    friction = 4*pi*a_vis*ld;
+    friction = 6*pi*a_vis*ld;
    
     force = {0,0};
     velocity = {0,0};

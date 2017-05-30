@@ -29,14 +29,14 @@ class motor
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
                 array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio, 
                 double ron, double roff, double rend, 
-                double fstall, double fbreak, double bindEng,
+                double fstall, double rcut,
                 double vis, string BC);
         
         motor(array<double, 4> pos, double mlen, filament_ensemble* network, 
                 array<int, 2> mystate, array<int, 2> myfindex, array<int, 2> myrindex,
                 array<double, 2> myfov, double delta_t, double v0, double temp, double stiffness, double max_ext_ratio,
                 double ron, double roff, double rend, 
-                double fstall, double fbreak, double bindEng,
+                double fstall, double rcut,
                 double vis, string BC);
         
         motor();
@@ -91,11 +91,11 @@ class motor
 
         array<double, 2> get_hy();
 
-        void detach(int hd, double rate);
+        void detach_head(int hd, array<double, 2> pos);
 
-        void detach(int hd);
+        void detach_head_without_moving(int hd);
         
-        void update_pos_a_end( int hd, double pos);
+        void update_pos_a_end(int hd, double pos);
 
         inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
         
@@ -108,6 +108,10 @@ class motor
         double get_kinetic_energy();
 
         double get_angle();
+        
+        double metropolis_prob(int hd, array<double, 2> newpos, double maxprob);
+
+        array<double, 2> generate_off_pos(int hd);
 
         string to_string();
         
@@ -115,14 +119,17 @@ class motor
     
     public:
 
-        double mphi,mld, mobility, vs, stall_force, break_force, var_bind_dist, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
-               actin_damp, damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
+        double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
+               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
         
-        array<double,2> hx, hy, xm, ym, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
-        
+        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
+
+        array<array<double, 2>, 2> ldir_bind, bind_disp;
+
         array<int,2> state, f_index, l_index;
         
         map<vector<int>, double> dist;
+        array<bool, 2> at_barbed_end;
         
         string BC;
         

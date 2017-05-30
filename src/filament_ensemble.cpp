@@ -62,8 +62,8 @@ void filament_ensemble::turn_quads_off()
 void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
-        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]+1));   
-        n_links_per_quad.push_back(new vector<int>(nq[1]+1));
+        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
+        n_links_per_quad.push_back(new vector<int>(nq[1]));
         for (int y = 0; y < nq[1]; y++){
             links_per_quad[x]->at(y) = new vector<array<int, 2> >(max_links_per_quad);
             n_links_per_quad[x]->at(y) = 0;
@@ -100,16 +100,16 @@ void filament_ensemble::quad_update_serial()
 void filament_ensemble::update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
-    double dist;
     if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
         
         for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
 
-            fl = links_per_quad[mq[0]]->at(mq[1])->at(i);
-            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y);
+            fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
             
-            if (t_map.find(fl) == t_map.end() || t_map[fl] > dist)
-                t_map[fl] = dist;
+            if (t_map.find(fl) == t_map.end()){ 
+                network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+                t_map[fl] = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            }
         }
     }
 
@@ -122,15 +122,22 @@ void filament_ensemble::update_dist_map(map<array<int,2>, double>& t_map, const 
 map<array<int,2>,double> filament_ensemble::get_dist(double x, double y)
 {
     map<array<int, 2>, double> t_map;
-    int mqx = min(coord2quad_floor(fov[0], nq[0], x), nq[0] - 1);
-    int mqy = min(coord2quad_floor(fov[1], nq[1], y), nq[1] - 1);
+    int mqx = coord2quad_floor(fov[0], nq[0], x);
+    int mqy = coord2quad_floor(fov[1], nq[1], y);
+    
+    int xp1 = mqx + 1;
+    int yp1 = mqy + 1;
+
+    if (xp1 >= nq[0] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) xp1 = 0;
+    if (yp1 >= nq[1] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) yp1 = 0;
+    
     update_dist_map(t_map, {mqx, mqy}, x, y);
-    if (mqx + 1 < nq[0])
-        update_dist_map(t_map, {mqx + 1, mqy}, x, y);
-    if (mqy + 1 < nq[1])
-        update_dist_map(t_map, {mqx, mqy + 1}, x, y);
-    if (mqx + 1 < nq[0] && mqy + 1 < nq[1])
-        update_dist_map(t_map, {mqx + 1, mqy + 1}, x, y);
+    if (xp1 < nq[0]) 
+        update_dist_map(t_map, {xp1, mqy}, x, y);
+    if (yp1 < nq[1]) 
+        update_dist_map(t_map, {mqx, yp1}, x, y);
+    if (xp1 < nq[0] && yp1 < nq[1])
+        update_dist_map(t_map, {xp1, yp1}, x, y);
 
     return t_map;
 }
@@ -141,20 +148,14 @@ map<array<int,2>,double> filament_ensemble::get_dist_all(double x, double y)
     map<array<int, 2>, double> t_map;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
-            t_map[{f,l}]=network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y);
+                network[f]->get_link(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+                t_map[{f,l}] = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
         }
     }
     
     return t_map;
 }
 
-
-array<double,2> filament_ensemble::get_intpoints(int fil, int link, double xp, double yp)
-{
-    return network[fil]->get_link(link)->get_intpoint(network[0]->get_BC(), delrx, xp, yp);
-}
-
- 
 double filament_ensemble::get_angle(int fil, int link)
 {
     return network[fil]->get_link(link)->get_angle();
@@ -648,4 +649,5 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     max_links_per_quad_per_filament = int(ceil(actins.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
     this->nlist_init_serial();
+    this->update_energies();
 } 

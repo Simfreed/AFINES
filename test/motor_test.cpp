@@ -23,14 +23,14 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double v0 = 0;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
-    double kon = 0, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     
     filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, 
             actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     motor  m = motor(array<double, 3>{1, 1, 3.1416/2}, motor_len, f, state, 
-            findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
     BOOST_CHECK_CLOSE( m.get_hx()[0],  1, tol);                   // 1 //
     BOOST_CHECK_CLOSE( m.get_hx()[1],  1, tol);                   // 1 //
@@ -47,12 +47,12 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     state = {1,0};
 
-    motor m2 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m2 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL( m2.get_states()[0], 1);
     BOOST_CHECK_EQUAL( m2.get_states()[1], 0);
     
     state = {0,1};
-    motor m3 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m3 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL( m3.get_states()[0], 0);
     BOOST_CHECK_EQUAL( m3.get_states()[1], 1);
    
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
-    double kon = 0, koff = 2, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0, koff = 2, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     pos_sets.push_back({-0.4,0,0});
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
      *  rate*timestep > 1 ==> "event" returns 1
      *  rate*timestep < 0 ==> "event" returns 0
      */
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
     //IF detach check that:
     //(a) new state of head is correct (was 1, now 0)
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     // (a) new position is correct
     koff = -1;
     kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
-    double kon = 0, koff = 2, kend = 2, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0, koff = 2, kend = 2, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     pos_sets.push_back({0,0,0});
@@ -164,48 +164,32 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
      *  rate*timestep > 1 ==> "event" returns 1
      *  rate*timestep < 0 ==> "event" returns 0
      */
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
     // IF position is greater than filament length
     double pos = 1.125;
-    //  If last rod in filament
-    //      try to detach
-    //      if detach:
-    //          (a) new state of head is correct (was 1, now 0)
-    //          (b) position of head relative to end of rod is correct (0)
-    //          (c) position of head is correct
+    //  If last rod in filament and pos is greater than length of link, go to barbed end
 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
     m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], link_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
-    //      else (don't detach): 
-    //          stay
-    kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    
     m.update_position_attached(0);
-    BOOST_CHECK_CLOSE(m.get_hx()[0], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
     
     //  Else (not last rod in filament)
+    kend = -1;
     mx = 1.125;
     lindex = {1, -1};
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     //      (a) motor moves to next rod in filament
     //      (b) motor moves appropriate distance
@@ -243,48 +227,31 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     findex = {0,-1}, lindex = {0, -1}; 
     kon = 0, koff = 2, kend = 2; 
 
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
     // IF position is greater than filament length
     pos = 1.125;
-    //  If last rod in filament
-    //      try to detach
-    //      if detach:
-    //          (a) new state of head is correct (was 1, now 0)
-    //          (b) position of head relative to end of rod is correct (0)
-    //          (c) position of head is correct
-
+    
+    //  If last rod in filament and pos is greater than length, move to barbed end
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
     m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 1);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
-    //      else (don't detach): 
-    //          stay
-    kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    
     m.update_position_attached(0);
-    BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
-    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
     
     //  Else (not last rod in filament)
     mx = -1.125;
     lindex = {1, -1};
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     //      (a) motor moves to next rod in filament
     //      (b) motor moves appropriate distance
@@ -320,48 +287,32 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     pos_sets.push_back({0,0,0});
     f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
     // IF position is greater than filament length
     pos = 1.125;
-    //  If last rod in filament
-    //      try to detach
-    //      if detach:
-    //          (a) new state of head is correct (was 1, now 0)
-    //          (b) position of head relative to end of rod is correct (0)
-    //          (c) position of head is correct
+    //  If last rod in filament, move to barbed end
 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
     m.update_pos_a_end(1, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[1], 0);
-    BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], 0);
+    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], link_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[1], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], my + 0.5*mlen*sin(mang), tol);
     
-    //      else (don't detach): 
-    //          stay
-    kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
-    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.update_pos_a_end(1, pos); 
-    BOOST_CHECK_EQUAL(m.get_states()[1], 1);
-    BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    
     m.update_position_attached(1);
-    BOOST_CHECK_CLOSE(m.get_hx()[1], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_hx()[1], 0, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 0, tol);
     
     //  Else (not last rod in filament)
+    kend = -1;
     mx = 1.125;
     lindex = {-1, 1};
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     //      (a) motor moves to next rod in filament
     //      (b) motor moves appropriate distance
@@ -402,14 +353,14 @@ BOOST_AUTO_TEST_CASE( attach )
     double actin_density = nfil*nactin/(fov[0]*fov[1]);
 
     double dt = 1, temp = 0.004, vis = 0;
-    string bc = "REFLECTIVE";
+    string bc = "PERIODIC";
     double seed = -1;
     
     double actin_rad = 0.5, link_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     //pos_sets.push_back({1,1,pi/2});
@@ -419,7 +370,7 @@ BOOST_AUTO_TEST_CASE( attach )
     f->quad_update_serial(); 
     //MOTOR
     double mx = 2.35, my = 0.5, mang = pi/2, mlen = 1;
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -430,13 +381,13 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
     
     kon = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -447,7 +398,7 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
@@ -471,7 +422,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
-    double kon = 0, koff = 2, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0, koff = 2, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     vector<double> pos1={23.6,0,actin_rad,0},pos2={24.6,0,actin_rad,0},pos3={-24.4,0,actin_rad,0};
@@ -488,7 +439,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
      *  rate*timestep > 1 ==> "event" returns 1
      *  rate*timestep < 0 ==> "event" returns 0
      */
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     cout<<m.to_string();
     //IF detach check that:
     //(a) new state of head is correct (was 1, now 0)
@@ -511,7 +462,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     // (a) new position is correct
     koff = -1;
     kend = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
@@ -542,7 +493,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     //pos_sets.push_back({0,0,0});
@@ -556,7 +507,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     
     //MOTOR
     double mx = 2.35, my = -24.625, mang = pi/2, mlen = 1;
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -567,13 +518,13 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
     
     kon = -1;
-    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -584,7 +535,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
-    m.attach(1); //shouldn't attach because the distance is greater than max ebinding distance = 0.25
+    m.attach(1); //shouldn't attach because the distance is greater than max binding distance = 0.25
     BOOST_CHECK_EQUAL(m.get_states()[1], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], -1);
@@ -606,7 +557,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.189;
     double frac_force = 0;
     
     //pos_sets.push_back({0,0,0});
@@ -629,7 +580,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     //MOTOR
     double mx = 2.35, my = -24.625, mang = pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //cout<<m.to_string();
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
@@ -707,7 +658,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     double tol = 0.001, zero = 1e-10;   
 
@@ -730,7 +681,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     //MOTOR
     double mx = 0.25, my = sqrt(3)/4, mang = (pi/2.+pi/6.), mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx, tol);
@@ -792,7 +743,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     double tol = 0.001, zero = 1e-10;   
 
@@ -815,7 +766,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     //MOTOR
     double mx = 0.25, my = sqrt(3)/4, mang = (pi/2.+pi/6.), mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx, tol);
@@ -877,7 +828,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     double tol = 0.001, zero = 1e-10;   
 
@@ -893,7 +844,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     //MOTOR
     double mx = 0.45, my = 0.5, mang = pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx, tol);
@@ -1009,7 +960,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     double tol = 0.001, zero = 1e-10;   
 
@@ -1025,7 +976,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     //MOTOR
     double mx = 0.25, my = -0.5, mang = -pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx, tol);
@@ -1112,7 +1063,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     double tol = 0.001, zero = 1e-10;   
 
@@ -1128,7 +1079,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     //MOTOR
     double mx = 1.5, my = 0.5, mang = pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.5, tol);
@@ -1242,7 +1193,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     double tol = 0.001, zero = 1e-10;   
 
@@ -1258,7 +1209,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     //MOTOR
     double mx = 1.5, my = -0.5, mang = 3*pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.5, tol);
@@ -1337,6 +1288,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
 BOOST_AUTO_TEST_CASE( attach_difft_spots )
 {
     //Filament ENSEMBLE
+    
     array<double, 2> fov = {33,2};
     array<int, 2> nq = {33,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
     vector<vector<double> > actin_sets;
@@ -1348,7 +1300,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
     double v0 = 0;
     
     double mstiff = 1, stretching = 0, bending = 0; //spring constants
-    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     //pos_sets.push_back({0,0,0});
@@ -1364,7 +1316,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
     
     //attachment
     double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15, posx, posy;
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     array<int, 15> num_attached; 
     int nevents = 1000;
     int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1374,7 +1326,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         posx=0;
         posy=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
             if (m.get_states()[0] == 1){
@@ -1394,7 +1346,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         mx = i + 0.5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1408,7 +1360,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         mx = i + 0.5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1428,7 +1380,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         lindex = {i, -1};
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
@@ -1446,7 +1398,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         lindex = {i, -1};
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
@@ -1465,7 +1417,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         lindex = {i, -1};
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
@@ -1488,7 +1440,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     set_seed(12); 
     //pos_sets.push_back({0,0,0});
@@ -1502,7 +1454,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     
     //attachment
     double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15, posx, posy;
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     array<int, 11> num_attached; 
     int nevents = 10000;
     int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1512,7 +1464,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
         posx=0;
         posy=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0);
             num_attached[i] += m.get_states()[0];
             if (m.get_states()[0] == 1){
@@ -1531,7 +1483,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1545,7 +1497,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
-            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
             num_attached[i] += m.get_states()[0];
         }
@@ -1568,7 +1520,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     set_seed(12); 
     //pos_sets.push_back({0,0,0});
@@ -1585,7 +1537,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     
     //attachment
     double mx = -4.5, my = 0, mang = 0, mlen = 0.15;//, posx, posy
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     array<int, 2> num_attached; 
     int nevents = 10000;
     //int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1593,7 +1545,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1621,7 +1573,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1647,7 +1599,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, fbreak = 3.85, ebind = 0.04;
+    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     set_seed(12); 
     //pos_sets.push_back({0,0,0});
@@ -1664,7 +1616,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     
     //attachment
     double mx = -4.5, my = 0, mang = 0, mlen = 0.15;//, posx, posy
-    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     array<int, 2> num_attached; 
     int nevents = 10000;
     //int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
@@ -1672,7 +1624,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1700,7 +1652,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     num_attached[1]=0;
     for (int j = 0; j < nevents; j++){
         //cout<<"\niter "<<j<<endl;
-        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+        m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
         m.attach(0);
         if (m.get_states()[0] == 1){
             num_attached[m.get_f_index()[0]]+=1;
@@ -1726,7 +1678,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
-    double kon = 2, koff = 0, kend = 0, fstall = 1, fbreak = 3.85, ebind = 0.04;
+    double kon = 2, koff = 0, kend = 0, fstall = 1, rcut = 0.063;
     double frac_force = 0;
     double zero = 1e-10;   
 
@@ -1743,7 +1695,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
     //MOTOR
     double mx = 0.5, my = 0.5, mang = pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     /*##################################*/
     m.step_onehead(0);
@@ -1769,7 +1721,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
     mang = 3*pi/2;
     state = {-1,1}, findex = {-1,0}, lindex = {-1, 14};
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     /*##################################*/
     m.step_onehead(1);
@@ -1803,7 +1755,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
     f->quad_update_serial(); 
     mx = 14.75;
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
-            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, fbreak, ebind, vis, bc);
+            fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     /*##################################*/
     m.step_onehead(1);
@@ -1825,6 +1777,82 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
         x = m.get_hx()[1];
     }
 }   
+
+BOOST_AUTO_TEST_CASE( attach_detach )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    vector<array<double, 3> > pos_sets;
+    int nactin = 5;
+    int nfil = 1;//3;
+    double actin_density = nfil*nactin/(fov[0]*fov[1]);
+
+    double dt = 1, temp = 0.004, vis = 0, tol=1e-6;
+    string bc = "PERIODIC";
+    double seed = -1;
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 10000, koff = 10000, kend = 0, fstall = 3.85, rcut = 0.189;
+    double frac_force = 0;
+    
+    pos_sets.push_back({0,0,0});
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 2.35, my = 0.6, mang = pi/2, mlen = 1;
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+
+    BOOST_CHECK_EQUAL(m.get_hx()[0], 2.35);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0.1, tol);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
+    
+    //Attach
+    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because kon is saturated
+    BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
+    BOOST_CHECK_EQUAL(m.get_hx()[0], 2.35);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
+
+    //Detach
+    m.step_onehead(0);
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
+    BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 2.35, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0.1, tol);
+    
+    //MOTOR: attach, walk to end, detach perpendicularly
+    v0 = 0.5;
+    kon = 10000, koff = 0, kend = 10000;
+    mx = 2.5, my = 0.6, mang = pi/2, mlen = 1;
+    m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+
+    //Attach
+    m.attach(0); //should attach to 
+
+    //walk
+    for(int i=0; i<6; i++){
+        BOOST_CHECK_EQUAL(m.get_states()[0], 1);
+        m.step_onehead(0);
+        m.update_angle();
+        m.update_force();
+    }
+    
+    BOOST_CHECK_EQUAL(m.get_states()[0], 0);
+    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
+    BOOST_CHECK_CLOSE(m.get_hy()[0], 0.1, tol);
+
+    delete f;
+}   
+
 /* Functions to test : 
         void attach(int hd);
 

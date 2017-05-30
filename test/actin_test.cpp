@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_EQUAL( a->get_velocity()[1], 0);               
     BOOST_CHECK_EQUAL( a->get_force()[0], 0);               
     BOOST_CHECK_EQUAL( a->get_force()[1], 0);               
-    BOOST_CHECK_CLOSE( a->get_friction(), 11.781, 0.001);               
+    BOOST_CHECK_CLOSE( a->get_friction(), 17.6715, 0.001);               
     delete a;
 } 
 

@@ -7,6 +7,9 @@
 #include <iterator>
 #include <array>
 #include <boost/program_options.hpp>
+#include <boost/any.hpp>
+#include <typeinfo>
+
 namespace po = boost::program_options;
 
 template<class T>
@@ -43,16 +46,16 @@ int main(int argc, char* argv[]){
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
-           a_m_stall, a_m_break, a_m_bind;// Active Motors (i.e., "myosin")
+           a_m_stall, a_m_cut;// Active Motors (i.e., "myosin")
     string a_motor_pos_str; 
     
     double p_motor_length, p_motor_density, p_motor_stiffness, // Passive Mtors (i.e., cross_linkers)
-            p_motor_v, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_break, p_m_bind; 
+            p_motor_v, p_m_kon, p_m_kend, p_m_koff, p_m_stall, p_m_cut;
     string p_motor_pos_str;
     
     string config_file, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
     
-    string   dir,    afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
+    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
@@ -63,7 +66,8 @@ int main(int argc, char* argv[]){
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
 
-    bool restart_actin, restart_a_motor, restart_p_motor;
+    bool restart;
+    double restart_time;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -109,6 +113,9 @@ int main(int argc, char* argv[]){
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(1),"active motor spring stiffness (pN/um)")
         ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
         
+        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(0.5),"force beyond which motors don't walk (pN)")
+        ("a_m_cut", po::value<double>(&a_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
+        
         ("p_m_kon", po::value<double>(&p_m_kon)->default_value(1),"passive motor on rate")
         ("p_m_koff", po::value<double>(&p_m_koff)->default_value(0.1),"passive motor off rate")
         ("p_m_kend", po::value<double>(&p_m_kend)->default_value(0.1),"passive motor off rate at filament end")
@@ -117,15 +124,11 @@ int main(int argc, char* argv[]){
         ("p_motor_v", po::value<double>(&p_motor_v)->default_value(0),"passive motor velocity (um/s)")
        
         ("p_m_stall", po::value<double>(&p_m_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
-        ("p_m_break", po::value<double>(&p_m_break)->default_value(10),"force constant for xlink detachment (related to rupture force F_r, P(detach | F_r) -> 1) (pN)")
-        ("p_m_bind", po::value<double>(&p_m_bind)->default_value(0.04),"binding energy of xlink (pN-um) (10kT by default)")
+        ("p_m_cut", po::value<double>(&p_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
 
-        ("a_m_stall", po::value<double>(&a_m_stall)->default_value(10),"force beyond which motors don't walk (pN)")
-        ("a_m_break", po::value<double>(&a_m_break)->default_value(10),"force constant for motor detachment (pN)")
-        ("a_m_bind", po::value<double>(&a_m_bind)->default_value(0.04),"binding energy of motor (pN-um) (10kT by default)")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
-        ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
+        ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.068), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
@@ -141,11 +144,10 @@ int main(int argc, char* argv[]){
         ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
         ("p_motor_in", po::value<string>(&p_motor_in)->default_value(""), "input crosslinker positions file")
         
-        ("restart_actin", po::value<bool>(&restart_actin)->default_value(false), "if true, input actin positions file chosen by default")
-        ("restart_a_motor", po::value<bool>(&restart_a_motor)->default_value(false), "if true, input motor positions file chosen by default")
-        ("restart_p_motor", po::value<bool>(&restart_p_motor)->default_value(false), "if true, input crosslinker positions file chosen by default")
-        
-        ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
+        ("restart", po::value<bool>(&restart)->default_value(false), "if true, will restart simulation from last timestep recorded")
+        ("restart_time", po::value<double>(&restart_time)->default_value(-1), "time to restart simulation from")
+
+        ("dir", po::value<string>(&dir)->default_value("."), "output directory")
         ("myseed", po::value<int>(&myseed)->default_value(time(NULL)), "Random number generator myseed")
         
         ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "flag to put a cross link at all filament intersections")
@@ -209,10 +211,24 @@ int main(int argc, char* argv[]){
     cout<<"\nDEBUG: actin_density = "<<actin_density; 
     double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
-    int n_bw_stdout = max(int(tfinal/(dt*double(nmsgs))),1);
-    int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
+    int n_bw_stdout = max(int((tfinal)/(dt*double(nmsgs))),1);
+    int n_bw_print  = max(int((tfinal)/(dt*double(nframes))),1);
     int unprinted_count = int(double(tinit)/dt);
 
+    tdir   = dir  + "/txt_stack";
+    ddir   = dir  + "/data";
+    fs::path dir1(tdir.c_str()), dir2(ddir.c_str());
+    
+    afile  = tdir + "/actins.txt";
+    lfile  = tdir + "/links.txt";
+    amfile = tdir + "/amotors.txt";
+    pmfile = tdir + "/pmotors.txt";
+    thfile = ddir + "/filament_e.txt";
+    pefile = ddir + "/pe.txt";
+    
+    if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
+    if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
+    
     // To Read positions from input strings in config file
     vector<array<double,3> > actin_position_arrs, a_motor_position_arrs, p_motor_position_arrs;
     if (actin_pos_str.size() > 0)
@@ -223,17 +239,10 @@ int main(int argc, char* argv[]){
         p_motor_position_arrs = str2arrvec(p_motor_pos_str, ":", ",");
    
 
-    // To Read positions from input files
+    // To get positions from input files: 
     vector<vector<double> > actin_pos_vec;
     vector<vector<double> > a_motor_pos_vec, p_motor_pos_vec;
-    
-    if (restart_actin)
-        actin_in = dir + "/restart/in/actins.txt";
-    if (restart_a_motor)
-        a_motor_in = dir + "/restart/in/amotors.txt";
-    if (restart_p_motor)
-        p_motor_in = dir + "/restart/in/pmotors.txt";
-    
+   
     if (actin_in.size() > 0)
         actin_pos_vec   = file2vecvec(actin_in, "\t");
     if (a_motor_in.size() > 0)
@@ -241,17 +250,51 @@ int main(int argc, char* argv[]){
     if (p_motor_in.size() > 0)
         p_motor_pos_vec = file2vecvec(p_motor_in, "\t");
     
+    // To restart a whole trajectory from it's last full timestep : 
+    if (restart){
+        
+        double tf_prev  = min(last_full_timestep(afile), last_full_timestep(lfile));
+        if (a_motor_density > 0)
+            tf_prev = min(tf_prev, last_full_timestep(amfile));
+        if (p_motor_density > 0)
+            tf_prev = min(tf_prev, last_full_timestep(pmfile));
+
+        if (restart_time == -1 || restart_time > tf_prev)
+            restart_time = tf_prev;
+
+        cout<<"\nRestarting from t = "<<restart_time<<endl;
+
+        double nprinted = restart_time / (dt*n_bw_print);
+
+        actin_pos_vec   = traj2vecvec(afile, "\t ", restart_time);
+        a_motor_pos_vec = traj2vecvec(amfile, "\t ", restart_time);
+        p_motor_pos_vec = traj2vecvec(pmfile, "\t ", restart_time);
+        
+        // for actins, links, amotors, pmotors: 
+        // do: 
+        //   copy whole file into temp
+        //   while hasn't reached tf in temp file:
+        //      write from copy into afile
+        write_first_tsteps(afile,  restart_time);
+        write_first_tsteps(lfile,  restart_time);
+        write_first_tsteps(amfile, restart_time);
+        write_first_tsteps(pmfile, restart_time);
+        
+        write_first_tsteps(thfile, restart_time);
+        write_first_nlines( pefile, (int) nprinted);
+
+    
+        tinit       = restart_time;
+        write_mode  = ios_base::app;
+    }
+    
+    
     set_seed(myseed);
     
-    afile  = dir + "/txt_stack/actins.txt";
-    lfile  = dir + "/txt_stack/links.txt";
-    amfile = dir + "/txt_stack/amotors.txt";
-    pmfile = dir + "/txt_stack/pmotors.txt";
-    thfile = dir + "/data/thermo.txt";
-    pefile = dir + "/data/pe.txt";
 
-    if (restart_actin || restart_a_motor || restart_p_motor) write_mode = ios_base::app;
-
+    
+    //const char* path = _filePath.c_str();
+    
     file_a.open(afile.c_str(), write_mode);
     file_l.open(lfile.c_str(), write_mode);
     file_am.open(amfile.c_str(), write_mode);
@@ -275,7 +318,7 @@ int main(int argc, char* argv[]){
     // Create Network Objects
     cout<<"\nCreating actin network..";
     filament_ensemble * net;
-    if (actin_pos_vec.size() == 0){
+    if (actin_pos_vec.size() == 0 && actin_in.size() == 0){
         net = new filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
@@ -295,49 +338,55 @@ int main(int argc, char* argv[]){
     cout<<"\nAdding active motors...";
     motor_ensemble * myosins;
     
-    if (a_motor_pos_vec.size() == 0)
+    if (a_motor_pos_vec.size() == 0 && a_motor_in.size() == 0)
         myosins = new motor_ensemble( a_motor_density, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, a_m_stall, a_m_break, a_m_bind, viscosity, a_motor_position_arrs, bnd_cnd);
+                a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_position_arrs, bnd_cnd);
     else
         myosins = new motor_ensemble( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
-                a_m_kend, a_m_stall, a_m_break, a_m_bind, viscosity, bnd_cnd);
+                a_m_kend, a_m_stall, a_m_cut, viscosity, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
     motor_ensemble * crosslks; 
     
-    if(p_motor_pos_vec.size() == 0)
+    if(p_motor_pos_vec.size() == 0 && p_motor_in.size() == 0)
         crosslks = new motor_ensemble( p_motor_density, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
-                p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, p_motor_position_arrs, bnd_cnd);
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
+                p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_position_arrs, bnd_cnd);
     else
         crosslks = new motor_ensemble( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
-                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_kend,
-                p_m_kend, p_m_stall, p_m_break, p_m_bind, viscosity, bnd_cnd);
+                p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
+                p_m_kend, p_m_stall, p_m_cut, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
 
-    // Write the output configuration file
-    string output_file                         =   dir + "/data/output.txt";
+    // Write the full configuration file
+    string output_file  =   dir + "/data/config_full.cfg";
     o_file.open(output_file.c_str());
-    o_file << " FILE: "                 << output_file     <<"\n";
-    o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
-    o_file << " Active Motor Density: "        << a_motor_density   << ", Active Motor Rest Length: "          << a_motor_length              << ", Active Motor Stiffness: "       << a_motor_stiffness        <<"\n";
-    o_file << " Active Motor unloaded speed: " << a_motor_v          << ", Active Motor binding rate: "         << a_m_kon                     <<"\n";
-    o_file << " Active Motor unbinding rate: " << a_m_koff          << ", Active Motor end detachment rate: "  << a_m_kend                    <<"\n";
-    o_file << " Passive Motor Density: "        << p_motor_density   << ", Passive Motor Rest Length: "          << p_motor_length              << ", Passive Motor Stiffness: "       << p_motor_stiffness        <<"\n";
-    o_file << " Passive Motor unloaded speed: " << p_motor_v          << ", Passive Motor binding rate: "         << p_m_kon                     <<"\n";
-    o_file << " Passive Motor unbinding rate: " << p_m_koff          << ", Passive Motor end detachment rate: "  << p_m_kend                    <<"\n";
-    o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
-    o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", dt between output files: "<< n_bw_print*dt<<", Viscosity: " << viscosity              <<"\n";
-    o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
-    o_file.close();
     
+    boost::any val;
+    for(po::variables_map::const_iterator it=vm.begin(); it!=vm.end(); ++it){
+        
+        if (it->first == "config") continue;
+
+        val=it->second.value();
+        
+        if(typeid(bool) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<bool>(val) <<endl;
+        else if(typeid(int) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<int>(val) <<endl;
+        else if(typeid(double) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<double>(val) <<endl;
+        else if(typeid(string) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<string>(val) <<endl;
+    }
+   
+    // Run the simulation
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     string time_str; 
     count=0;
-    t = 0;
+    t = tinit;
     pre_strain = strain_pct * xrange;
     d_strain_amp = d_strain_pct * xrange;
     prev_d_strain = 0;
@@ -349,7 +398,7 @@ int main(int argc, char* argv[]){
         net->update_delrx( pre_strain );
         net->update_shear();
     }
-    while (t < tfinal) {
+    while (t <= tfinal) {
         
         //print to file
 	    if (t+dt/100 >= tinit && (count-unprinted_count)%n_bw_print==0) {
@@ -359,21 +408,29 @@ int main(int argc, char* argv[]){
             
             file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
             net->write_actins(file_a);
-            
+
             file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_links(file_l);
-            
+
             file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
             myosins->motor_write(file_am);
             
             file_pm << time_str<<"\tN = "<<to_string(crosslks->get_nmotors());
             crosslks->motor_write(file_pm);
-            
-            file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
+
+            file_th << time_str<<"\tN = "<<to_string(net->get_nfilaments());
             net->write_thermo(file_th);
 
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
+            
+            file_a<<std::flush;
+            file_l<<std::flush;
+            file_am<<std::flush;
+            file_pm<<std::flush;
+            file_th<<std::flush;
+            file_pe<<std::flush;
+            
 		}
         
         //print time count

@@ -68,7 +68,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     kb = bending_stiffness;
     kinetic_energy  = 0;
     
-    damp = 4*pi*actinRadius*visc;
+    damp = 6*pi*actinRadius*visc;
     y_thresh = 1;
     
     bd_prefactor = sqrt(temperature/(2*dt*damp));
@@ -93,6 +93,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
         prv_rnds.push_back({0,0});
         links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
         links[j-1]->step(BC, delrx);  
+        links[j-1]->update_force(BC, delrx);
         
         // Calculate the Next angle on the actin polymer
         if (!isStraight) phi += rng_n(0, variance);
@@ -116,7 +117,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     fov = myfov;
     nq = mynq;
     y_thresh = 1;
-
+    kinetic_energy = 0;
 
     if (actinvec.size() > 0)
     {
@@ -132,6 +133,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
             actins.push_back(new actin(*(actinvec[j])));
             links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
             links[j-1]->step(BC, delrx);
+            links[j-1]->update_force(BC, delrx);
             prv_rnds.push_back({0,0});
             
         }
