@@ -172,13 +172,13 @@ spacer::spacer( array<double, 4> pos,
 
     at_barbed_end = {false, false};
 
-    if (state[0]){
+    if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
         ldir_bind[0] = actin_network->get_direction(f_index[0], l_index[0]);
 
     }
-    if (state[1]){
+    if (state[1] == 1){
         pos_a_end[1] = dist_bc(BC, actin_network->get_end(f_index[1], l_index[1])[0] - hx[1],
                                    actin_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
         ldir_bind[1] = actin_network->get_direction(f_index[1], l_index[1]);
@@ -380,5 +380,5 @@ double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> new
 
 bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
 {
-    return (fl_idx[hd][0] != fl_idx[pr(hd)][0]);
+    return (fl_idx[hd][0] != f_index[pr(hd)][0]);
 }

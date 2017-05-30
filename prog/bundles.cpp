@@ -7,6 +7,9 @@
 #include <iterator>
 #include <array>
 #include <boost/program_options.hpp>
+#include <boost/any.hpp>
+#include <typeinfo>
+
 namespace po = boost::program_options;
 
 template<class T>
@@ -43,24 +46,25 @@ int main(int argc, char* argv[]){
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double spacer1_length, spacer1_v=0, spacer1_density, spacer1_stiffness, s1_kon, s1_kend, s1_koff,
-           s1_stall, s1_break, s1_bind, s1_bend, s1_ang;// Active Motors (i.e., "myosin")
+           s1_stall, s1_cut, s1_bend, s1_ang;// Active Motors (i.e., "myosin")
     string spacer1_pos_str; 
     
     double spacer2_length, spacer2_density, spacer2_stiffness, // Passive Mtors (i.e., cross_linkers)
-            spacer2_v=0, s2_kon, s2_kend, s2_koff, s2_stall, s2_break, s2_bind, s2_bend, s2_ang; 
+            spacer2_v=0, s2_kon, s2_kend, s2_koff, s2_stall, s2_cut, s2_bend, s2_ang; 
     string spacer2_pos_str;
     
     string config_file, actin_in, spacer1_in, spacer2_in;                                                // Input configuration
     
-    string   dir,    afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
+    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
-    bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
-    double p_linkage_prob, a_linkage_prob;                                              
-    int dead_head, p_dead_head;
+    bool s2_intersect_flag, s1_intersect_flag, s1_dead_head_flag, s2_dead_head_flag, static_cl_flag, quad_off_flag;
+    double s2_linkage_prob, s1_linkage_prob;                                              
+    int s1_dead_head, s2_dead_head;
 
-    bool restart_actin, restart_spacer1, restart_spacer2;
+    bool restart;
+    double restart_time;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -105,28 +109,26 @@ int main(int argc, char* argv[]){
         ("spacer1_stiffness", po::value<double>(&spacer1_stiffness)->default_value(1),"xlink 1 spring stiffness (pN/um)")
         ("spacer1_v", po::value<double>(&spacer1_v)->default_value(0),"xlink 1 velocity (um/s)")
         
+        ("s1_stall", po::value<double>(&s1_stall)->default_value(0.5),"force beyond which xlinks don't walk (pN)")
+        ("s1_cut", po::value<double>(&s1_cut)->default_value(0.063),"cutoff distance for binding (um)")
+        
+        ("s1_bend", po::value<double>(&s1_bend)->default_value(0.04),"bending force constant of spacer  (pN) (10kT/um by default)")
+        ("s1_ang", po::value<double>(&s1_ang)->default_value(pi/2),"equilibrium angle of spacer1-filament system")
+        
         ("s2_kon", po::value<double>(&s2_kon)->default_value(100),"xlink 2 on rate")
         ("s2_koff", po::value<double>(&s2_koff)->default_value(20),"xlink 2 off rate")
         ("s2_kend", po::value<double>(&s2_kend)->default_value(20),"xlink 2 off rate at filament end")
         ("spacer2_length", po::value<double>(&spacer2_length)->default_value(0.03),"xlink 2 rest length (um) (default: filamin)")
         ("spacer2_stiffness", po::value<double>(&spacer2_stiffness)->default_value(1),"xlink 2 spring stiffness (pN/um)")
        
-        ("s2_stall", po::value<double>(&s2_stall)->default_value(0),"force beyond which xlinks don't walk (pN)")
-        ("s2_break", po::value<double>(&s2_break)->default_value(10),"force constant for xlink detachment (related to rupture force F_r, P(detach | F_r) -> 1) (pN)")
-        ("s2_bind", po::value<double>(&s2_bind)->default_value(0.04),"binding energy of xlink (pN-um) (10kT by default)")
-
-        ("s1_stall", po::value<double>(&s1_stall)->default_value(10),"force beyond which motors don't walk (pN)")
-        ("s1_break", po::value<double>(&s1_break)->default_value(10),"force constant for motor detachment (pN)")
-        ("s1_bind", po::value<double>(&s1_bind)->default_value(0.04),"binding energy of motor (pN-um) (10kT by default)")
-        
-        ("s1_bend", po::value<double>(&s1_bend)->default_value(0.04),"bending force constant of spacer  (pN) (10kT/um by default)")
-        ("s1_ang", po::value<double>(&s1_ang)->default_value(pi/2),"equilibrium angle of spacer1-filament system")
+        ("s2_stall", po::value<double>(&s2_stall)->default_value(0.5),"force beyond which xlinks don't walk (pN)")
+        ("s2_cut", po::value<double>(&s2_cut)->default_value(0.063),"cutoff distance for binding (um)")
         
         ("s2_bend", po::value<double>(&s2_bend)->default_value(0.04),"bending force constant of spacer 2  (pN) (10kT/um by default)")
         ("s2_ang", po::value<double>(&s2_ang)->default_value(pi/2),"equilibrium angle of spacer2-filament system")
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
-        ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.04), "Bending modulus of a filament")
+        ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.068), "Bending modulus of a filament")
         ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
@@ -135,23 +137,22 @@ int main(int argc, char* argv[]){
         ("spacer1_in", po::value<string>(&spacer1_in)->default_value(""), "input motor positions file")
         ("spacer2_in", po::value<string>(&spacer2_in)->default_value(""), "input crosslinker positions file")
         
-        ("restart_actin", po::value<bool>(&restart_actin)->default_value(false), "if true, input actin positions file chosen by default")
-        ("restart_spacer1", po::value<bool>(&restart_spacer1)->default_value(false), "if true, input motor positions file chosen by default")
-        ("restart_spacer2", po::value<bool>(&restart_spacer2)->default_value(false), "if true, input crosslinker positions file chosen by default")
+        ("restart", po::value<bool>(&restart)->default_value(false), "if true, will restart simulation from last timestep recorded")
+        ("restart_time", po::value<double>(&restart_time)->default_value(-1), "time to restart simulation from")
         
-        ("dir", po::value<string>(&dir)->default_value("out/test"), "output directory")
+        ("dir", po::value<string>(&dir)->default_value("."), "output directory")
         ("myseed", po::value<int>(&myseed)->default_value(time(NULL)), "Random number generator myseed")
         
-        ("link_intersect_flag", po::value<bool>(&link_intersect_flag)->default_value(false), "flag to put a cross link at all filament intersections")
-        ("motor_intersect_flag", po::value<bool>(&motor_intersect_flag)->default_value(false), "flag to put a motor at all filament intersections")
-        ("p_linkage_prob", po::value<double>(&p_linkage_prob)->default_value(1), "If link_intersect_flag, probability that two filaments that intersect will be linked")
-        ("a_linkage_prob", po::value<double>(&a_linkage_prob)->default_value(1), "If motor_intersect_flag, probability that two filaments that intersect will be motor-d")
+        ("s2_intersect_flag", po::value<bool>(&s2_intersect_flag)->default_value(false), "flag to put spacer 2 at all filament intersections")
+        ("s1_intersect_flag", po::value<bool>(&s1_intersect_flag)->default_value(false), "flag to put spacer 1 at all filament intersections")
+        ("s2_linkage_prob", po::value<double>(&s2_linkage_prob)->default_value(1), "If s2_intersect_flag, probability that two filaments that intersect will be linked")
+        ("s1_linkage_prob", po::value<double>(&s1_linkage_prob)->default_value(1), "If s1_intersect_flag, probability that two filaments that intersect will be motor-d")
 
-        ("dead_head_flag", po::value<bool>(&dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all motors")
-        ("dead_head", po::value<int>(&dead_head)->default_value(0), "index of head to kill")
+        ("s1_dead_head_flag", po::value<bool>(&s1_dead_head_flag)->default_value(false), "flag to kill head <s1_dead_head> of all motors")
+        ("s1_dead_head", po::value<int>(&s1_dead_head)->default_value(0), "index of head to kill")
         
-        ("p_dead_head_flag", po::value<bool>(&p_dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all crosslinks")
-        ("p_dead_head", po::value<int>(&p_dead_head)->default_value(0), "index of head to kill")
+        ("s2_dead_head_flag", po::value<bool>(&s2_dead_head_flag)->default_value(false), "flag to kill head <s1_dead_head> of all crosslinks")
+        ("s2_dead_head", po::value<int>(&s2_dead_head)->default_value(0), "index of head to kill")
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
@@ -200,10 +201,24 @@ int main(int argc, char* argv[]){
     cout<<"\nDEBUG: actin_density = "<<actin_density; 
     double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
-    int n_bw_stdout = max(int(tfinal/(dt*double(nmsgs))),1);
-    int n_bw_print  = max(int((tfinal - tinit)/(dt*double(nframes))),1);
+    int n_bw_stdout = max(int((tfinal)/(dt*double(nmsgs))),1);
+    int n_bw_print  = max(int((tfinal)/(dt*double(nframes))),1);
     int unprinted_count = int(double(tinit)/dt);
 
+    tdir   = dir  + "/txt_stack";
+    ddir   = dir  + "/data";
+    fs::path dir1(tdir.c_str()), dir2(ddir.c_str());
+    
+    afile  = tdir + "/actins.txt";
+    lfile  = tdir + "/links.txt";
+    amfile = tdir + "/amotors.txt";
+    pmfile = tdir + "/pmotors.txt";
+    thfile = ddir + "/filament_e.txt";
+    pefile = ddir + "/pe.txt";
+    
+    if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
+    if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
+    
     // To Read positions from input strings in config file
     vector<array<double,3> > actin_position_arrs, spacer1_position_arrs, spacer2_position_arrs;
     if (actin_pos_str.size() > 0)
@@ -217,32 +232,55 @@ int main(int argc, char* argv[]){
     // To Read positions from input files
     vector<vector<double> > actin_pos_vec;
     vector<vector<double> > spacer1_pos_vec, spacer2_pos_vec;
-    
-    if (restart_actin)
-        actin_in = dir + "/restart/in/actins.txt";
-    if (restart_spacer1)
-        spacer1_in = dir + "/restart/in/amotors.txt";
-    if (restart_spacer2)
-        spacer2_in = dir + "/restart/in/pmotors.txt";
-    
+   
     if (actin_in.size() > 0)
         actin_pos_vec   = file2vecvec(actin_in, "\t");
-    if (spacer1_in.size() > 0)
-        spacer1_pos_vec = file2vecvec(spacer1_in, "\t");
-    if (spacer2_in.size() > 0)
-        spacer2_pos_vec = file2vecvec(spacer2_in, "\t");
+    if (a_motor_in.size() > 0)
+        a_motor_pos_vec = file2vecvec(a_motor_in, "\t");
+    if (p_motor_in.size() > 0)
+        p_motor_pos_vec = file2vecvec(p_motor_in, "\t");
+    
+    // To restart a whole trajectory from it's last full timestep : 
+    if (restart){
+        
+        double tf_prev  = min(last_full_timestep(afile), last_full_timestep(lfile));
+        if (spacer1_density > 0)
+            tf_prev = min(tf_prev, last_full_timestep(amfile));
+        if (spacer2_density > 0)
+            tf_prev = min(tf_prev, last_full_timestep(pmfile));
+
+        if (restart_time == -1 || restart_time > tf_prev)
+            restart_time = tf_prev;
+
+        cout<<"\nRestarting from t = "<<restart_time<<endl;
+
+        double nprinted = restart_time / (dt*n_bw_print);
+
+        actin_pos_vec   = traj2vecvec(afile, "\t ", restart_time);
+        a_motor_pos_vec = traj2vecvec(amfile, "\t ", restart_time);
+        p_motor_pos_vec = traj2vecvec(pmfile, "\t ", restart_time);
+        
+        // for actins, links, amotors, pmotors: 
+        // do: 
+        //   copy whole file into temp
+        //   while hasn't reached tf in temp file:
+        //      write from copy into afile
+        write_first_tsteps(afile,  restart_time);
+        write_first_tsteps(lfile,  restart_time);
+        write_first_tsteps(amfile, restart_time);
+        write_first_tsteps(pmfile, restart_time);
+        
+        write_first_tsteps(thfile, restart_time);
+        write_first_nlines( pefile, (int) nprinted);
+
+    
+        tinit       = restart_time;
+        write_mode  = ios_base::app;
+    }
+    
     
     set_seed(myseed);
     
-    afile  = dir + "/txt_stack/actins.txt";
-    lfile  = dir + "/txt_stack/links.txt";
-    amfile = dir + "/txt_stack/amotors.txt";
-    pmfile = dir + "/txt_stack/pmotors.txt";
-    thfile = dir + "/data/thermo.txt";
-    pefile = dir + "/data/pe.txt";
-
-    if (restart_actin || restart_spacer1 || restart_spacer2) write_mode = ios_base::app;
-
     file_a.open(afile.c_str(), write_mode);
     file_l.open(lfile.c_str(), write_mode);
     file_am.open(amfile.c_str(), write_mode);
@@ -254,7 +292,7 @@ int main(int argc, char* argv[]){
     // DERIVED QUANTITIES :
     if(spacer1_density == 0 && spacer1_pos_vec.size() == 0 &&
             spacer2_density==0 && spacer2_pos_vec.size() == 0 &&
-            !link_intersect_flag && !motor_intersect_flag){
+            !s2_intersect_flag && !s1_intersect_flag){
         xgrid = 1;
         ygrid = 1;
     }
@@ -266,7 +304,7 @@ int main(int argc, char* argv[]){
     // Create Network Objects
     cout<<"\nCreating actin network..";
     filament_ensemble * net;
-    if (actin_pos_vec.size() == 0){
+    if (actin_pos_vec.size() == 0 && actin_in.size() == 0){
         net = new filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
@@ -279,8 +317,8 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd); 
     }
    
-    if (link_intersect_flag) spacer2_pos_vec = net->link_link_intersections(spacer2_length, p_linkage_prob); 
-    if (motor_intersect_flag) spacer1_pos_vec = net->link_link_intersections(spacer1_length, a_linkage_prob); 
+    if (s2_intersect_flag) spacer2_pos_vec = net->link_link_intersections(spacer2_length, s2_linkage_prob); 
+    if (s1_intersect_flag) spacer1_pos_vec = net->link_link_intersections(spacer1_length, s1_linkage_prob); 
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding xlink 1s...";
@@ -289,13 +327,13 @@ int main(int argc, char* argv[]){
     if (spacer1_pos_vec.size() == 0)
         big_xlinks = new spacer_ensemble( spacer1_density, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
-                s1_kend, s1_stall, s1_break, s1_bind, viscosity, spacer1_position_arrs, bnd_cnd);
+                s1_kend, s1_stall, s1_cut viscosity, spacer1_position_arrs, bnd_cnd);
     else
         big_xlinks = new spacer_ensemble( spacer1_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
-                s1_kend, s1_stall, s1_break, s1_bind, viscosity, bnd_cnd);
+                s1_kend, s1_stall, s1_cut, viscosity, bnd_cnd);
     big_xlinks->set_bending(s1_bend, s1_ang);
-    if (dead_head_flag) big_xlinks->kill_heads(dead_head);
+    if (s1_dead_head_flag) big_xlinks->kill_heads(s1_dead_head);
 
     cout<<"Adding xlink 2s (crosslinkers) ...\n";
     spacer_ensemble * small_xlinks; 
@@ -303,34 +341,40 @@ int main(int argc, char* argv[]){
     if(spacer2_pos_vec.size() == 0)
         small_xlinks = new spacer_ensemble( spacer2_density, {xrange, yrange}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
-                s2_kend, s2_stall, s2_break, s2_bind, viscosity, spacer2_position_arrs, bnd_cnd);
+                s2_kend, s2_stall, s2_cut, viscosity, spacer2_position_arrs, bnd_cnd);
     else
         small_xlinks = new spacer_ensemble( spacer2_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
-                s2_kend, s2_stall, s2_break, s2_bind, viscosity, bnd_cnd);
+                s2_kend, s2_stall, s2_cut, viscosity, bnd_cnd);
     small_xlinks->set_bending(s2_bend, s2_ang);
-    if (p_dead_head_flag) small_xlinks->kill_heads(p_dead_head);
+    if (s2_dead_head_flag) small_xlinks->kill_heads(s2_dead_head);
 
     // Write the output configuration file
     string output_file                         =   dir + "/data/output.txt";
     o_file.open(output_file.c_str());
-    o_file << " FILE: "                 << output_file     <<"\n";
-    o_file << " Actin Density: "        << actin_density   << ", Actin Mean Length: "          << actin_length              << "\n";
-    o_file << " Active Motor Density: "        << spacer1_density   << ", Active Motor Rest Length: "          << spacer1_length              << ", Active Motor Stiffness: "       << spacer1_stiffness        <<"\n";
-    o_file << " Active Motor unloaded speed: " << spacer1_v          << ", Active Motor binding rate: "         << s1_kon                     <<"\n";
-    o_file << " Active Motor unbinding rate: " << s1_koff          << ", Active Motor end detachment rate: "  << s1_kend                    <<"\n";
-    o_file << " Passive Motor Density: "        << spacer2_density   << ", Passive Motor Rest Length: "          << spacer2_length              << ", Passive Motor Stiffness: "       << spacer2_stiffness        <<"\n";
-    o_file << " Passive Motor unloaded speed: " << spacer2_v          << ", Passive Motor binding rate: "         << s2_kon                     <<"\n";
-    o_file << " Passive Motor unbinding rate: " << s2_koff          << ", Passive Motor end detachment rate: "  << s2_kend                    <<"\n";
-    o_file << " Link Rest Length: "     << link_length     << ", Link Stretching Stiffness: "  << link_stretching_stiffness <<", Link Bending Stiffness: " << link_bending_stiffness <<"\n";
-    o_file << " Simulation time: "      << tfinal - tinit  << ", dt: " << dt <<", dt between output files: "<< n_bw_print*dt<<", Viscosity: " << viscosity              <<"\n";
-    o_file << " Boundary Conditions: " <<bnd_cnd<<"\n";
-    o_file.close();
     
+    boost::any val;
+    for(po::variables_map::const_iterator it=vm.begin(); it!=vm.end(); ++it){
+        
+        if (it->first == "config") continue;
+
+        val=it->second.value();
+        
+        if(typeid(bool) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<bool>(val) <<endl;
+        else if(typeid(int) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<int>(val) <<endl;
+        else if(typeid(double) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<double>(val) <<endl;
+        else if(typeid(string) == val.type())
+            o_file << it->first <<"="<< boost::any_cast<string>(val) <<endl;
+    }
+   
+    // Run the simulation
     cout<<"\nUpdating motors, filaments and crosslinks in the network..";
     string time_str; 
     count=0;
-    t = 0;
+    t = tinit;
 
     //Run the simulation
     while (t < tfinal) {
@@ -358,6 +402,14 @@ int main(int argc, char* argv[]){
 
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
                 big_xlinks->get_potential_energy()<<"\t"<<small_xlinks->get_potential_energy()<<endl;
+            
+            file_a<<std::flush;
+            file_l<<std::flush;
+            file_am<<std::flush;
+            file_pm<<std::flush;
+            file_th<<std::flush;
+            file_pe<<std::flush;
+
 		}
         
         //print time count
