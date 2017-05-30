@@ -62,10 +62,9 @@ class spacer : public motor {
 
         void actin_update();
 
-        bool attach(int hd);
-
-        void detach(int hd);
-        void detach(int hd, double rate);
+        double metropolis_prob(int hd, array<int, 2> flidx, array<double, 2> newpos, double maxRate);
+        
+        bool allowed_bind(array<int, 2> flidx);
 
     private:
 

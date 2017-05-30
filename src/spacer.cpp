@@ -23,16 +23,16 @@ spacer::spacer( array<double, 3> pos,
         double stiffness, 
         double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double engBind,
+        double fstall, double rcut,
         double vis, string bc) {
     
     vs          = v0;
     mk          = stiffness;//rng(10,100); 
     
     stall_force   = fstall;
-    break_force   = fbreak;
-    max_bind_dist = sqrt(engBind/stiffness);
-    var_bind_dist = (2.0/3.0)*engBind/stiffness;
+    temperature   = temp;
+
+    max_bind_dist = rcut;
 
     mld         = mlen;
     dt          = delta_t;
@@ -40,18 +40,19 @@ spacer::spacer( array<double, 3> pos,
     koff        = roff*dt;
     kend        = rend*dt;
     mphi        = pos[2];
-    temperature = temp;
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //link index for each head
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(4*pi*vis*mld);
+    damp        =(6*pi*vis*mld);
+    bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
-    
+    /****for FENE motors******/
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
+    /*************************/
     
     shear       = 0;
     tension     = 0;
@@ -61,8 +62,6 @@ spacer::spacer( array<double, 3> pos,
     b_force[1]  = {0,0}; //b_force[1] = bending force on head 1 due to h1-h0-link angle in cartesian coords
 
     kinetic_energy = 0; //assume m = 1
-    pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
-                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
     
     array<double, 2> posH0 = boundary_check(0, pos[0]-0.5*mld*cos(mphi), pos[1]-0.5*mld*sin(mphi)); 
     array<double, 2> posH1 = boundary_check(1, pos[0]+0.5*mld*cos(mphi), pos[1]+0.5*mld*sin(mphi)); 
@@ -73,13 +72,26 @@ spacer::spacer( array<double, 3> pos,
     
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
     
+    pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
+                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
+    
+    ldir_bind[0] = {0,0};
+    ldir_bind[1] = {0,0};
+
+    bind_disp[0] = {0,0};
+    bind_disp[1]=  {0,0};
+
+    at_barbed_end = {false, false};
     if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                 actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+        ldir_bind[0] = actin_network->get_direction(f_index[0], l_index[0]);
+
     }
     if (state[1] == 1){
         pos_a_end[1] = dist_bc(BC, actin_network->get_end(f_index[1], l_index[1])[0] - hx[1],
                                    actin_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
+        ldir_bind[1] = actin_network->get_direction(f_index[1], l_index[1]);
     }
     
     prv_rnd_x = {0,0};
@@ -100,16 +112,16 @@ spacer::spacer( array<double, 4> pos,
         double stiffness, 
         double max_ext_ratio, 
         double ron, double roff, double rend, 
-        double fstall, double fbreak, double engBind,
+        double fstall, double rcut,
         double vis, string bc) {
     
     vs          = v0;
     mk          = stiffness;
     
     stall_force = fstall;
-    break_force = fbreak;
-    max_bind_dist = sqrt(engBind/stiffness);
-    var_bind_dist = (2.0/3.0)*engBind/stiffness;
+    temperature = temp;
+
+    max_bind_dist = rcut;
     
     mld         = mlen;
     dt          = delta_t;
@@ -117,18 +129,20 @@ spacer::spacer( array<double, 4> pos,
     koff        = roff*dt;
     kend        = rend*dt;
     mphi        = pos[2];
-    temperature = temp;
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //link index for each head
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
-    damp=(4*pi*vis*mld);
+    damp        =(6*pi*vis*mld);
+    bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
+    /********for FENE springs*********/ 
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
-    
+    /********************************/
+
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // force on the spring  
@@ -146,18 +160,30 @@ spacer::spacer( array<double, 4> pos,
     hy[0] = posH0[1];
     hx[1] = posH1[0];
     hy[1] = posH1[1];
+   
+    //force can be non-zero and angle is determined from disp vector
+    this->update_angle();
+    this->update_force();
     
-    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], actin_network->get_delrx()); 
+    ldir_bind[0] = {0,0};
+    ldir_bind[1] = {0,0};
+    bind_disp[0] = {0,0};
+    bind_disp[1] = {0,0};
+
+    at_barbed_end = {false, false};
 
     if (state[0]){
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+        ldir_bind[0] = actin_network->get_direction(f_index[0], l_index[0]);
+
     }
     if (state[1]){
         pos_a_end[1] = dist_bc(BC, actin_network->get_end(f_index[1], l_index[1])[0] - hx[1],
                                    actin_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
+        ldir_bind[1] = actin_network->get_direction(f_index[1], l_index[1]);
     }
-    
+
     prv_rnd_x = {0,0};
     prv_rnd_y = {0,0};
 
@@ -301,97 +327,58 @@ array<array<double, 2>,2> spacer::get_b_force()
     return b_force;
 }
 
-// Unlike xlinks and motors, spacers CANNOT bind to the same filament on two different links
-bool spacer::attach(int hd)
+
+//metropolis algorithm with rate constant
+double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob)
 {
-//    map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]);
-    double onrate, stretch, mf_rand, delE;
-    double r1, r2, c, dth;
-    array<double, 2> intpoint, delr1, delr2;
-    multimap<double, array<int, 2> > dist_sorted;
+    double prob = maxprob;
+    double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
     
-    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
-    onrate = 0;
-    mf_rand = rng(0,1.0);
+    array<double, 2> delr1, delr2;
+    double r1, r2, c, dth, bend_eng = 0;
     
-    if(!dist.empty()){
-        dist_sorted = flip_map(dist);
+    if (state[hd] == 0 && state[pr(hd)] == 1) { //it's trying to attach
         
-        for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
-        {
-            if (it->first > max_bind_dist)
-                break;
-            
-            else if(f_index[pr(hd)] != (it->second).at(0)) {
-            //else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
-                
-                intpoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint(BC, actin_network->get_delrx(), hx[hd], hy[hd]);
-                stretch  = dist_bc(BC, intpoint[0] - hx[pr(hd)], intpoint[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
-                
-                // Calculate additional bending energy from that'd come from the preferred angle force
-                if (state[pr(hd)] == 1){
-                    
-                    // 1st bond
-                    delr1 = disp_from_actin(hd, it->second.at(0), it->second.at(1) + get_further_end(hd, it->second.at(0), it->second.at(1))); 
-                    r1  = sqrt(delr1[0]*delr1[0] + delr1[1]*delr1[1]);
+        // challenge : calculate distance from position on actin filament to end of link
+        // soln 1 : take the filament / link indices as input to the metropolis function in motor.cpp:
+        //      problem : seems useless in general motor implementation
+        //      modifications to master code: attach, detach, metropolis_prof
+        //      modifications to spacer code: metropolis_prob function
+        //      conclusion : useless, but harmless
+        // soln 2: take the filament / link indices as input to the metropolis function in spacer.cpp:
+        //      problem : would require a lot of copy / pasting ==> prone to error
+        //      modifications to master code: none
+        //      modifications to spacer code: metropolis_prob function, attach, detach
+        //      conclusion : not useless, but potentially harmful
 
-                    // 2nd bond
-                    delr2 = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
-                    r2  = sqrt(delr2[0]*delr2[0] + delr2[1]*delr2[1]);
+//        delr1 = disp_from_actin(hd, it->second.at(0), it->second.at(1) + get_further_end(hd, it->second.at(0), it->second.at(1))); 
+        delr1 = disp_from_actin(hd, fl_idx[0], fl_idx[1] + get_further_end(hd, fl_idx[0], fl_idx[1])); 
+        r1  = sqrt(delr1[0]*delr1[0] + delr1[1]*delr1[1]);
 
-                    // cos
-                    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
+        // 2nd bond
+        delr2 = {pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]};
+        r2  = sqrt(delr2[0]*delr2[0] + delr2[1]*delr2[1]);
 
-                    if (c > 1.0) c = 1.0;
-                    if (c < -1.0) c = -1.0;
-  
-                    dth = acos(c) - th0;
-                    b_eng[hd] = kb*dth*dth/(r1+r2);
+        // cos
+        c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
 
-                }
-                delE = 0.5*mk*stretch*stretch + b_eng[hd] - this->get_stretching_energy();
-                onrate += kon*exp(-delE/temperature);
-                 
-                //cout<<"\nDEBUG: dist = "<<it->first<<"\tkon = "<<onrate<<endl;
-                
-                if (mf_rand < onrate) {
-                    //update state
-                    state[hd] = 1;
-                    f_index[hd] = (it->second).at(0);
-                    l_index[hd] = (it->second).at(1);
-                    //cout<<"DEBUG: hit "<<f_index[hd]<<endl;   
-                    //cout<<"\nDEBUG: motor head pos ("<<hx[hd]<<" , "<<hy[hd]<<").";
+        if (c > 1.0) c = 1.0;
+        if (c < -1.0) c = -1.0;
 
-                    //update head position
-                    hx[hd] = intpoint[0];
-                    hy[hd] = intpoint[1];
-
-                    pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
-                                              actin_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
-                                              actin_network->get_delrx());
-                    //cout<<"\nDEBUG: attaching at intpoint ("<<intpoint[0]<<" , "<<intpoint[1]<<").\tpos_a_end = "<<pos_a_end[hd];
-                    return true;
-                }
-                //else
-                  //  cout<<"DEBUG: missed "<< (it->second).at(0)<<endl;
-            }
-        }
-    }	
-    return false;
-} 
-
-void spacer::detach(int hd, double rate)
-{
-  
-    if (event(rate*exp(b_eng[hd]/temperature))){
-        state[hd]=0;
-        f_index[hd]=-1;
-        l_index[hd]=-1;
-        pos_a_end[hd]=0;
+        dth = acos(c) - th0;
+        bend_eng = kb*dth*dth/(r1+r2);
+        
     }
+    
+    double delE = 0.5*mk*stretch*stretch + bend_eng - this->get_stretching_energy() - b_eng[hd];
 
+    if( delE > 0 )
+        prob *= exp(-delE/temperature);
+    
+    return prob;
 }
 
-void spacer::detach(int hd){
-    detach(hd, koff);
+bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
+{
+    return (fl_idx[hd][0] != fl_idx[pr(hd)][0]);
 }
