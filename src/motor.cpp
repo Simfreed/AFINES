@@ -226,13 +226,14 @@ void motor::set_shear(double gamma)
 }
 
 //metropolis algorithm with rate constant
-double motor::metropolis_prob(int hd, array<double, 2> newpos, double maxprob)
+//NOTE: while fl_idx doesn't matter for this xlink implementation, it does for "spacers"
+double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob)
 {
+
     double prob = maxprob;
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
     double delE = 0.5*mk*stretch*stretch - this->get_stretching_energy();
 
-    //NOTE: COMMENTING OUT NEXT LINE MAKES IT NOT A METROPOLIS
     if( delE > 0 )
         prob *= exp(-delE/temperature);
     
@@ -262,7 +263,7 @@ bool motor::attach(int hd)
             else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
                 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
-                not_off_prob += metropolis_prob(hd, intPoint, kon);
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon);
                  
                 if (mf_rand < not_off_prob) 
                 {
@@ -388,7 +389,7 @@ void motor::step_onehead(int hd)
 {
 
     array<double, 2> hpos_new = generate_off_pos(hd);
-    double off_prob = metropolis_prob(hd, hpos_new, at_barbed_end[hd] ? kend : koff); 
+    double off_prob = metropolis_prob(hd, {0,0}, hpos_new, at_barbed_end[hd] ? kend : koff); 
     
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
@@ -396,9 +397,7 @@ void motor::step_onehead(int hd)
     else{
 
         //calculate motor velocity
-        /*new code starts here*/
         if (vs != 0 && !(at_barbed_end[hd])){ 
-        /*new code ends here */
             double vm = vs;
             if (state[pr(hd)] != 0){ 
                 vm = my_velocity(vs, 

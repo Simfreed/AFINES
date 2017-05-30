@@ -109,7 +109,7 @@ class motor
 
         double get_angle();
         
-        double metropolis_prob(int hd, array<double, 2> newpos, double maxprob);
+        double metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob);
 
         array<double, 2> generate_off_pos(int hd);
 
