@@ -497,11 +497,6 @@ void motor::detach_head_without_moving(int hd)
     
 }
 
-void motor::detach(int hd)
-{
-    detach(hd, koff);  
-}
-
 array<int, 2> motor::get_f_index(){
     return f_index;
 }
