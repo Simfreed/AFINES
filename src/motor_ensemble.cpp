@@ -57,7 +57,7 @@ motor_ensemble<motor_type>::motor_ensemble(double mdensity, array<double, 2> myf
         }
         motor_pos = {motorx, motory, mang};
 
-        n_motors.push_back(new motor( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+        n_motors.push_back(new motor_type( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
         
     }
@@ -96,7 +96,7 @@ motor_ensemble<motor_type>::motor_ensemble(vector<vector<double> > motors, array
 
         state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
 
-        n_motors.push_back(new motor( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
+        n_motors.push_back(new motor_type( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
     }
 

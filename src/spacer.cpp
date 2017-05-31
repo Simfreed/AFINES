@@ -329,7 +329,7 @@ array<array<double, 2>,2> spacer::get_b_force()
 
 
 //metropolis algorithm with rate constant
-double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob)
+double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob)
 {
     double prob = maxprob;
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
@@ -339,18 +339,6 @@ double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> new
     
     if (state[hd] == 0 && state[pr(hd)] == 1) { //it's trying to attach
         
-        // challenge : calculate distance from position on actin filament to end of link
-        // soln 1 : take the filament / link indices as input to the metropolis function in motor.cpp:
-        //      problem : seems useless in general motor implementation
-        //      modifications to master code: attach, detach, metropolis_prof
-        //      modifications to spacer code: metropolis_prob function
-        //      conclusion : useless, but harmless
-        // soln 2: take the filament / link indices as input to the metropolis function in spacer.cpp:
-        //      problem : would require a lot of copy / pasting ==> prone to error
-        //      modifications to master code: none
-        //      modifications to spacer code: metropolis_prob function, attach, detach
-        //      conclusion : not useless, but potentially harmful
-
 //        delr1 = disp_from_actin(hd, it->second.at(0), it->second.at(1) + get_further_end(hd, it->second.at(0), it->second.at(1))); 
         delr1 = disp_from_actin(hd, fl_idx[0], fl_idx[1] + get_further_end(hd, fl_idx[0], fl_idx[1])); 
         r1  = sqrt(delr1[0]*delr1[0] + delr1[1]*delr1[1]);
@@ -380,5 +368,5 @@ double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> new
 
 bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
 {
-    return (fl_idx[hd][0] != f_index[pr(hd)][0]);
+    return (fl_idx[0] != f_index[pr(hd)]);
 }

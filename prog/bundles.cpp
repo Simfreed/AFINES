@@ -235,10 +235,10 @@ int main(int argc, char* argv[]){
    
     if (actin_in.size() > 0)
         actin_pos_vec   = file2vecvec(actin_in, "\t");
-    if (a_motor_in.size() > 0)
-        a_motor_pos_vec = file2vecvec(a_motor_in, "\t");
-    if (p_motor_in.size() > 0)
-        p_motor_pos_vec = file2vecvec(p_motor_in, "\t");
+    if (spacer1_in.size() > 0)
+        spacer1_pos_vec = file2vecvec(spacer1_in, "\t");
+    if (spacer2_in.size() > 0)
+        spacer2_pos_vec = file2vecvec(spacer2_in, "\t");
     
     // To restart a whole trajectory from it's last full timestep : 
     if (restart){
@@ -257,8 +257,8 @@ int main(int argc, char* argv[]){
         double nprinted = restart_time / (dt*n_bw_print);
 
         actin_pos_vec   = traj2vecvec(afile, "\t ", restart_time);
-        a_motor_pos_vec = traj2vecvec(amfile, "\t ", restart_time);
-        p_motor_pos_vec = traj2vecvec(pmfile, "\t ", restart_time);
+        spacer1_pos_vec = traj2vecvec(amfile, "\t ", restart_time);
+        spacer2_pos_vec = traj2vecvec(pmfile, "\t ", restart_time);
         
         // for actins, links, amotors, pmotors: 
         // do: 
@@ -327,7 +327,7 @@ int main(int argc, char* argv[]){
     if (spacer1_pos_vec.size() == 0)
         big_xlinks = new spacer_ensemble( spacer1_density, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
-                s1_kend, s1_stall, s1_cut viscosity, spacer1_position_arrs, bnd_cnd);
+                s1_kend, s1_stall, s1_cut, viscosity, spacer1_position_arrs, bnd_cnd);
     else
         big_xlinks = new spacer_ensemble( spacer1_pos_vec, {xrange, yrange}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
