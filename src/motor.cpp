@@ -240,6 +240,10 @@ double motor::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> new
     return prob;
 }
 
+bool motor::allowed_bind(int hd, array<int, 2> fl_idx){
+    return (f_index[pr(hd)] != fl_idx[0] || l_index[pr(hd)] != fl_idx[1]);
+}
+
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
 bool motor::attach(int hd)
 {
@@ -260,7 +264,8 @@ bool motor::attach(int hd)
                 break;
             
             //head can't bind to the same filament link the other head is bound to
-            else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
+ //           else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
+            else if(allowed_bind(hd, it->second)){
                 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, kon);

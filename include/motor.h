@@ -45,6 +45,8 @@ class motor
 
         string get_BC();
 
+        bool allowed_bind( int hd, array<int, 2> fl_idx);
+        
         bool attach( int hd);
 
         void relax_head( int hd);
