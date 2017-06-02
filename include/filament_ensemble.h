@@ -20,7 +20,7 @@
 #include "string"
 #include "vector"
 #include "map"
-#include "unordered_map"
+#include <unordered_map>
 #include "filament.h"
 #include <boost/functional/hash.hpp>
 #include <boost/scoped_array.hpp>
@@ -56,15 +56,15 @@ class filament_ensemble
 
         void reset_n_links(int);
 
-        void update_dist_map(map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
+        void update_dist_map(std::unordered_map<array<int,2>, double>& t_map, const array<int, 2>& mquad, double x, double y);
         
         vector<filament *> * get_network();
 
         filament * get_filament(int index);
 
-        map<array<int,2>, double> get_dist(double x, double y);
+        std::unordered_map<array<int,2>, double> get_dist(double x, double y);
         
-        map<array<int,2>, double> get_dist_all(double x, double y);
+        std::unordered_map<array<int,2>, double> get_dist_all(double x, double y);
         
         array<double,2> get_direction(int fil, int link);
 
