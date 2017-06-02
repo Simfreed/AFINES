@@ -300,8 +300,8 @@ void spacer::brownian_relax(int hd)
     
     double new_rnd_x= rng_n(0,1), new_rnd_y = rng_n(0,1);
     
-    double vx =  (pow(-1,hd)*force[0] + b_force[hd][0]) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_x + prv_rnd_x[hd]);
-    double vy =  (pow(-1,hd)*force[1] + b_force[hd][1]) / damp + sqrt(temperature/(2*damp*dt))*(new_rnd_y + prv_rnd_y[hd]);
+    double vx =  (pow(-1,hd)*force[0] + b_force[hd][0]) / damp + bd_prefactor*(new_rnd_x + prv_rnd_x[hd]);
+    double vy =  (pow(-1,hd)*force[1] + b_force[hd][1]) / damp + bd_prefactor*(new_rnd_y + prv_rnd_y[hd]);
     kinetic_energy = vx*vx + vy*vy;    
     array<double, 2> pos = boundary_check(hd, hx[hd] + vx*dt, hy[hd] + vy*dt);
     hx[hd] = pos[0];
