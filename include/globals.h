@@ -115,7 +115,7 @@ void write_first_tsteps(string path, double tstop);
 template <typename T> int sgn(T val);
 
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
-multimap<double, array<int, 2> > flip_map(const std::unordered_map<array<int, 2>, double> &p);
+multimap<double, array<int, 2> > flip_map(const std::unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> &p);
 string print_pair(string name, const array<double, 2>& p);
 
 //template <typename A, typename B> pair<B,A> flip_pair(const pair<A,B> &p);

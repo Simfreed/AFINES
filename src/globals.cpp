@@ -486,7 +486,7 @@ pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p)
         return std::pair<double,array<int,2> >(p.second, p.first);
 }
 
-multimap<double, array<int, 2> > flip_map(const map<array<int, 2>, double> &src)
+multimap<double, array<int, 2> > flip_map(const unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> &src)
 {
     multimap<double,array<int,2> > dst;
     std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()), 
