@@ -252,7 +252,7 @@ bool motor::attach(int hd)
     array<double, 2> intPoint;
     
 //  map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]); //if not using neighbor lists
-    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
+    unordered_map<array<int, 2>, double, boost::hash<array<int, 2>> > dist = actin_network->get_dist(hx[hd],hy[hd]);
     multimap<double, array<int, 2> > dist_sorted;
     
     if(!dist.empty()){

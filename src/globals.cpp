@@ -604,7 +604,7 @@ vector<vector<double> > traj2vecvec(string path, string delim, double tf)
     ifstream pos_file;
     pos_file.open(path);
     
-    double t;
+    double t = 0;
 
     while(getline(pos_file, pos_str))
     {

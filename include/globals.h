@@ -23,7 +23,7 @@
 #include <boost/range/irange.hpp>
 #include <boost/range/join.hpp>
 #include <boost/optional.hpp>
-
+#include <boost/functional/hash.hpp>
 #define BOOST_NO_CXX11_SCOPED_ENUMS
 #include <boost/filesystem.hpp>
 #undef BOOST_NO_CXX11_SCOPED_ENUMS
