@@ -201,6 +201,7 @@ void spacer::set_bending(double force_constant, double ang){
 
 void spacer::update_force()
 { 
+    //cout<<"\nDEBUG: using spacer update_force()";
     if (state[0] == 1 && state[1] == 1){
         update_bending(0);
         update_bending(1);
@@ -297,6 +298,7 @@ void spacer::identify(){
 
 void spacer::brownian_relax(int hd)
 {
+    //cout<<"\nDEBUG: using spacer brownian_relax()";
     
     double new_rnd_x= rng_n(0,1), new_rnd_y = rng_n(0,1);
     
@@ -331,6 +333,7 @@ array<array<double, 2>,2> spacer::get_b_force()
 //metropolis algorithm with rate constant
 double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob)
 {
+//    cout<<"\nDEBUG: using spacer metropolis_prob";
     double prob = maxprob;
     double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], actin_network->get_delrx()) - mld; 
     
@@ -368,5 +371,6 @@ double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> ne
 
 bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
 {
+//    cout<<"\nDEBUG: using spacer allowed bind";
     return (fl_idx[0] != f_index[pr(hd)]);
 }

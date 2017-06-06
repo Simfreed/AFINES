@@ -46,7 +46,7 @@ class spacer : public motor {
         
         double get_th0();
 
-        void update_force();
+        virtual void update_force();
         
         void identify();
         
@@ -58,13 +58,13 @@ class spacer : public motor {
         
         array<array<double, 2>,2> get_b_force();
 
-        void brownian_relax(int hd);
+        virtual void brownian_relax(int hd);
 
         void actin_update();
 
-        double metropolis_prob(int hd, array<int, 2> flidx, array<double, 2> newpos, double maxRate);
+        virtual double metropolis_prob(int hd, array<int, 2> flidx, array<double, 2> newpos, double maxRate);
         
-        bool allowed_bind(int hd, array<int, 2> flidx);
+        virtual bool allowed_bind(int hd, array<int, 2> flidx);
 
     private:
 
