@@ -256,8 +256,8 @@ bool motor::attach(int hd)
 //    multimap<double, array<int, 2> > dist_sorted;
     multimap<double, array<int, 2> > dist_sorted = actin_network->get_dist(hx[hd], hy[hd]);
 
-    if(!dist.empty()){
-        dist_sorted = flip_map(dist);
+    if(!dist_sorted.empty()){
+        //dist_sorted = flip_map(dist);
         
         for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {

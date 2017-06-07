@@ -108,10 +108,11 @@ void filament_ensemble::update_dist_map(multimap<double, array<int,2>>& t_map, c
 
             fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
             
-            if (t_map.find(fl) == t_map.end()){ 
-                network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-                t_map[fl] = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
-            }
+            network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+       
+            t_map.insert(pair<double, array<int, 2> >(dist, fl));
+            
         }
     }
 
@@ -121,9 +122,9 @@ void filament_ensemble::update_dist_map(multimap<double, array<int,2>>& t_map, c
 //  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
 //  and their corresponding DISTANCES to the link at that distance 
 
-unordered_map<array<int,2>,double, boost::hash<array<int, 2>>> filament_ensemble::get_dist(double x, double y)
+multimap<double, array<int, 2>> filament_ensemble::get_dist(double x, double y)
 {
-    unordered_map<array<int, 2>, double, boost::hash<array<int, 2>>> t_map;
+    multimap<double, array<int, 2>> t_map;
     int mqx = coord2quad_floor(fov[0], nq[0], x);
     int mqy = coord2quad_floor(fov[1], nq[1], y);
     
@@ -145,13 +146,16 @@ unordered_map<array<int,2>,double, boost::hash<array<int, 2>>> filament_ensemble
 }
 
 
-unordered_map<array<int,2>,double, boost::hash<array<int,2>>> filament_ensemble::get_dist_all(double x, double y)
+multimap<double, array<int,2>> filament_ensemble::get_dist_all(double x, double y)
 {
-    unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> t_map;
+    multimap<double, array<int,2>> t_map;
+    double dist=0;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
                 network[f]->get_link(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-                t_map[{f,l}] = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
+                dist = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
+                // t_map[dist] = {f,l}; 
+                t_map.insert(pair<double, array<int, 2>>(dist, {f, l}));
         }
     }
     
