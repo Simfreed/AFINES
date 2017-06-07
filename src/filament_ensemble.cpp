@@ -96,8 +96,9 @@ void filament_ensemble::quad_update_serial()
 
 }
 
-
-void filament_ensemble::update_dist_map(std::unordered_map<array<int,2>, double, boost::hash<array<int,2>>>& t_map, const array<int, 2>& mq, double x, double y){
+//given a motor position, and a quadrant
+//update the map of {f, l} -- > dist
+void filament_ensemble::update_dist_map(unordered_map<array<int,2>, double, boost::hash<array<int,2>>>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
     if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
@@ -116,12 +117,12 @@ void filament_ensemble::update_dist_map(std::unordered_map<array<int,2>, double,
 }
 
 //given motor head position, return a map between  
-//  the INDICES (i.e., {i, j} where i is the filament index and j is the link index)
+//  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
 //  and their corresponding DISTANCES to the link at that distance 
 
-std::unordered_map<array<int,2>,double, boost::hash<array<int, 2>>> filament_ensemble::get_dist(double x, double y)
+unordered_map<array<int,2>,double, boost::hash<array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 {
-    std::unordered_map<array<int, 2>, double, boost::hash<array<int, 2>>> t_map;
+    unordered_map<array<int, 2>, double, boost::hash<array<int, 2>>> t_map;
     int mqx = coord2quad_floor(fov[0], nq[0], x);
     int mqy = coord2quad_floor(fov[1], nq[1], y);
     
@@ -143,9 +144,9 @@ std::unordered_map<array<int,2>,double, boost::hash<array<int, 2>>> filament_ens
 }
 
 
-std::unordered_map<array<int,2>,double, boost::hash<array<int,2>>> filament_ensemble::get_dist_all(double x, double y)
+unordered_map<array<int,2>,double, boost::hash<array<int,2>>> filament_ensemble::get_dist_all(double x, double y)
 {
-    std::unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> t_map;
+    unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> t_map;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
                 network[f]->get_link(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
