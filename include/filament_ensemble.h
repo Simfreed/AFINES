@@ -56,15 +56,15 @@ class filament_ensemble
 
         void reset_n_links(int);
 
-        void update_dist_map(multimap<double, array<int, 2>>& t_map, const array<int, 2>& mquad, double x, double y);
+        void update_dist_map(set<pair<double, array<int, 2>>>& t_map, const array<int, 2>& mquad, double x, double y);
         
         vector<filament *> * get_network();
 
         filament * get_filament(int index);
 
-        multimap<double, array<int,2>> get_dist(double x, double y);
+        set<pair<double, array<int,2>>> get_dist(double x, double y);
         
-        multimap<double, array<int,2>> get_dist_all(double x, double y);
+        set<pair<double, array<int,2>>> get_dist_all(double x, double y);
         
         array<double,2> get_direction(int fil, int link);
 

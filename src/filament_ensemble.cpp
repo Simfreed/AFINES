@@ -98,7 +98,7 @@ void filament_ensemble::quad_update_serial()
 
 //given a motor position, and a quadrant
 //update the map of {f, l} -- > dist
-void filament_ensemble::update_dist_map(multimap<double, array<int,2>>& t_map, const array<int, 2>& mq, double x, double y){
+void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
     double dist;
@@ -110,6 +110,7 @@ void filament_ensemble::update_dist_map(multimap<double, array<int,2>>& t_map, c
             
             network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
             dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            //cout<<"\nDEBUG : dist = "<<dist;
        
             t_map.insert(pair<double, array<int, 2> >(dist, fl));
             
@@ -122,9 +123,9 @@ void filament_ensemble::update_dist_map(multimap<double, array<int,2>>& t_map, c
 //  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
 //  and their corresponding DISTANCES to the link at that distance 
 
-multimap<double, array<int, 2>> filament_ensemble::get_dist(double x, double y)
+set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 {
-    multimap<double, array<int, 2>> t_map;
+    set<pair<double, array<int, 2>>> t_map;
     int mqx = coord2quad_floor(fov[0], nq[0], x);
     int mqy = coord2quad_floor(fov[1], nq[1], y);
     
@@ -146,9 +147,9 @@ multimap<double, array<int, 2>> filament_ensemble::get_dist(double x, double y)
 }
 
 
-multimap<double, array<int,2>> filament_ensemble::get_dist_all(double x, double y)
+set<pair<double, array<int,2>>> filament_ensemble::get_dist_all(double x, double y)
 {
-    multimap<double, array<int,2>> t_map;
+    set<pair<double, array<int,2>>> t_map;
     double dist=0;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nlinks(); l++){
