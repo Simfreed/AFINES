@@ -98,9 +98,10 @@ void filament_ensemble::quad_update_serial()
 
 //given a motor position, and a quadrant
 //update the map of {f, l} -- > dist
-void filament_ensemble::update_dist_map(unordered_map<array<int,2>, double, boost::hash<array<int,2>>>& t_map, const array<int, 2>& mq, double x, double y){
+void filament_ensemble::update_dist_map(multimap<double, array<int,2>>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
+    double dist;
     if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
         
         for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
