@@ -190,6 +190,7 @@ class filament_ensemble
         
         vector<array<int, 2>* > all_quads;
         vector<filament *> network;
+        unordered_set<array<int, 2>, boost::hash<array<int,2>>> fls;
 };
 
 #endif
