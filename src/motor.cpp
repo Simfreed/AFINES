@@ -251,18 +251,16 @@ bool motor::attach(int hd)
     double mf_rand = rng(0,1.0);
     array<double, 2> intPoint;
     
-//  map<array<int, 2>, double> dist = actin_network->get_dist_all(hx[hd],hy[hd]); //if not using neighbor lists
-    map<array<int, 2>, double> dist = actin_network->get_dist(hx[hd],hy[hd]);
-    multimap<double, array<int, 2> > dist_sorted;
-    
-    if(!dist.empty()){
-        dist_sorted = flip_map(dist);
+//    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
+    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist(hx[hd], hy[hd]);
+
+    if(!dist_sorted.empty()){
         
-        for (multimap<double, array<int, 2> >::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
+        for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
             if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
                 break;
-            
+
             //head can't bind to the same filament link the other head is bound to
  //           else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
             else if(allowed_bind(hd, it->second)){
