@@ -41,7 +41,7 @@ class motor
         
         motor();
         
-        ~motor();
+        virtual ~motor();
 
         string get_BC();
 

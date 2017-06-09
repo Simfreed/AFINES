@@ -38,7 +38,7 @@ class spacer : public motor {
                 double fstall, double rcut,
                 double vis, string BC);
 
-        ~spacer();
+        virtual ~spacer();
 
         void set_bending(double, double);
 
