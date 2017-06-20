@@ -233,6 +233,12 @@ void filament::update_positions()
 
 }
 
+void filament::update_length()
+{
+    //this function dynamically change the length of the filaments
+
+}
+
 void filament::update_positions_range(int lo, int hi)
 {
     double vx, vy;

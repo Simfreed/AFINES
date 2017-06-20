@@ -493,6 +493,7 @@ void filament_ensemble::update()
     
     for (int f = 0; f < net_sz; f++){
       //  if (f==0) cout<<"\nDEBUG: filament updates using "<<omp_get_num_threads()<<" cores";  
+        network[f]->update_length();
         this->update_filament_stretching(f);
         network[f]->update_bending(t);
         network[f]->update_positions();
