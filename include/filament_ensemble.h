@@ -119,6 +119,8 @@ class filament_ensemble
         void update_positions_range(int lo, int hi);
         
         void update_forces(int fil, int actin, double f2, double f3);
+ 
+   	void update_excluded_volume(int f); 
 
         void write_actins(ofstream& fout);
         
@@ -169,6 +171,7 @@ class filament_ensemble
         double max_links_per_quad_per_filament, max_links_per_quad; 
         bool straight_filaments = false, quad_off_flag;
         double pe_stretch, pe_bend, ke;
+        string BC; 
 
         array<double,2> fov, view;
         array<int, 2> nq, half_nq;

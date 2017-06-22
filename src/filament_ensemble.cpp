@@ -16,7 +16,7 @@
 #include "Link.h"
 #include "filament_ensemble.h"
 //actin network class
-
+#include "math.h"
  
 filament_ensemble::filament_ensemble(){}
 
@@ -493,6 +493,7 @@ void filament_ensemble::update()
     
     for (int f = 0; f < net_sz; f++){
       //  if (f==0) cout<<"\nDEBUG: filament updates using "<<omp_get_num_threads()<<" cores";  
+	this->update_excluded_volume(f); 
         this->update_filament_stretching(f);
         network[f]->update_bending(t);
         network[f]->update_positions();
@@ -507,7 +508,69 @@ void filament_ensemble::update()
 
 }
 
+void filament_ensemble::update_excluded_volume(int f)
+{
+/*For every filament bead on f, for every bead not on f, calculate the force between the two bead using the Jones potential, and update them ( maybe divide by half due to overcaluclations).*/	
 
+    int net_sz = network.size();
+    //string bc = network[f]->get_BC();
+    int act_sz = network[f]->get_nactins();  
+    double k = pow(10,6) * (1.38064852*pow(10,-23)); //10^6 included to account for m to microm conversion
+    double a = k*temperature; 
+    double rmax = 1.0*pow(10,-6);  
+    double b = 1/rmax; 
+    double x1, x2, y1, y2, Fx1, Fx2, Fy1, Fy2, r, dx, dy; 
+
+    for(int i = 0; i < act_sz; i++){
+	for(int g = 0; g < net_sz; g++){
+            if(f == g){continue;}
+  	    if(f != g){
+                int act_sz_other = network[g]->get_nactins();  
+        	for(int j = 0; j < act_sz_other; j++){
+		    x1 = network[f]->get_actin(i)->get_xcm(); 
+	            y1 = network[f]->get_actin(i)->get_ycm();
+		    x2 = network[g]->get_actin(j)->get_xcm(); 
+		    y2 = network[g]->get_actin(j)->get_ycm(); 
+
+	            dx = x1 - x2; 
+		    dy = y1 - y2; 
+		        
+                    r = dist_bc(BC, dx, dy, fov[0], fov[1], delrx); 	
+	            if(r <= rmax){
+   			Fx1 = 2*dx*a*b*((1/r)-b); 
+  			Fx2 = -Fx1; 
+			Fy1 = 2*dy*a*b*((1/r)-b); 
+		        Fy2 = -Fy1; 
+
+			//Convert to pN
+			Fx1 = Fx1*pow(10,12); 
+			Fx2 = Fx2*pow(10,12); 
+			Fy1 = Fy1*pow(10,12); 
+			Fy2 = Fy2*pow(10,12); 
+
+			//Consider over-calculations
+			Fx1 = Fx1/2; 
+		        Fx2 = Fx2/2; 	
+			Fy1 = Fy1/2; 
+			Fy2 = Fy2/2; 
+ 
+  			network[f]->update_forces(i,Fx1,Fy1); 
+			network[g]->update_forces(j,Fx2,Fy2);  
+                    }
+	            else{
+  			Fx1 = 0; 
+			Fx2 = 0;
+  			Fy1 = 0;
+			Fy2 = 0;  
+
+			network[f]->update_forces(i,Fx1,Fy1);
+                        network[g]->update_forces(j,Fx2,Fy2);
+	            }
+                }
+  	    } 
+        }
+    }
+}
 vector<vector<double> > filament_ensemble::link_link_intersections(double len, double prob){
 
     vector< vector<double> > itrs;
@@ -560,7 +623,9 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
     nq = mynq;
     half_nq = {nq[0]/2, nq[1]/2};
-    
+   
+    BC = bc; 
+ 
     visc=vis;
     link_ld = link_len;
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
@@ -617,6 +682,8 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
         double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc) {
     
     fov = myfov;
+
+    BC = bc; 
 
     visc=vis;
     link_ld = link_len;
