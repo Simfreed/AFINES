@@ -516,7 +516,7 @@ void filament_ensemble::update_excluded_volume(int f)
     int act_sz = network[f]->get_nactins();  
     //10^6 included to account for m to microm conversion
     double a = 1.0; 
-    double rmax = 0.25*pow(10,-6);  
+    double rmax = 0.25;  
     double b = 1/rmax; 
     double x1, x2, y1, y2, Fx1, Fx2, Fy1, Fy2, r, dx, dy; 
 
