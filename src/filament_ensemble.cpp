@@ -513,11 +513,10 @@ void filament_ensemble::update_excluded_volume(int f)
 /*For every filament bead on f, for every bead not on f, calculate the force between the two bead using the Jones potential, and update them ( maybe divide by half due to overcaluclations).*/	
 
     int net_sz = network.size();
-    //string bc = network[f]->get_BC();
     int act_sz = network[f]->get_nactins();  
     //10^6 included to account for m to microm conversion
-    double a = temperature; 
-    double rmax = 1.0*pow(10,-6);  
+    double a = 1.0; 
+    double rmax = 0.25*pow(10,-6);  
     double b = 1/rmax; 
     double x1, x2, y1, y2, Fx1, Fx2, Fy1, Fy2, r, dx, dy; 
 
