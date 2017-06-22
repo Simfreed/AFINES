@@ -515,8 +515,8 @@ void filament_ensemble::update_excluded_volume(int f)
     int net_sz = network.size();
     //string bc = network[f]->get_BC();
     int act_sz = network[f]->get_nactins();  
-    double k = pow(10,6) * (1.38064852*pow(10,-23)); //10^6 included to account for m to microm conversion
-    double a = k*temperature; 
+    //10^6 included to account for m to microm conversion
+    double a = temperature; 
     double rmax = 1.0*pow(10,-6);  
     double b = 1/rmax; 
     double x1, x2, y1, y2, Fx1, Fx2, Fy1, Fy2, r, dx, dy; 
@@ -543,10 +543,10 @@ void filament_ensemble::update_excluded_volume(int f)
 		        Fy2 = -Fy1; 
 
 			//Convert to pN
-			Fx1 = Fx1*pow(10,12); 
-			Fx2 = Fx2*pow(10,12); 
-			Fy1 = Fy1*pow(10,12); 
-			Fy2 = Fy2*pow(10,12); 
+			//Fx1 = Fx1*pow(10,12); 
+			//Fx2 = Fx2*pow(10,12); 
+			//Fy1 = Fy1*pow(10,12); 
+			//Fy2 = Fy2*pow(10,12); 
 
 			//Consider over-calculations
 			Fx1 = Fx1/2; 
