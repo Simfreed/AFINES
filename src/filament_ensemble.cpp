@@ -505,7 +505,6 @@ void filament_ensemble::update()
     this->update_energies();
     
     t += dt;
-
 }
 
 void filament_ensemble::update_excluded_volume(int f)
@@ -521,7 +520,7 @@ void filament_ensemble::update_excluded_volume(int f)
     double x1, x2, y1, y2, Fx1, Fx2, Fy1, Fy2, r, dx, dy; 
 
     for(int i = 0; i < act_sz; i++){
-	for(int g = 0; g < net_sz; g++){
+	for(int g = f+1; g < net_sz; g++){
             if(f == g){continue;}
   	    if(f != g){
                 int act_sz_other = network[g]->get_nactins();  
@@ -548,10 +547,10 @@ void filament_ensemble::update_excluded_volume(int f)
 			//Fy2 = Fy2*pow(10,12); 
 
 			//Consider over-calculations
-			Fx1 = Fx1/2; 
-		        Fx2 = Fx2/2; 	
-			Fy1 = Fy1/2; 
-			Fy2 = Fy2/2; 
+			//Fx1 = Fx1/2; 
+		        //Fx2 = Fx2/2; 	
+			//Fy1 = Fy1/2; 
+			//Fy2 = Fy2/2; 
  
   			network[f]->update_forces(i,Fx1,Fy1); 
 			network[g]->update_forces(j,Fx2,Fy2);  
