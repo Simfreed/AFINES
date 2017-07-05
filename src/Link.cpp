@@ -37,6 +37,7 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
 
     force = {0,0};
     intpoint = {0,0};
+    point = {0,0}; 
     //this->step();
 }
 Link::~Link(){ 
@@ -247,6 +248,77 @@ void Link::calc_intpoint(string bc, double delrx, double xp, double yp)
             intpoint                = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
         }
     }
+}
+
+double Link::get_r_c(string bc, double delrx, double x, double y)
+{
+    double l2 = disp[0]*disp[0] + disp[1]*disp[1]; 
+    double r_c; 
+    double dx, dy; 
+    array <double, 2> pos; 
+	
+    if(l2 == 0)
+    {
+        point = {hx[0], hy[0]};
+        point = pos_bc(bc, delrx, 0, fov, {0,0}, point); 
+	pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
+        dx = pos[0] - point[0];
+        dy = pos[1] - point[1];
+        r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);  
+    }
+    else
+    {
+        double tp = dot_bc(bc, x-hx[0], y-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
+
+        if(tp < 0)
+        {
+            point = {hx[0], hy[0]};
+  	    point = pos_bc(bc, delrx, 0, fov, {0,0}, point);
+            pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y});
+            dx = pos[0] - point[0];
+            dy = pos[1] - point[1];
+            r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
+        }
+        else if(tp > 1.0)
+        {
+            point = {hx[1], hy[1]};
+	    point = pos_bc(bc, delrx, 0, fov, {0,0}, point);
+            pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y});
+            dx = pos[0] - point[0];
+            dy = pos[1] - point[1];
+            r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
+        }
+        else
+        {
+            array <double, 2> proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
+            point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
+            pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
+            dx = pos[0] - point[0];
+            dy = pos[1] - point[1];
+            r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
+        }
+    }
+    return r_c;
+}
+
+array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
+{
+    double l2 = disp[0]*disp[0] + disp[1]*disp[1];
+
+    if(l2 == 0){point = {hx[0], hy[0]};}
+    else
+    {
+        double tp = dot_bc(bc, x-hx[0], y-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
+
+        if(tp < 0){point = {hx[0], hy[0]};}
+        else if(tp > 1.0){point = {hx[1], hy[1]};} 
+        else
+        {
+            array <double, 2> proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
+            point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
+        }
+    }
+    return point;      
 }
 
 vector<array<int, 2> > Link::get_quadrants()

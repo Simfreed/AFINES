@@ -65,7 +65,8 @@ int main(int argc, char* argv[]){
     bool diff_strain_flag, osc_strain_flag;
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
-
+    double rmax; 
+ 
     bool restart;
     double restart_time;
 
@@ -160,6 +161,8 @@ int main(int argc, char* argv[]){
         
         ("p_dead_head_flag", po::value<bool>(&p_dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all crosslinks")
         ("p_dead_head", po::value<int>(&p_dead_head)->default_value(0), "index of head to kill")
+
+      	("rmax", po::value<double>(&rmax)->default_value(0.25), "cutoff distance for interactions between actins beads and filaments") 
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
@@ -323,12 +326,12 @@ int main(int argc, char* argv[]){
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd, myseed); 
+                fracture_force, bnd_cnd, myseed, rmax); 
     }else{
         net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd); 
+                fracture_force, bnd_cnd, rmax); 
     }
    
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
