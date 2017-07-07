@@ -1,0 +1,3 @@
+slurmstepd-midway2-0477: error: task/cgroup: unable to add task[pid=2403] to memory cg '(null)'
+Directory Created: ./out/exv_rc/ex27/txt_stack/actins.txt
+Directory Created: ./out/exv_rc/ex27/data/filament_e.txt
