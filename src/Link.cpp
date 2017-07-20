@@ -135,10 +135,6 @@ double Link::get_angle(){
     return phi;
 }
 
-//double Link::get_link_length(){ 
-//    return hypot(disp[0], disp[1]); 
-//}
-
 double Link::get_length(){
     return l0; 
 }
