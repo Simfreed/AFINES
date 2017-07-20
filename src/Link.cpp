@@ -135,6 +135,10 @@ double Link::get_angle(){
     return phi;
 }
 
+//double Link::get_link_length(){ 
+//    return hypot(disp[0], disp[1]); 
+//}
+
 double Link::get_length(){
     return l0; 
 }
@@ -260,8 +264,8 @@ double Link::get_r_c(string bc, double delrx, double x, double y)
     if(l2 == 0)
     {
         point = {hx[0], hy[0]};
-        point = pos_bc(bc, delrx, 0, fov, {0,0}, point); 
-	pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
+        //point = pos_bc(bc, delrx, 0, fov, {0,0}, point); 
+	pos = {x,y}// = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
         dx = pos[0] - point[0];
         dy = pos[1] - point[1];
         r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);  
@@ -273,8 +277,8 @@ double Link::get_r_c(string bc, double delrx, double x, double y)
         if(tp < 0)
         {
             point = {hx[0], hy[0]};
-  	    point = pos_bc(bc, delrx, 0, fov, {0,0}, point);
-            pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y});
+  	    //point = pos_bc(bc, delrx, 0, fov, {0,0}, point);
+            pos = {x,y}//pos_bc(bc, delrx, 0, fov, {0,0}, {x,y});
             dx = pos[0] - point[0];
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
@@ -282,8 +286,8 @@ double Link::get_r_c(string bc, double delrx, double x, double y)
         else if(tp > 1.0)
         {
             point = {hx[1], hy[1]};
-	    point = pos_bc(bc, delrx, 0, fov, {0,0}, point);
-            pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y});
+	    //point = pos_bc(bc, delrx, 0, fov, {0,0}, point);
+            pos = {x,y}//pos_bc(bc, delrx, 0, fov, {0,0}, {x,y});
             dx = pos[0] - point[0];
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
@@ -292,16 +296,16 @@ double Link::get_r_c(string bc, double delrx, double x, double y)
         {
             proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
             point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
-            pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
+            pos = {x,y}//pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
             dx = pos[0] - point[0];
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
         }
     }
-    return r_c;
+    //return r_c;
 }
 
-array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
+/*array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
 {
     double l2 = disp[0]*disp[0] + disp[1]*disp[1];
 
@@ -320,19 +324,19 @@ array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
     }
     return point;      
 }
-/*
+*/
 double Link::get_r_c(string bc, double delrx, double x, double y)
 {
     this->calc_r_c(bc,delrx,x,y);
     return r_c; 
 }
 
-array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
+array <double, 2> Link::get_point()
 {
-    this->calc_r_c(bc,delrx,x,y);
+    //this->calc_r_c(bc,delrx,x,y);
     return point; 
 }
-*/
+
 vector<array<int, 2> > Link::get_quadrants()
 {
     return quad;

@@ -344,7 +344,7 @@ double filament_ensemble::get_kinetic_energy_vir(){
 }
 
 void filament_ensemble::print_network_thermo(){
-    cout<<"\nAll Fs\t:\tKE = "<<ke_vir<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tPEexv = "<<pe_exv<<"\tTE = "<<(ke_vir+pe_stretch+pe_bend+pe_exv);
+    cout<<"\nAll Fs\t:\tKE = "<<ke_vir<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tTE = "<<(ke_vir+pe_stretch+pe_bend+pe_exv);
 }
 
  
@@ -354,8 +354,6 @@ void filament_ensemble::print_filament_lengths(){
         cout<<"\nF"<<f<<" : "<<network[f]->get_end2end()<<" um";
     }
 }
-
-
  
 bool filament_ensemble::is_polymer_start(int fil, int actin){
 
@@ -531,18 +529,19 @@ void filament_ensemble::update_link_forces_from_quads()
     //std::unordered_set<array<int,4>, boost::hash<array<int,4>>>::const_iterator search;  
     //std::unordered_set<array<int,4>, boost::hash<array<int,4>>>::const_iterator inv_search;  
 
-    vector<vector<double>> int_lks; 
-    vector<vector<double>>::iterator search; 
-    vector<vector<double>>::iterator inv_search; 
+    //vector<vector<double>>::iterator search; 
+    //vector<vector<double>>::iterator inv_search; 
 
     int nlinks; 
     array <int,2> link_1; 
     array <int,2> link_2; 
-    vector<double> set; 
-    vector<double> inv_set; 
-    int f1, f2, l1, l2, par1, par2;   
+    int set; 
+    int inv_set; 
+    int f1, f2, l1, l2; 
+    double par1, par2;   
+    int nfil, dim;  
 
-    int_lks.clear(); 
+    nfil = network.size();  
 
     for(int x = 0; x < nq[0]; x++) 
     {   
@@ -551,6 +550,9 @@ void filament_ensemble::update_link_forces_from_quads()
 	{   
 	    //cout << "Loop through nqy" << endl; 
  	    nlinks = n_links_per_quad[x]->at(y); 
+ 	    dim = nfil*nlinks; 
+  
+            vector<vector<int>> int_lks (dim, vector<int> (dim, 0)); 
 
 	    for(int i = 0; i < nlinks; i++) 
 	    {   
@@ -573,17 +575,15 @@ void filament_ensemble::update_link_forces_from_quads()
 		    //cout << "f1: " << f1 << endl; 
 		    //cout << "f2: " << f2 << endl;
  		    //cout << "l1: " << l1 << endl; 
-  		    //cout << "l2: " << l2 << endl;  
-
-  		    set = {par1, par2}; 
-		    inv_set = {par2, par1}; 
-	            search = find(int_lks.begin(), int_lks.end(), set); 
-		    inv_search = find(int_lks.begin(), int_lks.end(), inv_set); 
+  		    //cout << "l2: " << l2 << endl; 
+  		 
+  		    set = int_lks[par1][par2]; 
+		    inv_set = int_lks[par2][par1]; 
 		
-		    if((search == int_lks.end()) && (inv_search == int_lks.end()))
+		    if(set == 0 && inv_set == 0)
 		    {
   			//cout << "Not FOUND in set" << endl; 
-			int_lks.push_back(set); 
+			int_lks[par1][par2] = 1; 
                        
 			if(f1 != f2)
 			{   
@@ -596,6 +596,8 @@ void filament_ensemble::update_link_forces_from_quads()
 		    else{continue;}
 		}
 	    }
+
+            int_lks.clear(); 
 	} 
     }   
 }
@@ -648,12 +650,21 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     hy2_2 = hy_2[1];
 
     r_c[0] = network[n1]->get_link(l1)->get_r_c(BC, delrx, hx1_2, hy1_2);
+    point[0] = network[n1]->get_link(l1)->get_point(); 
     r_c[1] = network[n1]->get_link(l1)->get_r_c(BC, delrx, hx2_2, hy2_2);
+    
     r_c[2] = network[n2]->get_link(l2)->get_r_c(BC, delrx, hx1_1, hy1_1);
     r_c[3] = network[n2]->get_link(l2)->get_r_c(BC, delrx, hx2_1, hy2_1);
     
     r = r_c[0];
-    for(int k = 1; k < 4; k++){if(r_c[k] < r){r = r_c[k];}}
+    p = point[0]; 
+
+    for(int k = 1; k < 4; k++){
+  	if(r_c[k] < r){
+	    r = r_c[k]; 
+            p = point[k];
+	}
+    }
 
     if(r <= rmax)
     {
@@ -666,8 +677,6 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
             y2 = position[1];
             len1 = dist_bc(BC, (hx1_1-x2), (hy1_1-y2), fov[0], fov[1], delrx);
             len2 = dist_bc(BC, (hx2_1-x2), (hy2_1-y2), fov[0], fov[1], delrx);
-            vel_1 = network[n2]->get_actin(l2)->get_velocity();
-            vel_2 = network[n1]->get_actin(l1)->get_velocity();
         }
         else if(r == r_c[1])
         {
@@ -678,8 +687,6 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
             y2 = position[1];
             len1 = dist_bc(BC, (hx1_1-x2), (hy1_1-y2), fov[0], fov[1], delrx);
             len2 = dist_bc(BC, (hx2_1-x2), (hy2_1-y2), fov[0], fov[1], delrx);
-    	    vel_1 = network[n2]->get_actin(l2)->get_velocity();
-	    vel_2 = network[n1]->get_actin(l1)->get_velocity();
    	}
   	else if(r == r_c[2])
         {  
@@ -690,8 +697,6 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
             y2 = position[1];
             len1 = dist_bc(BC, (hx1_2-x2), (hy1_2-y2), fov[0], fov[1], delrx);
             len2 = dist_bc(BC, (hx2_2-x2), (hy2_2-y2), fov[0], fov[1], delrx);
-            vel_1 = network[n1]->get_actin(l1)->get_velocity();
-            vel_2 = network[n2]->get_actin(l2)->get_velocity();
     	}
         else if(r == r_c[3])
         {
@@ -702,12 +707,10 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
             y2 = position[0];
             len1 = dist_bc(BC, (hx1_2-x2), (hy1_2-y2), fov[0], fov[1], delrx);
             len2 = dist_bc(BC, (hx2_2-x2), (hy2_2-y2), fov[0], fov[1], delrx);
-            vel_1 = network[n1]->get_actin(l1)->get_velocity();
-            vel_2 = network[n2]->get_actin(l2)->get_velocity();
        	}
 
-        pos_1 = pos_bc(BC, delrx, dt, fov, vel_1, {x1, y1});
-        pos_2 = pos_bc(BC, delrx, dt, fov, vel_2, {x2, y2});
+        pos_1 = {x1, y1}//pos_bc(BC, delrx, dt, fov, vel_1, {x1, y1});
+        pos_2 = {x2, y2}//pos_bc(BC, delrx, dt, fov, vel_2, {x2, y2});
 
         dx = pos_2[0] - pos_1[0];
         dy = pos_2[1] - pos_1[1];
@@ -716,13 +719,6 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 
         r_1 = (len2/len);
         r_2 = (len1/len);
-
-	//cout << "Ratio on actin 1: " << r_1 << endl; 
-	//cout << "Ratio on actin 2: " << r_2 << endl; 
-
-	//cout << "r_c: " << r << endl; 
-	//cout << "dy: " << dy << endl; 
-	//cout << "dx: " << dx << endl; 
 
         Fx1 = 2*a*dx*pow(b,2.0)*exp(-pow(r*b,2.0));
         Fx2 = -Fx1;
@@ -757,10 +753,9 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
             network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
             network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
             network[n1]->update_forces(l1+1, Fx2, Fy2);
-      	}
- 
+      	} 
     }  
-} 
+}
 
 double filament_ensemble::get_exv_energy()
 {

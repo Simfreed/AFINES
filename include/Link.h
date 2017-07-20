@@ -40,6 +40,8 @@ class Link
         double get_kl();
         
         double get_length();
+ 
+        //double get_link_length(); 
        
         double get_angle();
 
