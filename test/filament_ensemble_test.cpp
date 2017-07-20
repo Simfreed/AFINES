@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_force_test_two_beads )
     }
 }
 
-BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_test ){ 
+BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_from_quads ){ 
 
     //Check forces after one time-step to make sure they match expected values 
     double  viscosity               = 0.5;
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_test ){
     string  bc                      = "PERIODIC";
     double  rmax                    = 0.25;
 
-    vector<vector<double>> act = {{-0.6, 0.5, 0.25, 0}, {-0.6, -0.5, 0.25, 0}, {-0.6, 0.0, 0.25, 1}, {0.4, 0.0, 0.25, 1}};
+    vector<vector<double>> act = {{-0.5, 0.1, 0.25, 0}, {0.5, 0.1, 0.25, 0}, {0.0, 0.0, 0.25, 1}, {0.0, -1.0, 0.25, 1}};
 
     cout<<"\n----------Filament_Ensemble_Test----------\n";
     cout<<"\nTwo filaments, each with two beads, update link forces\n";
@@ -378,28 +378,28 @@ BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_test ){
 
     network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax);
 	
-    double f1_1_ex[2] = {0, 0}; 
-    double f2_1_ex[2] = {0, 0}; 
-    double f1_2_ex[2] = {0, 0}; 
+    double f1_1_ex[2] = {0, 1.3634300623459383}; 
+    double f2_1_ex[2] = {0, 1.3634300623459383}; 
+    double f1_2_ex[2] = {0, -2.7268601246918767}; 
     double f2_2_ex[2] = {0, 0};
     array <double,2> f1_1; 
     array <double,2> f2_1; 
     array <double,2> f1_2; 
     array <double,2> f2_2;  
-    double net_sz = network->get_nfilaments(); 
-    for(int f = 0; f < net_sz; f++){ network->update_link_forces(f);} 
+ 
+    network->quad_update_serial();  
+    network->update_link_forces_from_quads();
 
-    for(int f = 0; f < net_sz; f++){
-            	
-	if(f==0){ 
-            f1_1 = network->get_filament(f)->get_actin(0)->get_force(); 
-    	    f2_1 = network->get_filament(f)->get_actin(1)->get_force(); 
-	} 
-	if(f==1){
-	    f1_2 = network->get_filament(f)->get_actin(0)->get_force(); 
-	    f2_2 = network->get_filament(f)->get_actin(1)->get_force(); 
-	}
-    }
+    //for(int f = 0; f < 2; f++) 
+    //{ 
+    //	network->update_link_forces(f); 
+    //} 
+            
+    f1_1 = network->get_filament(0)->get_actin(0)->get_force(); 
+    f2_1 = network->get_filament(0)->get_actin(1)->get_force(); 
+	
+    f1_2 = network->get_filament(1)->get_actin(0)->get_force();
+    f2_2 = network->get_filament(1)->get_actin(1)->get_force(); 
             
     for(int j = 0; j < 2; j++){
         
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
     string  bc                      = "PERIODIC";
     double  rmax		    = 0.25;  
     
-    vector<vector<double>> act = {{-0.6, 0.5, 0.25, 0}, {-0.6, -0.5, 0.25, 0}, {-0.5, 0.0, 0.25, 1}, {0.5, 0.0, 0.25, 1}};
+    vector<vector<double>> act = {{-0.5, 0.1, 0.25, 0}, {0.5, 0.1, 0.25, 0}, {0.0, 0.0, 0.25, 1}, {0.0, -1.0, 0.25, 1}};
 
     cout<<"\n----------Filament_Ensemble_Update_Test----------\n";
     cout<<"\nTwo filaments, each with two beads\n";
@@ -444,8 +444,8 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
     network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax);
     double x_s[2][2]; 
     double y_s[2][2]; 
-    double x_ev[2][2]={{-0.60101859, -0.60101859}, {-0.497962816728424,0.5}}; 
-    double y_ev[2][2]={{0.5,-0.5}, {0,0}}; 
+    double x_ev[2][2]={{-0.5, 0.5}, {0.0,0.0}}; 
+    double y_ev[2][2]={{0.100578657690619854,0.100578657690619854}, {-0.001157315381239718,-1.0}}; 
     network->update(); 
     for(int i = 0; i < 2; i++){
      	for(int j = 0; j < 2; j++){
@@ -457,8 +457,8 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
 	    cout<<"Simulated y value: "<< y_s[i][j]<<endl; 
 	    cout<<"Expected y value: "<< y_ev[i][j]<<endl; 
 
-            BOOST_CHECK_CLOSE(x_s[i][j], x_ev[i][j], 1e-3); 
-	    BOOST_CHECK_CLOSE(y_s[i][j], y_ev[i][j], 1e-3); 
+            BOOST_CHECK_CLOSE(x_s[i][j], x_ev[i][j], 1e-1); 
+	    BOOST_CHECK_CLOSE(y_s[i][j], y_ev[i][j], 1e-1); 
     	}
 
     }

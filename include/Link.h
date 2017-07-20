@@ -68,6 +68,8 @@ class Link
         bool is_similar(const Link& that);    
 
         void update_force(string bc, double shear_dist);
+
+      	//double get_kinetic_energy(); 
         
         void update_force_fraenkel_fene(string bc, double shear_dist);
         
@@ -88,7 +90,9 @@ class Link
 
         void calc_intpoint(string bc, double shear_dist, double xp, double yp);
  
-   	double get_r_c(string bc, double delrx, double x, double y); 
+	//void calc_r_c(string bc, double delrx, double x, double y); 
+
+    	double get_r_c(string bc, double delrx, double x, double y); 
 
 	array<double,2> get_point(string bc, double delrx, double x, double y); 
         

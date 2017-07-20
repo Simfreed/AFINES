@@ -1,4 +1,4 @@
-/*------------------------------------------------------------------
+/*-------------------------------------------------------------------
  filament_ensemble.cpp : container class for filaments
  
  Copyright (C) 2016 
@@ -18,6 +18,8 @@
 //actin network class
 #include "math.h"
 #include <unordered_set>
+#include <iostream>
+#include <string>
  
 filament_ensemble::filament_ensemble(){}
 
@@ -318,12 +320,12 @@ void filament_ensemble::print_filament_thermo(){
 void filament_ensemble::update_energies(){
     pe_stretch = 0;
     pe_bend = 0;
-    ke = 0;
+    ke_vir = 0; 
     for (unsigned int f = 0; f < network.size(); f++)
-    {
-        ke += network[f]->get_kinetic_energy();
+    { 
+        ke_vir += network[f]->get_kinetic_energy(); 
         pe_bend += network[f]->get_bending_energy();
-        pe_stretch += network[f]->get_stretching_energy();
+        pe_stretch += network[f]->get_stretching_energy();  
     }
 }
 
@@ -337,9 +339,12 @@ double filament_ensemble::get_bending_energy(){
     return pe_bend;
 }
 
- 
+double filament_ensemble::get_kinetic_energy_vir(){ 
+    return ke_vir; 
+}
+
 void filament_ensemble::print_network_thermo(){
-    cout<<"\nAll Fs\t:\tKE = "<<ke<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tTE = "<<(ke+pe_stretch+pe_bend);
+    cout<<"\nAll Fs\t:\tKE = "<<ke_vir<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tPEexv = "<<pe_exv<<"\tTE = "<<(ke_vir+pe_stretch+pe_bend+pe_exv);
 }
 
  
@@ -486,32 +491,35 @@ void filament_ensemble::update_int_forces()
 /* Overdamped Langevin Dynamics Integrator (Leimkuhler, 2013) */
 
 void filament_ensemble::update()
-
 {      
     int net_sz = network.size();
     // #pragma omp parallel for
-    
+
+    //ke_exv = 0;     
+    pe_exv = 0; 
+    //N = 0; 
+
+    if (!quad_off_flag)
+        this->quad_update_serial();
+
+    this->update_link_forces_from_quads();
+
     for (int f = 0; f < net_sz; f++){
       //  if (f==0) cout<<"\nDEBUG: filament updates using "<<omp_get_num_threads()<<" cores";  
-      //this->update_excluded_volume(f);
-      //this->update_link_forces(f);  
+      //  this->update_link_forces(f);  
         this->update_filament_stretching(f);
         network[f]->update_bending(t);
         network[f]->update_positions();
     }
-    
-    if (!quad_off_flag)
-        this->quad_update_serial();
-    
-    this->update_energies();
-    this->update_link_forces_from_quads(); 
+ 
+    this->update_energies(); 
     
     t += dt;
 }
 
 void filament_ensemble::update_link_forces_from_quads()
 {
-    unordered_set <array<int,4>, boost::hash<array<int,4>>> int_lks; //4 components are f1, l1, f2, l2 f = fil l = lks
+    //unordered_set <array<int,4>, boost::hash<array<int,4>>> int_lks; //4 components are f1, l1, f2, l2 f = fil l = lks
     //loop through links_per_quad
     //inside that loop, loop through each link that is on that quad 
     //loop through every other link in the quad in order to calc interaction
@@ -520,176 +528,71 @@ void filament_ensemble::update_link_forces_from_quads()
     //if so, continue, if not, add it to the set 
     //look up unordered_set functions 
     
+    //std::unordered_set<array<int,4>, boost::hash<array<int,4>>>::const_iterator search;  
+    //std::unordered_set<array<int,4>, boost::hash<array<int,4>>>::const_iterator inv_search;  
+
+    vector<vector<double>> int_lks; 
+    vector<vector<double>>::iterator search; 
+    vector<vector<double>>::iterator inv_search; 
+
     int nlinks; 
     array <int,2> link_1; 
     array <int,2> link_2; 
-    array <int,4> set; 
-    array <int,4> inv_set; 
-    double a = 1.0;
-    double b = 1/rmax;
-    double x1, x2, y1, y2, dx, dy; 
-    double Fx1, Fx2, Fy1, Fy2;
-    array <double, 2> hx1;
-    array <double, 2> hy1;
-    array <double, 2> pos_1;
-    array <double, 2> vel_1;
-    array <double, 2> hx2;
-    array <double, 2> hy2;
-    array <double, 2> pos_2;
-    array <double, 2> vel_2;
-    array <double, 2> position;
-    array <double, 4> r_c;
-    double smallest, r, len1, len2, len, r_1, r_2; 
-    int f1, f2, l1, l2;  
+    vector<double> set; 
+    vector<double> inv_set; 
+    int f1, f2, l1, l2, par1, par2;   
+
+    int_lks.clear(); 
 
     for(int x = 0; x < nq[0]; x++) 
-    { 
+    {   
+	//cout << "Loop through nqx" << endl;  
 	for(int y = 0; y < nq[1]; y++) 
-	{
+	{   
+	    //cout << "Loop through nqy" << endl; 
  	    nlinks = n_links_per_quad[x]->at(y); 
 
 	    for(int i = 0; i < nlinks; i++) 
-	    {
+	    {   
+		//cout << "Loop though nlinks" << endl; 
 		link_1 = links_per_quad[x]->at(y)->at(i); 
 
-                for(int j = i + 1; j < nlinks; j++) 
-		{
+                for(int j = i+1; j < nlinks; j++) 
+		{   
+		    //cout << "Loop through other nlinks" << endl; 
 		    link_2 = links_per_quad[x]->at(y)->at(j);
-
+		  
 		    f1 = link_1[0]; 
 		    f2 = link_2[0]; 
 		    l1 = link_1[1];
 		    l2 = link_2[1]; 
 
-  		    set = {f1, l1, f2, l1}; 
-		    inv_set = {f2, l2, f1, l1}; 
-		    int_lks.insert(set); 
-	 	    auto search = int_lks.find(set); 
-		    auto inv_search = int_lks.find(inv_set); 
+                    par1 = f1*(network[f1]->get_nlinks()) + l1; 
+ 		    par2 = f2*(network[f2]->get_nlinks()) + l2;
+
+		    //cout << "f1: " << f1 << endl; 
+		    //cout << "f2: " << f2 << endl;
+ 		    //cout << "l1: " << l1 << endl; 
+  		    //cout << "l2: " << l2 << endl;  
+
+  		    set = {par1, par2}; 
+		    inv_set = {par2, par1}; 
+	            search = find(int_lks.begin(), int_lks.end(), set); 
+		    inv_search = find(int_lks.begin(), int_lks.end(), inv_set); 
 		
-		    if(search == int_lks.end() || inv_search == int_lks.end())
+		    if((search == int_lks.end()) && (inv_search == int_lks.end()))
 		    {
-			//cout << "Value found in set" << endl; 
-			continue;
+  			//cout << "Not FOUND in set" << endl; 
+			int_lks.push_back(set); 
+                       
+			if(f1 != f2)
+			{   
+			    //cout << "f1 is not equal to f2" << endl; 
+                            this->update_force_between_filaments(f1, l1, f2, l2);
+  			    //N += 1; 
+			}
+                        else{continue;}
 		    } 
-		    else if (f1 != f2)
-		    { 
-			//cout << "Value NOT found in set" << endl; 
-
-			hx1 = network[f1]->get_link(l1)->get_hx(); 
-		        hx2 = network[f2]->get_link(l2)->get_hx();
-			hy1 = network[f1]->get_link(l1)->get_hy(); 
-			hy2 = network[f2]->get_link(l2)->get_hy();  
-
-			r_c[0] = network[f1]->get_link(l1)->get_r_c(BC, delrx, hx2[0], hy2[0]);
-                        r_c[1] = network[f1]->get_link(l1)->get_r_c(BC, delrx, hx2[1], hy2[1]);
-                        r_c[2] = network[f2]->get_link(l2)->get_r_c(BC, delrx, hx1[0], hy1[0]);
-                        r_c[3] = network[f2]->get_link(l2)->get_r_c(BC, delrx, hx1[1], hy1[1]);
-
-			smallest = r_c[0];  
-			for(int k = 1; k < 4; k++){if(r_c[k] < smallest){smallest = r_c[k];}}
-
-                        if(smallest <= rmax)
-                     	{
-                            if(smallest == r_c[0])
-                            {
-                            	x1 = hx2[0];
-                            	y1 = hy2[0];
-                            	position = network[f1]->get_link(l1)->get_point(BC, delrx, x1, y1);
-                            	x2 = position[0];
-                            	y2 = position[1];
-                            	r = r_c[0];
-                            	len1 = dist_bc(BC, (hx1[0]-x2), (hy1[0]-y2), fov[0], fov[1], delrx);
-                            	len2 = dist_bc(BC, (hx1[1]-x2), (hy1[1]-y2), fov[0], fov[1], delrx);
-
-                            	vel_1 = network[f2]->get_actin(l2)->get_velocity();
-                            	vel_2 = network[f1]->get_actin(l1)->get_velocity();
-                            }
-                            else if(smallest == r_c[1])
-                            {
-                           	x1 = hx2[1];
-                            	y1 = hy2[1];
-                            	position = network[f1]->get_link(l1)->get_point(BC, delrx, x1, y1);
-                            	x2 = position[0];
-                            	y2 = position[1];
-                            	r = r_c[1];
-                            	len1 = dist_bc(BC, (hx1[0]-x2), (hy1[0]-y2), fov[0], fov[1], delrx);
-                            	len2 = dist_bc(BC, (hx1[1]-x2), (hy1[1]-y2), fov[0], fov[1], delrx);
-
-                            	vel_1 = network[f2]->get_actin(l2)->get_velocity();
-				vel_2 = network[f1]->get_actin(l1)->get_velocity(); 
-                            }
-			    else if(smallest == r_c[2])
-                            {
-                           	x1 = hx1[0];
-                            	y1 = hy1[0];
-                            	position = network[f2]->get_link(l2)->get_point(BC, delrx, x1, y1);
-                            	x2 = position[0];
-                            	y2 = position[1];
-                            	r = r_c[2];
-                            	len1 = dist_bc(BC, (hx2[0]-x2), (hy2[0]-y2), fov[0], fov[1], delrx);
-                            	len2 = dist_bc(BC, (hx2[1]-x2), (hy2[1]-y2), fov[0], fov[1], delrx);
-
-                            	vel_1 = network[f1]->get_actin(l1)->get_velocity();
-                            	vel_2 = network[f2]->get_actin(l2)->get_velocity();
-                            }
-                            else if(smallest == r_c[3])
-                            {
-                            	x1 = hx1[1];
-                            	y1 = hy1[1];
-                            	position = network[f2]->get_link(l2)->get_point(BC, delrx, x1, y1);
-                            	x2 = position[0];
-                            	y2 = position[0];
-                            	r = r_c[3];
-                            	len1 = dist_bc(BC, (hx2[0]-x2), (hy2[0]-y2), fov[0], fov[1], delrx);
-                            	len2 = dist_bc(BC, (hx2[1]-x2), (hy2[1]-y2), fov[0], fov[1], delrx);
-
-                            	vel_1 = network[f1]->get_actin(l1)->get_velocity();
-                            	vel_2 = network[f2]->get_actin(l2)->get_velocity();
-                            }
- 
-  			    pos_1 = pos_bc(BC, delrx, dt, fov, vel_1, {x1, y1});
-                            pos_2 = pos_bc(BC, delrx, dt, fov, vel_2, {x2, y2});
-
-                            dx = pos_2[0] - pos_1[0];
-                            dy = pos_2[1] - pos_1[1];
-
-                            len = len1 + len2;
-
-                            r_1 = (len2/len);
-                            r_2 = (len1/len);
-
-                            Fx1 = 2*a*dx*pow(b,2)*exp(-pow(r*b,2));
-                            Fx2 = -Fx1;
-                            Fy1 = 2*a*dy*pow(b,2)*exp(-pow(r*b,2));
-                            Fy2 = -Fy1;
-
-                            if(smallest == r_c[0])
-                            {
-                            	network[f1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
-                            	network[f1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
-                            	network[f2]->update_forces(l2, Fx2, Fy2);
-                            }
-                            else if(smallest == r_c[1])
-                            {
-                            	network[f1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
-                            	network[f1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
-                                network[f2]->update_forces(l2+1, Fx2, Fy2);
-                            }
-			    else if(smallest == r_c[2])
-                            {  
-                            	network[f2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
-                             	network[f2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
-                            	network[f1]->update_forces(l1, Fx2, Fy2);
-                            }
-                            else if(smallest == r_c[3])
-                            {
-                            	network[f2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
-                            	network[f2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
-                            	network[f1]->update_forces(l1+1, Fx2, Fy2);
-                            }
-		        }
-		    }  
 		    else{continue;}
 		}
 	    }
@@ -702,171 +605,166 @@ void filament_ensemble::update_link_forces(int f)
     int net_sz = network.size();
     int lks_sz = network[f]->get_nlinks();
     int oth_lks_sz;
-    double a = 0.004; 
-    double b = 1/rmax; 
-    double hx1_1, hy1_1, hx2_1, hy2_1, hx1_2, hy1_2, hx2_2, hy2_2, phi_1, phi_2, x1, x2, y1, y2, dx, dy, Fx1, Fx2, Fy1, Fy2;
-    array <double, 2> hx_1;  
-    array <double, 2> hy_1;
-    array <double, 2> pos_1; 
-    array <double, 2> disp_1; 
-    array <double, 2> vel_1; 
-    array <double, 2> hx_2;
-    array <double, 2> hy_2; 
-    array <double, 2> pos_2; 
-    array <double, 2> disp_2; 
-    array <double, 2> vel_2; 
-    array <double, 2> position; 
-    array <double, 4> r_c;
-    double smallest, r, l1, l2, l, r_1, r_2; 
 
     for(int i = 0; i < lks_sz; i++) 
-    { 
-    	hx_1 = network[f]->get_link(i)->get_hx(); 
-	hy_1 = network[f]->get_link(i)->get_hy(); 
-        hx1_1 = hx_1[0]; 
-	hx2_1 = hx_1[1]; 
-    	hy1_1 = hy_1[0]; 
-	hy2_1 = hy_1[1]; 
-
-        disp_1 = network[f]->get_link(i)->get_disp(); 
-
-	phi_1 = network[f]->get_link(i)->get_angle(); 
-
+    {   
 	for(int g = f+1; g < net_sz; g++)
 	{
 	    oth_lks_sz = network[g]->get_nlinks(); 
 
 	    for(int j = 0; j < oth_lks_sz; j++) 
 	    {
-		hx_2 = network[g]->get_link(j)->get_hx(); 
-		hy_2 = network[g]->get_link(j)->get_hy(); 
-		hx1_2 = hx_2[0];
-	        hx2_2 = hx_2[1];
-        	hy1_2 = hy_2[0];
-	        hy2_2 = hy_2[1];
-
- 		disp_2 = network[g]->get_link(j)->get_disp(); 
-
-		phi_2 = network[g]->get_link(j)->get_angle(); 
-
-	        if(phi_1 == phi_2){ continue; }
-		else 
-		{ 
-     		    r_c[0] = network[f]->get_link(i)->get_r_c(BC, delrx, hx1_2, hy1_2); 
-  	            r_c[1] = network[f]->get_link(i)->get_r_c(BC, delrx, hx2_2, hy2_2); 
-		    r_c[2] = network[g]->get_link(j)->get_r_c(BC, delrx, hx1_1, hy1_1); 
-		    r_c[3] = network[g]->get_link(j)->get_r_c(BC, delrx, hx2_1, hy2_1); 
-
-		    smallest = r_c[0]; 
-		    for(int k = 1; k < 4; k++){if(r_c[k] < smallest){smallest = r_c[k];}}
-		    
-		    if(smallest <= rmax)
-    		    { 
-		        if(smallest == r_c[0]) 
-		    	{
-			    x1 = hx1_2; 
-			    y1 = hy1_2; 
-			    position = network[f]->get_link(i)->get_point(BC, delrx, x1, y1); 
-			    x2 = position[0]; 
-			    y2 = position[1];  
-			    r = r_c[0]; 
-			    l1 = dist_bc(BC, (hx1_1-x2), (hy1_1-y2), fov[0], fov[1], delrx); 
-			    l2 = dist_bc(BC, (hx2_1-x2), (hy2_1-y2), fov[0], fov[1], delrx); 
-
-			    vel_1 = network[g]->get_actin(j)->get_velocity();
-                            vel_2 = network[f]->get_actin(i)->get_velocity(); 
-		        }
-		        else if(smallest == r_c[1])
-     		    	{
-			    x1 = hx2_2;
-                            y1 = hy2_2;
-			    position = network[f]->get_link(i)->get_point(BC, delrx, x1, y1); 
-			    x2 = position[0]; 
-			    y2 = position[1];
-                            r = r_c[1]; 
-			    l1 = dist_bc(BC, (hx1_1-x2), (hy1_1-y2), fov[0], fov[1], delrx);
-                            l2 = dist_bc(BC, (hx2_1-x2), (hy2_1-y2), fov[0], fov[1], delrx);
-
-			    vel_2 = network[f]->get_actin(i)->get_velocity();
-        	            vel_1 = network[g]->get_actin(j)->get_velocity();
-		    	}
-		    	else if(smallest == r_c[2]) 
-		    	{  
-			    x1 = hx1_1; 
-			    y1 = hy1_1; 
-			    position = network[g]->get_link(j)->get_point(BC, delrx, x1, y1); 
-			    x2 = position[0]; 
-		 	    y2 = position[1];
-			    r = r_c[2]; 
-			    l1 = dist_bc(BC, (hx1_2-x2), (hy1_2-y2), fov[0], fov[1], delrx);
-                            l2 = dist_bc(BC, (hx2_2-x2), (hy2_2-y2), fov[0], fov[1], delrx);
-	
-			    vel_1 = network[f]->get_actin(i)->get_velocity();
-	                    vel_2 = network[g]->get_actin(j)->get_velocity();
-		    	}  
-		    	else if(smallest == r_c[3]) 
-		    	{  
-	        	    x1 = hx2_1; 
-			    y1 = hy2_1; 
-			    position = network[g]->get_link(j)->get_point(BC, delrx, x1, y1); 
-			    x2 = position[0]; 
-			    y2 = position[0]; 
-			    r = r_c[3]; 
-			    l1 = dist_bc(BC, (hx1_2-x2), (hy1_2-y2), fov[0], fov[1], delrx);
-                            l2 = dist_bc(BC, (hx2_2-x2), (hy2_2-y2), fov[0], fov[1], delrx);
-
-			    vel_1 = network[f]->get_actin(i)->get_velocity();
-                	    vel_2 = network[g]->get_actin(j)->get_velocity();
-		    	}
-
-			if(smallest == 0){continue;}
-			
-			pos_1 = pos_bc(BC, delrx, dt, fov, vel_1, {x1, y1});
-                        pos_2 = pos_bc(BC, delrx, dt, fov, vel_2, {x2, y2});
-      
-                        dx = pos_2[0] - pos_1[0]; 
-	            	dy = pos_2[1] - pos_1[1];  
-
-			l = l1 + l2; 
-
-			r_1 = (l2/l); 
-			r_2 = (l1/l); 
-                   
-                    	Fx1 = 2*a*dx*pow(b,2)*exp(-pow(r*b,2)); 
-                  	Fx2 = -Fx1;
-                    	Fy1 = 2*a*dy*pow(b,2)*exp(-pow(r*b,2));
-                    	Fy2 = -Fy1;
-
-			if(smallest == r_c[0])
-			{ 
-			    network[f]->update_forces(i, Fx1*r_1, Fy1*r_1); 
-			    network[f]->update_forces(i+1, Fx1*r_2, Fy1*r_2); 
-			    network[g]->update_forces(j, Fx2, Fy2);   
-			} 
-			else if(smallest == r_c[1])
-			{
-			    network[f]->update_forces(i, Fx1*r_1, Fy1*r_1); 
-			    network[f]->update_forces(i+1, Fx1*r_2, Fy1*r_2); 
-			    network[g]->update_forces(j+1, Fx2, Fy2);    
-			}
-			else if(smallest == r_c[2]) 
-			{ 
-			    network[g]->update_forces(j, Fx1*r_1, Fy1*r_1); 
-			    network[g]->update_forces(j+1, Fx1*r_2, Fy1*r_2); 
-			    network[f]->update_forces(i, Fx2, Fy2); 
-			} 
-			else if(smallest == r_c[3]) 
-			{
-		            network[g]->update_forces(j, Fx1*r_1, Fy1*r_1); 
-			    network[g]->update_forces(j+1, Fx1*r_2, Fy1*r_2); 
-			    network[f]->update_forces(i+1, Fx2, Fy2); 
-			}	
-		    }
-		}
+		this->update_force_between_filaments(f, i, g, j); 
+                //N += 1;
    	    }
 	}
     } 
     
+}
+void filament_ensemble::update_force_between_filaments(double n1, double l1, double n2, double l2){ 
+
+    array <double, 4> r_c; 
+    array <double, 2> hx_1, hy_1; 
+    array <double, 2> hx_2, hy_2; 
+    array <double, 2> pos_1, pos_2, position, vel_1, vel_2;  
+    double b = (1/rmax); 
+    double hx1_1, hx2_1, hx1_2, hx2_2;
+    double hy1_1, hy2_1, hy1_2, hy2_2;  
+    double r, x1, y1, x2, y2, len1, len2, len, dx, dy, r_1, r_2;
+    double Fx1, Fy1, Fx2, Fy2; 
+
+    hx_1 = network[n1]->get_link(l1)->get_hx(); 
+    hy_1 = network[n1]->get_link(l1)->get_hy(); 
+    hx1_1 = hx_1[0];
+    hx2_1 = hx_1[1];
+    hy1_1 = hy_1[0];
+    hy2_1 = hy_1[1];
+
+    hx_2 = network[n2]->get_link(l2)->get_hx();
+    hy_2 = network[n2]->get_link(l2)->get_hy();
+    hx1_2 = hx_2[0];
+    hx2_2 = hx_2[1];
+    hy1_2 = hy_2[0];
+    hy2_2 = hy_2[1];
+
+    r_c[0] = network[n1]->get_link(l1)->get_r_c(BC, delrx, hx1_2, hy1_2);
+    r_c[1] = network[n1]->get_link(l1)->get_r_c(BC, delrx, hx2_2, hy2_2);
+    r_c[2] = network[n2]->get_link(l2)->get_r_c(BC, delrx, hx1_1, hy1_1);
+    r_c[3] = network[n2]->get_link(l2)->get_r_c(BC, delrx, hx2_1, hy2_1);
+    
+    r = r_c[0];
+    for(int k = 1; k < 4; k++){if(r_c[k] < r){r = r_c[k];}}
+
+    if(r <= rmax)
+    {
+     	if(r == r_c[0])
+        {
+            x1 = hx1_2;
+            y1 = hy1_2;
+            position = network[n1]->get_link(l1)->get_point(BC, delrx, x1, y1);
+            x2 = position[0];
+            y2 = position[1];
+            len1 = dist_bc(BC, (hx1_1-x2), (hy1_1-y2), fov[0], fov[1], delrx);
+            len2 = dist_bc(BC, (hx2_1-x2), (hy2_1-y2), fov[0], fov[1], delrx);
+            vel_1 = network[n2]->get_actin(l2)->get_velocity();
+            vel_2 = network[n1]->get_actin(l1)->get_velocity();
+        }
+        else if(r == r_c[1])
+        {
+            x1 = hx2_2;
+            y1 = hy2_2;
+            position = network[n1]->get_link(l1)->get_point(BC, delrx, x1, y1);
+            x2 = position[0]; 
+            y2 = position[1];
+            len1 = dist_bc(BC, (hx1_1-x2), (hy1_1-y2), fov[0], fov[1], delrx);
+            len2 = dist_bc(BC, (hx2_1-x2), (hy2_1-y2), fov[0], fov[1], delrx);
+    	    vel_1 = network[n2]->get_actin(l2)->get_velocity();
+	    vel_2 = network[n1]->get_actin(l1)->get_velocity();
+   	}
+  	else if(r == r_c[2])
+        {  
+            x1 = hx1_1; 
+            y1 = hy1_1; 
+            position = network[n2]->get_link(l2)->get_point(BC, delrx, x1, y1);
+            x2 = position[0];
+            y2 = position[1];
+            len1 = dist_bc(BC, (hx1_2-x2), (hy1_2-y2), fov[0], fov[1], delrx);
+            len2 = dist_bc(BC, (hx2_2-x2), (hy2_2-y2), fov[0], fov[1], delrx);
+            vel_1 = network[n1]->get_actin(l1)->get_velocity();
+            vel_2 = network[n2]->get_actin(l2)->get_velocity();
+    	}
+        else if(r == r_c[3])
+        {
+            x1 = hx2_1;
+            y1 = hy2_1;
+            position = network[n2]->get_link(l2)->get_point(BC, delrx, x1, y1);
+            x2 = position[0];
+            y2 = position[0];
+            len1 = dist_bc(BC, (hx1_2-x2), (hy1_2-y2), fov[0], fov[1], delrx);
+            len2 = dist_bc(BC, (hx2_2-x2), (hy2_2-y2), fov[0], fov[1], delrx);
+            vel_1 = network[n1]->get_actin(l1)->get_velocity();
+            vel_2 = network[n2]->get_actin(l2)->get_velocity();
+       	}
+
+        pos_1 = pos_bc(BC, delrx, dt, fov, vel_1, {x1, y1});
+        pos_2 = pos_bc(BC, delrx, dt, fov, vel_2, {x2, y2});
+
+        dx = pos_2[0] - pos_1[0];
+        dy = pos_2[1] - pos_1[1];
+
+        len = len1 + len2;
+
+        r_1 = (len2/len);
+        r_2 = (len1/len);
+
+	//cout << "Ratio on actin 1: " << r_1 << endl; 
+	//cout << "Ratio on actin 2: " << r_2 << endl; 
+
+	//cout << "r_c: " << r << endl; 
+	//cout << "dy: " << dy << endl; 
+	//cout << "dx: " << dx << endl; 
+
+        Fx1 = 2*a*dx*pow(b,2.0)*exp(-pow(r*b,2.0));
+        Fx2 = -Fx1;
+        Fy1 = 2*a*dy*pow(b,2)*exp(-pow(r*b,2));
+        Fy2 = -Fy1;
+
+  	//cout << "Fy1: " << Fy1 << endl;
+	//cout << "Fx1: " << Fx1 << endl; 
+
+        pe_exv += a*exp(-pow(r*b,2));
+
+        if(r == r_c[0])
+        {
+            network[n1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
+            network[n1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
+            network[n2]->update_forces(l2, Fx2, Fy2);
+   	}
+        else if(r == r_c[1])
+        {
+            network[n1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
+            network[n1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
+            network[n2]->update_forces(l2+1, Fx2, Fy2);
+        }
+        else if(r == r_c[2])
+        {
+            network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
+            network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
+            network[n1]->update_forces(l1, Fx2, Fy2);
+      	}
+   	else if(r == r_c[3])
+      	{
+            network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
+            network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
+            network[n1]->update_forces(l1+1, Fx2, Fy2);
+      	}
+ 
+    }  
+} 
+
+double filament_ensemble::get_exv_energy()
+{
+    return pe_exv; 
 }
 
 /*void filament_ensemble::update_force_com(int f)
@@ -1069,7 +967,7 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
 
 filament_ensemble::filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
-        double frac_force, string bc, double seed, double RMAX) {
+        double frac_force, string bc, double seed, double RMAX, double A) {
     
     fov = myfov;
     view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
@@ -1088,7 +986,8 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     shear_dt = dt;
     t = 0;
     delrx = 0;
-    rmax = RMAX; 
+    rmax = RMAX;
+    a = A; 
     
     if (seed == -1){
         straight_filaments = true;
@@ -1127,13 +1026,17 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     
     pe_stretch = 0;
     pe_bend = 0;
-    ke = 0;
+    pe_exv = 0; 
+    //ke = 0;
+    ke_vir = 0; 
+    //ke_exv = 0;
+    //N = 0;  
     
     fls = { };
 }
 
 filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc, double RMAX) {
+        double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc, double RMAX, double A) {
     
     fov = myfov;
 
@@ -1146,7 +1049,7 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     t = 0;
     delrx = 0;
     rmax = RMAX; 
-
+    a = A; 
     view[0] = 1;
     view[1] = 1;
 
@@ -1184,6 +1087,14 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     //this->nlist_init();
     this->nlist_init_serial();
     this->update_energies();
-    
+
+    pe_stretch = 0;
+    pe_bend = 0;
+    pe_exv = 0;
+    //ke = 0;
+    ke_vir = 0; 
+    //ke_exv = 0;
+    //N = 0;    
+
     fls = { };
 } 

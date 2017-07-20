@@ -67,7 +67,7 @@ void Link::step(string bc, double shear_dist)
 }
 
 void Link::update_force(string bc, double shear_dist)
-{
+{ 
     force = {kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))};
 }
 
@@ -87,7 +87,6 @@ void Link::update_force_fraenkel_fene(string bc, double shear_dist)
     }
     klp = kl/(1-scaled_ext*scaled_ext);
     force = {klp*(disp[0]-l0*cos(phi)), klp*(disp[1]-l0*sin(phi))};
-
 }
 
 void Link::update_force_marko_siggia(string bc, double shear_dist, double kToverLp)
@@ -256,6 +255,7 @@ double Link::get_r_c(string bc, double delrx, double x, double y)
     double r_c; 
     double dx, dy; 
     array <double, 2> pos; 
+    array <double, 2> proj; 
 	
     if(l2 == 0)
     {
@@ -290,7 +290,7 @@ double Link::get_r_c(string bc, double delrx, double x, double y)
         }
         else
         {
-            array <double, 2> proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
+            proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
             point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
             pos = pos_bc(bc, delrx, 0, fov, {0,0}, {x,y}); 
             dx = pos[0] - point[0];
@@ -320,7 +320,19 @@ array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
     }
     return point;      
 }
+/*
+double Link::get_r_c(string bc, double delrx, double x, double y)
+{
+    this->calc_r_c(bc,delrx,x,y);
+    return r_c; 
+}
 
+array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
+{
+    this->calc_r_c(bc,delrx,x,y);
+    return point; 
+}
+*/
 vector<array<int, 2> > Link::get_quadrants()
 {
     return quad;
