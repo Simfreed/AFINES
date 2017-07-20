@@ -310,6 +310,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_force_test_two_beads )
     double  ext 		    = 5; 
     string  bc                      = "PERIODIC";  
     double  rmax 		    = 0.25; 
+    double  a                       = 1.0; 
     
     vector<vector<double>> act = {{-0.5, 0.1, 0.25, 0}, {0.5, 0.1, 0.25, 0}, {-0.5, 0.0, 0.25, 1}, {0.5, 0.0, 0.25, 1}}; 
 
@@ -318,7 +319,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_force_test_two_beads )
 
     filament_ensemble * network; 
  
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax); 
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a); 
 
 //    actin * act1 = new actin(0, 0, actin_length, viscosity);
 //    actin * act2 = new actin(2, 0, actin_length, viscosity); 
@@ -368,6 +369,7 @@ BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_from_quads ){
     double  ext                     = 5;
     string  bc                      = "PERIODIC";
     double  rmax                    = 0.25;
+    double  a                       = 1.0; 
 
     vector<vector<double>> act = {{-0.5, 0.1, 0.25, 0}, {0.5, 0.1, 0.25, 0}, {0.0, 0.0, 0.25, 1}, {0.0, -1.0, 0.25, 1}};
 
@@ -376,7 +378,7 @@ BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_from_quads ){
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax);
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 	
     double f1_1_ex[2] = {0, 1.3634300623459383}; 
     double f2_1_ex[2] = {0, 1.3634300623459383}; 
@@ -433,6 +435,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
     double  ext                     = 5;
     string  bc                      = "PERIODIC";
     double  rmax		    = 0.25;  
+    double  a                       = 1.0; 
     
     vector<vector<double>> act = {{-0.5, 0.1, 0.25, 0}, {0.5, 0.1, 0.25, 0}, {0.0, 0.0, 0.25, 1}, {0.0, -1.0, 0.25, 1}};
 
@@ -441,7 +444,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax);
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
     double x_s[2][2]; 
     double y_s[2][2]; 
     double x_ev[2][2]={{-0.5, 0.5}, {0.0,0.0}}; 
