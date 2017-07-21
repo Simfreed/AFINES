@@ -110,7 +110,7 @@ class Link
 
     protected:
 
-        double xcm, ycm, phi, l0, kl, max_ext, eps_ext, r_c;//, force;
+        double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen, r_c;//, force;
        
         array<double,2> fov, hx, hy;
         array<double, 2> disp, force, intpoint, point;

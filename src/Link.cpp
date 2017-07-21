@@ -38,6 +38,7 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
     force = {0,0};
     intpoint = {0,0};
     point = {0,0}; 
+    llen = l0;
     //this->step();
 }
 Link::~Link(){ 
@@ -63,6 +64,7 @@ void Link::step(string bc, double shear_dist)
 
     disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     phi=atan2(disp[1],disp[0]);
+    llen = hypot(disp[0], disp[1]);
 
 }
 
@@ -136,7 +138,7 @@ double Link::get_angle(){
 }
 
 double Link::get_length(){
-    return l0; 
+    return llen;
 }
 
 std::string Link::write(string bc, double shear_dist){
