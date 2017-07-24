@@ -318,19 +318,29 @@ void Link::calc_r_c(string bc, double delrx, double x, double y)
 }
 */
 
-bool Link::get_line_intersect(string bc, double delrx, array <double, 2> hx2, array <double, 2> hy2)
+bool Link::get_line_intersect(string bc, double delrx, int l2)
 {
-    double dx1, dx2, dy1, dy2, dx12, dy12, denom, s_num, t_num;
+    //Reference to Stack Overflow entry by iMalc on Feb 10, 2013
+    //Web Address: https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+
+    //double dx1, dx2, dy1, dy2, dx12, 
+    double dx12, dy12, denom, s_num, t_num;
     array <double,2> disp1, disp2, disp12;  
     bool denomPos; 
  
-    dx1 = hx[1]-hx[0];  
-    dy1 = hy[1]-hy[0]; 
-    dx2 = hx2[1]-hx2[0]; 
-    dy2 = hy2[1]-hy2[0]; 
+    //dx1 = hx[1]-hx[0];  
+    //dy1 = hy[1]-hy[0]; 
+    //dx2 = hx2[1]-hx2[0]; 
+    //dy2 = hy2[1]-hy2[0]; 
 
-    disp1 = rij_bc(bc, dx1, dy1, fov[0], fov[1], delrx); 
-    disp2 = rij_bc(bc, dx2, dy2, fov[0], fov[1], delrx); 
+    disp1 = this->get_disp(); 
+    disp2 = l2->get_disp(); 
+
+    //disp1 = rij_bc(bc, dx1, dy1, fov[0], fov[1], delrx); 
+    //disp2 = rij_bc(bc, dx2, dy2, fov[0], fov[1], delrx); 
+
+    hx2 = l2->get_hx();  
+    hy2 = l2->get_hy(); 
 
     dx12 = hx[0]-hx2[0]; 
     dy12 = hy[0]-hy2[0]; 
