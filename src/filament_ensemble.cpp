@@ -541,7 +541,7 @@ void filament_ensemble::update_link_forces_from_quads()
     double par1, par2;   
     int nfil, dim;  
 
-    nlinks = network.get_nlinks(); 
+    nlinks = this->get_nlinks(); 
     nfil - network.size(); 
 
     dim = nfil * nlinks; 
