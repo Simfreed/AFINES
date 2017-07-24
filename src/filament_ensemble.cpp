@@ -664,7 +664,7 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 	}
     }   
 
-    intersect = network[n1]->get_link(l1)->get_line_intersect(BC, delrx, hx_2, hy_2); 
+    intersect = network[n1]->get_link(l1)->get_line_intersect(BC, delrx, l2); 
 
     if(intersect == false){ 
   
