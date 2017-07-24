@@ -13,7 +13,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 CFLAGS := -O3 -Wall -Wno-missing-braces -Wno-unused-local-typedefs -Wno-deprecated-declarations -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp
-CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -g -pg 
+CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -pg 
 
 # BOOST_SUFFIX := -mt
 LIB := -L ${BOOST_ROOT} -lboost_unit_test_framework${BOOST_SUFFIX} -lboost_program_options${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX} -lboost_system${BOOST_SUFFIX}
