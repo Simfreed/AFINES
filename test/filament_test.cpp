@@ -603,7 +603,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
     
-    double e0 = f->get_total_energy(), e1;
+    double e0 = f->get_potential_energy(), e1;
     for (int t = 1; t < nsteps; t++){
         //cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
         newfils = f->update_stretching(t);
@@ -611,7 +611,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
             break;
         f->update_bending(t);
         f->update_positions();
-        e1 = f->get_total_energy();
+        e1 = f->get_potential_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;
     }
@@ -657,7 +657,7 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
     f->update_bending(0);
     f->update_positions();
     
-    double e0 = f->get_total_energy(), e1;
+    double e0 = f->get_potential_energy(), e1;
     int nsteps = 1000;
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
@@ -667,7 +667,7 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
         f->update_bending(t);
         newfils = f->update_stretching(t);
         f->update_positions();
-        e1 = f->get_total_energy();
+        e1 = f->get_potential_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nTotal Energy not getting smaller at time " + to_string(t));
         e0 = e1;
     }
@@ -1138,7 +1138,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
     
-    double e0 = f->get_total_energy(), e1;
+    double e0 = f->get_potential_energy(), e1;
     for (int t = 1; t < nsteps; t++){
     //    cout<<"\nEnergy at time "<<t<<" : "<<e0<<"\n";
         newfils = f->update_stretching(t);
@@ -1146,7 +1146,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
             break;
         f->update_bending(t);
         f->update_positions();
-        e1 = f->get_total_energy();
+        e1 = f->get_potential_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;
     }
@@ -1202,7 +1202,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
     
-    double e0 = f->get_total_energy(), e1;
+    double e0 = f->get_potential_energy(), e1;
     for (int t = 1; t < nsteps; t++){
     //    cout<<"\nEnergy at time "<<t<<" : "<<e0<<"\n";
         newfils = f->update_stretching(t);
@@ -1210,7 +1210,7 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
             break;
         f->update_bending(t);
         f->update_positions();
-        e1 = f->get_total_energy();
+        e1 = f->get_potential_energy();
         BOOST_CHECK_MESSAGE(fabs(e1) <= fabs(e0), "\nPotential energy not getting smaller at time " + to_string(t));
         e0 = e1;
     }
