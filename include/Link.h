@@ -92,11 +92,13 @@ class Link
 
         void calc_intpoint(string bc, double shear_dist, double xp, double yp);
  
-	//void calc_r_c(string bc, double delrx, double x, double y); 
+	void calc_r_c(string bc, double delrx, double x, double y); 
 
-    	double get_r_c(string bc, double delrx, double x, double y); 
+    	bool get_line_intersect(string bc, double delrx, array<double,2> hx2, array<double,2> hy2); 
+        
+        double get_r_c(string bc, double delrx, double x, double y); 
 
-	array<double,2> get_point(string bc, double delrx, double x, double y); 
+	array<double,2> get_point(); 
         
         vector<array<int,2> > get_quadrants();
        
