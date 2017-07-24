@@ -550,54 +550,54 @@ void filament_ensemble::update_link_forces_from_quads()
 
     for(int x = 0; x < nq[0]; x++) 
     {   
-	//cout << "Loop through nqx" << endl;  
-	for(int y = 0; y < nq[1]; y++) 
-	{ 
+        //cout << "Loop through nqx" << endl;  
+        for(int y = 0; y < nq[1]; y++) 
+        { 
             //vector<vector<int>> int_lks (dim, vector<int> (dim, 0)); 
 
-	    for(int i = 0; i < nlinks; i++) 
-	    {   
-		//cout << "Loop though nlinks" << endl; 
-		link_1 = links_per_quad[x]->at(y)->at(i); 
+            for(int i = 0; i < nlinks; i++) 
+            {   
+                //cout << "Loop though nlinks" << endl; 
+                link_1 = links_per_quad[x]->at(y)->at(i); 
 
                 for(int j = i+1; j < nlinks; j++) 
-		{   
-		    //cout << "Loop through other nlinks" << endl; 
-		    link_2 = links_per_quad[x]->at(y)->at(j);
-		  
-		    f1 = link_1[0]; 
-		    f2 = link_2[0]; 
-		    l1 = link_1[1];
-		    l2 = link_2[1]; 
+                {   
+                    //cout << "Loop through other nlinks" << endl; 
+                    link_2 = links_per_quad[x]->at(y)->at(j);
+
+                    f1 = link_1[0]; 
+                    f2 = link_2[0]; 
+                    l1 = link_1[1];
+                    l2 = link_2[1]; 
 
                     par1 = f1*(network[f1]->get_nlinks()) + l1; 
- 		    par2 = f2*(network[f2]->get_nlinks()) + l2;
+                    par2 = f2*(network[f2]->get_nlinks()) + l2;
 
-		    //cout << "f1: " << f1 << endl; 
-		    //cout << "f2: " << f2 << endl;
- 		    //cout << "l1: " << l1 << endl; 
-  		    //cout << "l2: " << l2 << endl; 
-  		 
-  		    set = int_lks[par1][par2]; 
-		    inv_set = int_lks[par2][par1]; 
-		
-		    if(set == 0 && inv_set == 0)
-		    {
-  			//cout << "Not FOUND in set" << endl; 
-			int_lks[par1][par2] = 1; 
-                       
-			if(f1 != f2)
-			{   
-			    //cout << "f1 is not equal to f2" << endl; 
+                    //cout << "f1: " << f1 << endl; 
+                    //cout << "f2: " << f2 << endl;
+                    //cout << "l1: " << l1 << endl; 
+                    //cout << "l2: " << l2 << endl; 
+
+                    set = int_lks[par1][par2]; 
+                    inv_set = int_lks[par2][par1]; 
+
+                    if(set == 0 && inv_set == 0)
+                    {
+                        //cout << "Not FOUND in set" << endl; 
+                        int_lks[par1][par2] = 1; 
+
+                        if(f1 != f2)
+                        {   
+                            //cout << "f1 is not equal to f2" << endl; 
                             this->update_force_between_filaments(f1, l1, f2, l2);
-  			    //N += 1; 
-			}
+                            //N += 1; 
+                        }
                         else{continue;}
-		    } 
-		    else{continue;}
-		}
-	    }
-	}
+                    } 
+                    else{continue;}
+                }
+            }
+        }
     }   
     int_lks.clear(); 
 }
