@@ -541,20 +541,19 @@ void filament_ensemble::update_link_forces_from_quads()
     double par1, par2;   
     int nfil, dim;  
 
-    nfil = network.size();  
+    nlinks = network.get_nlinks(); 
+    nfil - network.size(); 
 
-    //int_lks.clear(); 
+    dim = nfil * nlinks; 
+
+    vector<vector<int>> int_lks (dim, vector<int> (dim, 0));    
 
     for(int x = 0; x < nq[0]; x++) 
     {   
 	//cout << "Loop through nqx" << endl;  
 	for(int y = 0; y < nq[1]; y++) 
-	{   
-	    //cout << "Loop through nqy" << endl; 
- 	    nlinks = n_links_per_quad[x]->at(y); 
- 	    dim = nfil*nlinks; 
-  
-            vector<vector<int>> int_lks (dim, vector<int> (dim, 0)); 
+	{ 
+            //vector<vector<int>> int_lks (dim, vector<int> (dim, 0)); 
 
 	    for(int i = 0; i < nlinks; i++) 
 	    {   
@@ -599,9 +598,8 @@ void filament_ensemble::update_link_forces_from_quads()
 		}
 	    }
 	}
-
-        int_lks.clear(); 
     }   
+    int_lks.clear(); 
 }
 
 void filament_ensemble::update_link_forces(int f) 
@@ -982,7 +980,7 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     delrx = 0;
     rmax = RMAX;
     a = A; 
-    
+ 
     if (seed == -1){
         straight_filaments = true;
     }else{
