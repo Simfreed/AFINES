@@ -318,7 +318,7 @@ void Link::calc_r_c(string bc, double delrx, double x, double y)
 }
 */
 
-bool Link::get_line_intersect(string bc, double delrx, int l2)
+bool Link::get_line_intersect(string bc, double delrx, Link *l2)
 {
     //Reference to Stack Overflow entry by iMalc on Feb 10, 2013
     //Web Address: https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect

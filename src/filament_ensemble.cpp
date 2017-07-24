@@ -631,6 +631,7 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     double b = (1/rmax); 
     double r, x1, y1, x2, y2, length, len1, len2, dx, dy, r_1, r_2, Fx1, Fy1, Fx2, Fy2; 
     int index; 
+    //Link *address; 
     bool intersect; 
 
     hx_1 = network[n1]->get_link(l1)->get_hx(); 
@@ -664,7 +665,9 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 	}
     }   
 
-    intersect = network[n1]->get_link(l1)->get_line_intersect(BC, delrx, l2); 
+    Link *L2 = network[n2]->get_link(l2);  
+
+    intersect = network[n1]->get_link(l1)->get_line_intersect(BC, delrx, L2); 
 
     if(intersect == false){ 
   

@@ -94,7 +94,7 @@ class Link
  
 	void calc_r_c(string bc, double delrx, double x, double y); 
 
-    	bool get_line_intersect(string bc, double delrx, int l2); 
+    	bool get_line_intersect(string bc, double delrx, Link *l2); 
         
         double get_r_c(string bc, double delrx, double x, double y); 
 
