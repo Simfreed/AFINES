@@ -579,12 +579,12 @@ void filament_ensemble::update_link_forces_from_quads()
                     //cout << "l2: " << l2 << endl; 
 
                     set = int_lks[par1][par2]; 
-                    inv_set = int_lks[par2][par1]; 
 
-                    if(set == 0 && inv_set == 0)
+                    if(set == 0)
                     {
                         //cout << "Not FOUND in set" << endl; 
                         int_lks[par1][par2] = 1; 
+                        int_lks[par2][par1] = 1; 
 
                         if(f1 != f2)
                         {   
