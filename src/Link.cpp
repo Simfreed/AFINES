@@ -325,7 +325,7 @@ bool Link::get_line_intersect(string bc, double delrx, int l2)
 
     //double dx1, dx2, dy1, dy2, dx12, 
     double dx12, dy12, denom, s_num, t_num;
-    array <double,2> disp1, disp2, disp12;  
+    array <double,2> disp1, disp2, disp12, hx2, hy2;  
     bool denomPos; 
  
     //dx1 = hx[1]-hx[0];  
