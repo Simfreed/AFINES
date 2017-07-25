@@ -249,7 +249,7 @@ void Link::calc_intpoint(string bc, double delrx, double xp, double yp)
     }
 }
 
-void Link::calc_r_c(string bc, double delrx, double x, double y)
+double Link::get_r_c(string bc, double delrx, double x, double y)
 {
     double l2 = disp[0]*disp[0] + disp[1]*disp[1]; 
     double r_c; 
@@ -294,7 +294,12 @@ void Link::calc_r_c(string bc, double delrx, double x, double y)
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
         }
+
+        //cout << "r_c: " << r_c << endl; 
+	//cout << "tp: " << tp << endl; 
+	//return r_c; 
     }
+    return r_c; 
 }
 
 /*array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
@@ -364,11 +369,12 @@ bool Link::get_line_intersect(string bc, double delrx, Link *l2)
      
 }
 
-double Link::get_r_c(string bc, double delrx, double x, double y)
-{
-    this->calc_r_c(bc,delrx,x,y);
-    return r_c; 
-}
+//double Link::get_r_c(string bc, double delrx, double x, double y)
+//{
+//    this->calc_r_c(bc,delrx,x,y);
+//    return r_c; 
+//    cout << "r_c returned: " << r_c << endl; 
+//}
 
 array <double, 2> Link::get_point()
 {

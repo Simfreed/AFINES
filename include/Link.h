@@ -92,7 +92,7 @@ class Link
 
         void calc_intpoint(string bc, double shear_dist, double xp, double yp);
  
-	void calc_r_c(string bc, double delrx, double x, double y); 
+	//void calc_r_c(string bc, double delrx, double x, double y); 
 
     	bool get_line_intersect(string bc, double delrx, Link *l2); 
         

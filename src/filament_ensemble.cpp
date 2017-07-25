@@ -626,8 +626,8 @@ void filament_ensemble::update_link_forces(int f)
 void filament_ensemble::update_force_between_filaments(double n1, double l1, double n2, double l2){ 
 
     array <double, 4> r_c; 
-    array <double, 2> p1, p2, p3, p4; 
-    array <double, 2> len, hx_1, hy_1, hx_2, hy_2;  
+    array <double, 2> p1, p2, p3, p4, point; 
+    array <double, 2> len, hx_1, hy_1, hx_2, hy_2, dist;  
     double b = (1/rmax); 
     double r, x1, y1, x2, y2, length, len1, len2, dx, dy, r_1, r_2, Fx1, Fy1, Fx2, Fy2; 
     int index; 
@@ -674,58 +674,74 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
         if(r <= rmax)
         {
      	    if(index == 0)
-            {
+            {  
                 r = r_c[0]; 
+  	   	//cout << "r_c: " << r << endl; 
                 x1 = hx_2[0];
             	y1 = hy_2[0];
             	x2 = p1[0];
             	y2 = p1[1];
             	len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
 	    	length = len[0];        
+		point = p1; 
             }
             else if(index == 1)
             {
  	    	r = r_c[1]; 
+		//cout << "r_c: " << r << endl; 
             	x1 = hx_2[1];
             	y1 = hy_2[1];
             	x2 = p2[0]; 
             	y2 = p2[1];
             	len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
      	    	length = len[0];
+                point = p2;
    	    }
   	    else if(index == 2)
             {
  	    	r = r_c[2];   
+ 		//cout << "r_c: " << r << endl; 
             	x1 = hx_1[0]; 
             	y1 = hy_1[0]; 
             	x2 = p3[0];
             	y2 = p3[1];
             	len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
             	length = len[1]; 
+		point = p3; 
     	    }
             else if(index == 3)
             {
 	   	r = r_c[3]; 
+ 		//cout << "r_c: " << r << endl; 
             	x1 = hx_1[1];
             	y1 = hy_1[1];
             	x2 = p4[0];
             	y2 = p4[1];
             	len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
   	    	length = len[1]; 
+		point = p4; 
        	    }
 
-            dx = x2 - x1;
-            dy = y2 - y1;
+            //cout << "Calculated r_c: " << r << endl; 
+            //cout << "Point of Closest Apporach: " << "{ " << point[0] << ", " << point[1] << " }" << endl; 
+
+            //dx = x2 - x1;
+            //dy = y2 - y1;
+
+            dist = rij_bc(BC, (x2-x1), (y2-y1), fov[0], fov[1], delrx); 
 
             len2 = length - len1; 
 
             r_1 = (len2/length);
             r_2 = (len1/length);
 
-            Fx1 = 2*a*dx*pow(b,2.0)*exp(-pow(r*b,2.0));
+            Fx1 = 2*a*dist[0]*pow(b,2.0)*exp(-pow(r*b,2.0));
             Fx2 = -Fx1;
-            Fy1 = 2*a*dy*pow(b,2)*exp(-pow(r*b,2));
+            Fy1 = 2*a*dist[1]*pow(b,2)*exp(-pow(r*b,2));
             Fy2 = -Fy1;
+
+            //cout << "Fx1: " << Fx1 << endl; 
+  	    //cout << "Fy1: " << Fy1 << endl; 
 
             pe_exv += a*exp(-pow(r*b,2));
 

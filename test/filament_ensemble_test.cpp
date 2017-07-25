@@ -291,7 +291,7 @@ vector<actin *> get_actins(unsigned int first, unsigned int last);
     rodsAll.clear();
 }
 */
-
+/*
 BOOST_AUTO_TEST_CASE( Filament_ensemble_force_test_two_beads )
 {
     //Check forces on actin beads after one time-step to make sure they match expected values 
@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_force_test_two_beads )
         }
     }
 }
-
+*/
 BOOST_AUTO_TEST_CASE( Filament_enseble_update_link_forces_from_quads ){ 
 
     //Check forces after one time-step to make sure they match expected values 
@@ -467,4 +467,332 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
     }
 }
 
+BOOST_AUTO_TEST_CASE( Get_r_c_test ) 
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{-0.05, 0.353553, 0.25, 0}, {-0.807107, -0.353553, 0.25, 0}, {0.05, 0.353553, 0.25, 1}, {0.807107, -0.353553, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_R_C_Test----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    //array <double, 4> r_c;
+    double delrx;  
+    //network->update_delrx(); 
+    delrx = network->get_delrx(); 
+    double r1, r2, r3, r4, r1_s, r2_s, r3_s, r4_s; 
+
+    cout << "delrx: " << delrx << endl; 
+
+    //cout << " Problem 1" << endl; 
+
+    r1_s=network->get_filament(0)->get_link(0)->get_r_c(bc, delrx, 0.05, 0.353553); 
+    r2_s=network->get_filament(0)->get_link(0)->get_r_c(bc, delrx, 0.807107, -0.353553); 
+    r3_s=network->get_filament(1)->get_link(0)->get_r_c(bc, delrx, -0.05, 0.353553); 
+    r4_s=network->get_filament(1)->get_link(0)->get_r_c(bc, delrx, -0.807107, -0.353553);
+
+    //cout << " Problem 2" << endl; 
+
+    r1=0.1; 
+    r2=1.1111402786768196; 
+    r3=0.1; 
+    r4=1.1111402786768196;  
+
+    //cout << " Problem 3" << endl; 
+
+    BOOST_CHECK_CLOSE(r1_s, r1, 1e-1);
+    BOOST_CHECK_CLOSE(r2_s, r2, 1e-1);
+    BOOST_CHECK_CLOSE(r3_s, r3, 1e-1);
+    BOOST_CHECK_CLOSE(r4_s, r4, 1e-1);
+
+    //cout << " Problem 4" << endl; 
+    cout << "Simulated Value: " << r1_s << '\t' << "Expected Value: " << r1 << endl; 
+    cout << "Simulated Value: " << r2_s << '\t' << "Expected Value: " << r2 << endl; 
+    cout << "Simulated Value: " << r3_s << '\t' << "Expected Value: " << r3 << endl; 
+    cout << "Simulated Value: " << r4_s << '\t' << "Expected Value: " << r4 << endl;
+}
+ 
+BOOST_AUTO_TEST_CASE( Get_r_c_test_2 )
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{-0.1, -0.5, 0.25, 0}, {-0.1, 0.5, 0.25, 0}, {0, -0.35, 0.25, 1}, {0.7071067811865475, 0.3571067811865475, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_R_C_Test_2----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);   
+
+    array <double,4> r_c; 
+    array <double,4> r_c_exp; 
+    double delrx; 
+    delrx = network->get_delrx(); 
+    array <double,2> hx_1, hy_1, hx_2, hy_2; 
+
+    r_c_exp[0] = 0.1; 
+    r_c_exp[1] = 0.8071067811865475;
+    r_c_exp[2] = 0.180278; 
+    r_c_exp[3] = 0.671751; 
+   
+    hx_1 = network->get_filament(0)->get_link(0)->get_hx(); 
+    hy_1 = network->get_filament(0)->get_link(0)->get_hy(); 
+    hx_2 = network->get_filament(1)->get_link(0)->get_hx(); 
+    hy_2 = network->get_filament(1)->get_link(0)->get_hy(); 			
+
+    r_c[0] = network->get_filament(0)->get_link(0)->get_r_c(bc, delrx, hx_2[0], hy_2[0]); 
+    r_c[1] = network->get_filament(0)->get_link(0)->get_r_c(bc, delrx, hx_2[1], hy_2[1]); 
+    r_c[2] = network->get_filament(1)->get_link(0)->get_r_c(bc, delrx, hx_1[0], hy_1[0]); 
+    r_c[3] = network->get_filament(1)->get_link(0)->get_r_c(bc, delrx, hx_1[1], hy_1[1]);    
+
+    for(int i = 0; i < 4; i++) 
+    { 
+        BOOST_CHECK_CLOSE(r_c[i], r_c_exp[i], 1e-2); 
+        cout << "Expected r_c: " << r_c_exp[i] << '\t' << "Simulated r_c: " << r_c[i] << endl; 
+    } 
+}
+
+BOOST_AUTO_TEST_CASE( Get_r_c_test_3 )
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{0, -0.5, 0.25, 0}, {0, 0.5, 0.25, 0}, {-0.5, 0, 0.25, 1}, {0.5, 0, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_R_C_Test_3----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    array <double,4> r_c;
+    array <double,4> r_c_exp;
+    double delrx;
+    delrx = network->get_delrx();
+    array <double,2> hx_1, hy_1, hx_2, hy_2;
+ 
+    r_c_exp[0] = 0.5; 
+    r_c_exp[1] = 0.5; 
+    r_c_exp[2] = 0.5; 
+    r_c_exp[3] = 0.5; 
+
+    hx_1 = network->get_filament(0)->get_link(0)->get_hx(); 
+    hy_1 = network->get_filament(0)->get_link(0)->get_hy(); 
+    hx_2 = network->get_filament(1)->get_link(0)->get_hx(); 
+    hy_2 = network->get_filament(1)->get_link(0)->get_hy(); 
+
+    r_c[0] = network->get_filament(0)->get_link(0)->get_r_c(bc, delrx, hx_2[0], hy_2[0]);
+    r_c[1] = network->get_filament(0)->get_link(0)->get_r_c(bc, delrx, hx_2[1], hy_2[1]);
+    r_c[2] = network->get_filament(1)->get_link(0)->get_r_c(bc, delrx, hx_1[0], hy_1[0]);
+    r_c[3] = network->get_filament(1)->get_link(0)->get_r_c(bc, delrx, hx_1[1], hy_1[1]); 
+
+    for(int i = 0; i < 4; i++) 
+    { 
+    	BOOST_CHECK_CLOSE(r_c[i], r_c_exp[i], 1e-3); 
+        cout << "Expected r_c: " << r_c_exp[i] << '\t' << " Simulated r_c: " << r_c[i] << endl; 
+    } 
+}
+
+BOOST_AUTO_TEST_CASE( get_line_intersect_test ) 
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{-0.5, 0.1, 0.25, 0}, {0.5, 0.1, 0.25, 0}, {-0.5, -0.1, 0.25, 1}, {0.5, -0.1, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_Intersection_Test----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    bool test;  
+    bool exp = false;
+    double delrx; 
+    delrx = network->get_delrx(); 
+
+    test = network->get_filament(0)->get_link(0)->get_line_intersect(bc, delrx, network->get_filament(1)->get_link(0)); 
+
+    BOOST_CHECK_MESSAGE(test == exp, "Expected return value is not equal to return value from get_line_intersect()");
+
+    cout << "Expected Return Value: " << exp << '\t' << "Simulated Return Value " << test << endl; 
+}
+
+BOOST_AUTO_TEST_CASE( get_line_intersect_test_2 )
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{-0.5, 0, 0.25, 0}, {0.5, 0, 0.25, 0}, {0.35, -0.5, 0.25, 1}, {0.35, 0.5, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_Intersection_Test_2----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    bool test;
+    bool exp = true;
+    double delrx;
+    delrx = network->get_delrx();
+
+    test = network->get_filament(0)->get_link(0)->get_line_intersect(bc, delrx, network->get_filament(1)->get_link(0));
+
+    BOOST_CHECK_MESSAGE(test == exp, "Expected return value is not equal to return value from get_line_intersect()");
+
+    cout << "Expected Return Value: " << exp << '\t' << "Simulated Return Value " << test << endl;
+}
+
+BOOST_AUTO_TEST_CASE( get_line_intersect_test_3 )
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{-0.5, -0.75, 0.25, 0}, {0.5, -0.75, 0.25, 0}, {-0.5, -0.25, 0.25, 1}, {0.5, 0.75, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_Intersection_Test_3----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    bool test;
+    bool exp = false;
+    double delrx;
+    delrx = network->get_delrx();
+
+    test = network->get_filament(0)->get_link(0)->get_line_intersect(bc, delrx, network->get_filament(1)->get_link(0));
+
+    BOOST_CHECK_MESSAGE(test == exp, "Expected return value is not equal to return value from get_line_intersect()");
+
+    cout << "Expected Return Value: " << exp << '\t' << "Simulated Return Value " << test << endl;
+}
+
+BOOST_AUTO_TEST_CASE( get_line_intersect_test_4 )
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{-0.35355339059327373, -0.35355339059327373, 0.25, 0}, {0.35355339059327373, 0.35355339059327373, 0.25, 0}, {-0.1, 0.1, 0.25, 1}, {0.6071067811865475, -0.6071067811865475, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_Intersection_Test_4----------\n";
+    //cout<<"\nTwo filaments, each with two beads, update link forces\n";
+
+    filament_ensemble * network;
+
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    bool test;
+    bool exp = true;
+    double delrx;
+    delrx = network->get_delrx();
+
+    test = network->get_filament(0)->get_link(0)->get_line_intersect(bc, delrx, network->get_filament(1)->get_link(0));
+
+    BOOST_CHECK_MESSAGE(test == exp, "Expected return value is not equal to return value from get_line_intersect()");
+
+    cout << "Expected return value: " << exp << '\t' << "Simulated return value: " << test << endl; 
+}
 //
