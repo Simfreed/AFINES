@@ -344,7 +344,7 @@ double filament_ensemble::get_kinetic_energy_vir(){
 }
 
 void filament_ensemble::print_network_thermo(){
-    cout<<"\nAll Fs\t:\tKE = "<<ke_vir<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tTE = "<<(ke_vir+pe_stretch+pe_bend+pe_exv);
+    cout<<"\nAll Fs\t:\tKE = "<<ke_vir<<"\tPEs = "<<pe_stretch<<"\tPEb = "<<pe_bend<<"\tPEexv = "<<pe_exv<<"\tTE = "<<(ke_vir+pe_stretch+pe_bend+pe_exv);
 }
 
  
@@ -491,11 +491,9 @@ void filament_ensemble::update_int_forces()
 void filament_ensemble::update()
 {      
     int net_sz = network.size();
-    // #pragma omp parallel for
+    // #pragma omp parallel for     
 
-    //ke_exv = 0;     
     pe_exv = 0; 
-    //N = 0; 
 
     if (!quad_off_flag)
         this->quad_update_serial();
@@ -503,8 +501,8 @@ void filament_ensemble::update()
     this->update_link_forces_from_quads();
 
     for (int f = 0; f < net_sz; f++){
-      //  if (f==0) cout<<"\nDEBUG: filament updates using "<<omp_get_num_threads()<<" cores";  
-      //  this->update_link_forces(f);  
+        //if (f==0) cout<<"\nDEBUG: filament updates using "<<omp_get_num_threads()<<" cores";  
+        //this->update_link_forces(f);  
         this->update_filament_stretching(f);
         network[f]->update_bending(t);
         network[f]->update_positions();
@@ -517,52 +515,34 @@ void filament_ensemble::update()
 
 void filament_ensemble::update_link_forces_from_quads()
 {
-    //unordered_set <array<int,4>, boost::hash<array<int,4>>> int_lks; //4 components are f1, l1, f2, l2 f = fil l = lks
-    //loop through links_per_quad
-    //inside that loop, loop through each link that is on that quad 
-    //loop through every other link in the quad in order to calc interaction
-    //the loop will go through the three values of link_per _quad [x][y][i] x: 0-nq[0] y: 0-nq[y], i: 0-n_links_per_quad
-    //save the pair to the unorderd set and add an if statement that looks to se if the pair is already included in unord set
-    //if so, continue, if not, add it to the set 
-    //look up unordered_set functions 
-    
-    //std::unordered_set<array<int,4>, boost::hash<array<int,4>>>::const_iterator search;  
-    //std::unordered_set<array<int,4>, boost::hash<array<int,4>>>::const_iterator inv_search;  
-
-    //vector<vector<double>>::iterator search; 
-    //vector<vector<double>>::iterator inv_search; 
-
-    int nlinks; 
+    //This function loops through the quads of the systems and then loops through the filaments and links described by the neighbor list in every quad.
+    //Upon this looping, the pair interactions will be calculated according to the neighbor list. 
+    //The loop will go through thee values of link_per_quad() [x][y][i], where x: 0-nq[0], y: 0-nq[1], i: 0-m_links_per_quad
+    //The pairs found in he nieghbor list are then saved in a vector array. 
+    //On subsequent loops, this value will be searched for in order to ensure no repeats in the force calculation.  
+     
     array <int,2> link_1; 
     array <int,2> link_2; 
     int set; 
-    int inv_set; 
     int f1, f2, l1, l2; 
     double par1, par2;   
-    int nfil, dim;  
+    int nlinks, dim;  
 
     nlinks = this->get_nlinks(); 
-    //nfil = network.size(); 
-
     dim = nlinks; 
 
     vector<vector<int>> int_lks (dim, vector<int> (dim, 0));    
 
     for(int x = 0; x < nq[0]; x++) 
     {   
-        //cout << "Loop through nqx" << endl;  
         for(int y = 0; y < nq[1]; y++) 
         { 
-            //vector<vector<int>> int_lks (dim, vector<int> (dim, 0)); 
-
             for(int i = 0; i < nlinks; i++) 
             {   
-                //cout << "Loop though nlinks" << endl; 
                 link_1 = links_per_quad[x]->at(y)->at(i); 
 
                 for(int j = i+1; j < nlinks; j++) 
                 {   
-                    //cout << "Loop through other nlinks" << endl; 
                     link_2 = links_per_quad[x]->at(y)->at(j);
 
                     f1 = link_1[0]; 
@@ -573,24 +553,16 @@ void filament_ensemble::update_link_forces_from_quads()
                     par1 = f1*(network[f1]->get_nlinks()) + l1; 
                     par2 = f2*(network[f2]->get_nlinks()) + l2;
 
-                    //cout << "f1: " << f1 << endl; 
-                    //cout << "f2: " << f2 << endl;
-                    //cout << "l1: " << l1 << endl; 
-                    //cout << "l2: " << l2 << endl; 
-
                     set = int_lks[par1][par2]; 
 
                     if(set == 0)
                     {
-                        //cout << "Not FOUND in set" << endl; 
                         int_lks[par1][par2] = 1; 
                         int_lks[par2][par1] = 1; 
 
                         if(f1 != f2)
                         {   
-                            //cout << "f1 is not equal to f2" << endl; 
                             this->update_force_between_filaments(f1, l1, f2, l2);
-                            //N += 1; 
                         }
                         else{continue;}
                     } 
@@ -604,6 +576,8 @@ void filament_ensemble::update_link_forces_from_quads()
 
 void filament_ensemble::update_link_forces(int f) 
 {
+    //This function loops through every filament and link in the network and applies the force calulation under certain limits
+
     int net_sz = network.size();
     int lks_sz = network[f]->get_nlinks();
     int oth_lks_sz;
@@ -617,21 +591,22 @@ void filament_ensemble::update_link_forces(int f)
 	    for(int j = 0; j < oth_lks_sz; j++) 
 	    {
 		this->update_force_between_filaments(f, i, g, j); 
-                //N += 1;
    	    }
 	}
     } 
     
 }
-void filament_ensemble::update_force_between_filaments(double n1, double l1, double n2, double l2){ 
+void filament_ensemble::update_force_between_filaments(double n1, double l1, double n2, double l2)
+{ 
+    //This function calculates the forces applied to the actin beads of a pair of filaments under certain limits. 
+    //Here, we use distance of closest approach to describe the direction and magnitude of the forces. 
 
     array <double, 4> r_c; 
-    array <double, 2> p1, p2, p3, p4, point; 
+    array <double, 2> p1, p2, p3, p4; 
     array <double, 2> len, hx_1, hy_1, hx_2, hy_2, dist;  
     double b = (1/rmax); 
-    double r, x1, y1, x2, y2, length, len1, len2, dx, dy, r_1, r_2, Fx1, Fy1, Fx2, Fy2; 
+    double r, x1, y1, x2, y2, length, len1, len2, r_1, r_2, Fx1, Fy1, Fx2, Fy2; 
     int index; 
-    //Link *address; 
     bool intersect; 
 
     hx_1 = network[n1]->get_link(l1)->get_hx(); 
@@ -656,7 +631,7 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     len[1] = network[n2]->get_link(l2)->get_length(); 
     
     r = r_c[0];
-    index = 0; //p = point[0]; 
+    index = 0; 
 
     for(int k = 1; k < 4; k++){
   	if(r_c[k] < r){
@@ -666,84 +641,64 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     }   
 
     Link *L2 = network[n2]->get_link(l2);  
-
     intersect = network[n1]->get_link(l1)->get_line_intersect(BC, delrx, L2); 
 
-    if(intersect == false){ 
-  
-        if(r <= rmax)
-        {
-     	    if(index == 0)
+    if(r < rmax)
+    {
+        if(intersect == false)
+	{ 
+            if(index == 0)
             {  
-                r = r_c[0]; 
-  	   	//cout << "r_c: " << r << endl; 
-                x1 = hx_2[0];
-            	y1 = hy_2[0];
-            	x2 = p1[0];
-            	y2 = p1[1];
-            	len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
-	    	length = len[0];        
-		point = p1; 
-            }
-            else if(index == 1)
-            {
- 	    	r = r_c[1]; 
-		//cout << "r_c: " << r << endl; 
-            	x1 = hx_2[1];
-            	y1 = hy_2[1];
-            	x2 = p2[0]; 
-            	y2 = p2[1];
-            	len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
-     	    	length = len[0];
-                point = p2;
-   	    }
-  	    else if(index == 2)
-            {
- 	    	r = r_c[2];   
- 		//cout << "r_c: " << r << endl; 
-            	x1 = hx_1[0]; 
-            	y1 = hy_1[0]; 
-            	x2 = p3[0];
-            	y2 = p3[1];
-            	len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
-            	length = len[1]; 
-		point = p3; 
-    	    }
-            else if(index == 3)
-            {
-	   	r = r_c[3]; 
- 		//cout << "r_c: " << r << endl; 
-            	x1 = hx_1[1];
-            	y1 = hy_1[1];
-            	x2 = p4[0];
-            	y2 = p4[1];
-            	len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
-  	    	length = len[1]; 
-		point = p4; 
-       	    }
+	        r = r_c[0]; 
+		x1 = hx_2[0];
+		y1 = hy_2[0];
+		x2 = p1[0];
+		y2 = p1[1];
+		len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
+		length = len[0];         
+	    }
+	    else if(index == 1)
+	    {
+		r = r_c[1]; 
+		x1 = hx_2[1];
+		y1 = hy_2[1];
+		x2 = p2[0]; 
+		y2 = p2[1];
+		len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
+		length = len[0];
+	    }
+	    else if(index == 2)
+	    {
+	        r = r_c[2];   
+	        x1 = hx_1[0]; 
+	        y1 = hy_1[0]; 
+	        x2 = p3[0];
+	        y2 = p3[1];
+	        len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
+	        length = len[1]; 
+	    }
+	    else if(index == 3)
+	    {
+	        r = r_c[3]; 
+		x1 = hx_1[1];
+		y1 = hy_1[1];
+		x2 = p4[0];
+		y2 = p4[1];
+		len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
+		length = len[1]; 
+	    }
 
-            //cout << "Calculated r_c: " << r << endl; 
-            //cout << "Point of Closest Apporach: " << "{ " << point[0] << ", " << point[1] << " }" << endl; 
-
-            //dx = x2 - x1;
-            //dy = y2 - y1;
-
-            dist = rij_bc(BC, (x2-x1), (y2-y1), fov[0], fov[1], delrx); 
-
-            len2 = length - len1; 
-
-            r_1 = (len2/length);
-            r_2 = (len1/length);
-
-            Fx1 = 2*a*dist[0]*pow(b,2.0)*exp(-pow(r*b,2.0));
+	    dist = rij_bc(BC, (x2-x1), (y2-y1), fov[0], fov[1], delrx); 
+	    len2 = length - len1; 
+	    r_1 = (len2/length);
+	    r_2 = (len1/length);
+ 
+            Fx1 = 2*a*dist[0]*b*((rmax/r) - 1); 
             Fx2 = -Fx1;
-            Fy1 = 2*a*dist[1]*pow(b,2)*exp(-pow(r*b,2));
+            Fy1 = 2*a*dist[1]*b*((rmax/r) - 1);
             Fy2 = -Fy1;
 
-            //cout << "Fx1: " << Fx1 << endl; 
-  	    //cout << "Fy1: " << Fy1 << endl; 
-
-            pe_exv += a*exp(-pow(r*b,2));
+            pe_exv += a*pow((r-rmax),2);
 
             if(index == 0)
             {
@@ -769,7 +724,21 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
             	network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
             	network[n1]->update_forces(l1+1, Fx2, Fy2);
       	    } 
-    	}  
+    	}
+        else if(intersect == true) 
+	{ 
+	    Fx1 = 2*a*rmax/sqrt(2); 
+  	    Fx2 = -Fx1; 
+ 	    Fy1 = 2*a*rmax/sqrt(2); 
+	    Fy2 = -Fy1; 
+
+	    pe_exv += a*pow((r-rmax),2);   
+
+            network[n1]->update_forces(l1, Fx1, Fy1); 
+  	    network[n1]->update_forces(l1+1, Fx1, Fy1); 
+ 	    network[n2]->update_forces(l2, Fx2, Fy2); 
+ 	    network[n2]->update_forces(l2+1, Fx2, Fy2); 
+	}   
     }
 }
 

@@ -795,4 +795,57 @@ BOOST_AUTO_TEST_CASE( get_line_intersect_test_4 )
 
     cout << "Expected return value: " << exp << '\t' << "Simulated return value: " << test << endl; 
 }
-//
+
+BOOST_AUTO_TEST_CASE( test_update_potential )
+{
+    double  viscosity               = 0.5;
+    double  link_length             = 1;
+    double  stretching_stiffness    = 1;
+    double  bending_stiffness       = 0.04;
+    double  dt                      = 1e-3;
+    double  temp                    = 0;
+    double  frac                    = 1e10;
+    double  fovx                    = 5;
+    double  fovy                    = 5;
+    int     nx                      = 20;
+    int     ny                      = 20;
+    double  ext                     = 5;
+    string  bc                      = "PERIODIC";
+    double  rmax                    = 0.25;
+    double  a                       = 0.004;
+
+    vector<vector<double>> act = {{0, -0.5, 0.25, 0}, {0, 0.5, 0.25, 0}, {-0.5, 0, 0.25, 1}, {0.5, 0, 0.25, 1}};
+
+    cout<<"\n----------Filament_Ensemble_Force_Test_----------\n";
+    
+    filament_ensemble * network;
+    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, link_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+
+    network->update(); 
+
+    array <double,2> F1_s, F2_s, F3_s, F4_s; 
+    array <double,2> F1_e, F2_e, F3_e, F4_e; 
+    
+    F1_s = network->get_filament(0)->get_actin(0)->get_force(); 
+    F2_s = network->get_filament(0)->get_actin(1)->get_force(); 
+    F3_s = network->get_filament(1)->get_actin(0)->get_force(); 
+    F4_s = network->get_filament(1)->get_actin(1)->get_force(); 
+
+    F1_e = {0.001414213562373095, 0.001414213562373095}; 
+    F2_e = {0.001414213562373095, 0.001414213562373095};
+    F3_e = {-0.001414213562373095, -0.001414213562373095};
+    F4_e = {-0.001414213562373095, -0.001414213562373095}; 
+
+    for(int i = 0; i < 2; i++) 
+    { 
+        BOOST_CHECK_MESSAGE(F1_s[i] == F1_e[i], "Simulated Value does not equal expected value"); 
+        BOOST_CHECK_MESSAGE(F2_s[i] == F2_e[i], "Simulated Value does not equal expected value");
+        BOOST_CHECK_MESSAGE(F3_s[i] == F3_e[i], "Simulated Value does not equal expected value");
+        BOOST_CHECK_MESSAGE(F4_s[i] == F4_e[i], "Simulated Value does not equal expected value");
+
+        cout << "Simulated force: " << F1_s[i] << '\t' << "Expected force: " << F1_e[i] << endl; 
+	cout << "Simulated force: " << F2_s[i] << '\t' << "Expected force: " << F2_e[i] << endl;
+      	cout << "Simulated force: " << F3_s[i] << '\t' << "Expected force: " << F3_e[i] << endl;
+        cout << "Simulated force: " << F4_s[i] << '\t' << "Expected force: " << F4_e[i] << endl;
+    }
+} 
