@@ -349,8 +349,8 @@ int main(int argc, char* argv[]){
     small_xlinks->set_bending(s2_bend, s2_ang);
     if (s2_dead_head_flag) small_xlinks->kill_heads(s2_dead_head);
 
-    // Write the output configuration file
-    string output_file                         =   dir + "/data/output.txt";
+    // Write the full configuration file
+    string output_file  =   dir + "/data/config_full.cfg";
     o_file.open(output_file.c_str());
     
     boost::any val;
