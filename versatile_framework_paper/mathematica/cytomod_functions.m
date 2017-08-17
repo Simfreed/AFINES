@@ -372,7 +372,7 @@ xcm=Round[rijP[lks[[All,1]]+0.5lks[[All,3]],fov[[1]]],lscale];
 ycm=Round[rijP[lks[[All,2]]+0.5lks[[All,4]],fov[[2]]],lscale];
 xydxdy={xcm,ycm,lks[[All,3]],lks[[All,4]]}\[Transpose];
 xydxdyg=BinLists[xydxdy,{-fov[[1]]/2.0,fov[[1]]/2.0,lscale},{-fov[[2]]/2.0,fov[[2]]/2.0,lscale},{-maxl,maxl,2maxl},{-maxl,maxl,2maxl}][[All,All,1,1]];
-xydxdyg2=Cases[xydxdyg,_?((Length[#]>1)&)];
+xydxdyg2=Cases[Flatten[xydxdyg,1],_?((Length[#]>1)&)];
 directors=Table[Mean[xydxdyg2[[gp,All,3;;4]]],{gp,Length[xydxdyg2]}];
 costh=Flatten[Table[
 xydxdyg2[[gp,All,3;;4]].directors[[gp]]/(Norm/@xydxdyg2[[gp,All,3;;4]]*Norm[directors[[gp]]])

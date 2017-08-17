@@ -3,7 +3,7 @@ SRCDIR := src
 BUILDDIR := build
 BUILDDIR_DEBUG := build_debug
 TARGETDIR := bin
-TARGET := bin/afines
+TARGET := bin/afines_int
 
 #  
 
@@ -47,7 +47,7 @@ tar:
 # Programs
 network: $(OBJECTS)
 	mkdir -p $(TARGETDIR)
-	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/afines
+	$(CC) $(CFLAGS) $(OBJECTS) prog/network.cpp $(INC) $(LIB) -o bin/afines_int
 debug: $(OBJECTS_DEBUG)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/afines_debug
