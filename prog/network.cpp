@@ -165,7 +165,7 @@ int main(int argc, char* argv[]){
 
       	("rmax", po::value<double>(&rmax)->default_value(0.25), "cutoff distance for interactions between actins beads and filaments")
 
-	    ("kexv", po::value<double>(&kexv)->default_value(1.0), "parameter of exv force calculation") 
+	("kexv", po::value<double>(&kexv)->default_value(1.0), "parameter of exv force calculation") 
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
