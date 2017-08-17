@@ -693,12 +693,12 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 	    r_1 = (len2/length);
 	    r_2 = (len1/length);
  
-            Fx1 = 2*a*dist[0]*b*((rmax/r) - 1); 
+            Fx1 = 2*a*dist[0]*b*((1/r) - b); 
             Fx2 = -Fx1;
-            Fy1 = 2*a*dist[1]*b*((rmax/r) - 1);
+            Fy1 = 2*a*dist[1]*b*((1/r) - b);
             Fy2 = -Fy1;
 
-            pe_exv += a*pow((r-rmax),2);
+            pe_exv += a*pow((1-r*b),2);
 
             if(index == 0)
             {
@@ -727,12 +727,12 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     	}
         else if(intersect == true) 
 	{ 
-	    Fx1 = 2*a*rmax/sqrt(2); 
+	    Fx1 = 2*a/(rmax*sqrt(2)); 
   	    Fx2 = -Fx1; 
- 	    Fy1 = 2*a*rmax/sqrt(2); 
+ 	    Fy1 = 2*a/(rmax*sqrt(2)); 
 	    Fy2 = -Fy1; 
 
-	    pe_exv += a*pow((r-rmax),2);   
+	    pe_exv += a*pow((1-r*b),2);   
 
             network[n1]->update_forces(l1, Fx1, Fy1); 
   	    network[n1]->update_forces(l1+1, Fx1, Fy1); 
