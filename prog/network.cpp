@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
     double actin_length, npolymer, nmonomer;                                // Actin 
     string actin_pos_str;
     
-    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
+    double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_angle; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
            a_m_stall, a_m_cut;// Active Motors (i.e., "myosin")
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]){
 
         ("link_length", po::value<double>(&link_length)->default_value(1), "Length of links connecting monomers")
         ("polymer_bending_modulus", po::value<double>(&polymer_bending_modulus)->default_value(0.068), "Bending modulus of a filament")
-        ("fracture_force", po::value<double>(&fracture_force)->default_value(100000000), "pN-- filament breaking point")
+        ("fracture_angle", po::value<double>(&fracture_angle)->default_value(-10), "pN-- filament breaking point")
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
         
@@ -323,12 +323,12 @@ int main(int argc, char* argv[]){
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd, myseed); 
+                fracture_angle, bnd_cnd, myseed); 
     }else{
         net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd); 
+                fracture_angle, bnd_cnd); 
     }
    
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 

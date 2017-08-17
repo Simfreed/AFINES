@@ -23,7 +23,7 @@ filament::filament(){
     nq[1] = 100;
     dt = 0.001;
     temperature = 0;
-    fracture_force = 1000000;
+    fracture_angle = -10;
     BC = "REFLECTIVE";
     kinetic_energy = 0;
     gamma = 0;
@@ -42,7 +42,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     temperature     = temp;
     gamma           = shear;
     delrx           = 0;
-    fracture_force  = frac;
+    fracture_angle  = frac;
     kb              = bending_stiffness;
     BC              = bndcnd;
     kinetic_energy  = 0;
@@ -63,7 +63,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     temperature = temp;
     gamma = 0;
     delrx = 0;
-    fracture_force = frac_force;
+    fracture_angle = frac_force;
     BC = bdcnd;
     kb = bending_stiffness;
     kinetic_energy  = 0;
@@ -109,7 +109,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     
     dt = deltat;
     temperature = temp;
-    fracture_force = frac_force;
+    fracture_angle = frac_force;
     gamma = g; 
     delrx = 0;
     BC = bdcnd;
@@ -278,7 +278,8 @@ vector<filament *> filament::update_stretching(double t)
     for (unsigned int i=0; i < links.size(); i++) {
         links[i]->update_force(BC, delrx);
         //links[i]->update_force_fraenkel_fene(BC, delrx);
-        if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_force){
+//        if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_angle){
+        if (i < links.size()-1 && fabs(angle_between_links(i, i+1)) < fracture_angle){
             newfilaments = this->fracture(i);
             break;
         }
@@ -421,11 +422,11 @@ vector<filament *> filament::fracture(int node){
     if (lower_half.size() > 0)
         newfilaments.push_back(
                 new filament(lower_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
-                    dt, temperature, fracture_force, gamma, BC));
+                    dt, temperature, fracture_angle, gamma, BC));
     if (upper_half.size() > 0)
         newfilaments.push_back(
                 new filament(upper_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
-                    dt, temperature, fracture_force, gamma, BC));
+                    dt, temperature, fracture_angle, gamma, BC));
 
     for (int i = 0; i < (int)(lower_half.size()); i++) delete lower_half[i];
     for (int i = 0; i < (int)(upper_half.size()); i++) delete upper_half[i];
@@ -453,7 +454,7 @@ bool filament::operator==(const filament& that){
     return (this->fov[0] == that.fov[0] && this->fov[1] == that.fov[1] && 
             this->nq[0] == that.nq[0] && this->nq[1] == that.nq[1] &&
             this->gamma == that.gamma && this->temperature == that.temperature &&
-            this->dt == that.dt && this->fracture_force == that.fracture_force);
+            this->dt == that.dt && this->fracture_angle == that.fracture_angle);
 
 }
 
@@ -466,8 +467,8 @@ string filament::to_string(){
     for (unsigned int i = 0; i < actins.size(); i++)
         out += actins[i]->to_string();
 
-    sprintf(buffer, "fov = (%f, %f)\tnq = (%d, %d)\tgamma = %f\ttemperature = %f\tdt = %f\tfracture_force=%f\n",
-            fov[0], fov[1], nq[0], nq[1], gamma, temperature, dt, fracture_force);
+    sprintf(buffer, "fov = (%f, %f)\tnq = (%d, %d)\tgamma = %f\ttemperature = %f\tdt = %f\tfracture_angle=%f\n",
+            fov[0], fov[1], nq[0], nq[1], gamma, temperature, dt, fracture_angle);
    
     return out + buffer; 
 
