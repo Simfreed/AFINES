@@ -426,11 +426,11 @@ vector<filament *> filament::fracture(int node){
 
     if (lower_half.size() > 0)
         newfilaments.push_back(
-                new filament(lower_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
+                new filament(lower_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
     if (upper_half.size() > 0)
         newfilaments.push_back(
-                new filament(upper_half, fov, nq, links[0]->get_length(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
+                new filament(upper_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
 
     for (int i = 0; i < (int)(lower_half.size()); i++) delete lower_half[i];
