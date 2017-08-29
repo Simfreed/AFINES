@@ -79,6 +79,8 @@ class Link
 
         void set_aindex1(int i);
         
+        void set_l0(double myl0);
+        
         double get_distance(string bc, double shear_dist, double xp, double yp);
 
         double get_int_angle(double xp, double yp);

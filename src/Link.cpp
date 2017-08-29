@@ -125,6 +125,10 @@ double Link::get_kl(){
     return kl;
 }
 
+void Link::set_l0(double myl0){
+    l0 = myl0;
+}
+
 double Link::get_l0(){
     return l0;
 }
