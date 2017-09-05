@@ -63,6 +63,8 @@ class actin
 
         double get_vsquared();
         
+        double get_ld();
+        
         void set_xcm(double xcm);
 
         void set_ycm(double ycm);

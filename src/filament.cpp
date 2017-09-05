@@ -685,3 +685,33 @@ double filament::get_end2end()
         return dist_bc(BC, actins[actins.size() - 1]->get_xcm() - actins[0]->get_xcm(),  
                            actins[actins.size() - 1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
 } 
+
+void filament::set_l0_max(double lmax)
+{
+    l0_max = lmax;
+}
+
+void filament::set_l0_min(double lmin)
+{
+    l0_min = lmin;
+}
+
+void filament::grow(double dL)
+{
+    double lb = links[0]->get_length();
+    if ( lb + dL < l0_max )
+        links[0]->set_length(lb + dl);
+    else{
+        double x0, x1, x2, y0, y1, y2, l0;
+        array<double, 2> dir = links[0]->get_dir();
+        x0 = actins[0]->get_xcm();
+        y0 = actins[0]->get_ycm();
+        x2 = actins[1]->get_xcm();
+        y2 = actins[1]->get_ycm();
+        l0 = links[0]->get_l0();
+
+        actins.insert(1, new actin(x2-l0*dir[0], y2-l0*dir[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
+        links.insert(
+
+    }
+}

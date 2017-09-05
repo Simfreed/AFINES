@@ -145,3 +145,7 @@ double actin::get_viscosity(){
 double actin::get_friction(){
     return friction;
 }
+
+double actin::get_ld(){
+    return ld;
+}

@@ -39,6 +39,7 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
     intpoint = {0,0};
     llen = l0;
     //this->step();
+    mots = new map<int, int>();
 }
 Link::~Link(){ 
     //std::cout<<"DELETING LINK\n";
@@ -278,4 +279,14 @@ double Link::get_stretching_energy_fene(string bc, double shear_dist)
     else
         return 0.25*kl*ext*ext*(max_ext/eps_ext);
     
+}
+
+void add_mot(int mot, int hd)
+{
+    mots->at(mot)=hd;
+}
+
+void remove_mot(int mot)
+{
+    mots->erase(mot); //works because both motor heads can't be bound to the same link
 }

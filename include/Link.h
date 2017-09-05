@@ -100,6 +100,10 @@ class Link
         
         array<double, 2> get_neg_disp();
 
+        void add_mot(int mot, int hd);
+
+        void remove_mot(int mot);
+
     protected:
 
         double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen;//, force;
@@ -112,5 +116,7 @@ class Link
         filament *fil;
         
         vector< array<int,2> > quad; //vector of two vectors(x and y quadrants) of integers
+
+        map<int, int>* mots; //key = motor index, value = head of motor to bind
 };
 #endif

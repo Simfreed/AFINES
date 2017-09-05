@@ -122,12 +122,17 @@ class filament
     
         void print_thermo();
         
+        void set_l0_max(double);
+        
+        void set_l0_min(double);
+        
         array<double,2> get_bead_position(int bead);
 
     protected:
         
         double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor;
         double gamma, max_shear, delrx, y_thresh;
+        double l0_max, l0_min;
 
         array<double,2> fov;
         array<int,2> nq;
