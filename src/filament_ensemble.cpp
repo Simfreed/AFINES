@@ -31,7 +31,7 @@ filament_ensemble::~filament_ensemble(){
             delete links_per_quad[x]->at(y);
         }
         delete links_per_quad[x];
-        delete n_links_per_quad[x];
+        //delete n_links_per_quad[x];
     }
     
     for (int i = 0; i < s; i++){
@@ -63,10 +63,11 @@ void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
         links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
-        n_links_per_quad.push_back(new vector<int>(nq[1]));
+//        n_links_per_quad.push_back(new vector<int>(nq[1]));
         for (int y = 0; y < nq[1]; y++){
-            links_per_quad[x]->at(y) = new vector<array<int, 2> >(max_links_per_quad);
-            n_links_per_quad[x]->at(y) = 0;
+//            links_per_quad[x]->at(y) = new vector<array<int, 2> >(max_links_per_quad);
+//            n_links_per_quad[x]->at(y) = 0;
+            links_per_quad[x]->at(y) = new vector<array<int, 2> >();
         }
     }
 }
@@ -77,9 +78,14 @@ void filament_ensemble::quad_update_serial()
     int n_quads, net_sz = int(network.size());
     vector<vector<array<int, 2> > > q;
     int x, y;
-    for (x = 0; x < nq[0]; x++)
-        for (y = 0; y < nq[1]; y++)
-            n_links_per_quad[x]->at(y) = 0;
+
+    //initialize all quadrants to have no links
+    for (x = 0; x < nq[0]; x++){
+        for (y = 0; y < nq[1]; y++){
+            //n_links_per_quad[x]->at(y) = 0;
+            links_per_quad[x]->at(y)->clear();
+        }
+    }
     
     for (int f = 0; f < net_sz; f++){
         q = network[f]->get_quadrants();
@@ -88,8 +94,10 @@ void filament_ensemble::quad_update_serial()
             for (int i = 0; i < n_quads; i++){
                 x = q[l][i][0];
                 y = q[l][i][1];
-                links_per_quad[x]->at(y)->at( n_links_per_quad[x]->at(y) ) = {f,l};
-                n_links_per_quad[x]->at(y)++;
+                links_per_quad[x]->at(y)->push_back({f,l});
+                
+                //links_per_quad[x]->at(y)->at( n_links_per_quad[x]->at(y) ) = {f,l};
+                //n_links_per_quad[x]->at(y)++;
             }
         }
     }
@@ -102,21 +110,21 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
     
     array<int, 2> fl;
     double dist;
-    if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
+//    if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
         
-        for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
+//        for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
+    
+    for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
 
-            fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
-            
-            if (fls.find(fl) == fls.end()){
-                network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-                dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+        fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
+
+        if (fls.find(fl) == fls.end()){
+            network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
             //cout<<"\nDEBUG : dist = "<<dist;
-       
-                t_map.insert(pair<double, array<int, 2> >(dist, fl));
-                fls.insert(fl);
-            }
-            
+
+            t_map.insert(pair<double, array<int, 2> >(dist, fl));
+            fls.insert(fl);
         }
     }
 
@@ -665,4 +673,14 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     this->update_energies();
     
     fls = { };
-} 
+}
+
+void filament_ensemble::set_growing(double kgrow, double lgrow, double l0min, double l0max)
+{
+    for (int i = 0; i < int(network.size()); i++){
+        network[i]->set_kgrow(kgrow);
+        network[i]->set_lgrow(lgrow);
+        network[i]->set_l0_min(l0min);
+        network[i]->set_l0_max(l0max);
+    }
+}

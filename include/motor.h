@@ -81,7 +81,13 @@ class motor
         
         array<int,2> get_l_index();
         
+        void set_l_index(int hd, int idx);
+        
         array<double,2> get_pos_a_end();
+        
+        void set_pos_a_end(int hd, double pos);
+        
+        double get_pos_a_end(int hd);
         
         array<double,2> get_force();
         
@@ -114,6 +120,10 @@ class motor
         string to_string();
         
         string write();
+        
+        void remove_from_link(int hd);
+
+        void add_to_link(int hd);
     
     public:
 
@@ -124,7 +134,7 @@ class motor
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 
-        array<int,2> state, f_index, l_index;
+        array<int,2> state, f_index, l_index, link_mot_idx;
         
         map<vector<int>, double> dist;
         array<bool, 2> at_barbed_end;

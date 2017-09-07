@@ -21,7 +21,7 @@ class filament;
 #include "string"
 #include "vector"
 #include "globals.h"
-
+#include "motor.h"
 //=====================================
 //Link class
 class Link
@@ -77,7 +77,7 @@ class Link
 
         array<double,2> get_force();
 
-        void set_aindex1(int i);
+        void set_aindex(array<int,2> idx);
         
         void set_l0(double myl0);
         
@@ -100,9 +100,30 @@ class Link
         
         array<double, 2> get_neg_disp();
 
-        void add_mot(int mot, int hd);
+        
+        double get_max_ext();
+        
+        void inc_aindex();
 
-        void remove_mot(int mot);
+        void set_mots(map<int, int>* mymots);
+
+        map<int, int> * get_mots();
+
+        void set_xlinks(map<int, int>* myxlinks);
+        
+        map<int, int> * get_xlinks();
+    
+        void update_length();
+
+        int add_mot(motor * mot, int hd);
+
+        void remove_mot(int pos);
+
+        int get_n_mots();
+
+        motor * get_mot(int i);
+        
+        int get_mot_hd(int i);
 
     protected:
 
@@ -117,6 +138,9 @@ class Link
         
         vector< array<int,2> > quad; //vector of two vectors(x and y quadrants) of integers
 
-        map<int, int>* mots; //key = motor index, value = head of motor to bind
+//        map<int, int> *mots, *xlinks; //key = motor index, value = head of motor to bind
+
+        vector<motor* > mots, xlinks;
+        vector<int> mot_hds, xlink_hds;
 };
 #endif

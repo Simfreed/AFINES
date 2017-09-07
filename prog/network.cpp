@@ -68,6 +68,8 @@ int main(int argc, char* argv[]){
 
     bool restart;
     double restart_time;
+    
+    double kgrow, lgrow, l0min, l0max;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -166,6 +168,13 @@ int main(int argc, char* argv[]){
         
         ("diff_strain_flag", po::value<bool>(&diff_strain_flag)->default_value(false), "flag to turn on linear differential strain")
         ("osc_strain_flag", po::value<bool>(&osc_strain_flag)->default_value(false), "flag to turn on oscillatory differential strain")
+        
+        //Options for filament growth
+        ("kgrow", po::value<double>(&kgrow)->default_value(0), "rate of filament growth")
+        ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
+        ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
+        ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
+        
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -330,7 +339,9 @@ int main(int argc, char* argv[]){
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd); 
     }
-   
+  
+    net->set_growing(kgrow, lgrow, l0min, l0max);
+
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
     if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 
     if (quad_off_flag) net->turn_quads_off();

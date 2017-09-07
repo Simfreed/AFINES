@@ -51,7 +51,10 @@ motor::motor( array<double, 3> pos,
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    l_index     = mylindex; //link index for each head
+    
+    set_l_index(0, mylindex[0]);
+    set_l_index(1, mylindex[1]);
+
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
@@ -137,7 +140,8 @@ motor::motor( array<double, 4> pos,
     
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    l_index     = mylindex; //link index for each head
+    set_l_index(0, mylindex[0]);
+    set_l_index(1, mylindex[1]);
     fov         = myfov;
     BC          = bc; 
     actin_network = network;
@@ -155,7 +159,7 @@ motor::motor( array<double, 4> pos,
     kinetic_energy = 0;
     pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
                         // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
-
+    link_mot_idx = {-1, -1};
     
     array<double, 2> posH0 = boundary_check(0, pos[0], pos[1]); 
     array<double, 2> posH1 = boundary_check(1, pos[0]+pos[2], pos[1]+pos[3]); 
@@ -179,7 +183,6 @@ motor::motor( array<double, 4> pos,
         pos_a_end[0] = dist_bc(BC, actin_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                                    actin_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
         ldir_bind[0] = actin_network->get_direction(f_index[0], l_index[0]);
-
     }
     if (state[1] == 1){
         pos_a_end[1] = dist_bc(BC, actin_network->get_end(f_index[1], l_index[1])[0] - hx[1],
@@ -273,7 +276,7 @@ bool motor::attach(int hd)
                     //update state
                     state[hd] = 1;
                     f_index[hd] = (it->second).at(0);
-                    l_index[hd] = (it->second).at(1);
+                    this->set_l_index(hd, (it->second).at(1));
                     
                     //record displacement of head and orientation of link for future unbinding move
                     ldir_bind[hd] = actin_network->get_direction(f_index[hd], l_index[hd]);
@@ -290,7 +293,7 @@ bool motor::attach(int hd)
                     
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false; 
-                 
+
                     return true;
                 }
             }
@@ -427,7 +430,7 @@ void motor::update_pos_a_end(int hd, double pos)
         else{ 
             /*Move the motor to the next link on the filament
              *At the projected new position along that filament*/
-            l_index[hd] = l_index[hd] - 1;
+            this->set_l_index(hd, l_index[hd]-1);
             pos_a_end[hd] = pos - link_length;
         }
     }
@@ -438,7 +441,7 @@ void motor::update_pos_a_end(int hd, double pos)
         else{ 
             /*Move the motor to the previous link on the filament
              *At the projected new position along that filament*/
-            l_index[hd] = l_index[hd] + 1;
+            this->set_l_index(hd, l_index[hd] + 1);
             pos_a_end[hd] = pos + actin_network->get_llength(f_index[hd],l_index[hd]);    
         }
     }   
@@ -483,7 +486,7 @@ void motor::detach_head(int hd, array<double, 2> newpos)
    
     state[hd]=0;
     f_index[hd]=-1;
-    l_index[hd]=-1;
+    this->set_l_index(hd, -1);
     pos_a_end[hd]=0;
     
     hx[hd] = newpos[0];
@@ -496,7 +499,7 @@ void motor::detach_head_without_moving(int hd)
    
     state[hd]=0;
     f_index[hd]=-1;
-    l_index[hd]=-1;
+    this->set_l_index(hd, -1);
     pos_a_end[hd]=0;
     
 }
@@ -538,7 +541,6 @@ double motor::get_stretching_energy_fene()
     
 }
 
-
 double motor::get_kinetic_energy(){
     return kinetic_energy;
 }
@@ -564,6 +566,54 @@ string motor::to_string()
     return buffer;
 }
 
+void motor::set_l_index(int hd, int idx)
+{
+    /* cases: 
+            initially unbound, then binds (l_index == -1) ==> add_to_link
+            initially bound, unbinds (idx = -1) ==> remove_from_link
+            initially bound, switches (otherwise) ==> both
+    */
+    if (f_index[hd] == -1){
+        l_index[hd] = -1;
+    }
+    else if (l_index[hd] == -1){
+        l_index[hd] = idx;
+        this->add_to_link(hd);
+    }
+    else if(idx == -1){
+        this->remove_from_link(hd);
+        l_index[hd] = idx;
+    }
+    else{
+        this->remove_from_link(hd);
+        l_index[hd] = idx;
+        this->add_to_link(hd);
+    }
+}
+
+void motor::set_pos_a_end(int hd, double pos)
+{
+    pos_a_end[hd] = pos;
+}
+
+double motor::get_pos_a_end(int hd)
+{
+    return pos_a_end[hd];
+}
+
+void motor::add_to_link(int hd)
+{
+    if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1)
+        link_mot_idx[hd] = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->add_mot(this, hd);     
+}
+
+void motor::remove_from_link(int hd)
+{
+    if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1){
+        actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->remove_mot(link_mot_idx[hd]);
+        link_mot_idx[hd] = -1;
+    }
+}
 
 string motor::write()
 {
@@ -572,3 +622,4 @@ string motor::write()
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1]) 
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
+

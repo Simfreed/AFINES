@@ -233,11 +233,6 @@ void filament::update_positions()
 
 }
 
-void filament::update_length(int l, double dl)
-{
-    links[i]->set_l0(links[i]->get_l0() + dl);
-}
-
 void filament::update_positions_range(int lo, int hi)
 {
     double vx, vy;
@@ -700,18 +695,55 @@ void filament::grow(double dL)
 {
     double lb = links[0]->get_length();
     if ( lb + dL < l0_max )
-        links[0]->set_length(lb + dl);
+        links[0]->set_l0(lb + dL);
     else{
-        double x0, x1, x2, y0, y1, y2, l0;
-        array<double, 2> dir = links[0]->get_dir();
-        x0 = actins[0]->get_xcm();
-        y0 = actins[0]->get_ycm();
+        double x2, y2, l0;
+        array<double, 2> dir = links[0]->get_direction();
         x2 = actins[1]->get_xcm();
         y2 = actins[1]->get_ycm();
         l0 = links[0]->get_l0();
-
-        actins.insert(1, new actin(x2-l0*dir[0], y2-l0*dir[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
-        links.insert(
+        
+        //add a bead
+        actins.insert(actins.begin()+1, new actin(x2-l0*dir[0], y2-l0*dir[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
+        //shift all links forward
+        for (int i = 1; i < int(links.size()); i++) links[i]->inc_aindex();
+        //add a link
+        links.insert(links.begin()+1, new Link(l0, links[0]->get_kl(), links[0]->get_max_ext(), this, {1, 2}, fov, nq));
+        
+        //adjust motors and xlinks on first link
+        for (int i = 0; i < links[0]->get_n_mots(); i++)
+        {
+            int hd = links[0]->get_mot_hd(i);
+            double pos = links[0]->get_mot(i)->get_pos_a_end()[hd];
+            if (pos <= l0){
+                //if 0<pos_a_end<=L0, l_index -> 1
+                links[0]->get_mot(i)->set_l_index(hd, 1);
+            }
+            else{
+                //else, pos_a_end->pos_a_end-L0
+                links[0]->get_mot(i)->set_pos_a_end(hd, pos - l0);
+            }
+        }
 
     }
 }
+
+void filament::update_length()
+{
+    if ( rng(0,1) < kgrow*dt){
+        grow(lgrow);
+    }
+    /*else if (rnd(0,1
+     * if (rnd(0,1) < kshrink*dt)
+     * shrink
+     */
+}
+
+void filament::set_kgrow(double k){
+    kgrow = k;
+}
+
+void filament::set_lgrow(double dl){
+    lgrow = dl;
+}
+

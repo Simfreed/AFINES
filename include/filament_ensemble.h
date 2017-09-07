@@ -161,7 +161,9 @@ class filament_ensemble
         void update_energies();
         
         void turn_quads_off();
-    
+        
+        void set_growing(double, double, double, double);
+
     protected:
 
         double t, dt, temperature, link_ld, visc, min_time;
