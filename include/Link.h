@@ -99,7 +99,6 @@ class Link
         array<double, 2> get_disp();
         
         array<double, 2> get_neg_disp();
-
         
         double get_max_ext();
         
@@ -114,7 +113,8 @@ class Link
         map<int, int> * get_xlinks();
     
         void update_length();
-
+        
+        // stuff for growing
         int add_mot(motor * mot, int hd);
 
         void remove_mot(int pos);
@@ -124,6 +124,16 @@ class Link
         motor * get_mot(int i);
         
         int get_mot_hd(int i);
+        
+        int add_xlink(motor * xlink, int hd);
+
+        void remove_xlink(int pos);
+
+        int get_n_xlinks();
+
+        motor * get_xlink(int i);
+        
+        int get_xlink_hd(int i);
 
     protected:
 

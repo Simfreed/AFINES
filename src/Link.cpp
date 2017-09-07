@@ -39,8 +39,9 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
     intpoint = {0,0};
     llen = l0;
     //this->step();
-    mots = new map<int, int>();
+
 }
+
 Link::~Link(){ 
     //std::cout<<"DELETING LINK\n";
 };
@@ -281,12 +282,69 @@ double Link::get_stretching_energy_fene(string bc, double shear_dist)
     
 }
 
-void add_mot(int mot, int hd)
+void Link::set_aindex(array<int,2> aidx)
 {
-    mots->at(mot)=hd;
+    aindex = aidx;
 }
 
-void remove_mot(int mot)
+
+double Link::get_max_ext()
 {
-    mots->erase(mot); //works because both motor heads can't be bound to the same link
+    return max_ext;
+}
+
+// functions for growing
+void Link::inc_aindex()
+{
+    aindex = {aindex[0]+1, aindex[1]+1};
+}
+
+int Link::add_mot(motor * mot, int hd)
+{
+    mots.push_back(mot);
+    mot_hds.push_back(hd);
+    return int(mots.size())-1;
+}
+
+void Link::remove_mot(int pos)
+{
+    mots.erase(mots.begin()+pos);
+    mot_hds.erase(mot_hds.begin()+pos);
+}
+
+int Link::get_n_mots(){
+    return int(mots.size());
+}
+
+motor * Link::get_mot(int i){
+    return mots[i];
+}
+
+int Link::get_mot_hd(int i){
+    return mot_hds[i];
+}
+
+int Link::add_xlink(motor * xl, int hd)
+{
+    xlinks.push_back(xl);
+    xlink_hds.push_back(hd);
+    return int(xlinks.size())-1;
+}
+
+void Link::remove_xlink(int pos)
+{
+    xlinks.erase(xlinks.begin()+pos);
+    xlink_hds.erase(xlink_hds.begin()+pos);
+}
+
+int Link::get_n_xlinks(){
+    return int(xlinks.size());
+}
+
+motor * Link::get_xlink(int i){
+    return xlinks[i];
+}
+
+int Link::get_xlink_hd(int i){
+    return xlink_hds[i];
 }

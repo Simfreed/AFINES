@@ -724,6 +724,20 @@ void filament::grow(double dL)
                 links[0]->get_mot(i)->set_pos_a_end(hd, pos - l0);
             }
         }
+        
+        for (int i = 0; i < links[0]->get_n_xlinks(); i++)
+        {
+            int hd = links[0]->get_xlink_hd(i);
+            double pos = links[0]->get_xlink(i)->get_pos_a_end()[hd];
+            if (pos <= l0){
+                //if 0<pos_a_end<=L0, l_index -> 1
+                links[0]->get_xlink(i)->set_l_index(hd, 1);
+            }
+            else{
+                //else, pos_a_end->pos_a_end-L0
+                links[0]->get_xlink(i)->set_pos_a_end(hd, pos - l0);
+            }
+        }
 
     }
 }
