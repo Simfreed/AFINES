@@ -709,6 +709,7 @@ void filament::grow(double dL)
         //add a bead
         array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-link_l0*dir[0], y2-link_l0*dir[1]});
         actins.insert(actins.begin()+1, new actin(newpos[0], newpos[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
+        prv_rnds.insert(prv_rnds.begin()+1, {0,0});
         //shift all links forward
         for (int i = 1; i < int(links.size()); i++){
             links[i]->inc_aindex();
@@ -735,8 +736,6 @@ void filament::grow(double dL)
                 links[0]->get_mot(i)->set_pos_a_end(hd, pos - link_l0);
             }
         }
-        cout<<"\nDEBUG: added a bead";
-        cout<<"\nDEBUG: filament = "<<this->to_string(); 
     }
 }
 
