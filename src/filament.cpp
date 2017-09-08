@@ -710,10 +710,17 @@ void filament::grow(double dL)
         array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-link_l0*dir[0], y2-link_l0*dir[1]});
         actins.insert(actins.begin()+1, new actin(newpos[0], newpos[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
         prv_rnds.insert(prv_rnds.begin()+1, {0,0});
+        
         //shift all links forward
         for (int i = 1; i < int(links.size()); i++){
             links[i]->inc_aindex();
             links[i]->step(BC, delrx);
+            //shift all xlinks on link forward
+            for (int i = 0; i < links[i]->get_n_mots(); i++)
+            {
+                links[i]->get_mot(i)->inc_l_index(links[i]->get_mot_hd(i));
+            }
+            
         }
         //add a link
         links.insert(links.begin()+1, new Link(link_l0, links[0]->get_kl(), links[0]->get_max_ext(), this, {1, 2}, fov, nq));

@@ -126,6 +126,8 @@ class motor
         void remove_from_link(int hd);
 
         void add_to_link(int hd);
+        
+        void inc_l_index(int hd);
     
     public:
 

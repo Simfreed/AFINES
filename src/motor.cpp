@@ -607,16 +607,16 @@ double motor::get_pos_a_end(int hd)
 
 void motor::add_to_link(int hd)
 {
-    if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1)
-        link_mot_idx[hd] = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->add_mot(this, hd);     
+//if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1)
+    link_mot_idx[hd] = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->add_mot(this, hd);     
 }
 
 void motor::remove_from_link(int hd)
 {
-    if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1){
-        actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->remove_mot(link_mot_idx[hd]);
-        link_mot_idx[hd] = -1;
-    }
+    //if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1){
+    actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->remove_mot(link_mot_idx[hd]);
+    link_mot_idx[hd] = -1;
+    //}
 }
 
 string motor::write()
@@ -627,3 +627,6 @@ string motor::write()
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
 
+void motor::inc_l_index(int hd){
+    l_index[hd] = l_index[hd] + 1;
+}
