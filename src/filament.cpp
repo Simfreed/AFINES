@@ -31,6 +31,7 @@ filament::filament(){
     damp = infty;
     y_thresh=2;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
+    link_l0 = 1;
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -48,7 +49,8 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     kinetic_energy  = 0;
     damp            = infty;
     y_thresh        = 1;
-    bd_prefactor = sqrt(temperature/(2*dt*damp));
+    bd_prefactor    = sqrt(temperature/(2*dt*damp));
+    link_l0              = 1;
 
 }
 
@@ -67,6 +69,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
     BC = bdcnd;
     kb = bending_stiffness;
     kinetic_energy  = 0;
+    link_l0 = linkLength;
     
     damp = 6*pi*actinRadius*visc;
     y_thresh = 1;
@@ -118,6 +121,7 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
     nq = mynq;
     y_thresh = 1;
     kinetic_energy = 0;
+    link_l0 = linkLength;
 
     if (actinvec.size() > 0)
     {
@@ -461,7 +465,7 @@ string filament::to_string(){
     
     // Note: not including links in to_string, because link's to_string includes filament's to_string
     char buffer[200];
-    string out = "";
+    string out = "\n";
 
     for (unsigned int i = 0; i < actins.size(); i++)
         out += actins[i]->to_string();
@@ -693,52 +697,46 @@ void filament::set_l0_min(double lmin)
 
 void filament::grow(double dL)
 {
-    double lb = links[0]->get_length();
+    double lb = links[0]->get_l0();
     if ( lb + dL < l0_max )
         links[0]->set_l0(lb + dL);
     else{
-        double x2, y2, l0;
+        double x2, y2;
         array<double, 2> dir = links[0]->get_direction();
         x2 = actins[1]->get_xcm();
         y2 = actins[1]->get_ycm();
-        l0 = links[0]->get_l0();
         
         //add a bead
-        actins.insert(actins.begin()+1, new actin(x2-l0*dir[0], y2-l0*dir[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
+        array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-link_l0*dir[0], y2-link_l0*dir[1]});
+        actins.insert(actins.begin()+1, new actin(newpos[0], newpos[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
         //shift all links forward
-        for (int i = 1; i < int(links.size()); i++) links[i]->inc_aindex();
+        for (int i = 1; i < int(links.size()); i++){
+            links[i]->inc_aindex();
+            links[i]->step(BC, delrx);
+        }
         //add a link
-        links.insert(links.begin()+1, new Link(l0, links[0]->get_kl(), links[0]->get_max_ext(), this, {1, 2}, fov, nq));
+        links.insert(links.begin()+1, new Link(link_l0, links[0]->get_kl(), links[0]->get_max_ext(), this, {1, 2}, fov, nq));
+        links[1]->step(BC, delrx);
+        //reset l0 at barbed end
+        links[0]->set_l0(link_l0);
+        links[0]->step(BC, delrx);
         
         //adjust motors and xlinks on first link
         for (int i = 0; i < links[0]->get_n_mots(); i++)
         {
             int hd = links[0]->get_mot_hd(i);
             double pos = links[0]->get_mot(i)->get_pos_a_end()[hd];
-            if (pos <= l0){
+            if (pos <= link_l0){
                 //if 0<pos_a_end<=L0, l_index -> 1
                 links[0]->get_mot(i)->set_l_index(hd, 1);
             }
             else{
                 //else, pos_a_end->pos_a_end-L0
-                links[0]->get_mot(i)->set_pos_a_end(hd, pos - l0);
+                links[0]->get_mot(i)->set_pos_a_end(hd, pos - link_l0);
             }
         }
-        
-        for (int i = 0; i < links[0]->get_n_xlinks(); i++)
-        {
-            int hd = links[0]->get_xlink_hd(i);
-            double pos = links[0]->get_xlink(i)->get_pos_a_end()[hd];
-            if (pos <= l0){
-                //if 0<pos_a_end<=L0, l_index -> 1
-                links[0]->get_xlink(i)->set_l_index(hd, 1);
-            }
-            else{
-                //else, pos_a_end->pos_a_end-L0
-                links[0]->get_xlink(i)->set_pos_a_end(hd, pos - l0);
-            }
-        }
-
+        cout<<"\nDEBUG: added a bead";
+        cout<<"\nDEBUG: filament = "<<this->to_string(); 
     }
 }
 

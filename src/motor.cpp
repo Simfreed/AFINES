@@ -42,6 +42,7 @@ motor::motor( array<double, 3> pos,
     temperature   = temp;
     
     max_bind_dist = rcut;
+    actin_network = network;
 
     mld         = mlen;
     dt          = delta_t;
@@ -52,12 +53,11 @@ motor::motor( array<double, 3> pos,
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     
-    set_l_index(0, mylindex[0]);
-    set_l_index(1, mylindex[1]);
+    init_l_index(0, mylindex[0]);
+    init_l_index(1, mylindex[1]);
 
     fov         = myfov;
     BC          = bc; 
-    actin_network = network;
     damp        = (6*pi*vis*mld);
     bd_prefactor= sqrt(temperature/(2*damp*dt)); 
 
@@ -124,6 +124,7 @@ motor::motor( array<double, 4> pos,
         double fstall, double rcut,
         double vis, string bc) {
     
+    actin_network = network;
     vs          = v0;
     mk          = stiffness;
     
@@ -140,11 +141,10 @@ motor::motor( array<double, 4> pos,
     
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    set_l_index(0, mylindex[0]);
-    set_l_index(1, mylindex[1]);
+    init_l_index(0, mylindex[0]);
+    init_l_index(1, mylindex[1]);
     fov         = myfov;
     BC          = bc; 
-    actin_network = network;
     damp        =(6*pi*vis*mld);
     bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
@@ -485,8 +485,8 @@ void motor::detach_head(int hd, array<double, 2> newpos)
 {
    
     state[hd]=0;
-    f_index[hd]=-1;
     this->set_l_index(hd, -1);
+    f_index[hd]=-1;
     pos_a_end[hd]=0;
     
     hx[hd] = newpos[0];
@@ -566,6 +566,13 @@ string motor::to_string()
     return buffer;
 }
 
+void motor::init_l_index(int hd, int idx)
+{
+    l_index[hd] = idx;
+    if (idx != -1)
+        this->add_to_link(hd);
+}
+
 void motor::set_l_index(int hd, int idx)
 {
     /* cases: 
@@ -573,10 +580,7 @@ void motor::set_l_index(int hd, int idx)
             initially bound, unbinds (idx = -1) ==> remove_from_link
             initially bound, switches (otherwise) ==> both
     */
-    if (f_index[hd] == -1){
-        l_index[hd] = -1;
-    }
-    else if (l_index[hd] == -1){
+    if (l_index[hd] == -1){
         l_index[hd] = idx;
         this->add_to_link(hd);
     }

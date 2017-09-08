@@ -142,7 +142,7 @@ class filament
         
         double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor;
         double gamma, max_shear, delrx, y_thresh;
-        double l0_max, l0_min, kgrow, lgrow;
+        double link_l0, l0_max, l0_min, kgrow, lgrow;
         
         array<double,2> fov;
         array<int,2> nq;

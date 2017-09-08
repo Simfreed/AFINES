@@ -293,6 +293,10 @@ double Link::get_max_ext()
     return max_ext;
 }
 
+array<int, 2> Link::get_aindex(){
+    return aindex;
+}
+
 // functions for growing
 void Link::inc_aindex()
 {
@@ -308,6 +312,7 @@ int Link::add_mot(motor * mot, int hd)
 
 void Link::remove_mot(int pos)
 {
+    //cout<<"\nDEBUG: trying to remove motor";
     mots.erase(mots.begin()+pos);
     mot_hds.erase(mot_hds.begin()+pos);
 }
@@ -322,29 +327,4 @@ motor * Link::get_mot(int i){
 
 int Link::get_mot_hd(int i){
     return mot_hds[i];
-}
-
-int Link::add_xlink(motor * xl, int hd)
-{
-    xlinks.push_back(xl);
-    xlink_hds.push_back(hd);
-    return int(xlinks.size())-1;
-}
-
-void Link::remove_xlink(int pos)
-{
-    xlinks.erase(xlinks.begin()+pos);
-    xlink_hds.erase(xlink_hds.begin()+pos);
-}
-
-int Link::get_n_xlinks(){
-    return int(xlinks.size());
-}
-
-motor * Link::get_xlink(int i){
-    return xlinks[i];
-}
-
-int Link::get_xlink_hd(int i){
-    return xlink_hds[i];
 }

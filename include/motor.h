@@ -81,6 +81,8 @@ class motor
         
         array<int,2> get_l_index();
         
+        void init_l_index(int hd, int idx);
+        
         void set_l_index(int hd, int idx);
         
         array<double,2> get_pos_a_end();

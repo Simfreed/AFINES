@@ -1226,4 +1226,86 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
         delete newfils[1];
     }
 } 
+
+BOOST_AUTO_TEST_CASE( grow_test_l0)
+{
+    // vector<filament *> fracture(int node);
+    double  xrange = 50, yrange = 50;
+    int     xgrid = (int)(2*xrange), ygrid = (int)(2*yrange), nrod = 10;
+    double  dt                  = 1e-3;
+    double  temp                = 0;
+    double  link_length         = 1;
+    double  actin_length        = link_length/2;
+    double  viscosity           = 0.5;
+    double  stretching_stiffness= 100;
+    double  bending_stiffness   = 1; 
+    double  fracture_force      = 100;
+    string  bc                  = "REFLECTIVE";
+    double startx = 0, starty = 0, startphi = 0;
+    double l0max = 2*link_length, l0min = 0, kgrow = 1, lgrow = 0.5;
+
+    filament * f;
+    Link l; 
+    actin a; 
+
+    f      = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+    
+    f->set_l0_max(l0max);
+    f->grow(lgrow);
+
+    BOOST_CHECK_MESSAGE( f->get_link(0)->get_l0()==link_length+lgrow, "\nbarbed end didn't grow");
+    BOOST_CHECK_MESSAGE( f->get_nlinks() == nrod-1, "\ndifferent # of links than expected");
+    BOOST_CHECK_MESSAGE( f->get_nactins() == nrod, "\ndifferent # of beads than expected");
+
+    delete f;
+    
+}
+
+BOOST_AUTO_TEST_CASE( grow_test_add_bead)
+{
+    // vector<filament *> fracture(int node);
+    double  xrange = 50, yrange = 50;
+    int     xgrid = (int)(2*xrange), ygrid = (int)(2*yrange), nbead = 3;
+    double  dt                  = 1e-3;
+    double  temp                = 0;
+    double  link_length         = 1;
+    double  actin_length        = link_length/2;
+    double  viscosity           = 0.5;
+    double  stretching_stiffness= 100;
+    double  bending_stiffness   = 1; 
+    double  fracture_force      = 100;
+    string  bc                  = "PERIODIC";
+    double startx = 0, starty = 0, startphi = 0;
+    double l0max = 2*link_length, l0min = 0, kgrow = 1, lgrow = 1.5;
+
+    filament * f;
+    Link l; 
+    actin a; 
+
+    f      = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+   
+    cout<<f->to_string();
+    BOOST_CHECK_MESSAGE( f->get_nlinks() == nbead-1, "\ndifferent # of links than expected");
+    BOOST_CHECK_MESSAGE( f->get_nactins() == nbead, "\ndifferent # of beads than expected");
+    
+    f->set_l0_max(l0max);
+    f->grow(lgrow);
+
+    BOOST_CHECK_MESSAGE( f->get_nlinks() == nbead, "\ndifferent # of links than expected");
+    BOOST_CHECK_MESSAGE( f->get_nactins() == nbead + 1, "\ndifferent # of beads than expected");
+
+    for (int i = 0; i < f->get_nlinks(); i++){
+        cout<<"\nDEBUG: checking link "<<i;
+        BOOST_CHECK_MESSAGE( f->get_link(i)->get_l0()==link_length, "\nl0 is wrong");
+        array<int, 2> check = {i, i+1};
+        BOOST_CHECK_MESSAGE( f->get_link(i)->get_aindex()==check, "\naindex is wrong");
+    }
+
+    delete f;
+    
+}
 // EOF

@@ -125,16 +125,8 @@ class Link
         
         int get_mot_hd(int i);
         
-        int add_xlink(motor * xlink, int hd);
-
-        void remove_xlink(int pos);
-
-        int get_n_xlinks();
-
-        motor * get_xlink(int i);
+        array<int,2> get_aindex();
         
-        int get_xlink_hd(int i);
-
     protected:
 
         double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen;//, force;
@@ -150,7 +142,7 @@ class Link
 
 //        map<int, int> *mots, *xlinks; //key = motor index, value = head of motor to bind
 
-        vector<motor* > mots, xlinks;
-        vector<int> mot_hds, xlink_hds;
+        vector<motor* > mots;
+        vector<int> mot_hds;
 };
 #endif
