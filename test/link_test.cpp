@@ -1,3 +1,5 @@
+#include "motor.h"
+#include "filament_ensemble.h"
 #include "Link.h"
 #include "filament.h"
 #define BOOST_TEST_MODULE link_test
@@ -394,8 +396,93 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     quads.clear();
     delete f;
 }
-BOOST_AUTO_TEST_CASE( friction_test )
+
+BOOST_AUTO_TEST_CASE( add_mot_test )
 {
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    vector<vector<double> > actin_sets;
+
+    double dt = 1, temp = 0.004, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0.25;
+    
+    double mstiff = 0, stretching = 0, bending = 0; //spring constants
+    double kon = 0, koff = 2, kend = 0, fstall = 3.85, rcut = 0.063;
+    double frac_force = 0;
+    
+    vector<double> pos1={23.6,0,actin_rad,0},pos2={24.6,0,actin_rad,0},pos3={-24.4,0,actin_rad,0};
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    
+    Link * l0 = f->get_filament(0)->get_link(0);
+    Link * l1 = f->get_filament(0)->get_link(1);
+    
+    double mx = -24.875, my = 0.5, mang = pi/2, mlen = 1;
+    
+    motor * m = new motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor(s) on link 0 that haven't been added");
+    BOOST_CHECK_MESSAGE(l1->get_n_mots() == 0, "\n"+std::to_string(l1->get_n_mots())+" motor(s) on link 1 that haven't been added");
+    m->set_f_index(0,0);
+    m->set_l_index(0,0);
+    BOOST_CHECK_MESSAGE(l0->get_mot(0) == m, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 1, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l1->get_n_mots() == 0, "\nmotor on link 1 without being added");
+    m->set_l_index(0,1);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l1->get_mot(0) == m, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l1->get_n_mots() == 1, "\nmotor not on link 1 after added");
+    m->set_l_index(0,-1);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l1->get_n_mots() == 0, "\nmotor not added to link correctly");
+
+    //increment l_index test
+    m->set_f_index(0,0);
+    m->set_l_index(0,0);
+    BOOST_CHECK_MESSAGE(l0->get_mot(0) == m, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 1, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l1->get_n_mots() == 0, "\nmotor on link 1 without being added");
+    m->set_l_index(0,1);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor link index not incremented");
+    BOOST_CHECK_MESSAGE(l1->get_mot(0) == m, "\nmotor link index not incremented");
+    BOOST_CHECK_MESSAGE(l1->get_n_mots() == 1, "\nmotor link index not incremented");
+    m->set_l_index(0,-1);
+  
+    //add / remove motor test
+    
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor(s) on link 0 that haven't been added");
+    l0->add_mot(m, 0);
+    BOOST_CHECK_MESSAGE(l0->get_mot(0) == m, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 1, "\nmotor not added to link correctly");
+    l0->remove_mot(0);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor not added to link correctly");
+    
+    //add / remove motor test
+    motor * m2 = new motor(array<double, 3>{mx+1, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor(s) on link 0 that haven't been added");
+    l0->add_mot(m, 0);
+    l0->add_mot(m2, 0);
+    BOOST_CHECK_MESSAGE(l0->get_mot(0) == m, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mot(1) == m2, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 2, "\nmotor not added to link correctly");
+    l0->remove_mot(0);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 1, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mot(0) == m2, "\nmotor not added to link correctly");
+    l0->remove_mot(0);
+    BOOST_CHECK_MESSAGE(l0->get_n_mots() == 0, "\nmotor not added to link correctly");
+
+    //delete l0;
+    //delete l1;
+    delete m;
+    delete f;
+
+
 }
 
 BOOST_AUTO_TEST_CASE( force_test)

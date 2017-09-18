@@ -698,8 +698,10 @@ void filament::set_l0_min(double lmin)
 void filament::grow(double dL)
 {
     double lb = links[0]->get_l0();
-    if ( lb + dL < l0_max )
+    if ( lb + dL < l0_max ){
         links[0]->set_l0(lb + dL);
+        links[0]->step(BC, delrx);
+    }
     else{
         double x2, y2;
         array<double, 2> dir = links[0]->get_direction();
@@ -710,19 +712,19 @@ void filament::grow(double dL)
         array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-link_l0*dir[0], y2-link_l0*dir[1]});
         actins.insert(actins.begin()+1, new actin(newpos[0], newpos[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
         prv_rnds.insert(prv_rnds.begin()+1, {0,0});
-        
-        //shift all links forward
-        for (int i = 1; i < int(links.size()); i++){
+        //shift all links from "1" onward forward
+        //move backward; otherwise i'll just keep pushing all the motors to the pointed end, i think
+        for (int i = int(links.size()-1); i > 0; i--){
             links[i]->inc_aindex();
             links[i]->step(BC, delrx);
-            //shift all xlinks on link forward
-            for (int i = 0; i < links[i]->get_n_mots(); i++)
+            //shift all xlinks on these links forward
+            for (int j = 0; j < links[i]->get_n_mots(); j++)
             {
-                links[i]->get_mot(i)->inc_l_index(links[i]->get_mot_hd(i));
+                links[i]->get_mot(j)->inc_l_index(links[i]->get_mot_hd(j));
             }
             
         }
-        //add a link
+        //add link "1" 
         links.insert(links.begin()+1, new Link(link_l0, links[0]->get_kl(), links[0]->get_max_ext(), this, {1, 2}, fov, nq));
         links[1]->step(BC, delrx);
         //reset l0 at barbed end
@@ -734,7 +736,7 @@ void filament::grow(double dL)
         {
             int hd = links[0]->get_mot_hd(i);
             double pos = links[0]->get_mot(i)->get_pos_a_end()[hd];
-            if (pos <= link_l0){
+            if (pos < link_l0){
                 //if 0<pos_a_end<=L0, l_index -> 1
                 links[0]->get_mot(i)->set_l_index(hd, 1);
             }

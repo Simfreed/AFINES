@@ -498,8 +498,8 @@ void motor::detach_head_without_moving(int hd)
 {
    
     state[hd]=0;
-    f_index[hd]=-1;
     this->set_l_index(hd, -1);
+    f_index[hd]=-1;
     pos_a_end[hd]=0;
     
 }
@@ -573,6 +573,11 @@ void motor::init_l_index(int hd, int idx)
         this->add_to_link(hd);
 }
 
+void motor::set_f_index(int hd, int idx)
+{
+    f_index[hd] = idx;
+}
+
 void motor::set_l_index(int hd, int idx)
 {
     /* cases: 
@@ -580,6 +585,8 @@ void motor::set_l_index(int hd, int idx)
             initially bound, unbinds (idx = -1) ==> remove_from_link
             initially bound, switches (otherwise) ==> both
     */
+//    cout<<"\nDEBUG: changing l_index["<<hd<<"] of "<<this<<" from "<<l_index[hd]<<" to "<<idx;
+    
     if (l_index[hd] == -1){
         l_index[hd] = idx;
         this->add_to_link(hd);
@@ -628,5 +635,7 @@ string motor::write()
 }
 
 void motor::inc_l_index(int hd){
-    l_index[hd] = l_index[hd] + 1;
+//    this->set_l_index(hd, l_index[hd]+1);
+/* NOTE: this function DOES NOT add the motor to a different link; it just increments the l_index of the link*/
+    l_index[hd] += 1;
 }

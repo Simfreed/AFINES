@@ -85,6 +85,8 @@ class motor
         
         void set_l_index(int hd, int idx);
         
+        void set_f_index(int hd, int idx);
+        
         array<double,2> get_pos_a_end();
         
         void set_pos_a_end(int hd, double pos);

@@ -4,6 +4,8 @@
 #include "Link.h"
 #include "actin.h"
 #include "filament.h"
+#include "filament_ensemble.h"
+#include "motor.h"
 #include <boost/test/unit_test.hpp>
 
 /*
@@ -232,11 +234,11 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     vector<actin *> rods9to13 = f->get_actins(9, 13);
     vector<actin *> rodsAll   = f->get_actins(0, nrod);
     
-    BOOST_CHECK_EQUAL(rods0to0.size(), 0);
-    BOOST_CHECK_EQUAL(rods0to3.size(), 3);
-    BOOST_CHECK_EQUAL(rods5to7.size(), 2);
-    BOOST_CHECK_EQUAL(rods9to13.size(), 1);
-    BOOST_CHECK_EQUAL(rodsAll.size(), 10);
+    BOOST_CHECK_EQUAL(int(rods0to0.size()), 0);
+    BOOST_CHECK_EQUAL(int(rods0to3.size()), 3);
+    BOOST_CHECK_EQUAL(int(rods5to7.size()), 2);
+    BOOST_CHECK_EQUAL(int(rods9to13.size()), 1);
+    BOOST_CHECK_EQUAL(int(rodsAll.size()), 10);
 
 
     //check that everythings the same with the original filament
@@ -324,7 +326,7 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     vector<filament *> newfils = f->fracture(5);
     
     BOOST_CHECK_MESSAGE( *f==*fcheck, "\nFilament not the same after it was fractured.\n"<<fcheck->to_string()<<"\ndoes not equal\n"<<f->to_string());
-    BOOST_CHECK_EQUAL(newfils.size(), 2);
+    BOOST_CHECK_EQUAL(int(newfils.size()), 2);
 
     f1 = new filament({startx, starty, startphi}, 6, {xrange, yrange}, {xgrid, ygrid}, 
             viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
@@ -1242,7 +1244,7 @@ BOOST_AUTO_TEST_CASE( grow_test_l0)
     double  fracture_force      = 100;
     string  bc                  = "REFLECTIVE";
     double startx = 0, starty = 0, startphi = 0;
-    double l0max = 2*link_length, l0min = 0, kgrow = 1, lgrow = 0.5;
+    double l0max = 2*link_length, lgrow = 0.5;
 
     filament * f;
     Link l; 
@@ -1278,7 +1280,7 @@ BOOST_AUTO_TEST_CASE( grow_test_add_bead)
     double  fracture_force      = 100;
     string  bc                  = "PERIODIC";
     double startx = 0, starty = 0, startphi = 0;
-    double l0max = 2*link_length, l0min = 0, kgrow = 1, lgrow = 1.5;
+    double l0max = 2*link_length, lgrow = 1.5;
 
     filament * f;
     Link l; 
@@ -1308,4 +1310,108 @@ BOOST_AUTO_TEST_CASE( grow_test_add_bead)
     delete f;
     
 }
+
+BOOST_AUTO_TEST_CASE( grow_fil_test )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    vector<vector<double> > actin_sets;
+
+    double dt = 1, temp = 0.004, vis = 0;
+    string bc = "PERIODIC";
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 10000, koff = 0, kend = 0, fstall = 3.85, rcut = 1;
+    double frac_force = 10000000;
+    
+    vector<double> pos1={0,0,actin_rad,0},pos2={1,0,actin_rad,0},pos3={2,0,actin_rad,0},pos4={3,0,actin_rad,0};
+    actin_sets.push_back(pos1);
+    actin_sets.push_back(pos2);
+    actin_sets.push_back(pos3);
+    actin_sets.push_back(pos4);
+    filament_ensemble * fe = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    fe->quad_update_serial(); 
+    filament * f = fe->get_filament(0);
+    
+    f->set_l0_max(2*link_len);
+
+    double mx1 = -0.05, mx2 = 0.5, mx3 = 1.5, my = 0.5, mang = pi/2, mlen = 1;
+    
+    motor * m1 = new motor(array<double, 3>{mx1, my, mang}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    motor * m2 = new motor(array<double, 3>{mx2, my, mang}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    motor * m3 = new motor(array<double, 3>{mx3, my, mang}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+   
+    m1->attach(0);
+    m2->attach(0);
+    m3->attach(0);
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_n_mots() == 2, "\ninitially not two mots on link 0");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 1, "\nwrong number of motors initially on link 1");
+    BOOST_CHECK_MESSAGE(f->get_link(2)->get_n_mots() == 0, "\nwrong number of motors initially on link 0");
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(0) == m1, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(1) == m2, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_mot(0) == m3, "\ninitialized wrong");
+    
+    BOOST_CHECK_MESSAGE(f->get_nlinks() == 3, "\nwrong number of links initially");
+    BOOST_CHECK_MESSAGE(f->get_nactins() == 4, "\nwrong number of actins initially");
+
+    // case 1: grows, but not enough to add a bead
+    f->grow(0.5);
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_n_mots() == 2, "\ninitially not two mots on link 0");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 1, "\nwrong number of motors initially on link 1");
+    BOOST_CHECK_MESSAGE(f->get_link(2)->get_n_mots() == 0, "\nwrong number of motors initially on link 2");
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(0) == m1, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(1) == m2, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_mot(0) == m3, "\ninitialized wrong");
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_l0() == 1.5, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_l0() == link_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(2)->get_l0() == link_len, "\ninitialized wrong");
+    
+    BOOST_CHECK_MESSAGE(f->get_nlinks() == 3, "\nwrong number of links initially");
+    BOOST_CHECK_MESSAGE(f->get_nactins() == 4, "\nwrong number of actins initially");
+    
+    BOOST_CHECK_MESSAGE(m1->get_l_index()[0] == 0, "\nm1 on wrong link");
+    BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 0, "\nm2 on wrong link");
+    BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 1, "\nm3 on wrong link");
+    
+    // case 1: grows, but enough to add a bead
+    f->grow(0.5);
+    
+    BOOST_CHECK_MESSAGE(f->get_nlinks() == 4, "\nwrong number of links");
+    BOOST_CHECK_MESSAGE(f->get_nactins() == 5, "\nwrong number of actins");
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_n_mots() == 1, "\nafter link add "+std::to_string(f->get_link(0)->get_n_mots())+ " mots on link 0");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 1, "\nafter link add "+std::to_string(f->get_link(1)->get_n_mots())+ " mots on link 1");
+    BOOST_CHECK_MESSAGE(f->get_link(2)->get_n_mots() == 1, "\nafter link add "+std::to_string(f->get_link(2)->get_n_mots())+ " mots on link 2");
+    BOOST_CHECK_MESSAGE(f->get_link(3)->get_n_mots() == 0, "\nafter link add "+std::to_string(f->get_link(3)->get_n_mots())+ " mots on link 3");
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(0) == m1, "\nm1 not on link 0");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_mot(0) == m2, "\nm2 not on link 1");
+    BOOST_CHECK_MESSAGE(f->get_link(2)->get_mot(0) == m3, "\nm3 not on link 2");
+    
+    BOOST_CHECK_MESSAGE(f->get_link(0)->get_l0() == link_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_l0() == link_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(2)->get_l0() == link_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_link(3)->get_l0() == link_len, "\ninitialized wrong");
+   
+    BOOST_CHECK_MESSAGE(m1->get_l_index()[0] == 0, "\nm1 on wrong link");
+    BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 1, "\nm2 on wrong link");
+    BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 2, "\nm3 on wrong link");
+
+    delete m1;
+    delete m2;
+    delete m3;
+    delete fe;
+
+
+}
+
 // EOF
