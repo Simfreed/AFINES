@@ -96,7 +96,7 @@ double dot(double x1, double y1, double x2, double y2);
 double cross(const array<double, 2>& v1, const array<double, 2>& v2);
 double dot(const array<double, 2>& v1, const array<double, 2>& v2);
 
-double angBC(double ang);
+double angBC(double ang, double max);
 
 double var(const vector<double>& vals);
 double mode_var(const vector<double>& vals, double m);
@@ -114,6 +114,7 @@ void write_first_ntsteps(string path, int n);
 void write_first_tsteps(string path, double tstop);
 
 template <typename T> int sgn(T val);
+int mysgn(double);
 
 pair<double, array<int, 2> > flip_pair(const pair<array<int, 2>, double> &p);
 multimap<double, array<int, 2> > flip_map(const std::unordered_map<array<int, 2>, double, boost::hash<array<int,2>>> &p);

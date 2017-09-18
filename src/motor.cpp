@@ -413,7 +413,6 @@ void motor::step_onehead(int hd)
             this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         }
         if (state[hd] == 1) this->update_position_attached(hd);  // update absolute position
-        
     }
 }
 
@@ -504,7 +503,6 @@ void motor::detach_head_without_moving(int hd)
     
 }
 
-
 array<int, 2> motor::get_f_index(){
     return f_index;
 }
@@ -543,6 +541,10 @@ double motor::get_stretching_energy_fene()
 
 double motor::get_kinetic_energy(){
     return kinetic_energy;
+}
+
+double motor::get_angle(){
+    return mphi;
 }
 
 
@@ -638,4 +640,8 @@ void motor::inc_l_index(int hd){
 //    this->set_l_index(hd, l_index[hd]+1);
 /* NOTE: this function DOES NOT add the motor to a different link; it just increments the l_index of the link*/
     l_index[hd] += 1;
+}
+void motor::identify()
+{
+    cout<<"\nI am a motor";
 }

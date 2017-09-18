@@ -41,11 +41,11 @@ class motor
         
         motor();
         
-        ~motor();
+        virtual ~motor();
 
         string get_BC();
 
-        bool allowed_bind( int hd, array<int, 2> fl_idx);
+        virtual bool allowed_bind( int hd, array<int, 2> fl_idx);
         
         bool attach( int hd);
 
@@ -53,15 +53,17 @@ class motor
 
         void kill_head( int hd);
         
+        void identify();
+
         void update_position_attached(int hd);
         
-        void update_force();
+        virtual void update_force();
         
-        void update_force_fraenkel_fene();
+        virtual void update_force_fraenkel_fene();
         
         void update_angle();
         
-        void brownian_relax(int hd);
+        virtual void brownian_relax(int hd);
 
         array<double, 2> boundary_check(int i,  double vx, double vy);
 
@@ -116,8 +118,10 @@ class motor
         double get_stretching_energy_fene();
 
         double get_kinetic_energy();
+
+        double get_angle();
         
-        double metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob);
+        virtual double metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> newpos, double maxprob);
 
         array<double, 2> generate_off_pos(int hd);
 

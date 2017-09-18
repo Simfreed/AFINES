@@ -51,6 +51,10 @@ network: $(OBJECTS)
 debug: $(OBJECTS_DEBUG)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/afines_debug
+bundles: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/bundles.cpp $(INC) $(LIB) -o bin/bun
+bundles_debug: $(OBJECTS_DEBUG)
+	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/bundles.cpp $(INC) $(LIB) -o bin/bun_debug
 
 # THE FOLLOWING PROGRAMS MAY OR MAY NOT EXIST; CHECK YOUR PROG FOLDER
 filament_force_extension: $(OBJECTS)
@@ -78,6 +82,9 @@ filament_ensemble_tester: $(OBJECTS)
 
 motor_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/motor_test.cpp $(INC) $(LIB) -o bin/motor_tester
+
+spacer_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/spacer_test.cpp $(INC) $(LIB) -o bin/spacer_tester
 
 motor_ensemble_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/motor_ensemble_test.cpp $(INC) $(LIB) -o bin/motor_ensemble_tester
