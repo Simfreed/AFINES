@@ -703,11 +703,10 @@ void filament::grow(double dL)
         links[0]->step(BC, delrx);
     }
     else{
-        double x2, y2;
+        double x2, y2, pos;
         array<double, 2> dir = links[0]->get_direction();
         x2 = actins[1]->get_xcm();
         y2 = actins[1]->get_ycm();
-        
         //add a bead
         array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-link_l0*dir[0], y2-link_l0*dir[1]});
         actins.insert(actins.begin()+1, new actin(newpos[0], newpos[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
@@ -718,9 +717,10 @@ void filament::grow(double dL)
             links[i]->inc_aindex();
             links[i]->step(BC, delrx);
             //shift all xlinks on these links forward
-            for (int j = 0; j < links[i]->get_n_mots(); j++)
+            //lmots = links[i]->get_mots();
+            for (map<motor *, int>::iterator it = links[i]->get_mots().begin(); it != links[i]->get_mots().end(); ++it)
             {
-                links[i]->get_mot(j)->inc_l_index(links[i]->get_mot_hd(j));
+                it->first->inc_l_index(it->second);
             }
             
         }
@@ -732,18 +732,23 @@ void filament::grow(double dL)
         links[0]->step(BC, delrx);
         
         //adjust motors and xlinks on first link
-        for (int i = 0; i < links[0]->get_n_mots(); i++)
+        map<motor *, int> mots0 = links[0]->get_mots();
+        vector<motor *> mots1;
+        for (map<motor *, int>::iterator it = mots0.begin(); it != mots0.end(); ++it)
         {
-            int hd = links[0]->get_mot_hd(i);
-            double pos = links[0]->get_mot(i)->get_pos_a_end()[hd];
+            pos = it->first->get_pos_a_end()[it->second];
             if (pos < link_l0){
-                //if 0<pos_a_end<=L0, l_index -> 1
-                links[0]->get_mot(i)->set_l_index(hd, 1);
+                mots1.push_back(it->first);
             }
             else{
-                //else, pos_a_end->pos_a_end-L0
-                links[0]->get_mot(i)->set_pos_a_end(hd, pos - link_l0);
+                it->first->set_pos_a_end(it->second, pos - link_l0);
             }
+        }
+        int hd;
+        for (unsigned int i = 0; i < mots1.size(); i++)
+        {
+            hd = mots0[mots1[i]];
+            mots1[i]->set_l_index(hd, 1);
         }
     }
 }

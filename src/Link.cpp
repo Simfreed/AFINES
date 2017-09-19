@@ -303,20 +303,25 @@ void Link::inc_aindex()
     aindex = {aindex[0]+1, aindex[1]+1};
 }
 
-int Link::add_mot(motor * mot, int hd)
+void Link::add_mot(motor * mot, int hd)
 {
-    mots.push_back(mot);
-    mot_hds.push_back(hd);
-    return int(mots.size())-1;
+//    cout<<"\nDEBUG: adding mot "<<mot<<" to mots on link "<<this;
+    mots[mot] = hd;
 }
 
-void Link::remove_mot(int pos)
+void Link::remove_mot(motor * mot)
 {
     //cout<<"\nDEBUG: trying to remove motor";
-    mots.erase(mots.begin()+pos);
-    mot_hds.erase(mot_hds.begin()+pos);
+///    cout<<"\nDEBUG: removing mot "<<mot<<" from mots on link "<<this;
+    mots.erase(mot);
 }
 
+map<motor *, int> & Link::get_mots()
+{
+    map<motor *, int> &ptr = mots;
+    return ptr;
+}
+/*
 int Link::get_n_mots(){
     return int(mots.size());
 }
@@ -327,4 +332,4 @@ motor * Link::get_mot(int i){
 
 int Link::get_mot_hd(int i){
     return mot_hds[i];
-}
+}*/

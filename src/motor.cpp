@@ -159,8 +159,6 @@ motor::motor( array<double, 4> pos,
     kinetic_energy = 0;
     pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
                         // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th actin
-    link_mot_idx = {-1, -1};
-    
     array<double, 2> posH0 = boundary_check(0, pos[0], pos[1]); 
     array<double, 2> posH1 = boundary_check(1, pos[0]+pos[2], pos[1]+pos[3]); 
     hx[0] = posH0[0];
@@ -616,16 +614,12 @@ double motor::get_pos_a_end(int hd)
 
 void motor::add_to_link(int hd)
 {
-//if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1)
-    link_mot_idx[hd] = actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->add_mot(this, hd);     
+    actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->add_mot(this, hd);     
 }
 
 void motor::remove_from_link(int hd)
 {
-    //if (l_index[hd] == 0 || l_index[hd] == actin_network->get_filament(f_index[hd])->get_nlinks()-1){
-    actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->remove_mot(link_mot_idx[hd]);
-    link_mot_idx[hd] = -1;
-    //}
+    actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->remove_mot(this);
 }
 
 string motor::write()
@@ -638,7 +632,8 @@ string motor::write()
 
 void motor::inc_l_index(int hd){
 //    this->set_l_index(hd, l_index[hd]+1);
-/* NOTE: this function DOES NOT add the motor to a different link; it just increments the l_index of the link*/
+/* NOTE: this function DOES NOT add the motor to a different link; it just increments the l_index of the link
+ * in cases where the link pointer hasn't changed*/
     l_index[hd] += 1;
 }
 void motor::identify()
