@@ -106,8 +106,6 @@ class Link
 
         void set_mots(map<int, int>* mymots);
 
-        map<int, int> * get_mots();
-
         void set_xlinks(map<int, int>* myxlinks);
         
         map<int, int> * get_xlinks();
@@ -115,9 +113,9 @@ class Link
         void update_length();
         
         // stuff for growing
-        int add_mot(motor * mot, int hd);
+        void add_mot(motor * mot, int hd);
 
-        void remove_mot(int pos);
+        void remove_mot(motor * mot);
 
         int get_n_mots();
 
@@ -127,6 +125,7 @@ class Link
         
         array<int,2> get_aindex();
         
+        map<motor *, int> & get_mots();
     protected:
 
         double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen;//, force;
@@ -140,9 +139,6 @@ class Link
         
         vector< array<int,2> > quad; //vector of two vectors(x and y quadrants) of integers
 
-//        map<int, int> *mots, *xlinks; //key = motor index, value = head of motor to bind
-
-        vector<motor* > mots;
-        vector<int> mot_hds;
+        map<motor *, int> mots;
 };
 #endif

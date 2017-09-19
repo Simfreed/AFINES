@@ -1348,14 +1348,19 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     m1->attach(0);
     m2->attach(0);
     m3->attach(0);
+   
+    map<motor*, int>  mots0 = f->get_link(0)->get_mots();
+    map<motor*, int>  mots1 = f->get_link(1)->get_mots();
+    map<motor*, int>  mots2 = f->get_link(2)->get_mots();
+
+
+    BOOST_CHECK_MESSAGE(mots0.size() == 2, "\ninitially not two mots on link 0");
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nwrong number of motors initially on link 1");
+    BOOST_CHECK_MESSAGE(mots2.size() == 0, "\nwrong number of motors initially on link 0");
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_n_mots() == 2, "\ninitially not two mots on link 0");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 1, "\nwrong number of motors initially on link 1");
-    BOOST_CHECK_MESSAGE(f->get_link(2)->get_n_mots() == 0, "\nwrong number of motors initially on link 0");
-    
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(0) == m1, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(1) == m2, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_mot(0) == m3, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(mots0.at(m2) == 0, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(mots1.at(m3) == 0, "\ninitialized wrong");
     
     BOOST_CHECK_MESSAGE(f->get_nlinks() == 3, "\nwrong number of links initially");
     BOOST_CHECK_MESSAGE(f->get_nactins() == 4, "\nwrong number of actins initially");
@@ -1363,13 +1368,13 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     // case 1: grows, but not enough to add a bead
     f->grow(0.5);
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_n_mots() == 2, "\ninitially not two mots on link 0");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 1, "\nwrong number of motors initially on link 1");
-    BOOST_CHECK_MESSAGE(f->get_link(2)->get_n_mots() == 0, "\nwrong number of motors initially on link 2");
+    BOOST_CHECK_MESSAGE(mots0.size() == 2, "\ninitially not two mots on link 0");
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nwrong number of motors initially on link 1");
+    BOOST_CHECK_MESSAGE(mots2.size() == 0, "\nwrong number of motors initially on link 2");
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(0) == m1, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(1) == m2, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_mot(0) == m3, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(mots0.at(m2) == 0, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(mots1.at(m3) == 0, "\ninitialized wrong");
     
     BOOST_CHECK_MESSAGE(f->get_link(0)->get_l0() == 1.5, "\ninitialized wrong");
     BOOST_CHECK_MESSAGE(f->get_link(1)->get_l0() == link_len, "\ninitialized wrong");
@@ -1388,14 +1393,19 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     BOOST_CHECK_MESSAGE(f->get_nlinks() == 4, "\nwrong number of links");
     BOOST_CHECK_MESSAGE(f->get_nactins() == 5, "\nwrong number of actins");
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_n_mots() == 1, "\nafter link add "+std::to_string(f->get_link(0)->get_n_mots())+ " mots on link 0");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 1, "\nafter link add "+std::to_string(f->get_link(1)->get_n_mots())+ " mots on link 1");
-    BOOST_CHECK_MESSAGE(f->get_link(2)->get_n_mots() == 1, "\nafter link add "+std::to_string(f->get_link(2)->get_n_mots())+ " mots on link 2");
-    BOOST_CHECK_MESSAGE(f->get_link(3)->get_n_mots() == 0, "\nafter link add "+std::to_string(f->get_link(3)->get_n_mots())+ " mots on link 3");
+    mots0 = f->get_link(0)->get_mots();
+    mots1 = f->get_link(1)->get_mots();
+    mots2 = f->get_link(2)->get_mots();
+    map<motor*, int> mots3 = f->get_link(3)->get_mots();
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_mot(0) == m1, "\nm1 not on link 0");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_mot(0) == m2, "\nm2 not on link 1");
-    BOOST_CHECK_MESSAGE(f->get_link(2)->get_mot(0) == m3, "\nm3 not on link 2");
+    BOOST_CHECK_MESSAGE(mots0.size() == 1, "\nafter link add "+std::to_string(mots0.size())+ " mots on link 0");
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nafter link add "+std::to_string(mots1.size())+ " mots on link 1");
+    BOOST_CHECK_MESSAGE(mots2.size() == 1, "\nafter link add "+std::to_string(mots2.size())+ " mots on link 2");
+    BOOST_CHECK_MESSAGE(mots3.size() == 0, "\nafter link add "+std::to_string(mots3.size())+ " mots on link 3");
+    
+    BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\nm1 not on link 0");
+    BOOST_CHECK_MESSAGE(mots1.at(m2) == 0, "\nm2 not on link 1");
+    BOOST_CHECK_MESSAGE(mots2.at(m3) == 0, "\nm3 not on link 2");
     
     BOOST_CHECK_MESSAGE(f->get_link(0)->get_l0() == link_len, "\ninitialized wrong");
     BOOST_CHECK_MESSAGE(f->get_link(1)->get_l0() == link_len, "\ninitialized wrong");
@@ -1406,8 +1416,14 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 1, "\nm2 on wrong link");
     BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 2, "\nm3 on wrong link");
 
-    m2->detach_head(0,{1.5,0});
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 0, "\nafter link detached, "+std::to_string(f->get_link(1)->get_n_mots())+ " mots on link 1");
+    cout<<"\nDEBUG testing motor detachment";
+    m2->detach_head(0,{mx2,my});
+    mots1 = f->get_link(1)->get_mots();
+    BOOST_CHECK_MESSAGE(mots1.size() == 0, "\nafter link detached, "+std::to_string(mots1.size())+ " mots on link 1");
+    
+    m2->attach(0);
+    mots1 = f->get_link(1)->get_mots();
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nafter link reattached, "+std::to_string(mots1.size())+ " mots on link 1");
 
     delete m1;
     delete m2;
