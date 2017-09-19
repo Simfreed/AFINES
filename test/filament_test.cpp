@@ -1406,6 +1406,9 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 1, "\nm2 on wrong link");
     BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 2, "\nm3 on wrong link");
 
+    m2->detach_head(0,{1.5,0});
+    BOOST_CHECK_MESSAGE(f->get_link(1)->get_n_mots() == 0, "\nafter link detached, "+std::to_string(f->get_link(1)->get_n_mots())+ " mots on link 1");
+
     delete m1;
     delete m2;
     delete m3;
