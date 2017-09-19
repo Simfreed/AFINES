@@ -550,7 +550,7 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
 
-filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_max, double nactins_prob, 
+filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_extra, double nactins_extra_prob, 
         array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
@@ -561,7 +561,7 @@ filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_
     nq = mynq;
     half_nq = {nq[0]/2, nq[1]/2};
     
-    double nactins_mean = nactins_min + (nactins_max - nactins_min)*nactins_prob;
+    double nactins_mean = nactins_min + nactins_extra*nactins_extra_prob;
     
     visc=vis;
     link_ld = link_len;
@@ -583,8 +583,8 @@ filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_
     cout<<"DEBUG: Avg number of monomers per filament:"<<nactins_mean<<"\n"; 
     cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
    
-    int nactins = nactins_min;
-    binomial_distribution<int> distribution(nactins_max - nactins_min, nactins_prob);
+    int nactins = 0;
+    binomial_distribution<int> distribution(nactins_extra, nactins_extra_prob);
     default_random_engine generator(seed+2);
 
     int s = pos_sets.size();
@@ -598,7 +598,7 @@ filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             
-            nactins += distribution(generator);
+            nactins = nactins_min + distribution(generator);
             network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }
     }

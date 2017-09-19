@@ -40,7 +40,8 @@ int main(int argc, char* argv[]){
     double viscosity, temperature;                                          //Environment
     string bnd_cnd;                                         //Allowed values: NONE, PERIODIC, REFLECTIVE
 
-    double actin_length, npolymer, nmonomer;                                // Actin 
+    int npolymer, nmonomer, nmonomer_extra;                                                               // Actin 
+    double actin_length, extra_bead_prob;                            
     string actin_pos_str;
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
@@ -96,10 +97,14 @@ int main(int argc, char* argv[]){
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
         ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("PERIODIC"), "boundary conditions")
         
-        ("nmonomer", po::value<double>(&nmonomer)->default_value(11), "number of monomers per filament")
-        ("npolymer", po::value<double>(&npolymer)->default_value(3), "number of polymers in the network")
+        ("npolymer", po::value<int>(&npolymer)->default_value(3), "number of polymers in the network")
+        ("nmonomer", po::value<int>(&nmonomer)->default_value(11), "number of monomers per filament (if extra_bead_prob != 0, then minimum #)")
+        ("nmonomer_extra", po::value<int>(&nmonomer_extra)->default_value(0), "max # of monomers per filament")
+        ("extra_bead_prob", po::value<double>(&extra_bead_prob)->default_value(0.5), "probability of adding an extra bead from nmonomer...nmonomer_extra")
+        
         ("actin_length", po::value<double>(&actin_length)->default_value(0.5), "Length of a single actin monomer")
         ("actin_pos_str", po::value<string> (&actin_pos_str)->default_value(""), "Starting positions of actin polymers, commas delimit coordinates; semicolons delimit positions")
+        
         
         ("a_motor_density", po::value<double>(&a_motor_density)->default_value(0.05), "number of active motors / um^2")
         ("p_motor_density", po::value<double>(&p_motor_density)->default_value(0.05), "number of passive motors / um^2")
@@ -207,8 +212,8 @@ int main(int argc, char* argv[]){
         polymer_bending_modulus = 10*temperature; // 10um * kT
     }
 
-    double actin_density = npolymer*nmonomer/(xrange*yrange);//0.65;
-    cout<<"\nDEBUG: actin_density = "<<actin_density; 
+    //double actin_density = double(npolymer*nmonomer)/(xrange*yrange);//0.65;
+    //cout<<"\nDEBUG: actin_density = "<<actin_density; 
     double link_bending_stiffness    = polymer_bending_modulus / link_length;
     
     int n_bw_stdout = max(int((tfinal)/(dt*double(nmsgs))),1);
@@ -319,8 +324,8 @@ int main(int argc, char* argv[]){
     cout<<"\nCreating actin network..";
     filament_ensemble * net;
     if (actin_pos_vec.size() == 0 && actin_in.size() == 0){
-        net = new filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
-                temperature, actin_length, viscosity, nmonomer, link_length, 
+        net = new filament_ensemble(npolymer, nmonomer, nmonomer_extra, extra_bead_prob, {xrange, yrange}, {xgrid, ygrid}, dt, 
+                temperature, actin_length, viscosity, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd, myseed); 
