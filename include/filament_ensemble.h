@@ -32,6 +32,11 @@ class filament_ensemble
         
         filament_ensemble();
 
+        filament_ensemble(int npolymer, int nactins_min, int nactins_max, double nactins_prob,
+                array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+                double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+                double frac_force, string bc, double seed);
+
         filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
                 double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
