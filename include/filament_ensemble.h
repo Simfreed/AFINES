@@ -169,6 +169,8 @@ class filament_ensemble
         
         void set_growing(double, double, double, double);
 
+        void set_turnover(double);
+
     protected:
 
         double t, dt, temperature, link_ld, visc, min_time;
@@ -176,24 +178,15 @@ class filament_ensemble
         double max_links_per_quad_per_filament, max_links_per_quad; 
         bool straight_filaments = false, quad_off_flag;
         double pe_stretch, pe_bend, ke;
+        double kturnover;
 
         array<double,2> fov, view;
         array<int, 2> nq, half_nq;
         vector<int> broken_filaments, empty_vector;
         
-        //links_per_quad[{x,y}] => {{f_1, l_1}, {f_1, l_2},...,{f_k, l_j},...} means that link l_j on filament f_k is located at quadrant {x,y}
-        //n_links_per_quad[{x,y}] => kmax means that kmax links are indexed to {x,y} 
         vector< vector < vector< array<int, 2 > >* > * > links_per_quad;
         vector< vector < int >* > n_links_per_quad;
         
-//        boost::scoped_array< boost::scoped_array < boost::scoped_array < array<int, 2 > >* > * > links_per_quad;
-//        boost::scoped_array< boost::scoped_array < int >* > n_links_per_quad;
-
-        /* per_quad_per_filament does the same thing as above, but for a specific filament. useful for parallelization,
-         * if implemented.
-        vector<map<array<int, 2>, vector<int>*> * > links_per_quad_per_filament; 
-        vector<map<array<int, 2>, int> * > n_links_per_quad_per_filament; 
-        */
         
         vector<array<int, 2>* > all_quads;
         vector<filament *> network;

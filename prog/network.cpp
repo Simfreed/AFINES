@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
     int npolymer, nmonomer, nmonomer_extra;                                                               // Actin 
     double actin_length, extra_bead_prob;                            
     string actin_pos_str;
-    
+
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]){
     bool restart;
     double restart_time;
     
-    double kgrow, lgrow, l0min, l0max;
+    double kgrow, lgrow, l0min, l0max, kturnover;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -179,6 +179,9 @@ int main(int argc, char* argv[]){
         ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
         ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
         ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
+        
+        //Options for filament turnover
+        ("kturnover", po::value<double>(&kturnover)->default_value(0), "rate of filament turnover")
         
         ; 
     
@@ -346,6 +349,7 @@ int main(int argc, char* argv[]){
     }
   
     net->set_growing(kgrow, lgrow, l0min, l0max);
+    net->set_turnover(kturnover);
 
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
     if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 

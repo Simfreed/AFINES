@@ -764,6 +764,13 @@ void filament::update_length()
      */
 }
 
+void filament::update_turnover(double rate)
+{
+    if ( rng(0,1) < rate*dt){
+        this->displace();
+    }
+}
+
 void filament::set_kgrow(double k){
     kgrow = k;
 }
@@ -776,17 +783,16 @@ void filament::displace()
 {
     double x0 = rng(-0.5*(fov[0]),0.5*(fov[0])); 
     double y0 = rng(-0.5*(fov[1]),0.5*(fov[1]));
-    double phi0 =  rng(0, 2*pi);
+    double phi =  rng(0, 2*pi);
+    double l0, variance = 0;
+    array<double, 2> next_pos;
+    if (temperature != 0) variance = temperature/kb;
+    
     actins[0]->set_xcm(x0);
     actins[0]->set_ycm(y0);
-    phi = startpos[2];
-    
-    double variance = 0;
-    if (temperature != 0) variance = temperature/kb;
+    for (int j = 1; j < int(actins.size()); j++) {
 
-    for (int j = 1; j < nactin; j++) {
-
-        //next_pos = boundary_check(j-1, actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi));
+        links[j-1]->remove_all_mots(); 
         l0 = links[j-1]->get_l0();
         next_pos = pos_bc(BC, delrx, dt, fov, 
                 {l0*cos(phi)/dt, l0*sin(phi)/dt},

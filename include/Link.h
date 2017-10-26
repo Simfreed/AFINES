@@ -126,6 +126,9 @@ class Link
         array<int,2> get_aindex();
         
         map<motor *, int> & get_mots();
+    
+        void remove_all_mots();
+
     protected:
 
         double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen;//, force;

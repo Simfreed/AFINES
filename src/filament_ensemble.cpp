@@ -491,6 +491,7 @@ void filament_ensemble::update()
     
     for (int f = 0; f < net_sz; f++){
       //  if (f==0) cout<<"\nDEBUG: filament updates using "<<omp_get_num_threads()<<" cores";  
+        network[f]->update_turnover(kturnover); 
         network[f]->update_length();
         this->update_filament_stretching(f);
         network[f]->update_bending(t);
@@ -741,4 +742,9 @@ void filament_ensemble::set_growing(double kgrow, double lgrow, double l0min, do
         network[i]->set_l0_min(l0min);
         network[i]->set_l0_max(l0max);
     }
+}
+
+void filament_ensemble::set_turnover(double kturn)
+{
+    kturnover = kturn;
 }

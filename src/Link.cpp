@@ -321,15 +321,13 @@ map<motor *, int> & Link::get_mots()
     map<motor *, int> &ptr = mots;
     return ptr;
 }
-/*
-int Link::get_n_mots(){
-    return int(mots.size());
-}
 
-motor * Link::get_mot(int i){
-    return mots[i];
-}
+void Link::remove_all_mots()
+{
+    for (map<motor *, int>::iterator it = mots.begin(); it != mots.end(); ++it)
+    {
+        it->first->detach_head_without_moving(it->second);
+    }
 
-int Link::get_mot_hd(int i){
-    return mot_hds[i];
-}*/
+    mots.clear();
+}
