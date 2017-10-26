@@ -138,6 +138,8 @@ class filament
 
         void shrink(double);
 
+        void displace();
+    
     protected:
         
         double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor;

@@ -63,10 +63,7 @@ void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
         links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
-//        n_links_per_quad.push_back(new vector<int>(nq[1]));
         for (int y = 0; y < nq[1]; y++){
-//            links_per_quad[x]->at(y) = new vector<array<int, 2> >(max_links_per_quad);
-//            n_links_per_quad[x]->at(y) = 0;
             links_per_quad[x]->at(y) = new vector<array<int, 2> >();
         }
     }
@@ -82,7 +79,6 @@ void filament_ensemble::quad_update_serial()
     //initialize all quadrants to have no links
     for (x = 0; x < nq[0]; x++){
         for (y = 0; y < nq[1]; y++){
-            //n_links_per_quad[x]->at(y) = 0;
             links_per_quad[x]->at(y)->clear();
         }
     }
@@ -96,8 +92,6 @@ void filament_ensemble::quad_update_serial()
                 y = q[l][i][1];
                 links_per_quad[x]->at(y)->push_back({f,l});
                 
-                //links_per_quad[x]->at(y)->at( n_links_per_quad[x]->at(y) ) = {f,l};
-                //n_links_per_quad[x]->at(y)++;
             }
         }
     }
@@ -110,10 +104,6 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
     
     array<int, 2> fl;
     double dist;
-//    if(n_links_per_quad[mq[0]]->at(mq[1]) != 0 ){
-        
-//        for (int i = 0; i < n_links_per_quad[mq[0]]->at(mq[1]); i++){
-    
     for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
 
         fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
@@ -559,6 +549,74 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
 ////////////////////////////////////////
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
+
+filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_extra, double nactins_extra_prob, 
+        array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+        double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+        double frac_force, string bc, double seed) {
+    
+    fov = myfov;
+    view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
+    nq = mynq;
+    half_nq = {nq[0]/2, nq[1]/2};
+    
+    double nactins_mean = nactins_min + nactins_extra*nactins_extra_prob;
+    
+    visc=vis;
+    link_ld = link_len;
+    dt = delta_t;
+    temperature = temp;
+    shear_stop = 1e10;
+    shear_dt = dt;
+    t = 0;
+    delrx = 0;
+    
+    if (seed == -1){
+        straight_filaments = true;
+    }else{
+        srand(seed);
+    }
+    
+    
+    cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
+    cout<<"DEBUG: Avg number of monomers per filament:"<<nactins_mean<<"\n"; 
+    cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
+   
+    int nactins = 0;
+    binomial_distribution<int> distribution(nactins_extra, nactins_extra_prob);
+    default_random_engine generator(seed+2);
+
+    int s = pos_sets.size();
+    double x0, y0, phi0;
+    for (int i=0; i<npolymer; i++) {
+        if ( i < s ){
+            network.push_back(new filament(pos_sets[i], nactins, fov, nq,
+                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+        }else{
+            x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
+            y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
+            phi0 =  rng(0, 2*pi);
+            
+            nactins = nactins_min + distribution(generator);
+            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+        }
+    }
+    
+    //Neighbor List Initialization
+    quad_off_flag = false;
+    max_links_per_quad              = npolymer*(nactins-1);
+    max_links_per_quad_per_filament = nactins - 1;
+    
+    //this->nlist_init();
+    this->nlist_init_serial();
+    
+    pe_stretch = 0;
+    pe_bend = 0;
+    ke = 0;
+    
+    fls = { };
+}
 
 filament_ensemble::filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
