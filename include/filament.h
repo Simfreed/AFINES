@@ -124,6 +124,7 @@ class filament
         
         array<double,2> get_bead_position(int bead);
 
+        void displace();
     protected:
         
         double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor;

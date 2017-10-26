@@ -680,3 +680,34 @@ double filament::get_end2end()
         return dist_bc(BC, actins[actins.size() - 1]->get_xcm() - actins[0]->get_xcm(),  
                            actins[actins.size() - 1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
 } 
+
+void filament::displace()
+{
+    double x0 = rng(-0.5*(fov[0]),0.5*(fov[0])); 
+    double y0 = rng(-0.5*(fov[1]),0.5*(fov[1]));
+    double phi0 =  rng(0, 2*pi);
+    actins[0]->set_xcm(x0);
+    actins[0]->set_ycm(y0);
+    phi = startpos[2];
+    
+    double variance = 0;
+    if (temperature != 0) variance = temperature/kb;
+
+    for (int j = 1; j < nactin; j++) {
+
+        //next_pos = boundary_check(j-1, actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi));
+        l0 = links[j-1]->get_l0();
+        next_pos = pos_bc(BC, delrx, dt, fov, 
+                {l0*cos(phi)/dt, l0*sin(phi)/dt},
+                {actins[j-1]->get_xcm() + l0*cos(phi), actins[j-1]->get_ycm() + l0*sin(phi)});
+        actins[j]->set_xcm(next_pos[0]);
+        actins[j]->set_ycm(next_pos[1]);
+        links[j-1]->step(BC, delrx);  
+        links[j-1]->update_force(BC, delrx);
+        
+        // Calculate the Next angle on the actin polymer
+        phi += rng_n(0, variance);
+    
+    }
+
+}
