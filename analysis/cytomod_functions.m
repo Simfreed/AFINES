@@ -408,6 +408,7 @@ acts[[t,sampPairs[[All,1]],1;;2]]-acts[[t,sampPairs[[All,2]],1;;2]]],
 ];
 rdft
 ];
+
 rdfResampActs[acts_,fov_,\[Delta]r_,maxr_,sampSize_:-1,np_:500,nm_:11]:=Module[{},
 sampPairs=getSamp[sampSize,np,nm];
 (*Calculate their rdf*)
@@ -421,6 +422,7 @@ acts[[sampPairs[[All,1]],1;;2]]-acts[[sampPairs[[All,2]],1;;2]]],
 {0,maxr,\[Delta]r}]/norms;
 {rsmid,bcs}\[Transpose]
 ];
+
 rdfResamp[parts_,fov_,\[Delta]r_,maxr_,sampsize_:10000]:=Module[{},
 sampPairs={RandomInteger[{1,Length[parts]},sampsize],RandomInteger[{1,Length[parts]},sampsize]}\[Transpose];
 sampPairs=DeleteCases[sampPairs,_?((#[[1]]==#[[2]])&)];
@@ -435,6 +437,7 @@ parts[[sampPairs[[All,1]],1;;2]]-parts[[sampPairs[[All,2]],1;;2]]],
 {0,maxr,\[Delta]r}]/norms;
 {rsmid,bcs}\[Transpose]
 ];
+
 
 
 (* ::Subsection:: *)

@@ -15,6 +15,7 @@ dr=If[Length[$ScriptCommandLine]>4,ToExpression[$ScriptCommandLine[[5]]],0.05];
 maxr=If[Length[$ScriptCommandLine]>5,ToExpression[$ScriptCommandLine[[6]]],25];
 ti=If[Length[$ScriptCommandLine]>6,ToExpression[$ScriptCommandLine[[7]]],1];
 tf=If[Length[$ScriptCommandLine]>7,ToExpression[$ScriptCommandLine[[8]]],400];
+nsamp=If[Length[$ScriptCommandLine]>8,ToExpression[$ScriptCommandLine[[9]]],10000];
 
 Import["/home/simonfreedman/Code/cytomod/analysis/cytomod_functions.m"];
 Print["Loaded Functions"];
@@ -28,7 +29,7 @@ outfile=OpenWrite[dir<>"/analysis/gr_dr"<>ToString[dr]<>"_maxr"<>ToString[maxr]<
 t=ti;
 Do[
 Print["t = "<>ToString[t]];
-WriteString[outfile,rdfResamp[acts[[t]],fov,dr,maxr],"\n"];,
+WriteString[outfile,rdfResamp[acts[[t]],fov,dr,maxr,nsamp],"\n"];,
 {t,ti,tf}];
 Close[outfile];
 (*Export[dir<>"/analysis/gr_dr"<>ToString[dr]<>"_maxr"<>ToString[maxr]<>"t"<>ToString[ti]<>"-"<>ToString[tf]<>".dat",gr];*)
