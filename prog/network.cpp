@@ -454,7 +454,7 @@ int main(int argc, char* argv[]){
             prev_d_strain = d_strain;
         }
         
-        if (diff_strain_flag && count%n_bw_shear==0){
+        if (diff_strain_flag && t >= time_of_dstrain && count%n_bw_shear==0){
             net->update_delrx( pre_strain + d_strain_amp );
             net->update_d_strain( d_strain_amp );
             pre_strain += d_strain_amp;
