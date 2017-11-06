@@ -183,7 +183,9 @@ class filament_ensemble
         double pe_stretch, pe_bend, pe_exv, ke_vir;
         string BC;
         double rmax; 
-        double a;  
+        double kexv;  
+
+        /* Here above is our excluded volume constant */
 
         array<double,2> fov, view;
         array<int, 2> nq, half_nq;
