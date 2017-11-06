@@ -62,6 +62,10 @@ network_pull: $(OBJECTS)
 2fil: $(OBJECTS)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/2fil.cpp $(INC) $(LIB) -o bin/2f
+motorwalk: $(OBJECTS)
+	mkdir -p $(TARGETDIR)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/motors_on_struct.cpp $(INC) $(LIB) -o bin/motor_walk
+
 
 # Tests
 actin_tester: $(OBJECTS)
