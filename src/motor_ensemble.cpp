@@ -273,6 +273,6 @@ void motor_ensemble::set_fov(double x, double y){
     fov[1] = y;
     for (unsigned int m = 0; m < n_motors.size(); m++)
     {
-        m->set_fov(x, y);
+        n_motors[m]->set_fov(x, y);
     }
 }

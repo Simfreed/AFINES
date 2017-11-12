@@ -139,12 +139,10 @@ int main(int argc, char* argv[]){
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
         
-        ("strain_pct", po::value<double>(&strain_pct)->default_value(0), "pct that the boundarys get sheared")
         ("time_of_stretch", po::value<double>(&time_of_stretch)->default_value(0), "time at which the step strain occurs")
 
-        ("d_stretch_amp", po::value<double>(&d_strain_amp)->default_value(0), "um, differential stretch amplitude")
+        ("d_stretch_amp", po::value<double>(&d_stretch_amp)->default_value(0), "um, differential stretch amplitude")
         ("poisson_ratio", po::value<double>(&poisson_ratio)->default_value(0), "differential strain amplitude")
-        ("time_of_dstrain", po::value<double>(&time_of_dstrain)->default_value(10000), "time when differential strain starts")
         
         ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
         ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
@@ -429,10 +427,10 @@ int main(int argc, char* argv[]){
             
 		}
         
-        if (diff_stretch_flag && t >= time_of_dstretch && count%n_bw_stretch==0){
+        if (diff_stretch_flag && t >= time_of_stretch && count%n_bw_stretch==0){
            
-            xrange += stretch_amp;
-            yrange -= stretch_amp*poisson_ratio;
+            xrange += d_stretch_amp;
+            yrange -= d_stretch_amp*poisson_ratio;
             net->set_fov( xrange, yrange );
             net->set_nq( int(round(xrange*grid_factor)), int(round(yrange*grid_factor)));
             crosslks->set_fov( xrange, yrange );

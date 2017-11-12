@@ -313,11 +313,11 @@ void filament_ensemble::update_shear()
     }
 }
 
-void filament_ensemble::update_stretch(double, double)
+void filament_ensemble::update_stretch(double dx, double dy)
 {
     for (unsigned int f = 0; f < network.size(); f++)
     {
-        network[f]->update_stretch(double, double);
+        network[f]->update_stretch(dx, dy);
     }
 }
     
