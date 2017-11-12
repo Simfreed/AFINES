@@ -110,6 +110,10 @@ class filament_ensemble
         void update_d_strain(double);
         
         void update_delrx(double);
+
+        void set_fov(double, double);
+
+        void update_stretch(double, double);
         
         void update_stretching();
         

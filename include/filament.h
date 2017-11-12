@@ -124,6 +124,10 @@ class filament
         
         array<double,2> get_bead_position(int bead);
 
+        void set_fov(double, double);
+
+        void update_stretch(double, double);
+
     protected:
         
         double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor;

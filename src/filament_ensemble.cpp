@@ -282,6 +282,17 @@ void filament_ensemble::update_delrx(double drx)
     }
 }
 
+void filament_ensemble::set_fov(double x, double y)
+{
+    //cout<<"\nDEBUG: SHEARING"; 
+    fov[0] = x;
+    fov[1] = y;
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->set_fov(x, y);
+    }
+    
+}
  
 void filament_ensemble::update_d_strain(double g)
 {
@@ -302,6 +313,14 @@ void filament_ensemble::update_shear()
     }
 }
 
+void filament_ensemble::update_stretch(double, double)
+{
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->update_stretch(double, double);
+    }
+}
+    
  
 void filament_ensemble::print_filament_thermo(){
     
@@ -358,15 +377,11 @@ bool filament_ensemble::is_polymer_start(int fil, int actin){
 }
 
  
-void filament_ensemble::set_fov(double fovx, double fovy){
-    fov[0] = fovx;
-    fov[1] = fovy;
-}
-
- 
 void filament_ensemble::set_nq(double nqx, double nqy){
     nq[0] = nqx;
     nq[1] = nqy;
+    
+    this->nlist_init_serial();
 }
 
  

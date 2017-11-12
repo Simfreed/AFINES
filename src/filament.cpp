@@ -322,6 +322,13 @@ void filament::update_shear(double t){
     }
 }
 
+void filament::update_stretch(double dx, double dy){
+    for (unsigned int i = 0; i < actins.size(); i++){
+        actins[i]->set_xcm(actins[i]->get_xcm() + dx * actins[i]->get_xcm()/fov[0]);
+        actins[i]->set_ycm(actins[i]->get_ycm() + dy * actins[i]->get_ycm()/fov[1]);
+    }
+}
+
 void filament::update_d_strain(double g){
     
     for (unsigned int i = 0; i < actins.size(); i++){
@@ -680,3 +687,9 @@ double filament::get_end2end()
         return dist_bc(BC, actins[actins.size() - 1]->get_xcm() - actins[0]->get_xcm(),  
                            actins[actins.size() - 1]->get_ycm() - actins[0]->get_ycm(), fov[0], fov[1], delrx);
 } 
+
+void filament::set_fov(double x, double y)
+{
+    fov[0] = x;
+    fov[1] = y;
+}

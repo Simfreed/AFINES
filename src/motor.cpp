@@ -572,3 +572,10 @@ string motor::write()
         +  "\t" + std::to_string(f_index[0]) + "\t" + std::to_string(f_index[1]) 
         +  "\t" + std::to_string(l_index[0]) + "\t" + std::to_string(l_index[1]);
 }
+
+void motor::set_fov(double x, double y)
+{
+    fov[0] = x;
+    fov[1] = y;
+}
+

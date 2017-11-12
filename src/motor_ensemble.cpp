@@ -267,3 +267,12 @@ double motor_ensemble::get_potential_energy(){
 void motor_ensemble::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
 }
+
+void motor_ensemble::set_fov(double x, double y){
+    fov[0] = x;
+    fov[1] = y;
+    for (unsigned int m = 0; m < n_motors.size(); m++)
+    {
+        m->set_fov(x, y);
+    }
+}
