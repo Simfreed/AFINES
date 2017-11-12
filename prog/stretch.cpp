@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
     ios_base::openmode write_mode = ios_base::out;
 
     int n_bw_stretch;
-    double d_stretch_amp, time_of_stretch, stretch, poisson_ratio;
+    double d_stretch_amp, stretch_start_time, stretch_stop_time, stretch, poisson_ratio;
     bool diff_stretch_flag;
     
     bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
@@ -139,7 +139,8 @@ int main(int argc, char* argv[]){
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
         
-        ("time_of_stretch", po::value<double>(&time_of_stretch)->default_value(0), "time at which the step strain occurs")
+        ("stretch_start_time", po::value<double>(&stretch_start_time)->default_value(0), "time at which the stretch starts")
+        ("stretch_stop_time", po::value<double>(&stretch_stop_time)->default_value(0), "time at which the stretch stops")
 
         ("d_stretch_amp", po::value<double>(&d_stretch_amp)->default_value(0), "um, differential stretch amplitude")
         ("poisson_ratio", po::value<double>(&poisson_ratio)->default_value(0), "differential strain amplitude")
@@ -427,7 +428,7 @@ int main(int argc, char* argv[]){
             
 		}
         
-        if (diff_stretch_flag && t >= time_of_stretch && count%n_bw_stretch==0){
+        if (diff_stretch_flag && t >= stretch_start_time && count%n_bw_stretch==0 && t < stretch_stop_time ){
            
             xrange += d_stretch_amp;
             yrange -= d_stretch_amp*poisson_ratio;
