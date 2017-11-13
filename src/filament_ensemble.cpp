@@ -26,26 +26,32 @@ filament_ensemble::~filament_ensemble(){
     
     int s = network.size();
     
-    for (int x = 0; x < nq[0]; x++){
-        for (int y = 0; y < nq[1]; y++){
-            delete links_per_quad[x]->at(y);
-        }
-        delete links_per_quad[x];
-        //delete n_links_per_quad[x];
-    }
-    
+    this->delete_nlist_vecs(); 
+
     for (int i = 0; i < s; i++){
         delete network[i];
     }
     
 }
 
+void filament_ensemble::delete_nlist_vecs(){
+
+    for (int x = 0; x < nq[0]; x++){
+        for (int y = 0; y < nq[1]; y++){
+            delete links_per_quad[x]->at(y);
+        }
+        links_per_quad[x]->clear();
+        delete links_per_quad[x];
+        //delete n_links_per_quad[x];
+    }
+    links_per_quad.clear();
+
+}
 
 vector<filament *>* filament_ensemble::get_network()
 {
     return &network;
 }
-
 
 filament * filament_ensemble::get_filament(int index)
 {
@@ -61,6 +67,7 @@ void filament_ensemble::turn_quads_off()
 
 void filament_ensemble::nlist_init_serial()
 {
+    cout<<"\nDEBUG: nlist initialized";
     for (int x = 0; x < nq[0]; x++){
         links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
         for (int y = 0; y < nq[1]; y++){

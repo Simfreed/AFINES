@@ -48,7 +48,9 @@ class filament_ensemble
         ~filament_ensemble();
         
         void nlist_init();
-        
+       
+        void delete_nlist_vecs();
+
         void nlist_init_serial();
         
         void quad_update();

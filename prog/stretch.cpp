@@ -62,7 +62,6 @@ int main(int argc, char* argv[]){
 
     int n_bw_stretch;
     double d_stretch_amp, stretch_start_time, stretch_stop_time, stretch, poisson_ratio;
-    bool diff_stretch_flag;
     
     bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
     double p_linkage_prob, a_linkage_prob;                                              
@@ -169,7 +168,6 @@ int main(int argc, char* argv[]){
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
         
-        ("diff_stretch_flag", po::value<bool>(&diff_stretch_flag)->default_value(false), "flag to turn on linear differential strain")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -428,12 +426,15 @@ int main(int argc, char* argv[]){
             
 		}
         
-        if (diff_stretch_flag && t >= stretch_start_time && count%n_bw_stretch==0 && t < stretch_stop_time ){
+        if (t >= stretch_start_time && count%n_bw_stretch==0 && t < stretch_stop_time ){
            
             xrange += d_stretch_amp;
             yrange -= d_stretch_amp*poisson_ratio;
+            
             net->set_fov( xrange, yrange );
+            net->delete_nlist_vecs();
             net->set_nq( int(round(xrange*grid_factor)), int(round(yrange*grid_factor)));
+
             crosslks->set_fov( xrange, yrange );
             myosins->set_fov( xrange, yrange );
             
