@@ -432,7 +432,6 @@ int main(int argc, char* argv[]){
             yrange -= d_stretch_amp*poisson_ratio;
             
             net->set_fov( xrange, yrange );
-            net->delete_nlist_vecs();
             net->set_nq( int(round(xrange*grid_factor)), int(round(yrange*grid_factor)));
 
             crosslks->set_fov( xrange, yrange );

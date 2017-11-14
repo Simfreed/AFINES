@@ -42,7 +42,6 @@ void filament_ensemble::delete_nlist_vecs(){
         }
         links_per_quad[x]->clear();
         delete links_per_quad[x];
-        //delete n_links_per_quad[x];
     }
     links_per_quad.clear();
 
@@ -67,7 +66,6 @@ void filament_ensemble::turn_quads_off()
 
 void filament_ensemble::nlist_init_serial()
 {
-    cout<<"\nDEBUG: nlist initialized";
     for (int x = 0; x < nq[0]; x++){
         links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
         for (int y = 0; y < nq[1]; y++){
@@ -111,9 +109,8 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
     
     array<int, 2> fl;
     double dist;
-    
+    //cout<<"\nDEBUG: updating dist map";    
     for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
-
         fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
 
         if (fls.find(fl) == fls.end()){
@@ -385,6 +382,9 @@ bool filament_ensemble::is_polymer_start(int fil, int actin){
 
  
 void filament_ensemble::set_nq(double nqx, double nqy){
+    
+    this->delete_nlist_vecs();
+
     nq[0] = nqx;
     nq[1] = nqy;
     

@@ -161,7 +161,6 @@ void motor_ensemble::motor_walk(double t)
 
     this->check_broken_filaments();
     int nmotors_sz = int(n_motors.size());
-    bool attached;
     //#pragma omp parallel for
     
     for (int i=0; i<nmotors_sz; i++) {
@@ -175,18 +174,16 @@ void motor_ensemble::motor_walk(double t)
                 n_motors[i]->step_onehead(0);
             else if (s[0] == 0)    
             {
-                attached = n_motors[i]->attach(0);
-                if (!attached)
-                    n_motors[i]->brownian_relax(0);
+                n_motors[i]->brownian_relax(0);
+                n_motors[i]->attach(0);
             }
             
             if (s[1] == 1)         
                 n_motors[i]->step_onehead(1);
             else if (s[1] == 0)
             {
-                attached = n_motors[i]->attach(1);
-                if (!attached) 
-                    n_motors[i]->brownian_relax(1);
+                n_motors[i]->brownian_relax(1);
+                n_motors[i]->attach(1);
             }
 
             n_motors[i]->update_angle();
