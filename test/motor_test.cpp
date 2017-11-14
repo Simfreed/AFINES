@@ -1864,7 +1864,7 @@ BOOST_AUTO_TEST_CASE( attach_after_stretch )
     int nfil = 1;//3;
     double actin_density = nfil*nactin/(fov[0]*fov[1]);
 
-    double dt = 1, temp = 0, vis = 0;
+    double dt = 1, temp = 0, vis = 0.001;
     string bc = "PERIODIC";
     double seed = -1;
     
@@ -1880,7 +1880,7 @@ BOOST_AUTO_TEST_CASE( attach_after_stretch )
     f->quad_update_serial(); 
     
     //MOTOR
-    double mx = 0, my = 24, mang = pi/2, mlen = 1;
+    double mx = 0, my = 24.49, mang = pi/2, mlen = 1;
     motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
     m.brownian_relax(1);
@@ -1894,7 +1894,7 @@ BOOST_AUTO_TEST_CASE( attach_after_stretch )
 
     m.set_fov(fov[0], fov[1]);
     m.brownian_relax(1);
-    //m.attach(1);
+    m.attach(1);
 
     delete f;
 }

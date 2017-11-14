@@ -340,7 +340,7 @@ void motor::brownian_relax(int hd)
 
     prv_rnd_x[hd] = new_rnd_x;
     prv_rnd_y[hd] = new_rnd_y;
-
+//    cout<<"\nDEBUG: relaxed motor; new position of head "<<hd<<" = { "<<hx[hd]<<" , "<<hy[hd]<<" }";
 }
 
 
