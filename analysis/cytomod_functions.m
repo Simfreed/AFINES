@@ -293,7 +293,7 @@ integerize[x_]:=If[Round[x]==x,ToString[Round@x],ToString@x];
 
 errcurves[xs_,mus_,errs_]:={{xs,mus}\[Transpose],{xs,mus-errs}\[Transpose],{xs,mus+errs}\[Transpose]};
 
-errbarpms[col_:Black,mark_:Disk[]]:={{Graphics[{col,mark}],0.04},
+errbarpms[col_:Black,mark_:Disk[],sz_:0.04]:={{Graphics[{col,mark}],sz},
 Graphics[{col,Line[0.05{{-1,0},{1,0}}]}],
 Graphics[{col,Line[0.05{{-1,0},{1,0}}]}]
 };
@@ -351,10 +351,11 @@ msd=Table[Mean[dx2s[[1;;-t,t]]],{t,1,Length[dx2s]}];
 ClearAll[sums,dx2s];
 msd
 ];
+vecsq[v_]:=v.v;
 (*Note: requires unrolled trajectory; i.e., not periodic boundary conditions?*)
 msdD[pos_,\[CapitalDelta]_]:=Module[{},
-norms=Table[Norm[pos[[t+\[CapitalDelta]]]-pos[[t]]],{t,1,Length[pos]-\[CapitalDelta]}];
-tots=Accumulate[norms];
+rsqs=Table[vecsq[pos[[t+\[CapitalDelta]]]-pos[[t]]],{t,1,Length[pos]-\[CapitalDelta]}];
+tots=Accumulate[rsqs];
 tfs=Range[1,Length[pos]-\[CapitalDelta]];
 tots/tfs
 (*{tfs,tots}\[Transpose]*)

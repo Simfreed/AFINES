@@ -10,6 +10,7 @@ vxsz=If[Length[$ScriptCommandLine]>4,ToExpression[$ScriptCommandLine[[5]]],0.1];
 nsb=If[Length[$ScriptCommandLine]>5,ToExpression[$ScriptCommandLine[[6]]],10];
 thresh=If[Length[$ScriptCommandLine]>6,ToExpression[$ScriptCommandLine[[7]]],1];
 fov=If[Length[$ScriptCommandLine]>7,ToExpression/@{$ScriptCommandLine[[8]],$ScriptCommandLine[[9]]},{50,50}];
+dt=If[Length[$ScriptCommandLine]>8,ToExpression/@{$ScriptCommandLine[[9]],$ScriptCommandLine[[9]]},1];
 
 
 bx=fov[[1]];
@@ -21,7 +22,7 @@ nbxs=bx/vxsz;
 
 
 (*Import actins*)
-acts=pts2[dir,"actins"][[ti;;tf]];
+acts=pts2[dir,"actins"][[ti;;tf;;dt]];
 
 
 outfile=OpenWrite[dir<>"/analysis/meshsizes_1D_vx"<>ToString[vxsz]<>"_thresh"<>ToString[thresh]<>"_t"<>ToString[ti]<>"-"<>ToString[tf]<>".dat"];
