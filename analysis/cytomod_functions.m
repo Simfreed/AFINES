@@ -354,8 +354,8 @@ msd
 vecsq[v_]:=v.v;
 (*Note: requires unrolled trajectory; i.e., not periodic boundary conditions?*)
 msdD[pos_,\[CapitalDelta]_]:=Module[{},
-norms=Table[vecsq[pos[[t+\[CapitalDelta]]]-pos[[t]]],{t,1,Length[pos]-\[CapitalDelta]}];
-tots=Accumulate[norms];
+rsqs=Table[vecsq[pos[[t+\[CapitalDelta]]]-pos[[t]]],{t,1,Length[pos]-\[CapitalDelta]}];
+tots=Accumulate[rsqs];
 tfs=Range[1,Length[pos]-\[CapitalDelta]];
 tots/tfs
 (*{tfs,tots}\[Transpose]*)
