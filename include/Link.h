@@ -40,6 +40,8 @@ class Link
         double get_kl();
         
         double get_length();
+ 
+        //double get_link_length(); 
        
         double get_angle();
 
@@ -68,6 +70,8 @@ class Link
         bool is_similar(const Link& that);    
 
         void update_force(string bc, double shear_dist);
+
+      	//double get_kinetic_energy(); 
         
         void update_force_fraenkel_fene(string bc, double shear_dist);
         
@@ -87,6 +91,14 @@ class Link
         array<double,2> get_intpoint();
 
         void calc_intpoint(string bc, double shear_dist, double xp, double yp);
+ 
+	//void calc_r_c(string bc, double delrx, double x, double y); 
+
+    	bool get_line_intersect(string bc, double delrx, Link *l2); 
+        
+        double get_r_c(string bc, double delrx, double x, double y); 
+
+	array<double,2> get_point(); 
         
         vector<array<int,2> > get_quadrants();
        
@@ -100,10 +112,10 @@ class Link
 
     protected:
 
-        double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen;//, force;
+        double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen, r_c;//, force;
        
         array<double,2> fov, hx, hy;
-        array<double, 2> disp, force, intpoint;
+        array<double, 2> disp, force, intpoint, point;
 
         array<int, 2> nq, half_nq, aindex;
          

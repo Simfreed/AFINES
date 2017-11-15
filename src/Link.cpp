@@ -37,6 +37,7 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
 
     force = {0,0};
     intpoint = {0,0};
+    point = {0,0}; 
     llen = l0;
     //this->step();
 }
@@ -68,7 +69,7 @@ void Link::step(string bc, double shear_dist)
 }
 
 void Link::update_force(string bc, double shear_dist)
-{
+{ 
     force = {kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))};
 }
 
@@ -88,7 +89,6 @@ void Link::update_force_fraenkel_fene(string bc, double shear_dist)
     }
     klp = kl/(1-scaled_ext*scaled_ext);
     force = {klp*(disp[0]-l0*cos(phi)), klp*(disp[1]-l0*sin(phi))};
-
 }
 
 void Link::update_force_marko_siggia(string bc, double shear_dist, double kToverLp)
@@ -212,8 +212,6 @@ void Link::quad_update(string bc, double delrx){
             quad.push_back({xcoord, ycoord});
             //cout<<"\nDEBUG: (xc, yc) = ("<<xcoord<<" , "<<ycoord<<")";
         }
-
-
 }
 
 //shortest(perpendicular) distance between an arbitrary point and the Link
@@ -249,6 +247,139 @@ void Link::calc_intpoint(string bc, double delrx, double xp, double yp)
             intpoint                = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
         }
     }
+}
+
+double Link::get_r_c(string bc, double delrx, double x, double y)
+{
+    double l2 = disp[0]*disp[0] + disp[1]*disp[1]; 
+    double r_c; 
+    double dx, dy; 
+    array <double, 2> pos; 
+    array <double, 2> proj; 
+	
+    if(l2 == 0)
+    {
+        point = {hx[0], hy[0]};
+	pos = {x,y};
+        dx = pos[0] - point[0];
+        dy = pos[1] - point[1];
+        r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);  
+    }
+    else
+    {
+        double tp = dot_bc(bc, x-hx[0], y-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
+
+        if(tp < 0)
+        {
+            point = {hx[0], hy[0]};
+            pos = {x,y};
+            dx = pos[0] - point[0];
+            dy = pos[1] - point[1];
+            r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
+        }
+        else if(tp > 1.0)
+        {
+            point = {hx[1], hy[1]};
+            pos = {x,y};
+            dx = pos[0] - point[0];
+            dy = pos[1] - point[1];
+            r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
+        }
+        else
+        {
+            proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
+            point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
+            pos = {x,y}; 
+            dx = pos[0] - point[0];
+            dy = pos[1] - point[1];
+            r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
+        }
+
+        //cout << "r_c: " << r_c << endl; 
+	//cout << "tp: " << tp << endl; 
+	//return r_c; 
+    }
+    return r_c; 
+}
+
+/*array <double, 2> Link::get_point(string bc, double delrx, double x, double y)
+{
+    double l2 = disp[0]*disp[0] + disp[1]*disp[1];
+
+    if(l2 == 0){point = {hx[0], hy[0]};}
+    else
+    {
+        double tp = dot_bc(bc, x-hx[0], y-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
+
+        if(tp < 0){point = {hx[0], hy[0]};}
+        else if(tp > 1.0){point = {hx[1], hy[1]};} 
+        else
+        {
+            array <double, 2> proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
+            point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
+        }
+    }
+    return point;      
+}
+*/
+
+bool Link::get_line_intersect(string bc, double delrx, Link *l2)
+{
+    //Reference to Stack Overflow entry by iMalc on Feb 10, 2013
+    //Web Address: https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+
+    //double dx1, dx2, dy1, dy2, dx12, 
+    double dx12, dy12, denom, s_num, t_num;
+    array <double,2> disp1, disp2, disp12, hx2, hy2;  
+    bool denomPos; 
+ 
+    //dx1 = hx[1]-hx[0];  
+    //dy1 = hy[1]-hy[0]; 
+    //dx2 = hx2[1]-hx2[0]; 
+    //dy2 = hy2[1]-hy2[0]; 
+
+    disp1 = this->get_disp(); 
+    disp2 = l2->get_disp(); 
+
+    //disp1 = rij_bc(bc, dx1, dy1, fov[0], fov[1], delrx); 
+    //disp2 = rij_bc(bc, dx2, dy2, fov[0], fov[1], delrx); 
+
+    hx2 = l2->get_hx();  
+    hy2 = l2->get_hy(); 
+
+    dx12 = hx[0]-hx2[0]; 
+    dy12 = hy[0]-hy2[0]; 
+
+    disp12 = rij_bc(bc, dx12, dy12, fov[0], fov[1], delrx); 
+
+    denom  = (disp1[0]*disp2[1] - disp1[1]*disp2[0]); 
+    if(denom == 0){return false;}
+    denomPos = denom > 0;
+
+    s_num = disp1[0]*disp12[1] - disp1[1]*disp12[0];   
+    t_num = disp2[0]*disp12[1] - disp2[1]*disp12[0]; 
+
+    if((s_num < 0) == denomPos){ return false; } 
+    if((t_num < 0) == denomPos){ return false; }
+
+    if(((s_num > denom) == denomPos) || ((t_num > denom) == denomPos)){ return false; }
+
+    //Else Collision have been detected, the filaments do intersect!
+    else{ return true; } 
+     
+}
+
+//double Link::get_r_c(string bc, double delrx, double x, double y)
+//{
+//    this->calc_r_c(bc,delrx,x,y);
+//    return r_c; 
+//    cout << "r_c returned: " << r_c << endl; 
+//}
+
+array <double, 2> Link::get_point()
+{
+    //this->calc_r_c(bc,delrx,x,y);
+    return point; 
 }
 
 vector<array<int, 2> > Link::get_quadrants()
