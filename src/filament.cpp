@@ -692,4 +692,16 @@ void filament::set_fov(double x, double y)
 {
     fov[0] = x;
     fov[1] = y;
+    
+    for (unsigned int i=0; i < links.size(); i++) 
+        links[i]->set_fov(x, y);
+}
+
+void filament::set_nq(int nqx, int nqy)
+{
+    nq[0] = nqx;
+    nq[1] = nqy;
+    
+    for (unsigned int i=0; i < links.size(); i++) 
+        links[i]->set_nq(nqx, nqy);
 }

@@ -97,6 +97,10 @@ class Link
         array<double, 2> get_disp();
         
         array<double, 2> get_neg_disp();
+        
+        void set_fov(double, double);
+
+        void set_nq(int, int);
 
     protected:
 

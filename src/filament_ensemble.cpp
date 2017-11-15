@@ -388,6 +388,9 @@ void filament_ensemble::set_nq(double nqx, double nqy){
     nq[0] = nqx;
     nq[1] = nqy;
     
+    for (unsigned int f = 0; f < network.size(); f++)
+        network[f]->set_nq(nqx, nqy);
+    
     this->nlist_init_serial();
 }
 

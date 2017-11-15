@@ -126,7 +126,10 @@ class filament
 
         void set_fov(double, double);
 
+        void set_nq(int, int);
+
         void update_stretch(double, double);
+
 
     protected:
         
