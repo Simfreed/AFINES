@@ -381,12 +381,12 @@ bool filament_ensemble::is_polymer_start(int fil, int actin){
 }
 
  
-void filament_ensemble::set_nq(double nqx, double nqy){
+void filament_ensemble::set_nq(int nqx, int nqy){
     
     this->delete_nlist_vecs();
 
-    nq[0] = nqx;
-    nq[1] = nqy;
+    nq[0] = max(nqx,1);
+    nq[1] = max(nqy,1);
     
     for (unsigned int f = 0; f < network.size(); f++)
         network[f]->set_nq(nqx, nqy);
