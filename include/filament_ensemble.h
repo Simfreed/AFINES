@@ -151,7 +151,7 @@ class filament_ensemble
         
         bool is_polymer_start(int f, int a);
 
-        void set_nq(double x, double y);
+        void set_nq(int x, int y);
 
         void set_visc(double v);
 
