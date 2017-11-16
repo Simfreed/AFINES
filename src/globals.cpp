@@ -375,8 +375,10 @@ vector<int> int_range(int lo, int hi, int di)
 vector<int> range_bc(string bc, double delrx, int botq, int topq, int lo, int hi)
 {
     vector<int> out;
-    if (hi > topq) hi = hi - (topq-botq);
-    if (lo < botq) lo = lo + (topq-botq);
+    int qrng = topq - botq;
+    //xnew = xnew - fov[0] * round(xnew / fov[0]);
+    if (hi > topq) hi = hi - qrng*round(hi/qrng - 0.5); //(topq-botq);
+    if (lo < botq) lo = lo - qrng*round(lo/qrng - 0.5); //+ (topq-botq);
 
     if (lo <= hi)
         out = int_range(lo, hi);
