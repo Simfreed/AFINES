@@ -131,6 +131,8 @@ class motor
         
         void inc_l_index(int hd);
     
+        void set_fov(double, double);
+
     public:
 
         double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature, 

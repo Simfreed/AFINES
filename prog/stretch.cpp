@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     int xgrid, ygrid;
     double grid_factor; 
     
-    int    count, nframes, nmsgs, n_bw_shear;                                  //Time 
+    int    count, nframes, nmsgs;                                  //Time 
     double t, tinit, tfinal, dt;
     
     double viscosity, temperature;                                          //Environment
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
     int npolymer, nmonomer, nmonomer_extra;                                                               // Actin 
     double actin_length, extra_bead_prob;                            
     string actin_pos_str;
-
+    
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
@@ -60,17 +60,15 @@ int main(int argc, char* argv[]){
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
-    double strain_pct, time_of_strain, pre_strain, d_strain_pct, d_strain_amp;                                      //External Force
-    double d_strain, prev_d_strain, d_strain_freq, time_of_dstrain;
+    int n_bw_stretch;
+    double dx_stretch, stretch_start_time, stretch_stop_time, stretch, poisson_ratio, dy_stretch;
+    
     bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
-    bool diff_strain_flag, osc_strain_flag;
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
 
     bool restart;
     double restart_time;
-    
-    double kgrow, lgrow, l0min, l0max, kturnover;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -93,9 +91,9 @@ int main(int argc, char* argv[]){
         ("tfinal", po::value<double>(&tfinal)->default_value(0.01), "length of simulation in seconds")
         ("nframes", po::value<int>(&nframes)->default_value(1000), "number of times between actin/link/motor positions to are printed to file")
         ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of times simulation progress is printed to stdout")
-        ("n_bw_shear", po::value<int>(&n_bw_shear)->default_value(1000000000), "number of timesteps between subsequent shears")
+        ("n_bw_stretch", po::value<int>(&n_bw_stretch)->default_value(1000000000), "number of timesteps between subsequent shears")
        
-        ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
+        ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "dy_stretchnamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
         ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("PERIODIC"), "boundary conditions")
         
@@ -140,12 +138,12 @@ int main(int argc, char* argv[]){
         ("link_stretching_stiffness,ks", po::value<double>(&link_stretching_stiffness)->default_value(1), "stiffness of link, pN/um")//probably should be about 70000 to correspond to actin
         ("fene_pct", po::value<double>(&fene_pct)->default_value(0.5), "pct of rest length of filament to allow outstretched until fene blowup")
         
-        ("strain_pct", po::value<double>(&strain_pct)->default_value(0), "pct that the boundarys get sheared")
-        ("time_of_strain", po::value<double>(&time_of_strain)->default_value(0), "time at which the step strain occurs")
+        ("stretch_start_time", po::value<double>(&stretch_start_time)->default_value(0), "time at which the stretch starts")
+        ("stretch_stop_time", po::value<double>(&stretch_stop_time)->default_value(0), "time at which the stretch stops")
 
-        ("d_strain_freq", po::value<double>(&d_strain_freq)->default_value(1), "differential strain frequency")
-        ("d_strain_pct", po::value<double>(&d_strain_pct)->default_value(0), "differential strain amplitude")
-        ("time_of_dstrain", po::value<double>(&time_of_dstrain)->default_value(10000), "time when differential strain starts")
+        ("dx_stretch", po::value<double>(&dx_stretch)->default_value(0), "um, differential stretch amplitude")
+
+        ("poisson_ratio", po::value<double>(&poisson_ratio)->default_value(0), "differential strain amplitude")
         
         ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
         ("a_motor_in", po::value<string>(&a_motor_in)->default_value(""), "input motor positions file")
@@ -170,18 +168,6 @@ int main(int argc, char* argv[]){
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
-        
-        ("diff_strain_flag", po::value<bool>(&diff_strain_flag)->default_value(false), "flag to turn on linear differential strain")
-        ("osc_strain_flag", po::value<bool>(&osc_strain_flag)->default_value(false), "flag to turn on oscillatory differential strain")
-        
-        //Options for filament growth
-        ("kgrow", po::value<double>(&kgrow)->default_value(0), "rate of filament growth")
-        ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
-        ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
-        ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
-        
-        //Options for filament turnover
-        ("kturnover", po::value<double>(&kturnover)->default_value(0), "rate of filament turnover")
         
         ; 
     
@@ -347,10 +333,7 @@ int main(int argc, char* argv[]){
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd); 
     }
-  
-    net->set_growing(kgrow, lgrow, l0min, l0max);
-    net->set_turnover(kturnover);
-
+   
     if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
     if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 
     if (quad_off_flag) net->turn_quads_off();
@@ -407,17 +390,9 @@ int main(int argc, char* argv[]){
     string time_str; 
     count=0;
     t = tinit;
-    pre_strain = strain_pct * xrange;
-    d_strain_amp = d_strain_pct * xrange;
-    prev_d_strain = 0;
+    stretch = 0;
+    dy_stretch = -dx_stretch * poisson_ratio;
 
-    cout<<"\nDEBUG: time of pre_strain = "<<time_of_strain;
-    //Run the simulation
-    if (time_of_strain == 0){
-        cout<<"\nDEBUG: t = "<<t<<"; adding pre_strain of "<<pre_strain<<" um here";
-        net->update_delrx( pre_strain );
-        net->update_shear();
-    }
     while (t <= tfinal) {
         
         //print to file
@@ -453,27 +428,26 @@ int main(int argc, char* argv[]){
             
 		}
         
-        //print time count
-        if (time_of_strain!=0 && close(t, time_of_strain, dt/(10*time_of_strain))){
-            //Perform the shear here
-            cout<<"\nDEBUG: t = "<<t<<"; adding pre_strain of "<<pre_strain<<" um here";
-            net->update_delrx( pre_strain );
-            net->update_shear();
-        }
+        if (t >= stretch_start_time && count%n_bw_stretch==0 && t < stretch_stop_time ){
+           
+            if (xrange > dx_stretch && yrange > dy_stretch){
+                xrange += dx_stretch;
+                yrange += dy_stretch;
+                
+                net->set_fov( xrange, yrange );
+                net->set_nq( int(round(xrange*grid_factor)), int(round(yrange*grid_factor)));
 
-        if (osc_strain_flag && t >= time_of_dstrain){
-            d_strain = d_strain_amp * sin(2*pi*d_strain_freq * ( t - time_of_dstrain) );
-            net->update_delrx( pre_strain + d_strain );
-            net->update_d_strain( d_strain - prev_d_strain );
-            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<(d_strain-prev_d_strain)<<" um here; total strain = "<<(pre_strain+d_strain);
-            prev_d_strain = d_strain;
-        }
-        
-        if (diff_strain_flag && t >= time_of_dstrain && count%n_bw_shear==0){
-            net->update_delrx( pre_strain + d_strain_amp );
-            net->update_d_strain( d_strain_amp );
-            pre_strain += d_strain_amp;
-            cout<<"\nDEBUG: t = "<<t<<"; adding d_strain of "<<d_strain_amp<<" um here; total strain = "<<pre_strain<<" um";
+                crosslks->set_fov( xrange, yrange );
+                myosins->set_fov( xrange, yrange );
+
+                net->update_stretch( dx_stretch, dy_stretch );
+                stretch += dx_stretch;
+                cout<<"\nDEBUG: t = "<<t<<"; adding stretch of "<<dx_stretch<<" um here; total stretch = "<<stretch<<" um";
+            }
+            else
+            {
+                cout<<"\nDEBUG: t = "<<t<<"; couldn't add stretch; too stretched out.";
+            }
         }
 
         if (count%n_bw_stdout==0) {

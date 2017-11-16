@@ -128,6 +128,10 @@ class Link
         map<motor *, int> & get_mots();
     
         void remove_all_mots();
+        
+        void set_fov(double, double);
+
+        void set_nq(int, int);
 
     protected:
 

@@ -341,7 +341,7 @@ void motor::brownian_relax(int hd)
 
     prv_rnd_x[hd] = new_rnd_x;
     prv_rnd_y[hd] = new_rnd_y;
-
+//    cout<<"\nDEBUG: relaxed motor; new position of head "<<hd<<" = { "<<hx[hd]<<" , "<<hy[hd]<<" }";
 }
 
 
@@ -633,4 +633,10 @@ void motor::inc_l_index(int hd){
 /* NOTE: this function DOES NOT add the motor to a different link; it just increments the l_index of the link
  * in cases where the link pointer hasn't changed*/
     l_index[hd] += 1;
+}
+
+void motor::set_fov(double x, double y)
+{
+    fov[0] = x;
+    fov[1] = y;
 }

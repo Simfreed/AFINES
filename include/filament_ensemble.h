@@ -48,7 +48,9 @@ class filament_ensemble
         ~filament_ensemble();
         
         void nlist_init();
-        
+       
+        void delete_nlist_vecs();
+
         void nlist_init_serial();
         
         void quad_update();
@@ -110,6 +112,10 @@ class filament_ensemble
         void update_d_strain(double);
         
         void update_delrx(double);
+
+        void set_fov(double, double);
+
+        void update_stretch(double, double);
         
         void update_stretching();
         
@@ -145,9 +151,7 @@ class filament_ensemble
         
         bool is_polymer_start(int f, int a);
 
-        void set_fov(double x, double y);
-
-        void set_nq(double x, double y);
+        void set_nq(int x, int y);
 
         void set_visc(double v);
 

@@ -26,26 +26,31 @@ filament_ensemble::~filament_ensemble(){
     
     int s = network.size();
     
-    for (int x = 0; x < nq[0]; x++){
-        for (int y = 0; y < nq[1]; y++){
-            delete links_per_quad[x]->at(y);
-        }
-        delete links_per_quad[x];
-        //delete n_links_per_quad[x];
-    }
-    
+    this->delete_nlist_vecs(); 
+
     for (int i = 0; i < s; i++){
         delete network[i];
     }
     
 }
 
+void filament_ensemble::delete_nlist_vecs(){
+
+    for (int x = 0; x < nq[0]; x++){
+        for (int y = 0; y < nq[1]; y++){
+            delete links_per_quad[x]->at(y);
+        }
+        links_per_quad[x]->clear();
+        delete links_per_quad[x];
+    }
+    links_per_quad.clear();
+
+}
 
 vector<filament *>* filament_ensemble::get_network()
 {
     return &network;
 }
-
 
 filament * filament_ensemble::get_filament(int index)
 {
@@ -105,7 +110,6 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
     array<int, 2> fl;
     double dist;
     for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
-
         fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
 
         if (fls.find(fl) == fls.end()){
@@ -281,6 +285,17 @@ void filament_ensemble::update_delrx(double drx)
     }
 }
 
+void filament_ensemble::set_fov(double x, double y)
+{
+    //cout<<"\nDEBUG: SHEARING"; 
+    fov[0] = x;
+    fov[1] = y;
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->set_fov(x, y);
+    }
+    
+}
  
 void filament_ensemble::update_d_strain(double g)
 {
@@ -301,6 +316,14 @@ void filament_ensemble::update_shear()
     }
 }
 
+void filament_ensemble::update_stretch(double dx, double dy)
+{
+    for (unsigned int f = 0; f < network.size(); f++)
+    {
+        network[f]->update_stretch(dx, dy);
+    }
+}
+    
  
 void filament_ensemble::print_filament_thermo(){
     
@@ -357,15 +380,17 @@ bool filament_ensemble::is_polymer_start(int fil, int actin){
 }
 
  
-void filament_ensemble::set_fov(double fovx, double fovy){
-    fov[0] = fovx;
-    fov[1] = fovy;
-}
+void filament_ensemble::set_nq(int nqx, int nqy){
+    
+    this->delete_nlist_vecs();
 
- 
-void filament_ensemble::set_nq(double nqx, double nqy){
-    nq[0] = nqx;
-    nq[1] = nqy;
+    nq[0] = max(nqx,1);
+    nq[1] = max(nqy,1);
+    
+    for (unsigned int f = 0; f < network.size(); f++)
+        network[f]->set_nq(nqx, nqy);
+    
+    this->nlist_init_serial();
 }
 
  

@@ -1861,6 +1861,52 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     delete f;
 }   
 
+BOOST_AUTO_TEST_CASE( attach_after_stretch )
+{
+    //Filament ENSEMBLE
+    array<double, 2> fov = {50,50};
+    double grid_factor = 1;
+    array<int, 2> nq = {int(round(fov[0]*grid_factor)), int(round(fov[1]*grid_factor))}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    vector<array<double, 3> > pos_sets;
+    int nactin = 5;
+    int nfil = 1;//3;
+    double actin_density = nfil*nactin/(fov[0]*fov[1]);
+
+    double dt = 1, temp = 0, vis = 0.001;
+    string bc = "PERIODIC";
+    double seed = -1;
+    
+    double actin_rad = 0.5, link_len = 1;
+    double v0 = 0;
+    
+    double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
+    double kon = 10000, koff = 10000, kend = 0, fstall = 3.85, rcut = 0.189;
+    double frac_force = 0;
+    
+    pos_sets.push_back({0,0,0});
+    filament_ensemble * f = new filament_ensemble(actin_density, fov, nq, dt, temp, actin_rad, vis, nactin, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f->quad_update_serial(); 
+    
+    //MOTOR
+    double mx = 0, my = 24.49, mang = pi/2, mlen = 1;
+    motor m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    
+    m.brownian_relax(1);
+    m.attach(1);
+    
+    fov[0] += 0.1;
+    fov[1] -= 0.1;
+
+    f->set_fov(fov[0], fov[1]);
+    f->set_nq(int(round(fov[0]*grid_factor)), int(round(fov[1]*grid_factor)));
+
+    m.set_fov(fov[0], fov[1]);
+    m.brownian_relax(1);
+    m.attach(1);
+
+    delete f;
+}
+
 /* Functions to test : 
         void attach(int hd);
 

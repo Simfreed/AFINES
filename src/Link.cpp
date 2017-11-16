@@ -27,7 +27,6 @@ Link::Link(double len, double stretching_stiffness, double max_ext_ratio, filame
     aindex  = myaindex;
     fov     = myfov;
     nq      = mynq;
-    half_nq = {nq[0]/2, nq[1]/2};
 
     max_ext = max_ext_ratio * l0;
     eps_ext = 0.01*max_ext;
@@ -330,4 +329,14 @@ void Link::remove_all_mots()
     }
 
     mots.clear();
+}
+
+void Link::set_fov(double x, double y){
+    fov[0] = x;
+    fov[1] = y;
+}
+
+void Link::set_nq(int x, int y){
+    nq[0] = x;
+    nq[1] = y;
 }

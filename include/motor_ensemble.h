@@ -65,6 +65,8 @@ class motor_ensemble
         
         void kill_heads(int i);
 
+        void set_fov(double, double);
+
     private:
 
         double mld, gamma, tMove;

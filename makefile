@@ -62,6 +62,9 @@ network_pull: $(OBJECTS)
 2fil: $(OBJECTS)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/2fil.cpp $(INC) $(LIB) -o bin/2f
+stretch: $(OBJECTS)
+	mkdir -p $(TARGETDIR)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/stretch.cpp $(INC) $(LIB) -o bin/stretch
 
 # Tests
 actin_tester: $(OBJECTS)
