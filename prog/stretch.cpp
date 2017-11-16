@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
     ios_base::openmode write_mode = ios_base::out;
 
     int n_bw_stretch;
-    double d_stretch_amp, stretch_start_time, stretch_stop_time, stretch, poisson_ratio;
+    double dx_stretch, stretch_start_time, stretch_stop_time, stretch, poisson_ratio, dy_stretch;
     
     bool link_intersect_flag, motor_intersect_flag, dead_head_flag, p_dead_head_flag, static_cl_flag, quad_off_flag;
     double p_linkage_prob, a_linkage_prob;                                              
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]){
         ("nmsgs", po::value<int>(&nmsgs)->default_value(10000), "number of times simulation progress is printed to stdout")
         ("n_bw_stretch", po::value<int>(&n_bw_stretch)->default_value(1000000000), "number of timesteps between subsequent shears")
        
-        ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "Dynamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
+        ("viscosity", po::value<double>(&viscosity)->default_value(0.001), "dy_stretchnamic viscosity to determine friction [mg / (um*s)]. At 20 C, is 0.001 for water")
         ("temperature,temp", po::value<double>(&temperature)->default_value(0.004), "Temp in kT [pN-um] that effects magnituded of Brownian component of simulation")
         ("bnd_cnd,bc", po::value<string>(&bnd_cnd)->default_value("PERIODIC"), "boundary conditions")
         
@@ -141,7 +141,8 @@ int main(int argc, char* argv[]){
         ("stretch_start_time", po::value<double>(&stretch_start_time)->default_value(0), "time at which the stretch starts")
         ("stretch_stop_time", po::value<double>(&stretch_stop_time)->default_value(0), "time at which the stretch stops")
 
-        ("d_stretch_amp", po::value<double>(&d_stretch_amp)->default_value(0), "um, differential stretch amplitude")
+        ("dx_stretch", po::value<double>(&dx_stretch)->default_value(0), "um, differential stretch amplitude")
+
         ("poisson_ratio", po::value<double>(&poisson_ratio)->default_value(0), "differential strain amplitude")
         
         ("actin_in", po::value<string>(&actin_in)->default_value(""), "input actin positions file")
@@ -390,6 +391,7 @@ int main(int argc, char* argv[]){
     count=0;
     t = tinit;
     stretch = 0;
+    dy_stretch = -dx_stretch * poisson_ratio;
 
     while (t <= tfinal) {
         
@@ -428,18 +430,24 @@ int main(int argc, char* argv[]){
         
         if (t >= stretch_start_time && count%n_bw_stretch==0 && t < stretch_stop_time ){
            
-            xrange += d_stretch_amp;
-            yrange -= d_stretch_amp*poisson_ratio;
-            
-            net->set_fov( xrange, yrange );
-            net->set_nq( int(round(xrange*grid_factor)), int(round(yrange*grid_factor)));
+            if (xrange > dx_stretch && yrange > dy_stretch){
+                xrange += dx_stretch;
+                yrange += dy_stretch;
+                
+                net->set_fov( xrange, yrange );
+                net->set_nq( int(round(xrange*grid_factor)), int(round(yrange*grid_factor)));
 
-            crosslks->set_fov( xrange, yrange );
-            myosins->set_fov( xrange, yrange );
-            
-            net->update_stretch( d_stretch_amp, d_stretch_amp*poisson_ratio );
-            stretch += d_stretch_amp;
-            cout<<"\nDEBUG: t = "<<t<<"; adding stretch of "<<d_stretch_amp<<" um here; total stretch = "<<stretch<<" um";
+                crosslks->set_fov( xrange, yrange );
+                myosins->set_fov( xrange, yrange );
+
+                net->update_stretch( dx_stretch, dy_stretch );
+                stretch += dx_stretch;
+                cout<<"\nDEBUG: t = "<<t<<"; adding stretch of "<<dx_stretch<<" um here; total stretch = "<<stretch<<" um";
+            }
+            else
+            {
+                cout<<"\nDEBUG: t = "<<t<<"; couldn't add stretch; too stretched out.";
+            }
         }
 
         if (count%n_bw_stdout==0) {
