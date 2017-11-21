@@ -204,6 +204,8 @@ int main(int argc, char* argv[]){
    
     if (actin_in.size() > 0)
         actin_pos_vec   = file2vecvec(actin_in, "\t");
+    if (a_motor_in.size() > 0)
+        a_motor_pos_vec = file2vecvec(a_motor_in, "\t");
     
     // To restart a whole trajectory from it's last full timestep : 
     if (restart){
