@@ -40,6 +40,15 @@ ToExpression[Import[dir<>"/"<>name<>".dat","TSV"]],
 Print[dir<>"/"<>name<>".dat doesn't exist"];{}
 ];
 
+importmotdrbc[f_,ti_:5000,tf_:-1,dt_:1,vi_:0,vf_:2,dv_:0.05]:=Module[{},
+amots=pts2[f,"amotors_ext"];
+cms=amots[[ti;;tf,All,1;;2]]+0.5amots[[ti;;tf,All,3;;4]];
+vs=Flatten@Map[Norm,(cms[[(dt+1);;]]-cms[[;;(-dt-1)]])/dt,{2}];
+bcs=BinCounts[vs,{vi,vf,dv}];
+ClearAll[amots,cms,vs];
+bcs
+];
+
 
 (* ::Subsection:: *)
 (*Drawing Networks*)
@@ -360,6 +369,11 @@ tfs=Range[1,Length[pos]-\[CapitalDelta]];
 tots/tfs
 (*{tfs,tots}\[Transpose]*)
 ];
+
+vecangle[v1_,v2_,nv1_,nv2_,zval_]:=If[nv1==0||nv2==0,zval,
+If[(v1[[1]]*v2[[2]]-v2[[1]]*v1[[2]])<0,
+2Pi-ArcCos[v1.v2/(nv1*nv2)],
+ArcCos[v1.v2/(nv1*nv2)]]];
 
 
 (* ::Subsection:: *)
