@@ -370,7 +370,16 @@ tots/tfs
 (*{tfs,tots}\[Transpose]*)
 ];
 
-vecangle[v1_,v2_,nv1_,nv2_,zval_]:=If[nv1==0||nv2==0,zval,
+msdD2[pos_,\[CapitalDelta]_]:=Module[{},
+rsqs=Table[vecsq[pos[[t+\[CapitalDelta]]]-pos[[t]]],{t,1,Length[pos]-\[CapitalDelta],\[CapitalDelta]}];
+tots=Accumulate[rsqs];
+tfs=Range[1,Length[pos]-\[CapitalDelta],\[CapitalDelta]];
+tots/tfs
+(*{tfs,tots}\[Transpose]*)
+];
+
+
+vecangle[v1_,v2_,nv1_,nv2_,zval_,thresh_:0.00001]:=If[nv1<thresh||nv2<thresh,zval,
 If[(v1[[1]]*v2[[2]]-v2[[1]]*v1[[2]])<0,
 2Pi-ArcCos[v1.v2/(nv1*nv2)],
 ArcCos[v1.v2/(nv1*nv2)]]];
