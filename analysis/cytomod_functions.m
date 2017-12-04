@@ -90,8 +90,9 @@ If[links!={},AppendTo[frames,Map[link[#,mll]&,links,{2}]]];
 If[polar,
 If[actins!={},AppendTo[frames,Map[actin[#,Blue]&,actins[[All,1;;-1;;np]],{2}]],If[links!={},rad=Mean[Flatten[Map[Norm,links[[All,All,3;;4]],{2}]]]/barbedEndFactor;
 AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,links[[All,1;;-1;;np-1]],{2}]]]]];
-If[amotors!={},AppendTo[frames,Map[amotor,amotors,{2}]]];
+
 If[pmotors!={},AppendTo[frames,Map[pmotor[#,Green]&,pmotors,{2}]]];
+If[amotors!={},AppendTo[frames,Map[amotor,amotors,{2}]]];
 frames=Transpose[frames];
 minx=0;miny=0;maxx=0;maxy=0;
 If[TensorRank[fov]==1,minx=-fov[[1]]/2;maxx=fov[[1]]/2;miny=-fov[[2]]/2;
