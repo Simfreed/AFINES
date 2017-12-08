@@ -185,4 +185,86 @@ bin/afines -c design_principles_paper/config/shear.cfg --dir [srcdir]/restart_sh
 ```
 
 
-### F
+### Order Parameter Calculations ###
+If you have access to Mathematica and Python on command line, perform the following for all trajectories where ${dir} is
+the trajectory output directory.
+Set variables for the directory with the analysis folder scripts and prepare output directory:
+```
+afineshome="/home/simonfreedman/Code/cytomod"
+math="/software/mathematica-10.2-x86_64/bin/MathematicaScript"
+mathdir="${afineshome}/analysis/"
+fovx="50"
+fovy="50"
+dr="0.05"
+maxr="25"
+ti=1
+tf=400
+nsamp=10000
+
+mkdir ${dir}/analysis
+```
+
+#### g(r) ####
+```
+$math -script ${mathdir}/gr.m $dir $fovx $fovy $dr $maxr $ti $tf $nsamp
+```
+this should output the file "${dir}/analysis/gr_dr${dr}_maxr${maxr}_t${ti}-${tf}.dat"
+To make most of the plots more efficiently, run
+```
+tail -50 ${dir}/analysis/gr_dr${dr}_maxr${maxr}_t1-400.dat > ${dir}/analysis/gr_dr${dr}_maxr${maxr}_t351-400.dat
+```
+#### g(r_barbed) ####
+```
+$math -script ${mathdir}/gr_barb.m $dir $fovx $fovy $dr $maxr $ti $tf $nsamp
+```
+this should output the file "${dir}/analysis/gr_barbed_dr${dr}_maxr${maxr}_t${ti}-${tf}.dat"
+To make most of the plots more efficiently, run
+```
+tail -50 ${dir}/analysis/gr_barbed_dr${dr}_maxr${maxr}_t1-400.dat > ${dir}/analysis/gr_barbed_dr${dr}_maxr${maxr}_t351-400.dat
+```
+#### mesh size ####
+This one's real slow.
+```
+voxel="0.25"
+subdivs=10
+emptythresh=1
+dt=1
+$math -script ${mathdir}/mesh_size.m $dir $ti $tf $voxel $subdivs $emptythresh $fovx $fovy $dt 
+```
+this should output the file "${dir}/analysis/meshsizes_1D_vx${voxel}_thresh${emptythresh}_t${ti}-${tf}.dat"
+To make most of the plots more efficiently, run
+```
+tail -50 ${dir}/analysis/meshsizes_1D_vx${voxel}_thresh${emptythresh}_t1-400.dat > ${dir}/analysis/meshsizes_1D_vx${voxel}_thresh${emptythresh}_t351-400.dat
+```
+#### divergence ####
+First calculate the velocity field with python
+```
+nb=10
+dt=10
+python ${mathdir}/rbf_vield.py $dir --nbins $nb --minpts 10 --dt $dt 
+```
+then run the mathematica script that processes it
+```
+thresh=10
+dr=1
+cmd="$math -script $mathdir/div_from_weights.m $main_dr $fovx $fovy $dr $dt $tf $nb $thresh"
+```
+#### mean squared displacement and angle distribution ####
+For every s in 1..125, and every ${dir} used for figure 5:
+```
+${mdir}=${dir}/restart_more_motors_long/seed${s}e6
+ti=5000
+tf=30000
+```
+Unroll the trajectory
+```
+python ${mathdir}/periodic2definite.py ${mdir} amotors $fovx $fovy
+```
+Calculate angle distributions
+```
+$math -script ${mathdir}/vmot_ang_hists.m $mdir $ti $tf 0.001 Nothing 1 2 5 10 20 50 100 200 500 1000
+```
+Calculate msd
+```
+$math -script ${mathdir}/msd_tf_const.m $mdir $fovx $fovy $ti $tf
+```
