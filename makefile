@@ -42,7 +42,7 @@ clean_debug:
 	    @echo " $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)"; $(RM) -r $(BUILDDIR_DEBUG) $(TARGET)
 
 tar:
-	tar -cvzf tars/afines.tar.gz src/*.cpp include/*.h prog/network.cpp makefile
+	tar -cvzf tars/afines.tar.gz src/*.cpp include/*.h prog/*.cpp test/*.cpp makefile
 
 # Programs
 network: $(OBJECTS)
@@ -66,6 +66,10 @@ network_pull: $(OBJECTS)
 2fil: $(OBJECTS)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/2fil.cpp $(INC) $(LIB) -o bin/2f
+motorwalk: $(OBJECTS)
+	mkdir -p $(TARGETDIR)
+	$(CC) $(CFLAGS) $(OBJECTS) prog/motors_on_struct.cpp $(INC) $(LIB) -o bin/motor_walk
+
 
 # Tests
 actin_tester: $(OBJECTS)
