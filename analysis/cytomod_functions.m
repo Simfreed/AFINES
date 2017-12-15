@@ -19,6 +19,7 @@ ToExpression[Import[dir<>"/txt_stack/"<>name<>".dat","TSV"]],
 Print[dir<>"/txt_stack/"<>name<>".dat doesn't exist"];{}
 ];
 pts2[dir_,parts_]:=DeleteCases[SplitBy[Import[dir<>"/txt_stack/"<>parts<>".txt","Table"],Length],_?((Dimensions[#]=={1,6})&)];
+ptsdata[dir_,parts_]:=DeleteCases[SplitBy[Import[dir<>"/data/"<>parts<>".txt","Table"],Length],_?((Dimensions[#]=={1,6})&)];
 pts3[dir_,name_]:=Map[Internal`StringToDouble/@(StringSplit[StringTake[#,{2,-2}],", "])&,Import[dir<>"/txt_stack/"<>name<>".dat","TSV"],{2}];
 importCheck[fname_]:=
 If[
