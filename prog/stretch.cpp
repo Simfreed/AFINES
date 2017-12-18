@@ -444,7 +444,7 @@ int main(int argc, char* argv[]){
         
         if (t >= stretch_start_time && count%n_bw_stretch==0 && t < stretch_stop_time ){
            
-            if (xrange > dx_stretch && yrange > dy_stretch){
+            if (xrange > (-1*dx_stretch)  && yrange > (-1*dy_stretch)){
                 xrange += dx_stretch;
                 yrange += dy_stretch;
                 
