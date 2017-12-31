@@ -20,7 +20,7 @@
 #include "string"
 #include "vector"
 #include "actin.h"
-#include "Link.h"
+#include "spring.h"
 #include "globals.h"
 
 //=====================================
@@ -71,7 +71,7 @@ class filament
         
         actin * get_actin(int i);
         
-        Link * get_link(int i);
+        spring * get_link(int i);
 
         int get_nlinks();
 
@@ -133,7 +133,7 @@ class filament
         array<int,2> nq;
         vector<array<double, 2> > prv_rnds;
         vector<actin *> actins;
-        vector<Link *> links;
+        vector<spring *> links;
         string BC;
 };
 

@@ -23,15 +23,15 @@ class filament;
 #include "globals.h"
 
 //=====================================
-//Link class
-class Link
+//spring class
+class spring
 {
     public:
-        Link();
+        spring();
         
-        Link(double len, double stiffness, double max_ext, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
+        spring(double len, double stiffness, double max_ext, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
         
-        virtual ~Link();
+        virtual ~spring();
 
         array<double, 2> get_hx();
         
@@ -63,9 +63,9 @@ class Link
         
         void filament_update();
         
-        bool operator==(const Link& that);    
+        bool operator==(const spring& that);    
         
-        bool is_similar(const Link& that);    
+        bool is_similar(const spring& that);    
 
         void update_force(string bc, double shear_dist);
         

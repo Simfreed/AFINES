@@ -91,7 +91,7 @@ filament::filament(array<double, 3> startpos, int nactin, array<double, 2> myfov
                 {actins[j-1]->get_xcm() + linkLength*cos(phi), actins[j-1]->get_ycm() + linkLength*sin(phi)});
         actins.push_back( new actin(next_pos[0], next_pos[1], actinRadius, visc) );
         prv_rnds.push_back({0,0});
-        links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
+        links.push_back( new spring(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
         links[j-1]->step(BC, delrx);  
         links[j-1]->update_force(BC, delrx);
         
@@ -126,12 +126,12 @@ filament::filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 
         damp = actins[0]->get_friction();
     }
     
-    //Link em up
+    //spring em up
     if (actinvec.size() > 1){
         for (unsigned int j = 1; j < actinvec.size(); j++) {
 
             actins.push_back(new actin(*(actinvec[j])));
-            links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
+            links.push_back( new spring(linkLength, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
             links[j-1]->step(BC, delrx);
             links[j-1]->update_force(BC, delrx);
             prv_rnds.push_back({0,0});
@@ -166,7 +166,7 @@ void filament::add_actin(actin * a, double linkLength, double stretching_stiffne
     prv_rnds.push_back({0,0});    
     if (actins.size() > 1){
         int j = (int) actins.size() - 1;
-        links.push_back( new Link(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
+        links.push_back( new spring(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
         links[j-1]->step(BC, delrx);
     }
     if (damp == infty)
@@ -303,7 +303,7 @@ actin * filament::get_actin(int i)
     }
 }
 
-Link * filament::get_link(int i)
+spring * filament::get_link(int i)
 {
     return links[i];
 }

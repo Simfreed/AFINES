@@ -12,8 +12,7 @@
 -------------------------------------------------------------------*/
 
 #include "globals.h"
-#include "link_ensemble.h"
-#include "Link.h"
+//#include "Link.h"
 #include "filament_ensemble.h"
 //actin network class
 

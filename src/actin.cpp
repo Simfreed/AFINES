@@ -18,7 +18,6 @@ actin::actin(){}
 
 actin::actin(double xcm, double ycm, double len, double vis)
 {
-    //now i will make these spherical
     x=xcm;
     y=ycm;
     ld=len; //radius
@@ -31,7 +30,6 @@ actin::actin(double xcm, double ycm, double len, double vis)
 
 actin::actin(const actin& other){
     
-    //cout<<"\nDEBUG: calling copy constructor"; 
     x = other.x;
     y = other.y;
     ld = other.ld;
@@ -42,7 +40,6 @@ actin::actin(const actin& other){
 }
 
 actin::~actin(){ 
-    //cout<<"DELETING ACTIN\n";
 };
 
 

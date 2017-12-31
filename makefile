@@ -71,8 +71,8 @@ motorwalk: $(OBJECTS)
 actin_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/actin_test.cpp $(INC) $(LIB) -o bin/actin_tester
 
-link_tester: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) test/link_test.cpp $(INC) $(LIB) -o bin/link_tester
+spring_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/spring_test.cpp $(INC) $(LIB) -o bin/spring_tester
 
 filament_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/filament_test.cpp $(INC) $(LIB) -o bin/filament_tester
@@ -86,6 +86,6 @@ motor_tester: $(OBJECTS)
 motor_ensemble_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/motor_ensemble_test.cpp $(INC) $(LIB) -o bin/motor_ensemble_tester
 
-test:actin_tester link_tester filament_tester motor_tester # filament_ensemble_tester motor_ensemble_tester
+test:actin_tester spring_tester filament_tester motor_tester # filament_ensemble_tester motor_ensemble_tester
 
 .PHONY: clean

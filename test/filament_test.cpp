@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE filament_test
 
 #include "globals.h"
-#include "Link.h"
+#include "spring.h"
 #include "actin.h"
 #include "filament.h"
 #include <boost/test/unit_test.hpp>
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double  startx = 0, starty = 0, startphi = 0;
     
     filament * f; 
-    Link l; 
+    spring l; 
     actin a; 
    
     f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
@@ -69,8 +69,8 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     for (int i = 0; i < nrod - 1; i++){
         a = actin( i, 0, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid});
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        l = spring( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid});
+        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nspring : " + f->get_link(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     a = actin( (nrod - 1), 0, actin_length, viscosity );
     BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
@@ -86,8 +86,8 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     for (int i = 0; i < nrod-1; i++){
         a = actin( -1 , -i, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        l = spring( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nspring : " + f->get_link(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     a = actin( -1, -(nrod - 1), actin_length, viscosity );
     BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     string  bc                  = "REFLECTIVE";
     
     filament * f; 
-    Link l; 
+    spring l; 
     actin a;
     vector<actin *> rodvec;
 
@@ -134,8 +134,8 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     for (int i = 0; i < nrod-1; i++){
         a = actin( i, 0, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        l = spring( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nspring : " + f->get_link(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     
     a = actin( (nrod - 1), 0, actin_length, viscosity );
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     double  startx = 0, starty = 0, startphi = 0;
     
     filament * f; 
-    Link l; 
+    spring l; 
     actin a; 
    
     f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     
     double startx = 0, starty = 0, startphi = 0;
     filament * f; 
-    Link l; 
+    spring l; 
     actin a; 
 
     startx=-1; starty = 0; startphi= 3*pi/2;
@@ -244,8 +244,8 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     for (int i = 0; i < nrod-1; i++){
         a = actin( -1 , -i, actin_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        l = spring( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nspring : " + f->get_link(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     a = actin( -1, -(nrod - 1), actin_length, viscosity );
     BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     double startx = 0, starty = 0, startphi = 0;
     
     filament *f, *f1, *f2, *f2a, *f2b, *fcheck; 
-    Link l; 
+    spring l; 
     actin a; 
 
     f      = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 

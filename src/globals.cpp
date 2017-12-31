@@ -586,7 +586,7 @@ double angBC(double ang)
 std::string quads_error_message(std::string title, vector<array<int, 2> > equads, vector< array<int, 2> > aquads)
 {
 
-    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal Link Quadrants : \n";
+    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal spring Quadrants : \n";
     cout<<"\nActual Quadrants:"; 
     for_each(aquads.begin(), aquads.end(), intarray_printer);
     cout<<"\nExpected Quadrants:"; 
