@@ -192,7 +192,7 @@ void motor_ensemble::motor_walk(double t)
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
             //n_motors[i]->update_force_fraenkel_fene();
-            n_motors[i]->actin_update();
+            n_motors[i]->filament_update();
         }
     
     }
@@ -216,7 +216,7 @@ void motor_ensemble::motor_update()
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
             //n_motors[i]->update_force_fraenkel_fene();
-            n_motors[i]->actin_update();
+            n_motors[i]->filament_update();
     
     }
     this->update_energies();
