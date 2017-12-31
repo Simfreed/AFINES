@@ -411,8 +411,8 @@ int main(int argc, char* argv[]){
             if (t>tinit) time_str ="\n";
             time_str += "t = "+to_string(t);
             
-            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
-            net->write_actins(file_a);
+            file_a << time_str<<"\tN = "<<to_string(net->get_nbeads());
+            net->write_beads(file_a);
 
             file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_links(file_l);

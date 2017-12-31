@@ -54,10 +54,10 @@ array<double,2> spring::get_hy(){
 
 void spring::step(string bc, double shear_dist)
 {
-    hx[0] = fil->get_actin(aindex[0])->get_xcm();
-    hx[1] = fil->get_actin(aindex[1])->get_xcm();
-    hy[0] = fil->get_actin(aindex[0])->get_ycm();
-    hy[1] = fil->get_actin(aindex[1])->get_ycm();
+    hx[0] = fil->get_bead(aindex[0])->get_xcm();
+    hx[1] = fil->get_bead(aindex[1])->get_xcm();
+    hy[0] = fil->get_bead(aindex[0])->get_ycm();
+    hy[1] = fil->get_bead(aindex[1])->get_ycm();
 
     disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
     phi=atan2(disp[1],disp[0]);
@@ -174,7 +174,7 @@ bool spring::is_similar(const spring& that)
 // Updates all derived quantities of a monomer
 void spring::quad_update(string bc, double delrx){
     
-    //quadrant numbers crossed by the actin in x-direction
+    //quadrant numbers crossed by the bead in x-direction
     quad.clear();
     int xlower, xupper, ylower, yupper;
     
@@ -228,7 +228,7 @@ void spring::calc_intpoint(string bc, double delrx, double xp, double yp)
     if (l2==0){
         intpoint = {hx[0], hy[0]};
     }else{
-        //Consider the line extending the link, parameterized as h0 + tp ( h1 - h0 )
+        //Consider the line extending the spring, parameterized as h0 + tp ( h1 - h0 )
         //tp = projection of (xp, yp) onto the line
         double tp=dot_bc(bc, xp-hx[0], yp-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
         if (tp<0){ 

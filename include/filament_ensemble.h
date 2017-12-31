@@ -32,17 +32,17 @@ class filament_ensemble
         
         filament_ensemble();
 
-        filament_ensemble(int npolymer, int nactins_min, int nactins_max, double nactins_prob,
+        filament_ensemble(int npolymer, int nbeads_min, int nbeads_max, double nbeads_prob,
                 array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
                 double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
                 double frac_force, string bc, double seed);
 
         filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
-                double len, double vis, int nactin,
+                double len, double vis, int nbead,
                 double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
                 string bc, double seed);
         
-        filament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+        filament_ensemble(vector< vector<double> > beads, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
                 double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc); 
         
         ~filament_ensemble();
@@ -77,7 +77,7 @@ class filament_ensemble
         
         array<double,2> get_end(int fil, int link);
         
-        array<double,2> get_force(int fil, int actin);
+        array<double,2> get_force(int fil, int bead);
         
         double get_int_direction(int fil, int link, double xp, double yp);
 
@@ -89,7 +89,7 @@ class filament_ensemble
 
         double get_llength(int fil, int link);
        
-        double get_actin_friction();
+        double get_bead_friction();
         
         double get_delrx();
         
@@ -97,7 +97,7 @@ class filament_ensemble
         
         double get_bending_energy();
         
-        int get_nactins();
+        int get_nbeads();
         
         int get_nlinks();
         
@@ -123,9 +123,9 @@ class filament_ensemble
 
         void update_positions_range(int lo, int hi);
         
-        void update_forces(int fil, int actin, double f2, double f3);
+        void update_forces(int fil, int bead, double f2, double f3);
 
-        void write_actins(ofstream& fout);
+        void write_beads(ofstream& fout);
         
         void write_links(ofstream& fout);
         

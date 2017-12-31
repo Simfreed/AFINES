@@ -19,12 +19,12 @@
 //included dependences
 #include "string"
 #include "vector"
-#include "actin.h"
+#include "bead.h"
 #include "spring.h"
 #include "globals.h"
 
 //=====================================
-//actin filament class
+//bead filament class
 class filament
 {
     public:
@@ -32,11 +32,11 @@ class filament
         filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
                 double frac, double bending_stiffness, string bndcnd);
         
-        filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
+        filament(array<double, 3> startpos, int nbead, array<double,2> myfov, array<int,2> mynq,
                 double vis, double deltat, double temp, bool isStraight,
-                double actinLength, double linkLength, double stretching, double ext, double bending, double fracture, string bc); 
+                double beadLength, double linkLength, double stretching, double ext, double bending, double fracture, string bc); 
 
-        filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double ext, double bending_stiffness, 
+        filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double ext, double bending_stiffness, 
                 double deltat, double temp, double fracture, double gamma, string bc);
        
         filament();
@@ -69,7 +69,7 @@ class filament
         
         void update(double t);
         
-        actin * get_actin(int i);
+        bead * get_bead(int i);
         
         spring * get_link(int i);
 
@@ -78,7 +78,7 @@ class filament
         vector<vector<array<int, 2> > > get_quadrants();
         //multimap<int, array<int, 2> > > get_quadrants();
 
-        string write_actins(int fil);
+        string write_beads(int fil);
         
         string write_links(int fil);
         
@@ -88,7 +88,7 @@ class filament
         
         double get_end2end();
 
-        vector<actin *> get_actins(unsigned int first, unsigned int last);
+        vector<bead *> get_beads(unsigned int first, unsigned int last);
         
         vector<filament *> fracture(int node);
         
@@ -96,7 +96,7 @@ class filament
         
         bool operator==(const filament& that);
         
-        void add_actin(actin * a, double l0, double kl, double me);
+        void add_bead(bead * a, double l0, double kl, double me);
         
         void set_BC(string s);
 
@@ -108,7 +108,7 @@ class filament
         
         void lammps_bending_update();
         
-        int get_nactins();
+        int get_nbeads();
 
         double get_bending_energy();
 
@@ -132,7 +132,7 @@ class filament
         array<double,2> fov;
         array<int,2> nq;
         vector<array<double, 2> > prv_rnds;
-        vector<actin *> actins;
+        vector<bead *> beads;
         vector<spring *> links;
         string BC;
 };

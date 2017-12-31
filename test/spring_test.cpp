@@ -11,11 +11,11 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     int     xgrid               = (int)(2*xrange);
     int     ygrid               = (int)(2*yrange);
     
-    int     nactin              = 2;
+    int     nbead              = 2;
     double  dt                  = 1e-3;
     double  temp                = 0;
     double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  bead_length        = link_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -25,10 +25,10 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double  startx = 0, starty = 0, startphi = 0;
     
     filament * f; 
-    actin a; 
+    bead a; 
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
@@ -49,11 +49,11 @@ BOOST_AUTO_TEST_CASE( get_distance_test)
     int     xgrid               = (int)(2*xrange);
     int     ygrid               = (int)(2*yrange);
     
-    int     nactin              = 2;
+    int     nbead              = 2;
     double  dt                  = 1e-3;
     double  temp                = 0;
     double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  bead_length        = link_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -64,10 +64,10 @@ BOOST_AUTO_TEST_CASE( get_distance_test)
     double  startx = 0, starty = 0, startphi = 0;
     
     filament * f; 
-    actin a; 
+    bead a; 
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
@@ -95,11 +95,11 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     int     xgrid               = (int)(2*xrange);
     int     ygrid               = (int)(2*yrange);
     
-    int     nactin              = 2;
+    int     nbead              = 2;
     double  dt                  = 1e-3;
     double  temp                = 0;
     double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  bead_length        = link_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     filament * f; 
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
@@ -134,8 +134,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
 
     //TEST 2
     link_length = 1.5;
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
     l = f->get_link(0);
@@ -156,8 +156,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     //TEST 3
     startphi = pi/4;
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
     l = f->get_link(0);
@@ -190,10 +190,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     delete f;
 
     //TEST 4
-    startphi =0; startx = 1; link_length = 1; nactin = 2;
+    startphi =0; startx = 1; link_length = 1; nbead = 2;
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
@@ -216,10 +216,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     delete f;
     
     //TEST 5
-    startphi = pi/2; startx = -0.26; starty = 0.2; link_length = 1; nactin = 2;
+    startphi = pi/2; startx = -0.26; starty = 0.2; link_length = 1; nbead = 2;
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     //TEST 6: Different angles, but same set of quads
     link_length = 3*sqrt(2) - 0.01; 
-    nactin = 2;
+    nbead = 2;
     set<array<int, 2> > e_quads;
     for(int x = xgrid/2; x <= xgrid/2+6; x++)
         for(int y = ygrid/2; y <= ygrid/2+6; y++)
@@ -256,8 +256,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     //A
     startphi = pi/4; startx = 0; starty = 0; 
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
@@ -278,8 +278,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //B
     startphi = 7*pi/4; startx = 0; starty = 3;
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);
@@ -293,8 +293,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //C
     startphi = -3*pi/4; startx = 3; starty = 3;
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);
@@ -308,8 +308,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //D
     startphi = -5*pi/4; startx = 3; starty = 0;
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);
@@ -322,10 +322,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     //TEST 7: periodic boundaries
     //A : right
-    startx = 24.5, starty = 0, startphi = 0, link_length=1, actin_length=0.5;
+    startx = 24.5, starty = 0, startphi = 0, link_length=1, bead_length=0.5;
     
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);
@@ -342,8 +342,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //B : left
     startx = -24.5, starty = 0, startphi = pi;
     
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);
@@ -357,8 +357,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //B : top
     startx = 0, starty = 24.5, startphi = pi/2.0;
     
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);
@@ -378,8 +378,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     startx = 0, starty = -24.5, startphi = 3*pi/2.0;
     
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     l = f->get_link(0);

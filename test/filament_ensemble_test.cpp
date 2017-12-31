@@ -16,14 +16,14 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     string bc = "PERIODIC";
     double seed = -1;
     
-    double actin_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, link_len = 1;
     
     double stretching = 0, bending = 0; //spring constants
     double frac_force = 0;
     
     double np = 3, nmon = 11, nmon_extra = 0, pextra_bead = 0;
     filament_ensemble * f = new filament_ensemble(np, nmon, nmon_extra, pextra_bead, fov, nq, dt, temp, 
-            actin_rad, vis, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+            bead_rad, vis, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
   
     for (int i =0; i<np; i++){
         BOOST_CHECK_MESSAGE(f->get_filament(i)->get_nlinks() == nmon - 1, "\nfilament "<<i<<" has wrong number of links");
@@ -33,12 +33,12 @@ BOOST_AUTO_TEST_CASE( constructors_test )
    
     np = 100000; nmon = 2; nmon_extra=18; pextra_bead = 0.5; 
     f = new filament_ensemble(np, nmon, nmon_extra, pextra_bead, fov, nq, dt, temp, 
-            actin_rad, vis, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+            bead_rad, vis, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     
     int nm_tot = 0;
     vector<int> all_nms;
     for (int i =0; i<np; i++){
-        nm_tot += f->get_filament(i)->get_nactins();
+        nm_tot += f->get_filament(i)->get_nbeads();
     }
 
     double nm_mu = double(nm_tot) / double(np);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 
     double nl_tot_sq = 0, nl_diff = 0;
     for (int i =0; i<np; i++){
-        nl_diff = f->get_filament(i)->get_nactins() - nm_mu;
+        nl_diff = f->get_filament(i)->get_nbeads() - nm_mu;
         nl_tot_sq += nl_diff*nl_diff;
     }
     BOOST_CHECK_CLOSE(double(nl_tot_sq)/double(np), nmon_extra*pextra_bead*(1.0-pextra_bead), tol); 
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 
         void step_twoheads();
 
-        void actin_update();
+        void bead_update();
 
         void update_shape();
         

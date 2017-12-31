@@ -14,7 +14,7 @@
 #include "globals.h"
 //#include "Link.h"
 #include "filament_ensemble.h"
-//actin network class
+//bead network class
 
  
 filament_ensemble::filament_ensemble(){}
@@ -189,9 +189,9 @@ array<double,2> filament_ensemble::get_end(int fil, int link)
 }
 
 
-array<double,2> filament_ensemble::get_force(int fil, int actin)
+array<double,2> filament_ensemble::get_force(int fil, int bead)
 {
-    return network[fil]->get_actin(actin)->get_force();
+    return network[fil]->get_bead(bead)->get_force();
 }
 
 
@@ -229,10 +229,10 @@ void filament_ensemble::update_positions_range(int lo, int hi)
 }
 
  
-void filament_ensemble::write_actins(ofstream& fout)
+void filament_ensemble::write_beads(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network[i]->write_actins(i);
+        fout<<network[i]->write_beads(i);
     } 
 }
 
@@ -255,8 +255,8 @@ void filament_ensemble::write_thermo(ofstream& fout){
 void filament_ensemble::set_shear_rate(double g)
 {
     if (network.size() > 0)
-        if (network[0]->get_nactins() > 0)
-            shear_speed = g*fov[1] / (2*network[0]->get_actin(0)->get_friction());
+        if (network[0]->get_nbeads() > 0)
+            shear_speed = g*fov[1] / (2*network[0]->get_bead(0)->get_friction());
 
     for (unsigned int f = 0; f < network.size(); f++)
     {
@@ -350,9 +350,9 @@ void filament_ensemble::print_filament_lengths(){
 
 
  
-bool filament_ensemble::is_polymer_start(int fil, int actin){
+bool filament_ensemble::is_polymer_start(int fil, int bead){
 
-    return !(actin);
+    return !(bead);
 
 }
 
@@ -389,16 +389,16 @@ void filament_ensemble::clear_broken(){
 }
 
  
-int filament_ensemble::get_nactins(){
+int filament_ensemble::get_nbeads(){
     int tot = 0;
     for (unsigned int f = 0; f < network.size(); f++)
-        tot += network[f]->get_nactins();
+        tot += network[f]->get_nbeads();
     return tot;
 }
 
  
 int filament_ensemble::get_nlinks(){
-    return this->get_nactins() - network.size();
+    return this->get_nbeads() - network.size();
 }
 
  
@@ -412,11 +412,11 @@ double filament_ensemble::get_delrx(){
 }
 
  
-double filament_ensemble::get_actin_friction(){
+double filament_ensemble::get_bead_friction(){
     
     if (network.size() > 0)
-        if (network[0]->get_nactins() > 0)
-            return network[0]->get_actin(0)->get_friction();
+        if (network[0]->get_nbeads() > 0)
+            return network[0]->get_bead(0)->get_friction();
     
     return 0;
 }
@@ -549,18 +549,18 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
 ///SPECIFIC FILAMENT IMPLEMENTATIONS////
 ////////////////////////////////////////
 
-filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_extra, double nactins_extra_prob, 
+filament_ensemble::filament_ensemble(int npolymer, int nbeads_min, int nbeads_extra, double nbeads_extra_prob, 
         array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
-    view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
-    view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
+    view[0] = 1;//(fov[0] - 2*nbeads*link_len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nbeads*link_len)/fov[1];
     nq = mynq;
     half_nq = {nq[0]/2, nq[1]/2};
     
-    double nactins_mean = nactins_min + nactins_extra*nactins_extra_prob;
+    double nbeads_mean = nbeads_min + nbeads_extra*nbeads_extra_prob;
     
     visc=vis;
     link_ld = link_len;
@@ -579,33 +579,33 @@ filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_
     
     
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
-    cout<<"DEBUG: Avg number of monomers per filament:"<<nactins_mean<<"\n"; 
+    cout<<"DEBUG: Avg number of monomers per filament:"<<nbeads_mean<<"\n"; 
     cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
    
-    int nactins = 0;
-    binomial_distribution<int> distribution(nactins_extra, nactins_extra_prob);
+    int nbeads = 0;
+    binomial_distribution<int> distribution(nbeads_extra, nbeads_extra_prob);
     default_random_engine generator(seed+2);
 
     int s = pos_sets.size();
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new filament(pos_sets[i], nactins, fov, nq,
+            network.push_back(new filament(pos_sets[i], nbeads, fov, nq,
                         visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             
-            nactins = nactins_min + distribution(generator);
-            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+            nbeads = nbeads_min + distribution(generator);
+            network.push_back(new filament({x0,y0,phi0}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }
     }
     
     //Neighbor List Initialization
     quad_off_flag = false;
-    max_links_per_quad              = npolymer*(nactins-1);
-    max_links_per_quad_per_filament = nactins - 1;
+    max_links_per_quad              = npolymer*(nbeads-1);
+    max_links_per_quad_per_filament = nbeads - 1;
     
     //this->nlist_init();
     this->nlist_init_serial();
@@ -618,18 +618,18 @@ filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_
 }
 
 filament_ensemble::filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nactins, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+        double rad, double vis, int nbeads, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
-    view[0] = 1;//(fov[0] - 2*nactins*link_len)/fov[0];
-    view[1] = 1;//(fov[1] - 2*nactins*link_len)/fov[1];
+    view[0] = 1;//(fov[0] - 2*nbeads*link_len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nbeads*link_len)/fov[1];
     nq = mynq;
     half_nq = {nq[0]/2, nq[1]/2};
     
     visc=vis;
     link_ld = link_len;
-    int npolymer=int(ceil(density*fov[0]*fov[1]) / nactins);
+    int npolymer=int(ceil(density*fov[0]*fov[1]) / nbeads);
     dt = delta_t;
     temperature = temp;
     shear_stop = 1e10;
@@ -645,7 +645,7 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     
     
     cout<<"DEBUG: Number of filament:"<<npolymer<<"\n";
-    cout<<"DEBUG: Number of monomers per filament:"<<nactins<<"\n"; 
+    cout<<"DEBUG: Number of monomers per filament:"<<nbeads<<"\n"; 
     cout<<"DEBUG: Monomer Length:"<<rad<<"\n"; 
    
 
@@ -653,21 +653,21 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     double x0, y0, phi0;
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
-            network.push_back(new filament(pos_sets[i], nactins, fov, nq,
+            network.push_back(new filament(pos_sets[i], nbeads, fov, nq,
                         visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             //phi0=atan2(1+x0-y0*y0, -1-x0*x0+y0); // this is just the first example in mathematica's streamplot documentation
-            network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+            network.push_back(new filament({x0,y0,phi0}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }
     }
     
     //Neighbor List Initialization
     quad_off_flag = false;
-    max_links_per_quad              = npolymer*(nactins-1);
-    max_links_per_quad_per_filament = nactins - 1;
+    max_links_per_quad              = npolymer*(nbeads-1);
+    max_links_per_quad_per_filament = nbeads - 1;
     
     //this->nlist_init();
     this->nlist_init_serial();
@@ -679,7 +679,7 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     fls = { };
 }
 
-filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
         double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc) {
     
     fov = myfov;
@@ -694,15 +694,15 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     view[0] = 1;
     view[1] = 1;
 
-    int s = actins.size(), sa, j;
+    int s = beads.size(), sa, j;
     int fil_idx = 0;
-    vector<actin *> avec;
+    vector<bead *> avec;
     
     nq = mynq;
     
     for (int i=0; i < s; i++){
         
-        if (actins[i][3] != fil_idx && avec.size() > 0){
+        if (beads[i][3] != fil_idx && avec.size() > 0){
             
             network.push_back( new filament( avec, fov, nq, link_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
             
@@ -710,9 +710,9 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
             for (j = 0; j < sa; j++) delete avec[j];
             avec.clear();
             
-            fil_idx = actins[i][3];
+            fil_idx = beads[i][3];
         }
-        avec.push_back(new actin(actins[i][0], actins[i][1], actins[i][2], vis));
+        avec.push_back(new bead(beads[i][0], beads[i][1], beads[i][2], vis));
     }
 
     sa = avec.size();
@@ -723,8 +723,8 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     avec.clear();
    
     quad_off_flag = false;
-    max_links_per_quad              = actins.size();
-    max_links_per_quad_per_filament = int(ceil(actins.size() / (fil_idx + 1)))- 1;
+    max_links_per_quad              = beads.size();
+    max_links_per_quad_per_filament = int(ceil(beads.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
     this->nlist_init_serial();
     this->update_energies();
