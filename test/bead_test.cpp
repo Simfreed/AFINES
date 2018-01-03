@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 BOOST_AUTO_TEST_CASE( force_test)
 {
     bead a(0.25, 0.5, 0.75, 1.25);
-    array<double, 2> f1 = {3.5,-6.7};
-    array<double, 2> f2 = {-2,1};
-    array<double, 2> ftot = {f1[0]+f2[0],f1[1]+f2[1]};
+    array<double, 2> f1 = {{3.5,-6.7}};
+    array<double, 2> f2 = {{-2,1}};
+    array<double, 2> ftot = {{f1[0]+f2[0],f1[1]+f2[1]}};
 
     a.update_force(f1[0], f1[1]);
     BOOST_CHECK_EQUAL( a.get_force()[0] , f1[0]); 
@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE( force_test)
 BOOST_AUTO_TEST_CASE( velocity_test)
 {
     bead a(0.25, 0.5, 0.75, 1.25);
-    array<double, 2> v1 = {3.5,-6.7};
-    array<double, 2> v2 = {-2,1};
-    array<double, 2> vtot = {v1[0]+v2[0],v1[1]+v2[1]};
+    array<double, 2> v1 = {{3.5,-6.7}};
+    array<double, 2> v2 = {{-2,1}};
+    array<double, 2> vtot = {{v1[0]+v2[0],v1[1]+v2[1]}};
     double vtotsq = dot(vtot[0], vtot[1], vtot[0], vtot[1]);
 
     a.update_velocity(v1[0], v1[1]);

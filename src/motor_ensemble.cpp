@@ -50,9 +50,9 @@ motor_ensemble::motor_ensemble(double mdensity, array<double, 2> myfov, double d
             motory = rng(-0.5*(fov[1]*alpha-mld),0.5*(fov[1]*alpha-mld));
             mang   = rng(0,2*pi);
         }
-        motor_pos = {motorx, motory, mang};
+        motor_pos = {{motorx, motory, mang}};
 
-        n_motors.push_back(new motor( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+        n_motors.push_back(new motor( motor_pos, mld, f_network,{{0, 0}}, {{-1,-1}}, {{-1,-1}}, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
         
     }
@@ -83,12 +83,12 @@ motor_ensemble::motor_ensemble(vector<vector<double> > motors, array<double, 2> 
 
     for (int i=0; i< nm; i++) {
         
-        motor_pos = {motors[i][0], motors[i][1], motors[i][2], motors[i][3]};
+        motor_pos = {{motors[i][0], motors[i][1], motors[i][2], motors[i][3]}};
         
-        f_index = {int(motors[i][4]), int(motors[i][5])};
-        l_index = {int(motors[i][6]), int(motors[i][7])};
+        f_index = {{int(motors[i][4]), int(motors[i][5])}};
+        l_index = {{int(motors[i][6]), int(motors[i][7])}};
 
-        state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
+        state = {{f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1}};  
 
         n_motors.push_back(new motor( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));

@@ -77,7 +77,7 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
     array<double, 2> next_pos;
     //the start of the polymer: 
     beads.push_back(new bead( startpos[0], startpos[1], beadRadius, visc));
-    prv_rnds.push_back({0,0});
+    prv_rnds.push_back({{0,0}});
     phi = startpos[2];
     
     if (temp != 0) variance = temp/bending_stiffness;
@@ -87,11 +87,11 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
 
         //next_pos = boundary_check(j-1, beads[j-1]->get_xcm() + spring_length*cos(phi), beads[j-1]->get_ycm() + spring_length*sin(phi));
         next_pos = pos_bc(BC, delrx, dt, fov, 
-                {spring_length*cos(phi)/dt, spring_length*sin(phi)/dt},
-                {beads[j-1]->get_xcm() + spring_length*cos(phi), beads[j-1]->get_ycm() + spring_length*sin(phi)});
+                {{spring_length*cos(phi)/dt, spring_length*sin(phi)/dt}},
+                {{beads[j-1]->get_xcm() + spring_length*cos(phi), beads[j-1]->get_ycm() + spring_length*sin(phi)}});
         beads.push_back( new bead(next_pos[0], next_pos[1], beadRadius, visc) );
-        prv_rnds.push_back({0,0});
-        springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
+        prv_rnds.push_back({{0,0}});
+        springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {{j-1, j}}, fov, nq) );  
         springs[j-1]->step(BC, delrx);  
         springs[j-1]->update_force(BC, delrx);
         
@@ -122,7 +122,7 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
     if (beadvec.size() > 0)
     {
         beads.push_back(new bead(*(beadvec[0])));
-        prv_rnds.push_back({0,0});
+        prv_rnds.push_back({{0,0}});
         damp = beads[0]->get_friction();
     }
     
@@ -131,10 +131,10 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
         for (unsigned int j = 1; j < beadvec.size(); j++) {
 
             beads.push_back(new bead(*(beadvec[j])));
-            springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
+            springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {{(int)j-1, (int)j}}, fov, nq) );  
             springs[j-1]->step(BC, delrx);
             springs[j-1]->update_force(BC, delrx);
-            prv_rnds.push_back({0,0});
+            prv_rnds.push_back({{0,0}});
             
         }
     }
@@ -163,10 +163,10 @@ filament::~filament(){
 void filament::add_bead(bead * a, double spring_length, double stretching_stiffness, double max_ext_ratio){
     
     beads.push_back(new bead(*a));
-    prv_rnds.push_back({0,0});    
+    prv_rnds.push_back({{0,0}});    
     if (beads.size() > 1){
         int j = (int) beads.size() - 1;
-        springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
+        springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {{j-1,  j}}, fov, nq ) );  
         springs[j-1]->step(BC, delrx);
     }
     if (damp == infty)
@@ -214,7 +214,7 @@ void filament::update_positions()
 
         if (fabs(beads[i]->get_ycm()) > top_y) continue;
      
-        new_rnds = {rng_n(), rng_n()};
+        new_rnds = {{rng_n(), rng_n()}};
         vx  = (beads[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
         vy  = (beads[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<beads[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
@@ -222,7 +222,7 @@ void filament::update_positions()
         prv_rnds[i] = new_rnds;
         //cout<<"\nDEBUG: bead force = ("<<beads[i]->get_force()[0]<<" , "<<beads[i]->get_force()[1]<<")";
         kinetic_energy += vx*vx + vy*vy;
-        newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {beads[i]->get_xcm() + vx*dt, beads[i]->get_ycm() + vy*dt});
+        newpos = pos_bc(BC, delrx, dt, fov, {{vx, vy}}, {{beads[i]->get_xcm() + vx*dt, beads[i]->get_ycm() + vy*dt}});
         beads[i]->set_xcm(newpos[0]);
         beads[i]->set_ycm(newpos[1]);
         beads[i]->reset_force(); 
@@ -248,7 +248,7 @@ void filament::update_positions_range(int lo, int hi)
        
         if (fabs(beads[i]->get_ycm()) > top_y) continue;
      
-        new_rnds = {rng_n(), rng_n()};
+        new_rnds = {{rng_n(), rng_n()}};
         vx  = (beads[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
         vy  = (beads[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<beads[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
@@ -257,7 +257,7 @@ void filament::update_positions_range(int lo, int hi)
         //cout<<"\nDEBUG: bead force = ("<<beads[i]->get_force()[0]<<" , "<<beads[i]->get_force()[1]<<")";
         kinetic_energy += vx*vx + vy*vy;
         //newpos = boundary_check(i, beads[i]->get_xcm() + vx*dt, beads[i]->get_ycm() + vy*dt); 
-        newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {beads[i]->get_xcm() + vx*dt, beads[i]->get_ycm() + vy*dt});
+        newpos = pos_bc(BC, delrx, dt, fov, {{vx, vy}}, {{beads[i]->get_xcm() + vx*dt, beads[i]->get_ycm() + vy*dt}});
         beads[i]->set_xcm(newpos[0]);
         beads[i]->set_ycm(newpos[1]);
         beads[i]->reset_force(); 
@@ -534,7 +534,7 @@ void filament::lammps_bending_update()
     beads[n+2]->update_force(f3[0], f3[1]);
 
     // 1st bond, next iteration
-    delr1 = {-delr2[0], -delr2[1]};
+    delr1 = {{-delr2[0], -delr2[1]}};
     rsq1  = rsq2;
     r1    = r2;
 
@@ -663,7 +663,7 @@ double filament::get_total_energy()
 
 array<double, 2> filament::get_bead_position(int n)
 {
-    return {beads[n]->get_xcm(), beads[n]->get_ycm()};
+    return {{beads[n]->get_xcm(), beads[n]->get_ycm()}};
 }
 
 void filament::print_thermo()

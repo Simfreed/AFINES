@@ -8,8 +8,8 @@
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
 
-    array<double, 2> fov = {50,50};
-    array<int, 2> nq = {2,2};
+    array<double, 2> fov = {{50,50}};
+    array<int, 2> nq = {{2,2}};
     vector<array<double, 3> > pos_sets;
 
     double dt = 1, temp = 0, vis = 0;

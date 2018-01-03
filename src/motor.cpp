@@ -65,7 +65,7 @@ motor::motor( array<double, 3> pos,
 
     shear       = 0;
     tension     = 0;
-    force       = {0,0}; // force on the spring  
+    force       = {{0,0}}; // force on the spring  
     kinetic_energy = 0; //assume m = 1
     
     array<double, 2> posH0 = boundary_check(0, pos[0]-0.5*mld*cos(mphi), pos[1]-0.5*mld*sin(mphi)); 
@@ -77,16 +77,16 @@ motor::motor( array<double, 3> pos,
     
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
     
-    pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
+    pos_a_end = {{0, 0}}; // pos_a_end = distance from pointy end -- by default 0
                         // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th bead
     
-    ldir_bind[0] = {0,0};
-    ldir_bind[1] = {0,0};
+    ldir_bind[0] = {{0,0}};
+    ldir_bind[1] = {{0,0}};
 
-    bind_disp[0] = {0,0};
-    bind_disp[1]=  {0,0};
+    bind_disp[0] = {{0,0}};
+    bind_disp[1]=  {{0,0}};
 
-    at_barbed_end = {false, false};
+    at_barbed_end = {{false, false}};
 
     if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
@@ -100,8 +100,8 @@ motor::motor( array<double, 3> pos,
         ldir_bind[1] = filament_network->get_direction(f_index[1], l_index[1]);
     }
     
-    prv_rnd_x = {0,0};
-    prv_rnd_y = {0,0};
+    prv_rnd_x = {{0,0}};
+    prv_rnd_y = {{0,0}};
 
 }
 
@@ -151,9 +151,9 @@ motor::motor( array<double, 4> pos,
 
     shear       = 0;
     tension     = 0;
-    force       = {0,0}; // force on the spring  
+    force       = {{0,0}}; // force on the spring  
     kinetic_energy = 0;
-    pos_a_end = {0, 0}; // pos_a_end = distance from pointy end -- by default 0
+    pos_a_end = {{0, 0}}; // pos_a_end = distance from pointy end -- by default 0
                         // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th bead
 
     
@@ -168,12 +168,12 @@ motor::motor( array<double, 4> pos,
     this->update_angle();
     this->update_force();
     
-    ldir_bind[0] = {0,0};
-    ldir_bind[1] = {0,0};
-    bind_disp[0] = {0,0};
-    bind_disp[1] = {0,0};
+    ldir_bind[0] = {{0,0}};
+    ldir_bind[1] = {{0,0}};
+    bind_disp[0] = {{0,0}};
+    bind_disp[1] = {{0,0}};
 
-    at_barbed_end = {false, false};
+    at_barbed_end = {{false, false}};
 
     if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
@@ -187,8 +187,8 @@ motor::motor( array<double, 4> pos,
         ldir_bind[1] = filament_network->get_direction(f_index[1], l_index[1]);
     }
 
-    prv_rnd_x = {0,0};
-    prv_rnd_y = {0,0};
+    prv_rnd_x = {{0,0}};
+    prv_rnd_y = {{0,0}};
 
 }
 
@@ -302,9 +302,9 @@ bool motor::attach(int hd)
 
 void motor::update_force()
 { 
-    //force = {mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))};
+    //force = {{mk*(disp[0]-mld*cos(mphi)), mk*(disp[1]-mld*sin(mphi))}};
     tension = mk*(hypot(disp[0], disp[1]) - mld);
-    force = {tension*cos(mphi), tension*sin(mphi)};
+    force = {{tension*cos(mphi), tension*sin(mphi)}};
 }
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
@@ -321,7 +321,7 @@ void motor::update_force_fraenkel_fene()
         scaled_ext = (max_ext - eps_ext)/max_ext;
     
     mkp = mk/(1-scaled_ext*scaled_ext);
-    force = {mkp*(disp[0]-mld*cos(mphi)), mkp*(disp[1]-mld*sin(mphi))};
+    force = {{mkp*(disp[0]-mld*cos(mphi)), mkp*(disp[1]-mld*sin(mphi))}};
 
 }
 
@@ -367,7 +367,7 @@ void motor::update_angle()
 
 array<double, 2> motor::boundary_check(int hd, double x, double y)
 {
-    return pos_bc(BC, filament_network->get_delrx(), dt, fov, {(x - hx[hd])/dt, (y - hy[hd])/dt}, {x, y});
+    return pos_bc(BC, filament_network->get_delrx(), dt, fov, {{(x - hx[hd])/dt, (y - hy[hd])/dt}}, {{x, y}});
 }
 
 array<double, 2> motor::generate_off_pos(int hd){
@@ -376,13 +376,13 @@ array<double, 2> motor::generate_off_pos(int hd){
     double c = dot(  ldir, ldir_bind[hd]);
     double s = cross(ldir, ldir_bind[hd]);
 
-    array<double, 2> bind_disp_rot = {bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c};
+    array<double, 2> bind_disp_rot = {{bind_disp[hd][0]*c - bind_disp[hd][1]*s, bind_disp[hd][0]*s + bind_disp[hd][1]*c}};
 
     return pos_bc(BC, filament_network->get_delrx(), dt, fov, 
-            {-bind_disp_rot[0]/dt, -bind_disp_rot[1]/dt}, 
-            {hx[hd] - bind_disp_rot[0], hy[hd] - bind_disp_rot[1]}
+            {{-bind_disp_rot[0]/dt, -bind_disp_rot[1]/dt}}, 
+            {{hx[hd] - bind_disp_rot[0], hy[hd] - bind_disp_rot[1]}}
             ); 
-    //array<double, 2> newpos = {hx[hd]-bind_disp_rot[0], hy[hd]-bind_disp_rot[1]};
+    //array<double, 2> newpos = {{hx[hd]-bind_disp_rot[0], hy[hd]-bind_disp_rot[1]}};
     //return boundary_check(hd, newpos[0], newpos[1]);
 } 
 
@@ -392,7 +392,7 @@ void motor::step_onehead(int hd)
 {
 
     array<double, 2> hpos_new = generate_off_pos(hd);
-    double off_prob = metropolis_prob(hd, {0,0}, hpos_new, at_barbed_end[hd] ? kend : koff); 
+    double off_prob = metropolis_prob(hd, {{0,0}}, hpos_new, at_barbed_end[hd] ? kend : koff); 
     
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
@@ -474,7 +474,7 @@ void motor::filament_update_hd(int hd, array<double, 2> f)
 void motor::filament_update()
 {
     if (state[0]==1) this->filament_update_hd(0, force);
-    if (state[1]==1) this->filament_update_hd(1, {-force[0], -force[1]});
+    if (state[1]==1) this->filament_update_hd(1, {{-force[0], -force[1]}});
 }
 
 

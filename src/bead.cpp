@@ -24,8 +24,8 @@ bead::bead(double xcm, double ycm, double len, double vis)
     a_vis=vis;
     friction = 6*pi*a_vis*ld;
    
-    force = {0,0};
-    velocity = {0,0};
+    force = {{0,0}};
+    velocity = {{0,0}};
 }
 
 bead::bead(const bead& other){

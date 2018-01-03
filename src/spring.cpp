@@ -27,16 +27,16 @@ spring::spring(double len, double stretching_stiffness, double max_ext_ratio, fi
     aindex  = myaindex;
     fov     = myfov;
     nq      = mynq;
-    half_nq = {nq[0]/2, nq[1]/2};
+    half_nq = {{nq[0]/2, nq[1]/2}};
 
     max_ext = max_ext_ratio * l0;
     eps_ext = 0.01*max_ext;
     
-    hx = {0,0};
-    hy = {0,0};
+    hx = {{0,0}};
+    hy = {{0,0}};
 
-    force = {0,0};
-    intpoint = {0,0};
+    force = {{0,0}};
+    intpoint = {{0,0}};
     llen = l0;
 }
 spring::~spring(){ 
@@ -67,7 +67,7 @@ void spring::step(string bc, double shear_dist)
 
 void spring::update_force(string bc, double shear_dist)
 {
-    force = {kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))};
+    force = {{kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))}};
 }
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
@@ -83,7 +83,7 @@ void spring::update_force_fraenkel_fene(string bc, double shear_dist)
         scaled_ext = (max_ext - eps_ext)/max_ext;
     }
     klp = kl/(1-scaled_ext*scaled_ext);
-    force = {klp*(disp[0]-l0*cos(phi)), klp*(disp[1]-l0*sin(phi))};
+    force = {{klp*(disp[0]-l0*cos(phi)), klp*(disp[1]-l0*sin(phi))}};
 
 }
 
@@ -92,7 +92,7 @@ void spring::update_force_marko_siggia(string bc, double shear_dist, double kTov
     double xrat = disp[0]/(l0*cos(phi)), yrat = disp[1]/(l0*sin(phi));
     if (xrat != xrat || xrat == 1) xrat = 0;
     if (yrat != yrat || yrat == 1) yrat = 0;
-    force = {kToverLp*(0.25/((1-xrat)*(1-xrat))-0.25+xrat), kToverLp*(0.25/((1-yrat)*(1-yrat))-0.25+yrat)};  
+    force = {{kToverLp*(0.25/((1-xrat)*(1-xrat))-0.25+xrat), kToverLp*(0.25/((1-yrat)*(1-yrat))-0.25+yrat)}};  
 }
 
 array<double,2> spring::get_force()
@@ -107,7 +107,7 @@ array<double,2> spring::get_disp()
 
 array<double,2> spring::get_neg_disp()
 {
-    return {-disp[0], -disp[1]};
+    return {{-disp[0], -disp[1]}};
 }
 
 void spring::filament_update()
@@ -204,7 +204,7 @@ void spring::quad_update(string bc, double delrx){
     vector<int> ycoords = range_bc(bc, delrx, 0, nq[1], ylower, yupper);
     for(int xcoord : xcoords)
         for(int ycoord : ycoords){
-            quad.push_back({xcoord, ycoord});
+            quad.push_back({{xcoord, ycoord}});
         }
 
 
@@ -226,20 +226,20 @@ void spring::calc_intpoint(string bc, double delrx, double xp, double yp)
 {
     double l2 = disp[0]*disp[0]+disp[1]*disp[1];
     if (l2==0){
-        intpoint = {hx[0], hy[0]};
+        intpoint = {{hx[0], hy[0]}};
     }else{
         //Consider the line extending the spring, parameterized as h0 + tp ( h1 - h0 )
         //tp = projection of (xp, yp) onto the line
         double tp=dot_bc(bc, xp-hx[0], yp-hy[0], hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], delrx)/l2;
         if (tp<0){ 
-            intpoint = {hx[0], hy[0]};
+            intpoint = {{hx[0], hy[0]}};
         }
         else if(tp>1.0){
-            intpoint = {hx[1], hy[1]};
+            intpoint = {{hx[1], hy[1]}};
         }
         else{
-            array<double, 2> proj   = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
-            intpoint                = pos_bc(bc, delrx, 0, fov, {0,0}, proj); //velocity and dt are 0 since not relevant
+            array<double, 2> proj   = {{hx[0] + tp*disp[0], hy[0] + tp*disp[1]}};
+            intpoint                = pos_bc(bc, delrx, 0, fov, {{0,0}}, proj); //velocity and dt are 0 since not relevant
         }
     }
 }
@@ -251,7 +251,7 @@ vector<array<int, 2> > spring::get_quadrants()
 
 array<double, 2> spring::get_direction()
 {
-    return {cos(phi), sin(phi)};
+    return {{cos(phi), sin(phi)}};
 }
 
 double spring::get_stretching_energy(){
