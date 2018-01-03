@@ -27,10 +27,10 @@ filament_ensemble::~filament_ensemble(){
     
     for (int x = 0; x < nq[0]; x++){
         for (int y = 0; y < nq[1]; y++){
-            delete links_per_quad[x]->at(y);
+            delete springs_per_quad[x]->at(y);
         }
-        delete links_per_quad[x];
-        //delete n_links_per_quad[x];
+        delete springs_per_quad[x];
+        //delete n_springs_per_quad[x];
     }
     
     for (int i = 0; i < s; i++){
@@ -61,9 +61,9 @@ void filament_ensemble::turn_quads_off()
 void filament_ensemble::nlist_init_serial()
 {
     for (int x = 0; x < nq[0]; x++){
-        links_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
+        springs_per_quad.push_back(new vector< vector<array<int, 2> >* >(nq[1]));   
         for (int y = 0; y < nq[1]; y++){
-            links_per_quad[x]->at(y) = new vector<array<int, 2> >();
+            springs_per_quad[x]->at(y) = new vector<array<int, 2> >();
         }
     }
 }
@@ -75,21 +75,21 @@ void filament_ensemble::quad_update_serial()
     vector<vector<array<int, 2> > > q;
     int x, y;
 
-    //initialize all quadrants to have no links
+    //initialize all quadrants to have no springs
     for (x = 0; x < nq[0]; x++){
         for (y = 0; y < nq[1]; y++){
-            links_per_quad[x]->at(y)->clear();
+            springs_per_quad[x]->at(y)->clear();
         }
     }
     
     for (int f = 0; f < net_sz; f++){
         q = network[f]->get_quadrants();
-        for (int l = 0; l < network[f]->get_nlinks(); l++){
+        for (int l = 0; l < network[f]->get_nsprings(); l++){
             n_quads = int(q[l].size());
             for (int i = 0; i < n_quads; i++){
                 x = q[l][i][0];
                 y = q[l][i][1];
-                links_per_quad[x]->at(y)->push_back({f,l});
+                springs_per_quad[x]->at(y)->push_back({f,l});
                 
             }
         }
@@ -104,13 +104,13 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
     array<int, 2> fl;
     double dist;
     
-    for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
+    for (int i = 0; i < int(springs_per_quad[mq[0]]->at(mq[1])->size()); i++){
 
-        fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
+        fl = springs_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, spring_index}
 
         if (fls.find(fl) == fls.end()){
-            network[fl[0]]->get_link(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-            dist = network[fl[0]]->get_link(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            network[fl[0]]->get_spring(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the spring closest to (x,y)
+            dist = network[fl[0]]->get_spring(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
             //cout<<"\nDEBUG : dist = "<<dist;
 
             t_map.insert(pair<double, array<int, 2> >(dist, fl));
@@ -121,8 +121,8 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
 }
 
 //given motor head position, return a map between  
-//  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
-//  and their corresponding DISTANCES to the link at that distance 
+//  the INDICES (i.e., {i, j} for the j'th spring of the i'th filament)
+//  and their corresponding DISTANCES to the spring at that distance 
 
 set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 {
@@ -154,9 +154,9 @@ set<pair<double, array<int,2>>> filament_ensemble::get_dist_all(double x, double
     set<pair<double, array<int,2>>> t_map;
     double dist=0;
     for (int f = 0; f < int(network.size()); f++){
-        for (int l=0; l < network[f]->get_nlinks(); l++){
-                network[f]->get_link(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
-                dist = network[f]->get_link(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
+        for (int l=0; l < network[f]->get_nsprings(); l++){
+                network[f]->get_spring(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the spring closest to (x,y)
+                dist = network[f]->get_spring(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
                 // t_map[dist] = {f,l}; 
                 t_map.insert(pair<double, array<int, 2>>(dist, {f, l}));
         }
@@ -165,27 +165,27 @@ set<pair<double, array<int,2>>> filament_ensemble::get_dist_all(double x, double
     return t_map;
 }
 
-double filament_ensemble::get_angle(int fil, int link)
+double filament_ensemble::get_angle(int fil, int spring)
 {
-    return network[fil]->get_link(link)->get_angle();
+    return network[fil]->get_spring(spring)->get_angle();
 }
 
  
-double filament_ensemble::get_llength(int fil, int link)
+double filament_ensemble::get_llength(int fil, int spring)
 {
-    return network[fil]->get_link(link)->get_length();
+    return network[fil]->get_spring(spring)->get_length();
 }
 
 
-array<double,2> filament_ensemble::get_start(int fil, int link)
+array<double,2> filament_ensemble::get_start(int fil, int spring)
 {
-    return {network[fil]->get_link(link)->get_hx()[0] , network[fil]->get_link(link)->get_hy()[0]};
+    return {network[fil]->get_spring(spring)->get_hx()[0] , network[fil]->get_spring(spring)->get_hy()[0]};
 }
 
 
-array<double,2> filament_ensemble::get_end(int fil, int link)
+array<double,2> filament_ensemble::get_end(int fil, int spring)
 {
-    return {network[fil]->get_link(link)->get_hx()[1] , network[fil]->get_link(link)->get_hy()[1]};
+    return {network[fil]->get_spring(spring)->get_hx()[1] , network[fil]->get_spring(spring)->get_hy()[1]};
 }
 
 
@@ -195,9 +195,9 @@ array<double,2> filament_ensemble::get_force(int fil, int bead)
 }
 
 
-array<double,2> filament_ensemble::get_direction(int fil, int link)
+array<double,2> filament_ensemble::get_direction(int fil, int spring)
 {
-    return network[fil]->get_link(link)->get_direction();
+    return network[fil]->get_spring(spring)->get_direction();
 }
 
  
@@ -237,10 +237,10 @@ void filament_ensemble::write_beads(ofstream& fout)
 }
 
  
-void filament_ensemble::write_links(ofstream& fout)
+void filament_ensemble::write_springs(ofstream& fout)
 {
     for (unsigned int i=0; i<network.size(); i++) {
-        fout<<network[i]->write_links(i);
+        fout<<network[i]->write_springs(i);
     } 
 }
 
@@ -397,7 +397,7 @@ int filament_ensemble::get_nbeads(){
 }
 
  
-int filament_ensemble::get_nlinks(){
+int filament_ensemble::get_nsprings(){
     return this->get_nbeads() - network.size();
 }
 
@@ -506,7 +506,7 @@ void filament_ensemble::update()
 }
 
 
-vector<vector<double> > filament_ensemble::link_link_intersections(double len, double prob){
+vector<vector<double> > filament_ensemble::spring_spring_intersections(double len, double prob){
 
     vector< vector<double> > itrs;
     double ang;
@@ -516,26 +516,26 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
     string bcf1; 
     for (unsigned int f1 = 0; f1 < network.size(); f1++){
         
-        for (int l1 = 0; l1 < network[f1]->get_nlinks(); l1++){
+        for (int l1 = 0; l1 < network[f1]->get_nsprings(); l1++){
 
-            r1 = {network[f1]->get_link(l1)->get_hx()[0], network[f1]->get_link(l1)->get_hy()[0]};
-            r2 = {network[f1]->get_link(l1)->get_hx()[1], network[f1]->get_link(l1)->get_hy()[1]};
+            r1 = {network[f1]->get_spring(l1)->get_hx()[0], network[f1]->get_spring(l1)->get_hy()[0]};
+            r2 = {network[f1]->get_spring(l1)->get_hx()[1], network[f1]->get_spring(l1)->get_hy()[1]};
             bcf1 = network[f1]->get_BC();
             for (unsigned int f2 = f1+1; f2 < network.size(); f2++){
                 
-                for (int l2 = 0; l2 < network[f2]->get_nlinks(); l2++){
+                for (int l2 = 0; l2 < network[f2]->get_nsprings(); l2++){
 
-                    if (f1 == f2 && fabs(double(l1) - double(l2)) < 2){ //links should be at least two away to get crosslinked
+                    if (f1 == f2 && fabs(double(l1) - double(l2)) < 2){ //springs should be at least two away to get crosslinked
                         continue;
                     }
 
-                    s1 = {network[f2]->get_link(l2)->get_hx()[0], network[f2]->get_link(l2)->get_hy()[0]};
-                    s2 = {network[f2]->get_link(l2)->get_hx()[1], network[f2]->get_link(l2)->get_hy()[1]};
+                    s1 = {network[f2]->get_spring(l2)->get_hx()[0], network[f2]->get_spring(l2)->get_hy()[0]};
+                    s2 = {network[f2]->get_spring(l2)->get_hx()[1], network[f2]->get_spring(l2)->get_hy()[1]};
 
                     inter = seg_seg_intersection_bc(bcf1, delrx, fov, r1, r2, s1, s2);
                     
                     if (inter && rng(0,1) <= prob){
-                        ang = network[f2]->get_link(l2)->get_angle();
+                        ang = network[f2]->get_spring(l2)->get_angle();
                         itrs.push_back({inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), 
                                 double(f1), double(f2), double(l1), double(l2)}); 
                     }
@@ -551,19 +551,19 @@ vector<vector<double> > filament_ensemble::link_link_intersections(double len, d
 
 filament_ensemble::filament_ensemble(int npolymer, int nbeads_min, int nbeads_extra, double nbeads_extra_prob, 
         array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+        double rad, double vis, double spring_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
-    view[0] = 1;//(fov[0] - 2*nbeads*link_len)/fov[0];
-    view[1] = 1;//(fov[1] - 2*nbeads*link_len)/fov[1];
+    view[0] = 1;//(fov[0] - 2*nbeads*len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nbeads*len)/fov[1];
     nq = mynq;
     half_nq = {nq[0]/2, nq[1]/2};
     
     double nbeads_mean = nbeads_min + nbeads_extra*nbeads_extra_prob;
     
     visc=vis;
-    link_ld = link_len;
+    spring_rest_len = spring_len;
     dt = delta_t;
     temperature = temp;
     shear_stop = 1e10;
@@ -591,21 +591,21 @@ filament_ensemble::filament_ensemble(int npolymer, int nbeads_min, int nbeads_ex
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new filament(pos_sets[i], nbeads, fov, nq,
-                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, spring_rest_len, stretching, ext, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             
             nbeads = nbeads_min + distribution(generator);
-            network.push_back(new filament({x0,y0,phi0}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+            network.push_back(new filament({x0,y0,phi0}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, spring_rest_len, stretching, ext, bending, frac_force, bc) );
         }
     }
     
     //Neighbor List Initialization
     quad_off_flag = false;
-    max_links_per_quad              = npolymer*(nbeads-1);
-    max_links_per_quad_per_filament = nbeads - 1;
+    max_springs_per_quad              = npolymer*(nbeads-1);
+    max_springs_per_quad_per_filament = nbeads - 1;
     
     //this->nlist_init();
     this->nlist_init_serial();
@@ -618,17 +618,17 @@ filament_ensemble::filament_ensemble(int npolymer, int nbeads_min, int nbeads_ex
 }
 
 filament_ensemble::filament_ensemble(double density, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double rad, double vis, int nbeads, double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+        double rad, double vis, int nbeads, double spring_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
         double frac_force, string bc, double seed) {
     
     fov = myfov;
-    view[0] = 1;//(fov[0] - 2*nbeads*link_len)/fov[0];
-    view[1] = 1;//(fov[1] - 2*nbeads*link_len)/fov[1];
+    view[0] = 1;//(fov[0] - 2*nbeads*len)/fov[0];
+    view[1] = 1;//(fov[1] - 2*nbeads*len)/fov[1];
     nq = mynq;
     half_nq = {nq[0]/2, nq[1]/2};
     
     visc=vis;
-    link_ld = link_len;
+    spring_rest_len =spring_len;
     int npolymer=int(ceil(density*fov[0]*fov[1]) / nbeads);
     dt = delta_t;
     temperature = temp;
@@ -654,20 +654,20 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     for (int i=0; i<npolymer; i++) {
         if ( i < s ){
             network.push_back(new filament(pos_sets[i], nbeads, fov, nq,
-                        visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+                        visc, dt, temp, straight_filaments, rad, spring_rest_len, stretching, ext, bending, frac_force, bc) );
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
             phi0 =  rng(0, 2*pi);
             //phi0=atan2(1+x0-y0*y0, -1-x0*x0+y0); // this is just the first example in mathematica's streamplot documentation
-            network.push_back(new filament({x0,y0,phi0}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
+            network.push_back(new filament({x0,y0,phi0}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, spring_rest_len, stretching, ext, bending, frac_force, bc) );
         }
     }
     
     //Neighbor List Initialization
     quad_off_flag = false;
-    max_links_per_quad              = npolymer*(nbeads-1);
-    max_links_per_quad_per_filament = nbeads - 1;
+    max_springs_per_quad              = npolymer*(nbeads-1);
+    max_springs_per_quad_per_filament = nbeads - 1;
     
     //this->nlist_init();
     this->nlist_init_serial();
@@ -680,12 +680,12 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
 }
 
 filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-        double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc) {
+        double vis, double spring_len, double stretching, double ext, double bending, double frac_force, string bc) {
     
     fov = myfov;
 
     visc=vis;
-    link_ld = link_len;
+    spring_rest_len = spring_len;
     dt = delta_t;
     temperature = temp;
     t = 0;
@@ -704,7 +704,7 @@ filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double
         
         if (beads[i][3] != fil_idx && avec.size() > 0){
             
-            network.push_back( new filament( avec, fov, nq, link_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
+            network.push_back( new filament( avec, fov, nq, spring_rest_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
             
             sa = avec.size();
             for (j = 0; j < sa; j++) delete avec[j];
@@ -717,14 +717,14 @@ filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double
 
     sa = avec.size();
     if (sa > 0)
-        network.push_back( new filament( avec, fov, nq, link_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
+        network.push_back( new filament( avec, fov, nq, spring_rest_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
     
     for (j = 0; j < sa; j++) delete avec[j];
     avec.clear();
    
     quad_off_flag = false;
-    max_links_per_quad              = beads.size();
-    max_links_per_quad_per_filament = int(ceil(beads.size() / (fil_idx + 1)))- 1;
+    max_springs_per_quad              = beads.size();
+    max_springs_per_quad_per_filament = int(ceil(beads.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
     this->nlist_init_serial();
     this->update_energies();

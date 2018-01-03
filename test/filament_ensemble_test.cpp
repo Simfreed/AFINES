@@ -16,24 +16,24 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     string bc = "PERIODIC";
     double seed = -1;
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     
     double stretching = 0, bending = 0; //spring constants
     double frac_force = 0;
     
     double np = 3, nmon = 11, nmon_extra = 0, pextra_bead = 0;
     filament_ensemble * f = new filament_ensemble(np, nmon, nmon_extra, pextra_bead, fov, nq, dt, temp, 
-            bead_rad, vis, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+            bead_rad, vis, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
   
     for (int i =0; i<np; i++){
-        BOOST_CHECK_MESSAGE(f->get_filament(i)->get_nlinks() == nmon - 1, "\nfilament "<<i<<" has wrong number of links");
+        BOOST_CHECK_MESSAGE(f->get_filament(i)->get_nsprings() == nmon - 1, "\nfilament "<<i<<" has wrong number of springs");
     }
 
 //delete f;
    
     np = 100000; nmon = 2; nmon_extra=18; pextra_bead = 0.5; 
     f = new filament_ensemble(np, nmon, nmon_extra, pextra_bead, fov, nq, dt, temp, 
-            bead_rad, vis, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+            bead_rad, vis, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     
     int nm_tot = 0;
     vector<int> all_nms;

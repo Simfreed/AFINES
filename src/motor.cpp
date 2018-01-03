@@ -51,7 +51,7 @@ motor::motor( array<double, 3> pos,
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    l_index     = mylindex; //link index for each head
+    l_index     = mylindex; //spring index for each head
     fov         = myfov;
     BC          = bc; 
     filament_network = network;
@@ -137,7 +137,7 @@ motor::motor( array<double, 4> pos,
     
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    l_index     = mylindex; //link index for each head
+    l_index     = mylindex; //spring index for each head
     fov         = myfov;
     BC          = bc; 
     filament_network = network;
@@ -261,11 +261,11 @@ bool motor::attach(int hd)
             if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
                 break;
 
-            //head can't bind to the same filament link the other head is bound to
+            //head can't bind to the same filament spring the other head is bound to
  //           else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
             else if(allowed_bind(hd, it->second)){
                 
-                intPoint = filament_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
+                intPoint = filament_network->get_filament((it->second).at(0))->get_spring((it->second).at(1))->get_intpoint();
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, kon);
                  
                 if (mf_rand < not_off_prob) 
@@ -275,7 +275,7 @@ bool motor::attach(int hd)
                     f_index[hd] = (it->second).at(0);
                     l_index[hd] = (it->second).at(1);
                     
-                    //record displacement of head and orientation of link for future unbinding move
+                    //record displacement of head and orientation of spring for future unbinding move
                     ldir_bind[hd] = filament_network->get_direction(f_index[hd], l_index[hd]);
                     bind_disp[hd] = rij_bc(BC, intPoint[0]-hx[hd], intPoint[1]-hy[hd], fov[0], fov[1], filament_network->get_delrx());
 
@@ -418,25 +418,25 @@ void motor::step_onehead(int hd)
 void motor::update_pos_a_end(int hd, double pos)
 {
 //    cout<<"\nDEBUG: new pos = "<<pos;
-    double link_length = filament_network->get_llength(f_index[hd],l_index[hd]);
-    if (pos >= link_length) { // "passed" the link
+    double spring_length = filament_network->get_llength(f_index[hd],l_index[hd]);
+    if (pos >= spring_length) { // "passed" the spring
         if (l_index[hd] == 0){ // the barbed end of the filament
             at_barbed_end[hd] = true;
-            pos_a_end[hd] = link_length;
+            pos_a_end[hd] = spring_length;
         }
         else{ 
-            /*Move the motor to the next link on the filament
+            /*Move the motor to the next spring on the filament
              *At the projected new position along that filament*/
             l_index[hd] = l_index[hd] - 1;
-            pos_a_end[hd] = pos - link_length;
+            pos_a_end[hd] = pos - spring_length;
         }
     }
     else if (pos < 0) { //this shouldn't be possible if vm > 0
-        if (l_index[hd] == (filament_network->get_filament(f_index[hd])->get_nlinks() - 1)){ // the pointed end of the filament
+        if (l_index[hd] == (filament_network->get_filament(f_index[hd])->get_nsprings() - 1)){ // the pointed end of the filament
             pos_a_end[hd]=0; //move head to pointed end
         }
         else{ 
-            /*Move the motor to the previous link on the filament
+            /*Move the motor to the previous spring on the filament
              *At the projected new position along that filament*/
             l_index[hd] = l_index[hd] + 1;
             pos_a_end[hd] = pos + filament_network->get_llength(f_index[hd],l_index[hd]);    
@@ -554,7 +554,7 @@ string motor::to_string()
             \nstate = (%d, %d)\t f_index = (%d, %d)\t l_index = (%d, %d)\
             \nviscosity = %f\t max binding distance = %f\t stiffness = %f\t stall force = %f\t length = %f\
             \nkon = %f\t koff = %f\t kend = %f\t dt = %f\t temp = %f\t damp = %f\
-            \nfov = (%f, %f)\t distance from end of link = (%f, %f)\
+            \nfov = (%f, %f)\t distance from end of spring = (%f, %f)\
             shear = %f\t tension = (%f, %f)\n",
             hx[0], hy[0], hx[1], hy[1], mphi,
             state[0],  state[1], f_index[0],  f_index[1], l_index[0],  l_index[1], 

@@ -1,6 +1,6 @@
 #include "spring.h"
 #include "filament.h"
-#define BOOST_TEST_MODULE link_test
+#define BOOST_TEST_MODULE spring_test
 #include <boost/test/unit_test.hpp>
 #include <set>
 
@@ -14,8 +14,8 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     int     nbead              = 2;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  bead_length        = link_length/2;
+    double  spring_length         = 1;
+    double  bead_length        = spring_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -28,11 +28,11 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     bead a; 
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
-    spring * l = f->get_link(0);
+    spring * l = f->get_spring(0);
     BOOST_CHECK_EQUAL( l->get_kl(), 100);                  
     BOOST_CHECK_EQUAL( l->get_hx()[0], 0);             
     BOOST_CHECK_EQUAL( l->get_hx()[1],  1);            
@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE( get_distance_test)
     int     nbead              = 2;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  bead_length        = link_length/2;
+    double  spring_length         = 1;
+    double  bead_length        = spring_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -67,11 +67,11 @@ BOOST_AUTO_TEST_CASE( get_distance_test)
     bead a; 
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
-    spring * l = f->get_link(0);
+    spring * l = f->get_spring(0);
     
     array<double, 2> p1 = {0.75,2}, p2 = {4, -4}, p3 = {-5, 12};
     double d1 = 2, d2 = 5, d3 = 13;
@@ -98,8 +98,8 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     int     nbead              = 2;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  bead_length        = link_length/2;
+    double  spring_length         = 1;
+    double  bead_length        = spring_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -112,11 +112,11 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     filament * f; 
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
-    spring * l = f->get_link(0);
+    spring * l = f->get_spring(0);
     l->quad_update(bc, 0);
     vector<array<int,2> > quads = l->get_quadrants();
     vector<array<int,2> > expected_quads;
@@ -133,12 +133,12 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     delete f;
 
     //TEST 2
-    link_length = 1.5;
+    spring_length = 1.5;
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     expected_quads.push_back({0+xgrid/2,0+ygrid/2});
@@ -157,10 +157,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //TEST 3
     startphi = pi/4;
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     expected_quads.push_back({0+xgrid/2,0+ygrid/2});
@@ -190,14 +190,14 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     delete f;
 
     //TEST 4
-    startphi =0; startx = 1; link_length = 1; nbead = 2;
+    startphi =0; startx = 1; spring_length = 1; nbead = 2;
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     
     quads = l->get_quadrants();
@@ -216,14 +216,14 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     delete f;
     
     //TEST 5
-    startphi = pi/2; startx = -0.26; starty = 0.2; link_length = 1; nbead = 2;
+    startphi = pi/2; startx = -0.26; starty = 0.2; spring_length = 1; nbead = 2;
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     
     quads = l->get_quadrants();
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     
     //TEST 6: Different angles, but same set of quads
-    link_length = 3*sqrt(2) - 0.01; 
+    spring_length = 3*sqrt(2) - 0.01; 
     nbead = 2;
     set<array<int, 2> > e_quads;
     for(int x = xgrid/2; x <= xgrid/2+6; x++)
@@ -257,11 +257,11 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     //A
     startphi = pi/4; startx = 0; starty = 0; 
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     set<array<int, 2> > a_quads(quads.begin(), quads.end());
@@ -279,10 +279,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     startphi = 7*pi/4; startx = 0; starty = 3;
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
@@ -294,10 +294,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     startphi = -3*pi/4; startx = 3; starty = 3;
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
@@ -309,10 +309,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     startphi = -5*pi/4; startx = 3; starty = 0;
    
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
@@ -322,13 +322,13 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     
     //TEST 7: periodic boundaries
     //A : right
-    startx = 24.5, starty = 0, startphi = 0, link_length=1, bead_length=0.5;
+    startx = 24.5, starty = 0, startphi = 0, spring_length=1, bead_length=0.5;
     
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     
@@ -343,10 +343,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     startx = -24.5, starty = 0, startphi = pi;
     
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7B : Expected Quadrants : don't equal spring Quadrants : \n");
@@ -358,10 +358,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     startx = 0, starty = 24.5, startphi = pi/2.0;
     
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     
@@ -379,10 +379,10 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     startx = 0, starty = -24.5, startphi = 3*pi/2.0;
     
     f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, bead_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    l = f->get_link(0);
+    l = f->get_spring(0);
     l->quad_update(bc, 0);
     quads = l->get_quadrants();
     //BOOST_CHECK_MESSAGE(quads == expected_quads, quads_error_message("7D",expected_quads,quads));

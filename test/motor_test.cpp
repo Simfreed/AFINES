@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     string bc = "REFLECTIVE";
     double seed = -1;
     
-    double bead_rad = 0.5, link_len = 1, motor_len = 1;
+    double bead_rad = 0.5, spring_len = 1, motor_len = 1;
     double v0 = 0;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     
     
     filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, 
-            bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+            bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     motor  m = motor(array<double, 3>{1, 1, 3.1416/2}, motor_len, f, state, 
             findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 
     delete f;
 
-    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     state = {1,0};
 
     motor m2 = motor(array<double, 3>{1, 1, 0}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     string bc = "REFLECTIVE";
     double seed = -1;
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     double frac_force = 0;
     
     pos_sets.push_back({-0.4,0,0});
-    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     //MOTOR
     double mx = 0.5, my = 0.5, mang = pi/2, mlen = 1;
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     string bc = "REFLECTIVE";
     double seed = -1;
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     double frac_force = 0;
     
     pos_sets.push_back({0,0,0});
-    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     //MOTOR
     double mx = 0.125, my = 0.5, mang = pi/2, mlen = 1;
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
 
     // IF position is greater than filament length
     double pos = 1.125;
-    //  If last rod in filament and pos is greater than length of link, go to barbed end
+    //  If last rod in filament and pos is greater than length of spring, go to barbed end
 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     m.update_pos_a_end(0, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], link_len);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], spring_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //Test 2 : Motor on filament facing left, so, moves right
     pos_sets.clear();
     pos_sets.push_back({0,0,pi});
-    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     //MOTOR
     mx = -0.125;
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     kon = 0, koff = 2, kend = 2; 
     pos_sets.clear();
     pos_sets.push_back({0,0,0});
-    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
 
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
 
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     m.update_pos_a_end(1, pos); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], link_len);
+    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], spring_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[1], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], my + 0.5*mlen*sin(mang), tol);
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE( attach )
     string bc = "PERIODIC";
     double seed = -1;
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -366,7 +366,7 @@ BOOST_AUTO_TEST_CASE( attach )
     //pos_sets.push_back({1,1,pi/2});
     pos_sets.push_back({0,0,0});
     //pos_sets.push_back({-2,3,pi});
-    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     f->quad_update_serial(); 
     //MOTOR
     double mx = 2.35, my = 0.5, mang = pi/2, mlen = 1;
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE( attach )
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    m.attach(0); //should attach to {f_index, l_index} = {0, 3}, because the distance between head 0 and that link is 0
+    m.attach(0); //should attach to {f_index, l_index} = {0, 3}, because the distance between head 0 and that spring is 0
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
@@ -429,7 +429,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     bead_sets.push_back(pos1);
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
 //    cout<<f->get_filament(0)->to_string();
     //MOTOR
     double mx = -24.875, my = 0.5, mang = pi/2, mlen = 1;
@@ -489,7 +489,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -502,7 +502,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+    m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
@@ -528,7 +528,7 @@ BOOST_AUTO_TEST_CASE( attach_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    m.attach(0); //should attach to {f_index, l_index} = {0, 3}, because the distance between head 0 and that link is 0
+    m.attach(0); //should attach to {f_index, l_index} = {0, 3}, because the distance between head 0 and that spring is 0
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -553,7 +553,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -573,7 +573,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     bead_sets.push_back(pos7);
     bead_sets.push_back(pos8);
     
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    m.attach(0); //should attach to {f_index, l_index} = {0, 2}, because the distance between head 0 and that link is 0
+    m.attach(0); //should attach to {f_index, l_index} = {0, 2}, because the distance between head 0 and that spring is 0
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -674,7 +674,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     bead_sets.push_back(pos7);
     bead_sets.push_back(pos8);
     
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
@@ -739,7 +739,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -759,7 +759,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     bead_sets.push_back(pos7);
     bead_sets.push_back(pos8);
     
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     //cout<<f->get_filament(0)->to_string(); 
     //cout<<f->get_filament(1)->to_string(); 
@@ -824,7 +824,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -838,7 +838,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
@@ -956,7 +956,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -970,7 +970,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
@@ -1059,7 +1059,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1073,7 +1073,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
@@ -1189,7 +1189,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1203,7 +1203,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
@@ -1296,7 +1296,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0;
     
     double mstiff = 1, stretching = 0, bending = 0; //spring constants
@@ -1311,7 +1311,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         pos = {double(i), 0, bead_rad, 0};
         bead_sets.push_back(pos);
     }
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //attachment
@@ -1327,7 +1327,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         posy=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
             if (m.get_states()[0] == 1){
                 posx += m.get_hx()[0];
@@ -1347,7 +1347,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
         BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
@@ -1361,7 +1361,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
         BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
@@ -1381,7 +1381,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
         BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
@@ -1399,7 +1399,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
         cout<<"\nmx = "<<mx<<";\tnum_attached = "<<num_detached[i];//<<";\t(<x>, <y>) = ( "<<posx/num_detached[i]<<" , "<<posy/num_detached[i]<<" )";
@@ -1418,7 +1418,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         num_detached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.step_onehead(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_detached[i] += pr(m.get_states()[0]);
         }
         BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
@@ -1436,7 +1436,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 5, link_len = 10;
+    double bead_rad = 5, spring_len = 10;
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1448,7 +1448,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     bead_sets.push_back(pos1);
     bead_sets.push_back(pos2);
     
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     cout<<f->get_filament(0)->to_string();
     
@@ -1458,7 +1458,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     array<int, 11> num_attached; 
     int nevents = 10000;
     int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
-    for (int i = 0; i <= int(link_len); i++){
+    for (int i = 0; i <= int(spring_len); i++){
         mx = i - 5;
         num_attached[i]=0;
         posx=0;
@@ -1479,12 +1479,12 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     kon=0.05;
     nevents = 10000;
     threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
-    for (int i = 0; i <= int(link_len); i++){
+    for (int i = 0; i <= int(spring_len); i++){
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
         BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
@@ -1493,12 +1493,12 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     kon=0.9;
     nevents = 10000;
     threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
-    for (int i = 0; i <= int(link_len); i++){
+    for (int i = 0; i <= int(spring_len); i++){
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
             m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that link is 0
+            m.attach(0); //should attach to {f_index, l_index} = {1, 2}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
         BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
@@ -1516,7 +1516,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 5, link_len = 10;
+    double bead_rad = 5, spring_len = 10;
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1531,7 +1531,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
     
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
 //    cout<<f->get_filament(0)->to_string();
     
@@ -1566,7 +1566,7 @@ BOOST_AUTO_TEST_CASE( attach_two_options )
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
     
-    f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     num_attached[0]=0;
@@ -1595,7 +1595,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 5, link_len = 10;
+    double bead_rad = 5, spring_len = 10;
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1610,7 +1610,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
     
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
 //    cout<<f->get_filament(0)->to_string();
     
@@ -1645,7 +1645,7 @@ BOOST_AUTO_TEST_CASE( brownian_attach)
     bead_sets.push_back(pos3);
     bead_sets.push_back(pos4);
     
-    f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     num_attached[0]=0;
@@ -1674,7 +1674,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1689,7 +1689,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
         bead_sets.push_back(pos);
     }
 
-    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     
     //MOTOR
@@ -1751,7 +1751,7 @@ BOOST_AUTO_TEST_CASE( motor_slow_down_stall )
         bead_sets.push_back(pos);
     }
 
-    f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    f = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc);
     f->quad_update_serial(); 
     mx = 14.75;
     m = motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, 
@@ -1792,7 +1792,7 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     string bc = "PERIODIC";
     double seed = -1;
     
-    double bead_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
@@ -1800,7 +1800,7 @@ BOOST_AUTO_TEST_CASE( attach_detach )
     double frac_force = 0;
     
     pos_sets.push_back({0,0,0});
-    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, link_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
+    filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed);
     f->quad_update_serial(); 
     
     //MOTOR

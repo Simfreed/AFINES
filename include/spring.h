@@ -1,5 +1,5 @@
 /*
- *  link.h
+ *  spring.h
  *
  *  Created by Simon Freedman on 9/10/2014
  *  Copyright 2014 University of Chicago. All rights reserved.

@@ -53,7 +53,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
 }
 
 filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov, array<int, 2> mynq, double visc, 
-        double deltat, double temp, bool isStraight, double beadRadius, double linkLength, double stretching_stiffness,
+        double deltat, double temp, bool isStraight, double beadRadius, double spring_length, double stretching_stiffness,
         double max_ext_ratio, double bending_stiffness, double frac_force, string bdcnd)
 {
     
@@ -85,15 +85,15 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
 
     for (int j = 1; j < nbead; j++) {
 
-        //next_pos = boundary_check(j-1, beads[j-1]->get_xcm() + linkLength*cos(phi), beads[j-1]->get_ycm() + linkLength*sin(phi));
+        //next_pos = boundary_check(j-1, beads[j-1]->get_xcm() + spring_length*cos(phi), beads[j-1]->get_ycm() + spring_length*sin(phi));
         next_pos = pos_bc(BC, delrx, dt, fov, 
-                {linkLength*cos(phi)/dt, linkLength*sin(phi)/dt},
-                {beads[j-1]->get_xcm() + linkLength*cos(phi), beads[j-1]->get_ycm() + linkLength*sin(phi)});
+                {spring_length*cos(phi)/dt, spring_length*sin(phi)/dt},
+                {beads[j-1]->get_xcm() + spring_length*cos(phi), beads[j-1]->get_ycm() + spring_length*sin(phi)});
         beads.push_back( new bead(next_pos[0], next_pos[1], beadRadius, visc) );
         prv_rnds.push_back({0,0});
-        links.push_back( new spring(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
-        links[j-1]->step(BC, delrx);  
-        links[j-1]->update_force(BC, delrx);
+        springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {j-1, j}, fov, nq) );  
+        springs[j-1]->step(BC, delrx);  
+        springs[j-1]->update_force(BC, delrx);
         
         // Calculate the Next angle on the bead polymer
         if (!isStraight) phi += rng_n(0, variance);
@@ -102,7 +102,7 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
    
 }
 
-filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, 
+filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2> mynq, double spring_length, 
         double stretching_stiffness, double max_ext_ratio, double bending_stiffness, 
         double deltat, double temp, double frac_force, double g, string bdcnd)
 {
@@ -131,9 +131,9 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
         for (unsigned int j = 1; j < beadvec.size(); j++) {
 
             beads.push_back(new bead(*(beadvec[j])));
-            links.push_back( new spring(linkLength, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
-            links[j-1]->step(BC, delrx);
-            links[j-1]->update_force(BC, delrx);
+            springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {(int)j-1, (int)j}, fov, nq) );  
+            springs[j-1]->step(BC, delrx);
+            springs[j-1]->update_force(BC, delrx);
             prv_rnds.push_back({0,0});
             
         }
@@ -146,28 +146,28 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
 filament::~filament(){
     
     //cout<<"DELETING FILAMENT\n";
-    int nr = beads.size(), nl = links.size();
+    int nr = beads.size(), nl = springs.size();
     for (int i = 0; i < nr; i ++)
     {    
         //cout<<"\nDEBUG: deleting pointer "<<beads[i];     
         delete beads[i];
     }
     for (int i = 0; i < nl; i ++)
-        delete links[i];
+        delete springs[i];
     
     beads.clear();
-    links.clear();
+    springs.clear();
     prv_rnds.clear();
 }
 
-void filament::add_bead(bead * a, double linkLength, double stretching_stiffness, double max_ext_ratio){
+void filament::add_bead(bead * a, double spring_length, double stretching_stiffness, double max_ext_ratio){
     
     beads.push_back(new bead(*a));
     prv_rnds.push_back({0,0});    
     if (beads.size() > 1){
         int j = (int) beads.size() - 1;
-        links.push_back( new spring(linkLength, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
-        links[j-1]->step(BC, delrx);
+        springs.push_back( new spring(spring_length, stretching_stiffness, max_ext_ratio, this, {j-1,  j}, fov, nq ) );  
+        springs[j-1]->step(BC, delrx);
     }
     if (damp == infty)
         damp = a->get_friction();
@@ -177,9 +177,9 @@ vector<vector<array<int,2> > > filament::get_quadrants()
 {
     //should return a map between bead and x, y coords of quadrant
     vector<vector<array<int,2> > > quads;
-    for (unsigned int i=0; i < links.size(); i++){ 
-        links[i]->quad_update(BC, delrx);
-        quads.push_back(links[i]->get_quadrants());
+    for (unsigned int i=0; i < springs.size(); i++){ 
+        springs[i]->quad_update(BC, delrx);
+        quads.push_back(springs[i]->get_quadrants());
     }
     
     return quads;
@@ -189,9 +189,9 @@ multimap<int, array<int, 2> > filament::get_quadrants()
 {
     //should return a map between bead and x, y coords of quadrant
     multipmap<int, array<int, 2> > quads;
-    for (unsigned int i=0; i < links.size(); i++){ 
-        links[i]->quad_update(BC, delrx);
-        quads.push_back(links[i]->get_quadrants());
+    for (unsigned int i=0; i < springs.size(); i++){ 
+        springs[i]->quad_update(BC, delrx);
+        quads.push_back(springs[i]->get_quadrants());
     }
     
     return quads;
@@ -209,7 +209,7 @@ void filament::update_positions()
     kinetic_energy = 0;  
     double top_y = y_thresh*fov[1]/2.; 
     int sa = int(beads.size());
-    int la = int(links.size());
+    int la = int(springs.size());
     for (int i = 0; i < sa; i++){
 
         if (fabs(beads[i]->get_ycm()) > top_y) continue;
@@ -229,7 +229,7 @@ void filament::update_positions()
     }
 
     for (int i = 0; i < la; i++)
-        links[i]->step(BC, delrx);
+        springs[i]->step(BC, delrx);
 
 }
 
@@ -263,8 +263,8 @@ void filament::update_positions_range(int lo, int hi)
         beads[i]->reset_force(); 
     }
 
-    for (unsigned int i = 0; i < links.size(); i++)
-        links[i]->step(BC, delrx);
+    for (unsigned int i = 0; i < springs.size(); i++)
+        springs[i]->step(BC, delrx);
 
 }
 
@@ -272,18 +272,18 @@ vector<filament *> filament::update_stretching(double t)
 {
     vector<filament *> newfilaments;
 
-    if(links.size() == 0)
+    if(springs.size() == 0)
         return newfilaments;
    
-    for (unsigned int i=0; i < links.size(); i++) {
-        links[i]->update_force(BC, delrx);
-        //links[i]->update_force_fraenkel_fene(BC, delrx);
-        if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_force){
+    for (unsigned int i=0; i < springs.size(); i++) {
+        springs[i]->update_force(BC, delrx);
+        //springs[i]->update_force_fraenkel_fene(BC, delrx);
+        if (hypot(springs[i]->get_force()[0], springs[i]->get_force()[1]) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
         else 
-            links[i]->filament_update();
+            springs[i]->filament_update();
     }
     
     return newfilaments;
@@ -303,9 +303,9 @@ bead * filament::get_bead(int i)
     }
 }
 
-spring * filament::get_link(int i)
+spring * filament::get_spring(int i)
 {
-    return links[i];
+    return springs[i];
 }
 
 void filament::update_delrx(double shear_dist){
@@ -377,14 +377,14 @@ string filament::write_beads(int fil){
     return all_beads;
 }
 
-string filament::write_links(int fil){
-    string all_links;
-    for (unsigned int i =0; i < links.size(); i++)
+string filament::write_springs(int fil){
+    string all_springs;
+    for (unsigned int i =0; i < springs.size(); i++)
     {
-        all_links += links[i]->write(BC, delrx) + "\t" + std::to_string(fil);
+        all_springs += springs[i]->write(BC, delrx) + "\t" + std::to_string(fil);
     }
 
-    return all_links;
+    return all_springs;
 }
 
 string filament::write_thermo(int fil)
@@ -412,7 +412,7 @@ vector<filament *> filament::fracture(int node){
     vector<filament *> newfilaments;
     cout<<"\n\tDEBUG: fracturing at node "<<node;
     
-    if(links.size() == 0)
+    if(springs.size() == 0)
         return newfilaments;
 
     vector<bead *> lower_half = this->get_beads(0, node+1);
@@ -420,11 +420,11 @@ vector<filament *> filament::fracture(int node){
 
     if (lower_half.size() > 0)
         newfilaments.push_back(
-                new filament(lower_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
+                new filament(lower_half, fov, nq, springs[0]->get_l0(), springs[0]->get_kl(), springs[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
     if (upper_half.size() > 0)
         newfilaments.push_back(
-                new filament(upper_half, fov, nq, links[0]->get_l0(), links[0]->get_kl(), links[0]->get_fene_ext(), kb, 
+                new filament(upper_half, fov, nq, springs[0]->get_l0(), springs[0]->get_kl(), springs[0]->get_fene_ext(), kb, 
                     dt, temperature, fracture_force, gamma, BC));
 
     for (int i = 0; i < (int)(lower_half.size()); i++) delete lower_half[i];
@@ -439,15 +439,15 @@ vector<filament *> filament::fracture(int node){
 
 bool filament::operator==(const filament& that){
     
-    if (beads.size() != that.beads.size() || links.size() != that.links.size())
+    if (beads.size() != that.beads.size() || springs.size() != that.springs.size())
         return false;
 
     for (unsigned int i = 0; i < beads.size(); i++)
         if (!(*(beads[i]) == *(that.beads[i])))
             return false;
     
-    for (unsigned int i = 0; i < links.size(); i++)
-        if (!(links[i]->is_similar(*(that.links[i]))))
+    for (unsigned int i = 0; i < springs.size(); i++)
+        if (!(springs[i]->is_similar(*(that.springs[i]))))
             return false;
 
     return (this->fov[0] == that.fov[0] && this->fov[1] == that.fov[1] && 
@@ -459,7 +459,7 @@ bool filament::operator==(const filament& that){
 
 string filament::to_string(){
     
-    // Note: not including links in to_string, because link's to_string includes filament's to_string
+    // Note: not including springs in to_string, because spring's to_string includes filament's to_string
     char buffer[200];
     string out = "";
 
@@ -481,8 +481,8 @@ void filament::set_BC(string s){
     this->BC = s;
 }
 
-inline double filament::angle_between_links(int i, int j){
-    double theta = links[i]->get_angle() - links[j]->get_angle();
+inline double filament::angle_between_springs(int i, int j){
+    double theta = springs[i]->get_angle() - springs[j]->get_angle();
     return theta - 2*pi*floor(theta/(2*pi)+0.5); // Keep angles between -Pi and Pi
 }
 
@@ -496,14 +496,14 @@ void filament::lammps_bending_update()
   double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
     
   // 1st bond
-  delr1 = links[0]->get_neg_disp();
+  delr1 = springs[0]->get_neg_disp();
   rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
   r1    = sqrt(rsq1);
 
-  for (int n = 0; n < int(links.size())-1; n++) {
+  for (int n = 0; n < int(springs.size())-1; n++) {
     
     // 2nd bond
-    delr2 = links[n+1]->get_disp();
+    delr2 = springs[n+1]->get_disp();
     rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
     r2    = sqrt(rsq2);
 
@@ -547,14 +547,14 @@ void filament::fwd_bwd_bending_update()
   double rsq1,rsq2,r1,r2,c,c1,c2,c3,cost,sint;//,s,coeff;
 
   // 1st bond
-  delr1 = links[0]->get_disp();
+  delr1 = springs[0]->get_disp();
   rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];///Caa
   r1    = sqrt(rsq1);
 
   for (int n = 1; n < int(beads.size())-1; n++) {
 
     // 2nd bond
-    delr2 = links[n]->get_disp();
+    delr2 = springs[n]->get_disp();
     rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];//Ca+1a+1
     r2    = sqrt(rsq2); 
 
@@ -604,7 +604,7 @@ void filament::fwd_bwd_bending_update()
 //wrapper, for fwd_bending_update (and bwd bending update if I ever make it)
 void filament::update_bending(double t)
 {
-    if(links.size() > 1 && kb > 0){
+    if(springs.size() > 1 && kb > 0){
           this->lammps_bending_update();
 //          this->fwd_bwd_bending_update();
     }
@@ -614,19 +614,19 @@ int filament::get_nbeads(){
     return beads.size();
 }
 
-int filament::get_nlinks(){
-    return links.size();
+int filament::get_nsprings(){
+    return springs.size();
 }
 
 double filament::get_bending_energy(){
     
     double sum = 0, theta;
 
-    if (links.size() < 2) return 0;
+    if (springs.size() < 2) return 0;
 
-    for (unsigned int i = 0; i < links.size() - 1; i++)
+    for (unsigned int i = 0; i < springs.size() - 1; i++)
     {
-        theta = angle_between_links(i+1, i);//links[i+1]->get_angle() - links[i]->get_angle();
+        theta = angle_between_springs(i+1, i);//springs[i+1]->get_angle() - springs[i]->get_angle();
         sum += theta*theta;
     }
     
@@ -638,9 +638,9 @@ double filament::get_stretching_energy()
 {
     
     double u = 0;
-    for (unsigned int i = 0; i < links.size(); i++)
-        //u += links[i]->get_stretching_energy_fene(BC, delrx);
-        u += links[i]->get_stretching_energy();
+    for (unsigned int i = 0; i < springs.size(); i++)
+        //u += springs[i]->get_stretching_energy_fene(BC, delrx);
+        u += springs[i]->get_stretching_energy();
     
     return u;
 

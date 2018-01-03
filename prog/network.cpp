@@ -336,8 +336,8 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd); 
     }
    
-    if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
-    if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 
+    if (link_intersect_flag) p_motor_pos_vec = net->spring_spring_intersections(p_motor_length, p_linkage_prob); 
+    if (motor_intersect_flag) a_motor_pos_vec = net->spring_spring_intersections(a_motor_length, a_linkage_prob); 
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding active motors...";
@@ -414,8 +414,8 @@ int main(int argc, char* argv[]){
             file_a << time_str<<"\tN = "<<to_string(net->get_nbeads());
             net->write_beads(file_a);
 
-            file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
-            net->write_links(file_l);
+            file_l << time_str<<"\tN = "<<to_string(net->get_nsprings());
+            net->write_springs(file_l);
 
             file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
             myosins->motor_write(file_am);
