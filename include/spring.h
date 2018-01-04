@@ -18,8 +18,6 @@ class filament;
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
 #include "globals.h"
 
 //=====================================
