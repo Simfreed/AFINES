@@ -17,12 +17,10 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
 #include "globals.h"
 
 //=====================================
-//bead rod class
+//filament bead class
 class bead
 {
     public:

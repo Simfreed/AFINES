@@ -1,8 +1,5 @@
 #define BOOST_TEST_MODULE filament_test
 
-#include "globals.h"
-#include "spring.h"
-#include "bead.h"
 #include "filament.h"
 #include <boost/test/unit_test.hpp>
 

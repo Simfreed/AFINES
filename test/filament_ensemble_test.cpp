@@ -1,9 +1,7 @@
 #include "motor.h"
 #include "filament_ensemble.h"
-#include "globals.h"
 #define BOOST_TEST_MODULE filament_ensemble_test
 #include <boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {

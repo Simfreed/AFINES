@@ -17,13 +17,7 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
-#include "map"
-//#include <multimap>
 #include "filament.h"
-#include <boost/functional/hash.hpp>
-#include <boost/scoped_array.hpp>
 //=====================================
 //filament network class
 class filament_ensemble

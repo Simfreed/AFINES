@@ -17,11 +17,8 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
 #include "bead.h"
 #include "spring.h"
-#include "globals.h"
 
 //=====================================
 //bead filament class

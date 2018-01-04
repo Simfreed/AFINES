@@ -1,8 +1,6 @@
-#include "spring.h"
 #include "filament.h"
 #define BOOST_TEST_MODULE spring_test
 #include <boost/test/unit_test.hpp>
-#include <set>
 
 BOOST_AUTO_TEST_CASE( constructors_test )
 {
