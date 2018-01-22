@@ -39,6 +39,13 @@ class motor_ensemble
                 double fstall, double rcut,
                 double vis, string BC); 
         
+        motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, array<double,2> mlen, filament_ensemble* network, 
+                array<double,2> v0,
+                double stiffness, double max_ext_ratio, 
+                double ron, double roff, double rend, 
+                double fstall, double rcut,
+                double vis, vector<array<double,3> > positions, string BC);
+        
         ~motor_ensemble();
 
         int get_nmotors();

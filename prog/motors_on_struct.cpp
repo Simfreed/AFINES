@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
     double a_motor_length, a_motor_v, a_motor_density, a_motor_stiffness, a_m_kon, a_m_kend, a_m_koff,
-           a_m_stall, a_m_cut;// Active Motors (i.e., "myosin")
+           a_m_stall, a_m_cut, a_motor_v_sig, a_motor_length_sig;// Active Motors (i.e., "myosin")
     string a_motor_pos_str; 
     
     string config_file, actin_in, a_motor_in;                                                // Input configuration
@@ -103,9 +103,11 @@ int main(int argc, char* argv[]){
         ("a_m_kon", po::value<double>(&a_m_kon)->default_value(1),"active motor on rate")
         ("a_m_koff", po::value<double>(&a_m_koff)->default_value(0.1),"active motor off rate")
         ("a_m_kend", po::value<double>(&a_m_kend)->default_value(0.1),"active motor off rate at filament end")
-        ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.5),"active motor rest length (um)")
+        ("a_motor_length", po::value<double>(&a_motor_length)->default_value(0.5),"active motor rest length mean (um)")
+        ("a_motor_length_sig", po::value<double>(&a_motor_length_sig)->default_value(0),"active motor rest length standard deviation (um)")
         ("a_motor_stiffness", po::value<double>(&a_motor_stiffness)->default_value(1),"active motor spring stiffness (pN/um)")
-        ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity (um/s)")
+        ("a_motor_v", po::value<double>(&a_motor_v)->default_value(1),"active motor velocity mean (um/s)")
+        ("a_motor_v_sig", po::value<double>(&a_motor_v_sig)->default_value(0),"active motor velocity standard deviation (um/s)")
         
         ("a_m_stall", po::value<double>(&a_m_stall)->default_value(0.5),"force beyond which motors don't walk (pN)")
         ("a_m_cut", po::value<double>(&a_m_cut)->default_value(0.063),"cutoff distance for binding (um)")
@@ -276,7 +278,7 @@ int main(int argc, char* argv[]){
     
     if (a_motor_pos_vec.size() == 0 && a_motor_in.size() == 0)
         myosins = new motor_ensemble( a_motor_density, {xrange, yrange}, dt, temperature, 
-                a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
+                {a_motor_length, a_motor_length_sig}, net, {a_motor_v, a_motor_v_sig}, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_position_arrs, bnd_cnd);
     else
         myosins = new motor_ensemble( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 

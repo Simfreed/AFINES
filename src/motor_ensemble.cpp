@@ -267,3 +267,55 @@ double motor_ensemble::get_potential_energy(){
 void motor_ensemble::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
 }
+
+motor_ensemble::motor_ensemble(double mdensity, array<double, 2> myfov, double delta_t, double temp, 
+        array<double, 2> mlen, filament_ensemble * network, array<double, 2> v0, double stiffness, double max_ext_ratio, 
+        double ron, double roff, double rend, 
+        double fstall, double rcut,
+        double vis, vector<array<double,3> > positions, string BC) {
+    
+    fov = myfov;
+    gamma = 0;
+    tMove=0;//10;
+    f_network=network;
+    
+    ke = 0;
+    pe = 0;
+
+    int nm = int(ceil(mdensity*fov[0]*fov[1]));
+    cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
+
+    double alpha = 1, motorx, motory, mang;
+    array<double, 3> motor_pos; 
+    
+    
+    
+    double vmsq = mlen[1]/(mlen[0]*mlen[0]);
+    std::lognormal_distribution<double> sz_distr(log(mlen[0]/sqrt(1 + vmsq)), sqrt(log(1 + vmsq)));
+    std::normal_distribution<double> v0_distr(v0[0], v0[1]);
+    std::default_random_engine generator;
+    
+    double mld, mv0;
+
+    for (int i=0; i< nm; i++) {
+       
+        mld = sz_distr(generator);
+        mv0 = v0_distr(generator);
+        
+        if ((unsigned int)i < positions.size()){
+            motorx = positions[i][0];
+            motory = positions[i][1];
+            mang   = positions[i][2];
+        }else{
+            motorx = rng(-0.5*(fov[0]*alpha-mld),0.5*(fov[0]*alpha-mld));
+            motory = rng(-0.5*(fov[1]*alpha-mld),0.5*(fov[1]*alpha-mld));
+            mang   = rng(0,2*pi);
+        }
+        motor_pos = {motorx, motory, mang};
+        
+
+        n_motors.push_back(new motor( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+                    mv0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
+        
+    }
+}
