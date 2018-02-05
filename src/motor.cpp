@@ -334,7 +334,8 @@ void motor::brownian_relax(int hd)
     
     double vx =  pow(-1,hd)*force[0] / damp + bd_prefactor*(new_rnd_x + prv_rnd_x[hd]);
     double vy =  pow(-1,hd)*force[1] / damp + bd_prefactor*(new_rnd_y + prv_rnd_y[hd]);
-    kinetic_energy = vx*vx + vy*vy;    
+
+    kinetic_energy = -(0.5)*(pow(-1,hd))*(force[0]*hx[hd] + force[1]*hy[hd]);    
     array<double, 2> pos = boundary_check(hd, hx[hd] + vx*dt, hy[hd] + vy*dt);
     hx[hd] = pos[0];
     hy[hd] = pos[1];

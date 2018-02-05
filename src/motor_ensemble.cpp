@@ -37,7 +37,7 @@ motor_ensemble<motor_type>::motor_ensemble(double mdensity, array<double, 2> myf
     v = v0;
 
     ke = 0;
-    pe = 0;
+    pe = 0; 
 
     int nm = int(ceil(mdensity*fov[0]*fov[1]));
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
@@ -79,7 +79,7 @@ motor_ensemble<motor_type>::motor_ensemble(vector<vector<double> > motors, array
     v = v0;
 
     ke = 0;
-    pe = 0;
+    pe = 0; 
     
     int nm = motors.size();
     cout<<"\nDEBUG: Number of motors:"<<nm<<"\n";
@@ -266,6 +266,7 @@ void motor_ensemble<motor_type>::update_energies()
 {
     ke = 0;
     pe = 0;
+   
     for (unsigned int m = 0; m < n_motors.size(); m++)
     {
         ke += n_motors[m]->get_kinetic_energy();
@@ -281,7 +282,12 @@ double motor_ensemble<motor_type>::get_potential_energy(){
 }
 
 template <class motor_type>
-void motor_ensemble<motor_type>::print_ensemble_thermo(){
+double motor_ensemble::get_kinetic_energy(){
+    return ke; 
+}
+ 
+template <class motor_type>
+void motor_ensemble::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
 }
 

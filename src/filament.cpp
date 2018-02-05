@@ -25,7 +25,7 @@ filament::filament(){
     temperature = 0;
     fracture_force = 1000000;
     BC = "REFLECTIVE";
-    kinetic_energy = 0;
+    kinetic_energy = 0;  
     gamma = 0;
     delrx=0;
     damp = infty;
@@ -46,7 +46,9 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     fracture_force  = frac;
     kb              = bending_stiffness;
     BC              = bndcnd;
-    kinetic_energy  = 0;
+    //ke_bend         = 0;
+    //ke_stretch      = 0;
+    kinetic_energy  = 0; 
     damp            = infty;
     y_thresh        = 1;
     bd_prefactor    = sqrt(temperature/(2*dt*damp));
@@ -207,7 +209,7 @@ void filament::set_y_thresh(double y){
 
 void filament::update_positions()
 {
-    double vx, vy;
+    double vx, vy, fx, fy, fx_brn, fy_brn, x, y;
     array<double, 2> new_rnds;
     array<double, 2> newpos;
     kinetic_energy = 0;  
@@ -219,13 +221,19 @@ void filament::update_positions()
         if (fabs(actins[i]->get_ycm()) > top_y) continue;
      
         new_rnds = {rng_n(), rng_n()};
-        vx  = (actins[i]->get_force()[0])/damp  + bd_prefactor*(new_rnds[0] + prv_rnds[i][0]);
-        vy  = (actins[i]->get_force()[1])/damp  + bd_prefactor*(new_rnds[1] + prv_rnds[i][1]);
+        fx = actins[i]->get_force()[0]; 
+	fy = actins[i]->get_force()[1]; 
+	fx_brn = bd_prefactor*damp*(new_rnds[0] + prv_rnds[i][0]);
+ 	fy_brn = bd_prefactor*damp*(new_rnds[1] + prv_rnds[i][1]);  
+        vx  = fx/damp  + fx_brn/damp;
+        vy  = fy/damp  + fy_brn/damp;
 //        cout<<"\nDEBUG: Fx("<<i<<") = "<<actins[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
-       
+	x = actins[i]->get_xcm(); 
+	y = actins[i]->get_ycm(); 
         prv_rnds[i] = new_rnds;
         //cout<<"\nDEBUG: actin force = ("<<actins[i]->get_force()[0]<<" , "<<actins[i]->get_force()[1]<<")";
-        kinetic_energy += vx*vx + vy*vy;
+        kinetic_energy += -(0.5)*((fx*x + fy*y) + (fx_brn*x + fy_brn*y));
+
         newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt});
         actins[i]->set_xcm(newpos[0]);
         actins[i]->set_ycm(newpos[1]);
@@ -237,13 +245,19 @@ void filament::update_positions()
 
 }
 
+double filament::get_kinetic_energy()
+{
+    return kinetic_energy; 
+}
+
 void filament::update_positions_range(int lo, int hi)
 {
     double vx, vy;
     array<double, 2> new_rnds;
     array<double, 2> newpos;
-    kinetic_energy = 0;  
+    //kinetic_energy = 0;  
     double top_y = y_thresh*fov[1]/2.; 
+    double fx, fy; 
 
     int low = max(0, lo);
     int high = min(hi, (int)actins.size());
@@ -259,7 +273,10 @@ void filament::update_positions_range(int lo, int hi)
        
         prv_rnds[i] = new_rnds;
         //cout<<"\nDEBUG: actin force = ("<<actins[i]->get_force()[0]<<" , "<<actins[i]->get_force()[1]<<")";
-        kinetic_energy += vx*vx + vy*vy;
+        //double fx = actins[i]->get_force()[0] + bd_prefactor*damp*(new_rnds[0] + prv_rnds[i][0]); 
+      	//double fy = actins[i]->get_force()[1] + bd_prefactor*damp*(new_rnds[1] + prv_rnds[i][1]);
+        //kinetic_energy += -(0.5)*(actins[i]->get_force()[0]*actins[i]->get_xcm() + actins[i]->get_force()[1]*actins[i]->get_ycm()); 
+
         //newpos = boundary_check(i, actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt); 
         newpos = pos_bc(BC, delrx, dt, fov, {vx, vy}, {actins[i]->get_xcm() + vx*dt, actins[i]->get_ycm() + vy*dt});
         actins[i]->set_xcm(newpos[0]);
@@ -275,12 +292,14 @@ void filament::update_positions_range(int lo, int hi)
 vector<filament *> filament::update_stretching(double t)
 {
     vector<filament *> newfilaments;
+    //ke_stretch = 0; 
 
     if(links.size() == 0)
         return newfilaments;
    
     for (unsigned int i=0; i < links.size(); i++) {
         links[i]->update_force(BC, delrx);
+        //ke_stretch += links[i]->get_kinetic_energy(); 
         //links[i]->update_force_fraenkel_fene(BC, delrx);
         if (hypot(links[i]->get_force()[0], links[i]->get_force()[1]) > fracture_force){
             newfilaments = this->fracture(i);
@@ -289,7 +308,7 @@ vector<filament *> filament::update_stretching(double t)
         else 
             links[i]->filament_update();
     }
-    
+
     return newfilaments;
 }
 
@@ -498,6 +517,7 @@ void filament::lammps_bending_update()
   array<double, 2> delr1, delr2;
   double f1[2], f3[2];
   double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
+  //ke_bend = 0;
     
   // 1st bond
   delr1 = links[0]->get_neg_disp();
@@ -536,6 +556,8 @@ void filament::lammps_bending_update()
     actins[n  ]->update_force(f1[0], f1[1]);
     actins[n+1]->update_force(-f1[0] - f3[0], -f1[1] - f3[1]);
     actins[n+2]->update_force(f3[0], f3[1]);
+
+    //ke_bend += (delr1[0]*f1[0] + delr1[1]*f1[1]) + (delr2[0]*f3[0] + delr2[1]*f3[1]);
 
     // 1st bond, next iteration
     delr1 = {-delr2[0], -delr2[1]};
@@ -650,11 +672,6 @@ double filament::get_stretching_energy()
 
 }
 
-double filament::get_kinetic_energy()
-{
-    return kinetic_energy;
-}
-
 double filament::get_potential_energy()
 {
     return this->get_stretching_energy() + this->get_bending_energy();
@@ -662,7 +679,7 @@ double filament::get_potential_energy()
 
 double filament::get_total_energy()
 {
-    return this->get_potential_energy() + this->get_kinetic_energy();
+    return this->get_potential_energy() + (this->get_kinetic_energy());
 }
 
 array<double, 2> filament::get_bead_position(int n)
@@ -672,7 +689,7 @@ array<double, 2> filament::get_bead_position(int n)
 
 void filament::print_thermo()
 {
-    cout<<"\tKE = "<<this->get_kinetic_energy()<<"\tPE = "<<this->get_potential_energy()<<\
+    cout<<"\tKE = "<<(this->get_kinetic_energy())<<"\tPE = "<<this->get_potential_energy()<<\
         "\tTE = "<<this->get_total_energy();
 }
 

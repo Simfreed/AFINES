@@ -40,10 +40,10 @@ class filament_ensemble
         filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
                 double len, double vis, int nactin,
                 double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
-                string bc, double seed);
+                string bc, double seed, double RMAX, double A);
         
         filament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-                double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc); 
+                double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc, double RMAX, double A); 
         
         ~filament_ensemble();
         
@@ -96,6 +96,10 @@ class filament_ensemble
         double get_stretching_energy();
         
         double get_bending_energy();
+
+        double get_exv_energy();
+        
+        double get_kinetic_energy_vir(); 
         
         int get_nactins();
         
@@ -124,6 +128,14 @@ class filament_ensemble
         void update_positions_range(int lo, int hi);
         
         void update_forces(int fil, int actin, double f2, double f3);
+
+	void update_link_forces(int f); 
+
+  	void update_link_forces_from_quads(); 
+
+      	void update_force_between_filaments(double n1, double l1, double n2, double l2); 
+ 
+   	void update_excluded_volume(int f); 
 
         void write_actins(ofstream& fout);
         
@@ -175,7 +187,12 @@ class filament_ensemble
         double gamma, shear_stop, shear_dt, shear_speed, delrx;
         double max_links_per_quad_per_filament, max_links_per_quad; 
         bool straight_filaments = false, quad_off_flag;
-        double pe_stretch, pe_bend, ke;
+        double pe_stretch, pe_bend, pe_exv, ke_vir;
+        string BC;
+        double rmax; 
+        double kexv;  
+
+        /* Here above is our excluded volume constant */
 
         array<double,2> fov, view;
         array<int, 2> nq, half_nq;

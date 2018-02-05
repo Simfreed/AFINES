@@ -56,8 +56,8 @@ int main(int argc, char* argv[]){
     
     string config_file, actin_in, a_motor_in, p_motor_in;                                                // Input configuration
     
-    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile;                  // Output
-    ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
+    string   dir, tdir, ddir,  afile,  amfile,  pmfile,  lfile, thfile, pefile, kefile;                  // Output
+    ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe, file_ke;
     ios_base::openmode write_mode = ios_base::out;
 
     double strain_pct, time_of_strain, pre_strain, d_strain_pct, d_strain_amp;                                      //External Force
@@ -66,7 +66,9 @@ int main(int argc, char* argv[]){
     bool diff_strain_flag, osc_strain_flag;
     double p_linkage_prob, a_linkage_prob;                                              
     int dead_head, p_dead_head;
-
+    double rmax; 
+    double kexv; 
+ 
     bool restart;
     double restart_time;
     
@@ -167,6 +169,10 @@ int main(int argc, char* argv[]){
         
         ("p_dead_head_flag", po::value<bool>(&p_dead_head_flag)->default_value(false), "flag to kill head <dead_head> of all crosslinks")
         ("p_dead_head", po::value<int>(&p_dead_head)->default_value(0), "index of head to kill")
+
+      	("rmax", po::value<double>(&rmax)->default_value(0.25), "cutoff distance for interactions between actins beads and filaments")
+
+	("kexv", po::value<double>(&kexv)->default_value(1.0), "parameter of exv force calculation") 
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
@@ -238,7 +244,8 @@ int main(int argc, char* argv[]){
     amfile = tdir + "/amotors.txt";
     pmfile = tdir + "/pmotors.txt";
     thfile = ddir + "/filament_e.txt";
-    pefile = ddir + "/pe.txt";
+    pefile = ddir + "/pe.txt"; 
+    kefile = ddir + "/ke.txt"; 
     
     if(fs::create_directory(dir1)) cerr<< "Directory Created: "<<afile<<std::endl;
     if(fs::create_directory(dir2)) cerr<< "Directory Created: "<<thfile<<std::endl;
@@ -295,8 +302,8 @@ int main(int argc, char* argv[]){
         write_first_tsteps(pmfile, restart_time);
         
         write_first_tsteps(thfile, restart_time);
-        write_first_nlines( pefile, (int) nprinted);
-
+        write_first_nlines( pefile, (int) nprinted); 
+    	write_first_nlines( kefile, (int) nprinted);
     
         tinit       = restart_time;
         write_mode  = ios_base::app;
@@ -314,7 +321,8 @@ int main(int argc, char* argv[]){
     file_am.open(amfile.c_str(), write_mode);
     file_pm.open(pmfile.c_str(), write_mode);
 	file_th.open(thfile.c_str(), write_mode);
-	file_pe.open(pefile.c_str(), write_mode);
+	file_pe.open(pefile.c_str(), write_mode); 
+	file_ke.open(kefile.c_str(), write_mode);
 
 
     // DERIVED QUANTITIES :
@@ -337,12 +345,12 @@ int main(int argc, char* argv[]){
                 temperature, actin_length, viscosity, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd, myseed); 
+                fracture_force, bnd_cnd, myseed, rmax, kexv); 
     }else{
         net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd); 
+                fracture_force, bnd_cnd, rmax, kexv); 
     }
   
     net->set_growing(kgrow, lgrow, l0min, l0max);
@@ -437,8 +445,9 @@ int main(int argc, char* argv[]){
             file_th << time_str<<"\tN = "<<to_string(net->get_nfilaments());
             net->write_thermo(file_th);
 
-            file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<
-                myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
+            file_pe <<net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<net->get_exv_energy()<<"\t"<<myosins->get_potential_energy()<<"\t"<<crosslks->get_potential_energy()<<endl;
+
+	    file_ke <<net->get_kinetic_energy_vir()<<"\t"<<myosins->get_kinetic_energy()<<"\t"<<crosslks->get_kinetic_energy()<<endl;  
             
             file_a<<std::flush;
             file_l<<std::flush;
@@ -446,6 +455,7 @@ int main(int argc, char* argv[]){
             file_pm<<std::flush;
             file_th<<std::flush;
             file_pe<<std::flush;
+            file_ke<<std::flush;
             
 		}
         
@@ -514,6 +524,8 @@ int main(int argc, char* argv[]){
     file_pm.close();
     file_th.close(); 
     file_pe.close(); 
+    file_ke.close();
+
     //Delete all objects created
     cout<<"\nHere's where I think I delete things\n";
     

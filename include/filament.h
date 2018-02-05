@@ -114,7 +114,11 @@ class filament
 
         double get_stretching_energy();
 
-        double get_kinetic_energy();
+ 	double get_kinetic_energy(); 
+
+        //double get_kinetic_energy_bend();
+
+	//double get_kinetic_energy_stretch(); 
         
         double get_potential_energy();
         
@@ -140,7 +144,7 @@ class filament
 
     protected:
         
-        double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor;
+        double kb, temperature, dt, fracture_force, damp, kToverLp, bd_prefactor, kinetic_energy;
         double gamma, max_shear, delrx, y_thresh;
         double link_l0, l0_max, l0_min, kgrow, lgrow;
         
