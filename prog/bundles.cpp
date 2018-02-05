@@ -63,6 +63,8 @@ int main(int argc, char* argv[]){
     double s2_linkage_prob, s1_linkage_prob;                                              
     int s1_dead_head, s2_dead_head;
 
+    double rmax; 
+    double kexv; 
     bool restart;
     double restart_time;
     
@@ -155,6 +157,9 @@ int main(int argc, char* argv[]){
         
         ("s2_dead_head_flag", po::value<bool>(&s2_dead_head_flag)->default_value(false), "flag to kill head <s1_dead_head> of all crosslinks")
         ("s2_dead_head", po::value<int>(&s2_dead_head)->default_value(0), "index of head to kill")
+      	("rmax", po::value<double>(&rmax)->default_value(0.25), "cutoff distance for interactions between actins beads and filaments")
+
+        ("kexv", po::value<double>(&kexv)->default_value(1.0), "parameter of exv force calculation") 
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
@@ -318,12 +323,12 @@ int main(int argc, char* argv[]){
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd, myseed); 
+                fracture_force, bnd_cnd, myseed, rmax, kexv); 
     }else{
         net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
-                fracture_force, bnd_cnd); 
+                fracture_force, bnd_cnd, rmax, kexv); 
     }
   
     net->set_growing(kgrow, lgrow, l0min, l0max);

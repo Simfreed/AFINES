@@ -1008,7 +1008,7 @@ filament_ensemble::filament_ensemble(int npolymer, int nactins_min, int nactins_
     
     pe_stretch = 0;
     pe_bend = 0;
-    ke = 0;
+   // ke = 0;
     
     fls = { };
 }

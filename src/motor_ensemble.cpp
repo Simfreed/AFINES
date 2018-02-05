@@ -282,12 +282,12 @@ double motor_ensemble<motor_type>::get_potential_energy(){
 }
 
 template <class motor_type>
-double motor_ensemble::get_kinetic_energy(){
+double motor_ensemble<motor_type>::get_kinetic_energy(){
     return ke; 
 }
  
 template <class motor_type>
-void motor_ensemble::print_ensemble_thermo(){
+void motor_ensemble<motor_type>::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
 }
 
