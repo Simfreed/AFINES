@@ -257,7 +257,6 @@ void filament::update_positions_range(int lo, int hi)
     array<double, 2> newpos;
     //kinetic_energy = 0;  
     double top_y = y_thresh*fov[1]/2.; 
-    double fx, fy; 
 
     int low = max(0, lo);
     int high = min(hi, (int)actins.size());

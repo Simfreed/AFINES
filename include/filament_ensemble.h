@@ -201,7 +201,7 @@ class filament_ensemble
         //links_per_quad[{x,y}] => {{f_1, l_1}, {f_1, l_2},...,{f_k, l_j},...} means that link l_j on filament f_k is located at quadrant {x,y}
         //n_links_per_quad[{x,y}] => kmax means that kmax links are indexed to {x,y} 
         vector< vector < vector< array<int, 2 > >* > * > links_per_quad;
-        vector< vector < int >* > n_links_per_quad;
+//        vector< vector < int >* > n_links_per_quad;
         
 //        boost::scoped_array< boost::scoped_array < boost::scoped_array < array<int, 2 > >* > * > links_per_quad;
 //        boost::scoped_array< boost::scoped_array < int >* > n_links_per_quad;

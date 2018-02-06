@@ -523,25 +523,22 @@ void filament_ensemble::update_link_forces_from_quads()
      
     array <int,2> link_1; 
     array <int,2> link_2; 
-    int set; 
-    int f1, f2, l1, l2; 
+    int set, f1, f2, l1, l2, nlinks_at_quad; 
     double par1, par2;   
-    int nlinks, dim;  
+    int nlinks = this->get_nlinks();
 
-    nlinks = this->get_nlinks(); 
-    dim = nlinks; 
-
-    vector<vector<int>> int_lks (dim, vector<int> (dim, 0));    
-
+    vector<vector<int>> int_lks(nlinks, vector<int>(nlinks, 0));    
     for(int x = 0; x < nq[0]; x++) 
     {   
         for(int y = 0; y < nq[1]; y++) 
         { 
-            for(int i = 0; i < nlinks; i++) 
+            nlinks_at_quad = int(links_per_quad[x]->at(y)->size());
+
+            for(int i = 0; i < nlinks_at_quad; i++) 
             {   
                 link_1 = links_per_quad[x]->at(y)->at(i); 
 
-                for(int j = i+1; j < nlinks; j++) 
+                for(int j = i+1; j < nlinks_at_quad; j++) 
                 {   
                     link_2 = links_per_quad[x]->at(y)->at(j);
 
