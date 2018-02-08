@@ -754,3 +754,26 @@ dist
 ];
 
 
+
+
+(* ::Subsection:: *)
+(*Spacer Domain Lengths*)
+
+
+ClearAll[BreakSortedList,BreakRelabel,DomainMerge];
+BreakSortedList[x_,rc_]:=Module[{},breaks=Flatten@Position[Differences[x],_?((#>rc)&)]+1;
+secns=Table[x[[breaks[[i]];;breaks[[i+1]]-1]],{i,Length[breaks]-1}];
+If[Length[breaks]>0,Join[{x[[1;;(breaks[[1]]-1)]]},secns,{x[[breaks[[-1]];;]]}],{x}]];
+
+BreakRelabel[x_,rc_]:={x[[1]],#}&/@BreakSortedList[x[[2]],rc];
+
+DomainMerge[dompos_,nc_,rc_]:=Module[{},doms=SequenceCases[dompos,{p:Repeated[{_,1}]|Repeated[{_,2}]}:>{{p}[[1,2]],{p}[[All,1]]}];
+doms1=DeleteCases[doms,_?((Length[#[[2]]]<nc)&)];
+doms2=SequenceCases[doms1,{p:Repeated[{1,_}]|Repeated[{2,_}]}:>{{p}[[1,1]],Flatten[{p}[[All,2]]]}];
+doms3=Flatten[BreakRelabel[#,rc]&/@doms2,1];
+doms4=DeleteCases[doms3,_?((Length[#[[2]]]<nc)&)];
+p1=Position[doms4[[All,1]],1];
+p2=Position[doms4[[All,1]],2];
+{doms4[[Flatten@p1,2]],doms4[[Flatten@p2,2]]}];
+
+DomainLengths[doms_]:=doms[[All,-1]]-doms[[All,1]];
