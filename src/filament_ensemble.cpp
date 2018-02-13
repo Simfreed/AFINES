@@ -734,12 +734,13 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     fls = { };
 }
 
-void filament_ensemble::set_growing(double kgrow, double lgrow, double l0min, double l0max)
+void filament_ensemble::set_growing(double kgrow, double lgrow, double l0min, double l0max, double lenmax)
 {
     for (int i = 0; i < int(network.size()); i++){
         network[i]->set_kgrow(kgrow);
         network[i]->set_lgrow(lgrow);
         network[i]->set_l0_min(l0min);
         network[i]->set_l0_max(l0max);
+        network[i]->set_len_max(lenmax);
     }
 }

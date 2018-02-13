@@ -66,7 +66,7 @@ int main(int argc, char* argv[]){
     bool restart;
     double restart_time;
     
-    double kgrow, lgrow, l0min, l0max;
+    double kgrow, lgrow, l0min, l0max, fil_len_max;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -164,6 +164,7 @@ int main(int argc, char* argv[]){
         ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
         ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
         ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
+        ("fil_len_max", po::value<double>(&fil_len_max)->default_value(1000), "length at which filament stops growing")
         
         ; 
     
@@ -326,7 +327,7 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd); 
     }
   
-    net->set_growing(kgrow, lgrow, l0min, l0max);
+    net->set_growing(kgrow, lgrow, l0min, l0max, fil_len_max);
 
     if (s2_intersect_flag) spacer2_pos_vec = net->link_link_intersections(spacer2_length, s2_linkage_prob); 
     if (s1_intersect_flag) spacer1_pos_vec = net->link_link_intersections(spacer1_length, s1_linkage_prob); 
