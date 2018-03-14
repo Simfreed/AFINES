@@ -67,6 +67,8 @@ class motor_ensemble
         void set_shear(double g);
         
         void kill_heads(int i);
+        
+        void set_binding_two(double, double, double);
 
     protected:
 

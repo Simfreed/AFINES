@@ -285,6 +285,12 @@ void motor_ensemble<motor_type>::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
 }
 
+template <class motor_type>
+void motor_ensemble<motor_type>::set_binding_two(double kon2, double koff2, double kend2){
+    for(unsigned int i = 0; i < n_motors.size(); i++)
+        n_motors[i]->set_binding_two(kon2, koff2, kend2);
+}
+
 void spacer_ensemble::set_bending(double modulus, double ang){
     double kb  = modulus/mld;
     for(unsigned int i = 0; i < n_motors.size(); i++)

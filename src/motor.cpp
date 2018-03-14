@@ -49,6 +49,9 @@ motor::motor( array<double, 3> pos,
     kon         = ron*dt;
     koff        = roff*dt;
     kend        = rend*dt;
+    kon2        = ron*dt;
+    koff2       = roff*dt;
+    kend2       = rend*dt;
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
@@ -138,6 +141,9 @@ motor::motor( array<double, 4> pos,
     kon         = ron*dt;
     koff        = roff*dt;
     kend        = rend*dt;
+    kon2        = ron*dt;
+    koff2       = roff*dt;
+    kend2       = rend*dt;
     
     state       = mystate;
     f_index     = myfindex; //filament index for each head
@@ -248,26 +254,28 @@ bool motor::allowed_bind(int hd, array<int, 2> fl_idx){
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
 bool motor::attach(int hd)
 {
-    double not_off_prob = 0;
+    double not_off_prob = 0, onrate = kon;
     double mf_rand = rng(0,1.0);
     array<double, 2> intPoint;
+    if (state[pr(hd)] == 1)
+        onrate = kon2;
     
 //    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
     set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_dist(hx[hd], hy[hd]);
 
     if(!dist_sorted.empty()){
         
+
         for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
             if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
                 break;
 
             //head can't bind to the same filament link the other head is bound to
- //           else if(!(f_index[pr(hd)]==(it->second).at(0) && l_index[pr(hd)]==(it->second).at(1))) {
             else if(allowed_bind(hd, it->second)){
                 
                 intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, kon);
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);
                  
                 if (mf_rand < not_off_prob) 
                 {
@@ -393,7 +401,11 @@ void motor::step_onehead(int hd)
 {
 
     array<double, 2> hpos_new = generate_off_pos(hd);
-    double off_prob = metropolis_prob(hd, {0,0}, hpos_new, at_barbed_end[hd] ? kend : koff); 
+    double offrate = at_barbed_end[hd] ? kend : koff;
+    if (state[pr(hd)] == 1)
+        offrate = at_barbed_end[hd] ? kend2 : koff2;
+    
+    double off_prob = metropolis_prob(hd, {0,0}, hpos_new, offrate); 
     
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
@@ -639,4 +651,10 @@ void motor::inc_l_index(int hd){
 void motor::identify()
 {
     cout<<"\nI am a motor";
+}
+
+void motor::set_binding_two(double ron2, double roff2, double rend2){
+    kon2  = ron2*dt;
+    koff2 = roff2*dt;
+    kend2 = rend2*dt;
 }

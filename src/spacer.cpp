@@ -39,6 +39,9 @@ spacer::spacer( array<double, 3> pos,
     kon         = ron*dt;
     koff        = roff*dt;
     kend        = rend*dt;
+    kon2        = ron*dt;
+    koff2       = roff*dt;
+    kend2       = rend*dt;
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
@@ -128,6 +131,9 @@ spacer::spacer( array<double, 4> pos,
     kon         = ron*dt;
     koff        = roff*dt;
     kend        = rend*dt;
+    kon2        = ron*dt;
+    koff2       = roff*dt;
+    kend2       = rend*dt;
     mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
@@ -189,15 +195,12 @@ spacer::spacer( array<double, 4> pos,
 
 }
 
-
  spacer::~spacer(){};
-
 
 void spacer::set_bending(double force_constant, double ang){
     kb  = force_constant;
     th0 = ang;
 }
-
 
 void spacer::update_force()
 { 

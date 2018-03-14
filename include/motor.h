@@ -135,10 +135,13 @@ class motor
         
         void inc_l_index(int hd);
     
+        void set_binding_two(double ron2, double roff2, double rend2);
+
     public:
 
         double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
-               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
+               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension,
+               kon2, koff2, kend2;
         
         array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
 
