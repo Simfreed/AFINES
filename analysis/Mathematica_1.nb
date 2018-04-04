@@ -1,0 +1,131 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      3753,        121]
+NotebookOptionsPosition[      2745,         88]
+NotebookOutlinePosition[      3098,        104]
+CellTagsIndexPosition[      3055,        101]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"Directory", "[", "]"}]], "Input",
+ CellChangeTimes->{{3.728916296310211*^9, 
+  3.7289163029049597`*^9}},ExpressionUUID->"759bea76-c13f-4014-9339-\
+f011bd660830"],
+
+Cell[BoxData["\<\"/Users/stevenredford\"\>"], "Output",
+ CellChangeTimes->{
+  3.728916304033512*^9},ExpressionUUID->"6e470f1a-9920-4c80-b55e-\
+0ab5a3760fd0"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+  "SetDirectory", "[", 
+   "\"\</Users/stevenredford/afines/AFINES/analysis/cytomod_functions.m\>\"", 
+   "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.728916369869789*^9, 3.7289164069931192`*^9}, {
+  3.728916639580119*^9, 3.728916689588141*^9}, {3.7289171086310253`*^9, 
+  3.728917139505822*^9}, {3.728917341925976*^9, 3.728917366159895*^9}, {
+  3.7289223230343122`*^9, 3.728922340237694*^9}, {3.728922372088132*^9, 
+  3.728922373134226*^9}},ExpressionUUID->"af7ac188-c502-42e9-b16b-\
+54ecdd5348bc"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "SetDirectory","cdir",
+   "\"Cannot set current directory to \
+\\!\\(\\*RowBox[{\\\"\\\\\\\"/Users/stevenredford/afines/AFINES/analysis/\
+cytomod_functions.m\\\\\\\"\\\"}]\\).\"",2,15,8,16302918447611492116,"Local"},
+  
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{{3.72892234982985*^9, 
+  3.7289223738494062`*^9}},ExpressionUUID->"b2151f6b-bd0d-4374-9bff-\
+82c8ea0e1126"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Directory", "[", "]"}]], "Input",
+ CellChangeTimes->{{3.728916696829962*^9, 
+  3.7289167002357264`*^9}},ExpressionUUID->"7b94f1f5-2c57-4a17-85f9-\
+64aa676cddb7"],
+
+Cell[BoxData["\<\"/Users/stevenredford/afines/AFINES/analysis\"\>"], "Output",
+ CellChangeTimes->{3.7289167007621737`*^9, 
+  3.728917377544469*^9},ExpressionUUID->"8ff07611-cd32-423c-bb27-\
+0b6a40cf27c0"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"actins", " ", "=", " ", 
+   RowBox[{"pts2", "[", 
+    RowBox[{
+    "\"\</Users/stevenredford/afines/AFINES/out2/\>\"", ",", " ", "actin"}], 
+    "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.72891670805723*^9, 3.728916823250494*^9}, {
+  3.728916915210104*^9, 
+  3.728916982969199*^9}},ExpressionUUID->"77715417-dfc2-4f2b-8e66-\
+8302ccf5370c"]
+},
+WindowSize->{808, 675},
+WindowMargins->{{4, Automatic}, {Automatic, 4}},
+FrontEndVersion->"11.1 for Mac OS X x86 (32-bit, 64-bit Kernel) (April 27, \
+2017)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 185, 4, 32, "Input", "ExpressionUUID" -> \
+"759bea76-c13f-4014-9339-f011bd660830"],
+Cell[768, 28, 157, 3, 32, "Output", "ExpressionUUID" -> \
+"6e470f1a-9920-4c80-b55e-0ab5a3760fd0"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[962, 36, 535, 11, 32, "Input", "ExpressionUUID" -> \
+"af7ac188-c502-42e9-b16b-54ecdd5348bc"],
+Cell[1500, 49, 418, 10, 24, "Message", "ExpressionUUID" -> \
+"b2151f6b-bd0d-4374-9bff-82c8ea0e1126"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1955, 64, 185, 4, 32, "Input", "ExpressionUUID" -> \
+"7b94f1f5-2c57-4a17-85f9-64aa676cddb7"],
+Cell[2143, 70, 204, 3, 32, "Output", "ExpressionUUID" -> \
+"8ff07611-cd32-423c-bb27-0b6a40cf27c0"]
+}, Open  ]],
+Cell[2362, 76, 379, 10, 32, "Input", "ExpressionUUID" -> \
+"77715417-dfc2-4f2b-8e66-8302ccf5370c"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

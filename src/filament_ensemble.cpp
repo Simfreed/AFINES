@@ -497,7 +497,7 @@ void filament_ensemble::update()
 
     if (!quad_off_flag)
         this->quad_update_serial();
-
+    //add if statements for each dt2 and dt3, like into the above if statement
     this->update_link_forces_from_quads();
 
     for (int f = 0; f < net_sz; f++){
@@ -604,8 +604,12 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     array <double, 4> r_c; 
     array <double, 2> p1, p2, p3, p4; 
     array <double, 2> len, hx_1, hy_1, hx_2, hy_2, dist;  
+    array <double, 2> wca_force;
+    array <double, 2> r12_force;
     double b = (1/rmax); 
     double r, x1, y1, x2, y2, length, len1, len2, r_1, r_2, Fx1, Fy1, Fx2, Fy2; 
+    double wca_potential;
+    double r12_potential;
     int index; 
     bool intersect; 
 
@@ -692,13 +696,37 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 	    len2 = length - len1; 
 	    r_1 = (len2/length);
 	    r_2 = (len1/length);
- 
+
+	    /*
+	    r12_force =  get_r12_force(r, x1, x2, y1, y2);
+            Fx1 = r12_force[0];
+            Fx2 = -Fx1;
+            Fy1 = r12_force[1];
+            Fy2 = -Fy1;
+
+            r12_potential = get_r12_potential(r);
+            pe_exv += r12_potential;
+	    */
+
+	    /*
+	    wca_force =  get_wca_force(r, x1, x2, y1, y2);
+	    Fx1 = wca_force[0];
+	    Fx2 = -Fx1;
+	    Fy1 = wca_force[1];
+	    Fy2 = -Fy1;
+
+	    wca_potential = get_wca_potential(r);
+	    pe_exv += wca_potential;
+	    */
+
+	    
             Fx1 = 2*kexv*dist[0]*b*((1/r) - b); 
             Fx2 = -Fx1;
             Fy1 = 2*kexv*dist[1]*b*((1/r) - b);
             Fy2 = -Fy1;
 
             pe_exv += kexv*pow((1-r*b),2);
+	    
 
             if(index == 0)
             {
@@ -1078,3 +1106,101 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
 
     fls = { };
 } 
+
+
+array <double, 2> filament_ensemble:: get_wca_force( double r, double x1, double x2, double y1, double y2 )
+{
+  //This function calculates the WCA force in both the x and y directions on position 1; the point with coordinates (x1, y1)
+  //The force is stored in an array with x-directed force at position [0] and y-directed force in [1] 
+  array <double, 2> wca_force;
+  array <double, 2> wca_params;
+  double sigma;
+  double epsilon;
+  double F_r;
+  double magnitude;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma  = wca_params[0];
+  epsilon = wca_params[1];
+
+  F_r = 24*epsilon*(2*pow(sigma, 12)/pow(r, 13) - pow(sigma, 6)*pow(r, 7));
+  magnitude = sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+  
+  wca_force[0] = F_r*(x2-x1)/(magnitude);
+  wca_force[1] = F_r*(y2-y1)/(magnitude);
+
+  return wca_force;
+}
+
+double filament_ensemble::get_wca_potential( double r )
+{
+  //this function calculates the wca potential between two points at a given distance r
+  double wca_potential;
+  double sigma;
+  double epsilon;
+  array <double, 2> wca_params;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma = wca_params[0];
+  epsilon = wca_params[1];
+
+  wca_potential = 4*epsilon*(pow((sigma/r), 12) - pow((sigma/r), 6)) + epsilon;
+
+  return wca_potential;
+}
+
+array <double,2> filament_ensemble:: set_wca_params( double kexv, double actin_length )
+{
+  array <double, 2> wca_params;
+  double sigma;
+  double epsilon;
+
+  sigma = 0.1;
+  epsilon = 0.04;
+
+  wca_params[0] = sigma;
+  wca_params[1] = epsilon;
+
+  return wca_params;
+}
+
+array <double, 2> filament_ensemble:: get_r12_force( double r, double x1, double x2, double y1, double y2 )
+{
+  //This function calculates the WCA force in both the x and y directions on position 1; the point with coordinates (x1, y1)          
+  //The force is stored in an array with x-directed force at position [0] and y-directed force in [1]                                 
+  array <double, 2> r12_force;
+  array <double, 2> wca_params;
+  double sigma;
+  double epsilon;
+  double F_r;
+  double magnitude;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma  = wca_params[0];
+  epsilon = wca_params[1];
+
+  F_r = 12*epsilon*pow(sigma, 12)/pow(r, 13);
+  magnitude = sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+
+  r12_force[0] = F_r*(x2-x1)/(magnitude);
+  r12_force[1] = F_r*(y2-y1)/(magnitude);
+
+  return r12_force;
+}
+
+double filament_ensemble::get_r12_potential( double r )
+{
+  //this function calculates the wca potential between two points at a given distance r                                               
+  double r12_potential;
+  double sigma;
+  double epsilon;
+  array <double, 2> wca_params;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma = wca_params[0];
+  epsilon = wca_params[1];
+
+  r12_potential = epsilon*pow((sigma/r), 12) + epsilon;
+
+  return r12_potential;
+}

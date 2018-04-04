@@ -173,7 +173,17 @@ class filament_ensemble
         void update_energies();
         
         void turn_quads_off();
-    
+
+	array <double, 2> get_wca_force( double r, double x1, double x2, double y1, double y2 );
+
+	double get_wca_potential( double r);
+
+	array <double, 2> set_wca_params( double kexv, double actin_length);
+
+	array <double, 2> get_r12_force( double r, double x1, double x2, double y1, double y2 );
+
+	double get_r12_potential( double r);
+
     protected:
 
         double t, dt, temperature, link_ld, visc, min_time;

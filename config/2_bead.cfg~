@@ -1,0 +1,22 @@
+xrange = 2
+yrange = 2
+
+npolymer = 50
+nmonomer = 2
+
+actin_length=0.5
+link_length=0.5
+
+a_motor_density = 0.5
+p_motor_density = 0
+
+link_stretching_stiffness=10
+polymer_bending_modulus=0.1
+kexv = 0.04
+
+dt=0.000001
+viscosity=0.001
+tfinal=1
+nframes=100
+
+bnd_cnd=PERIODIC
