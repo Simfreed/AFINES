@@ -178,11 +178,19 @@ class filament_ensemble
 
 	double get_wca_potential( double r);
 
-	array <double, 2> set_wca_params( double kexv, double actin_length);
+	array <double, 4> set_wca_params( double kexv, double actin_length);
 
 	array <double, 2> get_r12_force( double r, double x1, double x2, double y1, double y2 );
 
 	double get_r12_potential( double r);
+
+	array <double, 2> get_soft_LJ_force( double r, double x1, double x2, double y1, double y2 );
+
+	double get_soft_LJ_potential( double r );
+
+	array <double, 2> get_soft_r12_force( double r, double x1, double x2, double y1, double y2 );
+
+        double get_soft_r12_potential( double r );
 
     protected:
 

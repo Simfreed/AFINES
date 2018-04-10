@@ -604,12 +604,14 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     array <double, 4> r_c; 
     array <double, 2> p1, p2, p3, p4; 
     array <double, 2> len, hx_1, hy_1, hx_2, hy_2, dist;  
-    array <double, 2> wca_force;
-    array <double, 2> r12_force;
+    // array <double, 2> wca_force;
+    // array <double, 2> r12_force;
+    array <double, 2> soft_r12_force;
     double b = (1/rmax); 
     double r, x1, y1, x2, y2, length, len1, len2, r_1, r_2, Fx1, Fy1, Fx2, Fy2; 
-    double wca_potential;
-    double r12_potential;
+    // double wca_potential;
+    // double r12_potential;
+    double soft_r12_potential;
     int index; 
     bool intersect; 
 
@@ -717,6 +719,28 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 
 	    wca_potential = get_wca_potential(r);
 	    pe_exv += wca_potential;
+	    */
+
+	    /*
+	    soft_LJ_force = get_soft_LJ_force(r, x1, x2, y1, y2);
+	    Fx1 = soft_LJ_force[0];
+	    Fx2 = -Fx1;
+	    Fy1 = soft_LJ_force[1];
+	    Fy2 = -Fy1;
+	    
+	    soft_LJ_potential = get_soft_LJ_potential(r);
+	    pe_exv += soft_LJ_potential;
+	    */
+	    
+	    /*
+	    soft_r12_force = get_soft_r12_force(r, x1, x2, y1, y2);
+            Fx1 = soft_r12_force[0];
+            Fx2 = -Fx1;
+            Fy1 = soft_r12_force[1];
+            Fy2 = -Fy1;
+	    
+            soft_r12_potential = get_soft_r12_potential(r);
+            pe_exv += soft_r12_potential;
 	    */
 
 	    
@@ -1018,8 +1042,9 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
         }else{
             x0 = rng(-0.5*(view[0]*fov[0]),0.5*(view[0]*fov[0])); 
             y0 = rng(-0.5*(view[1]*fov[1]),0.5*(view[1]*fov[1]));
-            phi0 =  rng(0, 2*pi);
-            //phi0=atan2(1+x0-y0*y0, -1-x0*x0+y0); // this is just the first example in mathematica's streamplot documentation
+	    // phi0 =  rng(0, 2*pi);
+            phi0= 0.5*atan2(y0, x0 - 7) - 0.5*atan2(y0, x0 + 7);
+	    // this should produce a +1/2 defect at (7,0) and a -1/2 dfect at (-7,0)
             network.push_back(new filament({x0,y0,phi0}, nactins, fov, nq, visc, dt, temp, straight_filaments, rad, link_ld, stretching, ext, bending, frac_force, bc) );
         }
     }
@@ -1107,7 +1132,7 @@ filament_ensemble::filament_ensemble(vector<vector<double> > actins, array<doubl
     fls = { };
 } 
 
-
+/*
 array <double, 2> filament_ensemble:: get_wca_force( double r, double x1, double x2, double y1, double y2 )
 {
   //This function calculates the WCA force in both the x and y directions on position 1; the point with coordinates (x1, y1)
@@ -1148,25 +1173,36 @@ double filament_ensemble::get_wca_potential( double r )
 
   return wca_potential;
 }
+*/
 
-array <double,2> filament_ensemble:: set_wca_params( double kexv, double actin_length )
+array <double,4> filament_ensemble:: set_wca_params( double kexv, double actin_length )
 {
-  array <double, 2> wca_params;
+  //This sets the values for the WCA potential and related functions
+  //The function outputs an array of size 3 with the vlaues, in order, sigma, epsilon and alpha.
+  array <double, 4> wca_params;
   double sigma;
   double epsilon;
+  double alpha;
+  double n;
 
   sigma = 0.1;
   epsilon = 0.04;
+  alpha = 0.5;
+  n = 6;
 
   wca_params[0] = sigma;
   wca_params[1] = epsilon;
+  wca_params[2] = alpha;
+  wca_params[3] = n;
 
   return wca_params;
 }
 
+/*
 array <double, 2> filament_ensemble:: get_r12_force( double r, double x1, double x2, double y1, double y2 )
 {
-  //This function calculates the WCA force in both the x and y directions on position 1; the point with coordinates (x1, y1)          
+  //This function calculates the r12 force in both the x and y directions on position 1;
+  // the point with coordinates (x1, y1)          
   //The force is stored in an array with x-directed force at position [0] and y-directed force in [1]                                 
   array <double, 2> r12_force;
   array <double, 2> wca_params;
@@ -1204,3 +1240,125 @@ double filament_ensemble::get_r12_potential( double r )
 
   return r12_potential;
 }
+*/
+
+/*
+array <double, 2> filament_ensemble::get_soft_LJ_force( double r, double x1, double x2, double y1, double y2 )
+{
+  //This function calculates the soft core LJ force in both the x and y directions on position 1;   
+  // the point with coordinates (x1, y1)                                 
+  //The force is stored in an array with x-directed force at position [0] and y-directed force in [1]                              
+
+  array <double, 2> LJ_force;
+  array <double, 4> wca_params;
+  double sigma;
+  double epsilon;
+  double alpha;
+  double n;
+  double F_r;
+  double magnitude;
+  double denominator;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma  = wca_params[0];
+  epsilon = wca_params[1];
+  alpha = wca_params[2];
+  n = wca_params[3];
+
+  denominator = pow(alpha*pow(sigma, n) + pow(r, n), 1/n);
+
+  F_r = 24*epsilon*pow(denominator*r, n-1)*(2*pow(sigma, 12)/pow(denominator, 13) - pow(sigma, 6)*pow(denominator, 7));   
+  magnitude = sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+
+  LJ_force[0] = F_r*(x2-x1)/(magnitude);
+  LJ_force[1] = F_r*(y2-y1)/(magnitude);
+
+  return LJ_force;
+}
+
+
+double filament_ensemble::get_soft_LJ_potential( double r )
+{
+  //this function calculates the soft core LJ potential between two points at a given distance r
+
+  double LJ_potential;
+  double sigma;
+  double epsilon;
+  double alpha;
+  double denominator;
+  double n;
+  array <double, 4> wca_params;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma = wca_params[0];
+  epsilon = wca_params[1];
+  alpha = wca_params[2];
+  n = wca_params[3];
+
+  denominator = pow(alpha*pow(sigma, n) + pow(r, n), 1/n);
+
+  LJ_potential = 4*epsilon*(pow((sigma/denominator), 12) - pow((sigma/denominator), 6));
+
+  return LJ_potential;
+}
+*/
+
+/*
+array <double, 2> filament_ensemble::get_soft_r12_force( double r, double x1, double x2, double y1, double y2 )
+{
+  //This function calculates the soft core r12 force in both the x and y directions on position 1;
+  // the point with coordinates (x1, y1)
+  //The force is stored in an array with x-directed force at position [0] and y-directed force in [1]
+
+  array <double, 2> r12_force;
+  array <double, 4> wca_params;
+  double sigma;
+  double epsilon;
+  double alpha;
+  double n;
+  double F_r;
+  double magnitude;
+  double denominator;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma  = wca_params[0];
+  epsilon = wca_params[1];
+  alpha = wca_params[2];
+  n = wca_params[3];
+
+  denominator = pow(alpha*pow(sigma, n) + pow(r, n), 1/n);
+
+  F_r = 24*epsilon*pow(denominator*r, n-1)*(2*pow(sigma, 12)/pow(denominator, 13));
+  magnitude = sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+
+  r12_force[0] = F_r*(x2-x1)/(magnitude);
+  r12_force[1] = F_r*(y2-y1)/(magnitude);
+
+  return r12_force;
+}
+
+double filament_ensemble::get_soft_r12_potential( double r )
+{
+  //this function calculates the soft core LJ potential between two points at a given distance r                                      
+
+  double r12_potential;
+  double sigma;
+  double epsilon;
+  double alpha;
+  double denominator;
+  double n;
+  array <double, 4> wca_params;
+
+  wca_params = set_wca_params(kexv, 1);
+  sigma = wca_params[0];
+  epsilon = wca_params[1];
+  alpha = wca_params[2];
+  n = wca_params[3];
+
+  denominator = pow(alpha*pow(sigma, n) + pow(r, n), 1/n);
+
+  r12_potential = 4*epsilon*(pow((sigma/denominator), 12));
+
+  return r12_potential;
+}
+*/
