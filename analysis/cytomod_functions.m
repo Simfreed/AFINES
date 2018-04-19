@@ -11,7 +11,7 @@ outdir="/project/weare-dinner/simonfreedman/cytomod/out";
 (*Reading Dat Files*)
 
 
-ClearAll[pts,pts3];
+ClearAll[pts,pts2,pts3,pts4];
 pts[dir_,name_]:=
 If[
 FileExistsQ[dir<>"/txt_stack/"<>name<>".dat"],
@@ -20,6 +20,12 @@ Print[dir<>"/txt_stack/"<>name<>".dat doesn't exist"];{}
 ];
 pts2[dir_,parts_]:=DeleteCases[SplitBy[Import[dir<>"/txt_stack/"<>parts<>".txt","Table"],Length],_?((Dimensions[#]=={1,6})&)];
 pts3[dir_,name_]:=Map[Internal`StringToDouble/@(StringSplit[StringTake[#,{2,-2}],", "])&,Import[dir<>"/txt_stack/"<>name<>".dat","TSV"],{2}];
+pts4[dir_,parts_]:=Module[{},
+d=Import[dir<>"/txt_stack/"<>parts<>".txt","Table"];
+tpos=Flatten[Position[d,_?((#[[1]]=="t")&),{1},Heads->False]];
+AppendTo[tpos,Length[d]+1];
+Table[d[[(tpos[[i]]+1);;(tpos[[i+1]]-1)]],{i,Length[tpos]-1}]
+];
 importCheck[fname_]:=
 If[
 FileExistsQ[fname],
