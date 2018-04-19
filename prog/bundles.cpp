@@ -223,8 +223,8 @@ int main(int argc, char* argv[]){
     
     afile  = tdir + "/actins.txt";
     lfile  = tdir + "/links.txt";
-    amfile = tdir + "/amotors.txt";
-    pmfile = tdir + "/pmotors.txt";
+    amfile = tdir + "/spacers1_bound.txt";
+    pmfile = tdir + "/spacers2_bound.txt";
     thfile = ddir + "/filament_e.txt";
     pefile = ddir + "/pe.txt";
     
@@ -402,17 +402,19 @@ int main(int argc, char* argv[]){
             if (t>tinit) time_str ="\n";
             time_str += "t = "+to_string(t);
             
-            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
-            net->write_actins(file_a);
+//            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
+//            net->write_actins(file_a);
             
             file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_links(file_l);
             
             file_am << time_str<<"\tN = "<<to_string(big_xlinks->get_nmotors());
-            big_xlinks->motor_write(file_am);
+//          big_xlinks->motor_write(file_am);
+            big_xlinks->motor_write_doubly_bound(file_am);
             
             file_pm << time_str<<"\tN = "<<to_string(small_xlinks->get_nmotors());
-            small_xlinks->motor_write(file_pm);
+//          small_xlinks->motor_write(file_pm);
+            small_xlinks->motor_write_doubly_bound(file_pm);
             
             file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_thermo(file_th);

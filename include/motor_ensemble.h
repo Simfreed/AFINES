@@ -57,6 +57,8 @@ class motor_ensemble
         double get_potential_energy();
 
         void motor_write(ostream& fout);
+        
+        void motor_write_doubly_bound(ostream& fout);
 
         void print_ensemble_thermo();
         
