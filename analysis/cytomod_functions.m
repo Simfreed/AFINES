@@ -26,6 +26,12 @@ FileExistsQ[fname],
 ToExpression[Import[fname,"TSV"]],
 Print[fname<>" doesn't exist"];{}
 ];
+pts4[dir_,parts_]:=Module[{},
+d=Import[dir<>"/txt_stack/"<>parts<>".txt","Table"];
+tpos=Flatten[Position[d,_?((#[[1]]=="t")&),{1},Heads->False]];
+AppendTo[tpos,Length[d]+1];
+Table[d[[(tpos[[i]]+1);;(tpos[[i+1]]-1)]],{i,Length[tpos]-1}]
+];
 importCheck3[fname_]:=
 If[
 FileExistsQ[fname],
@@ -95,7 +101,7 @@ draw[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},pol
 mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
 frames={};
 If[actins!={},AppendTo[frames,Map[actin[#,acolor]&,actins,{2}]]];
-If[links!={},AppendTo[frames,Map[link[#,mll]&,links,{2}]]];
+If[links!={},AppendTo[frames,Map[link[#,mll,acolor]&,links,{2}]]];
 If[polar,
 If[actins!={},AppendTo[frames,Map[actin[#,Blue]&,actins[[All,1;;-1;;np]],{2}]],If[links!={},rad=Mean[Flatten[Map[Norm,links[[All,All,3;;4]],{2}]]]/barbedEndFactor;
 AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,links[[All,1;;-1;;np-1]],{2}]]]]];
