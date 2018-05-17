@@ -11,7 +11,7 @@ outdir="/project/weare-dinner/simonfreedman/cytomod/out";
 (*Reading Dat Files*)
 
 
-ClearAll[pts,pts2,pts3,pts4];
+ClearAll[pts,pts3];
 pts[dir_,name_]:=
 If[
 FileExistsQ[dir<>"/txt_stack/"<>name<>".dat"],
@@ -20,17 +20,17 @@ Print[dir<>"/txt_stack/"<>name<>".dat doesn't exist"];{}
 ];
 pts2[dir_,parts_]:=DeleteCases[SplitBy[Import[dir<>"/txt_stack/"<>parts<>".txt","Table"],Length],_?((Dimensions[#]=={1,6})&)];
 pts3[dir_,name_]:=Map[Internal`StringToDouble/@(StringSplit[StringTake[#,{2,-2}],", "])&,Import[dir<>"/txt_stack/"<>name<>".dat","TSV"],{2}];
-pts4[dir_,parts_]:=Module[{},
-d=Import[dir<>"/txt_stack/"<>parts<>".txt","Table"];
-tpos=Flatten[Position[d,_?((#[[1]]=="t")&),{1},Heads->False]];
-AppendTo[tpos,Length[d]+1];
-Table[d[[(tpos[[i]]+1);;(tpos[[i+1]]-1)]],{i,Length[tpos]-1}]
-];
 importCheck[fname_]:=
 If[
 FileExistsQ[fname],
 ToExpression[Import[fname,"TSV"]],
 Print[fname<>" doesn't exist"];{}
+];
+pts4[dir_,parts_]:=Module[{},
+d=Import[dir<>"/txt_stack/"<>parts<>".txt","Table"];
+tpos=Flatten[Position[d,_?((#[[1]]=="t")&),{1},Heads->False]];
+AppendTo[tpos,Length[d]+1];
+Table[d[[(tpos[[i]]+1);;(tpos[[i+1]]-1)]],{i,Length[tpos]-1}]
 ];
 importCheck3[fname_]:=
 If[
@@ -101,7 +101,7 @@ draw[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},pol
 mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
 frames={};
 If[actins!={},AppendTo[frames,Map[actin[#,acolor]&,actins,{2}]]];
-If[links!={},AppendTo[frames,Map[link[#,mll]&,links,{2}]]];
+If[links!={},AppendTo[frames,Map[link[#,mll,acolor]&,links,{2}]]];
 If[polar,
 If[actins!={},AppendTo[frames,Map[actin[#,Blue]&,actins[[All,1;;-1;;np]],{2}]],If[links!={},rad=Mean[Flatten[Map[Norm,links[[All,All,3;;4]],{2}]]]/barbedEndFactor;
 AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,links[[All,1;;-1;;np-1]],{2}]]]]];
@@ -219,9 +219,17 @@ mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
 frames={};
 If[actins!={},AppendTo[frames,Map[actin[#,acolor]&,actins,{2}]]];
 If[links!={},AppendTo[frames,Map[link[#,mll]&,links,{2}]]];
+
 If[polar,
-If[actins!={},AppendTo[frames,Map[actin[#,Blue]&,actins[[All,1;;-1;;np]],{2}]],If[links!={},rad=Mean[Flatten[Map[Norm,links[[All,All,3;;4]],{2}]]]/barbedEndFactor;AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,links[[All,1;;-1;;np-1]],{2}]]]]
-];
+If[actins!={},
+actbs=Map[GatherBy[#,#[[4]]&][[All,1]]&,actins];
+AppendTo[frames,Map[actin[#,Blue]&,actbs,{2}]],
+If[links!={},
+rad=Mean[Flatten[Map[Norm,links[[All,All,3;;4]],{2}]]]/barbedEndFactor;
+lksb=Map[GatherBy[#,#[[5]]&][[All,1]]&,links];
+AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,lksb,{2}]]]]];
+
+
 If[amotors!={}&&pmotors!={},
 amotorfs=Map[amotor,amotors,{2}];
 pmotorfs=Map[pmotor[#,Green]&,pmotors,{2}];
@@ -250,7 +258,7 @@ If[movieFlag,Export[dir<>"/data/"<>movieName<>".avi",frames]];
 frames];
 
 (*draw with polarity for different length filaments*)
-drawpol[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,np_: 11,acolor_: Red,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3]:=Module[{},(*Generate Image Time Series,make into movie*)
+drawpol[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,acolor_: Red,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3]:=Module[{},(*Generate Image Time Series,make into movie*)
 mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
 frames={};
 If[actins!={},AppendTo[frames,Map[actin[#,acolor]&,actins,{2}]]];
@@ -273,6 +281,52 @@ maxy=fov[[2,2]]];
 frames=Map[Show[#,Frame->True,PlotRange->{{minx,maxx},{miny,maxy}},(*FrameLabel\[Rule]{"x (\[Mu]m)","y (\[Mu]m)","t = "<>ToString[dt*skipFrames*(t-1)]<>" s "},*)FrameTicks->None,Ticks->None,BaseStyle->{FontSize->24,FontColor->Black}]&,frames];
 If[movieFlag,Export[dir<>"/data/"<>movieName<>".avi",frames]];
 frames];
+
+(*mix up amotors and pmotors and with polar actin filaments; actin on top*)
+drawmixedpolar[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,acolor_: Red,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3]:=
+Module[{},(*Generate Image Time Series,make into movie*)
+mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
+frames={};
+
+If[amotors!={}&&pmotors!={},
+amotorfs=Map[amotor,amotors,{2}];
+pmotorfs=Map[pmotor[#,Green]&,pmotors,{2}];
+allmotorfs=Table[Join[amotorfs[[t]],pmotorfs[[t]]],{t,Length[amotorfs]}];
+AppendTo[frames,RandomSample/@allmotorfs],
+If[amotors!={},AppendTo[frames,Map[amotor,amotors,{2}]],
+If[pmotors!={},AppendTo[frames,Map[pmotor[#,Green]&,pmotors,{2}]]]
+]
+];
+
+If[actins!={},AppendTo[frames,Map[actin[#,acolor]&,actins,{2}]]];
+If[links!={},AppendTo[frames,Map[link[#,mll]&,links,{2}]]];
+If[polar,
+If[actins!={},
+actbs=Map[GatherBy[#,#[[4]]&][[All,1]]&,actins];
+AppendTo[frames,Map[actin[#,Blue]&,actbs,{2}]],
+If[links!={},
+rad=Mean[Flatten[Map[Norm,links[[All,All,3;;4]],{2}]]]/barbedEndFactor;
+lksb=Map[GatherBy[#,#[[5]]&][[All,1]]&,links];
+AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,lksb,{2}]]]]];
+
+frames=Transpose[frames];
+minx=0;miny=0;maxx=0;maxy=0;
+If[TensorRank[fov]==1,
+minx=-fov[[1]]/2;
+maxx=fov[[1]]/2;
+miny=-fov[[2]]/2;
+maxy=fov[[2]]/2,
+minx=fov[[1,1]];
+maxx=fov[[1,2]];
+miny=fov[[2,1]];
+maxy=fov[[2,2]]];
+frames=Map[Show[#,Frame->True,PlotRange->{{minx,maxx},{miny,maxy}},
+(*FrameLabel\[Rule]{"x (\[Mu]m)","y (\[Mu]m)","t = "<>ToString[dt*skipFrames*(t-1)]<>" s "},*)
+FrameTicks->None,Ticks->None,BaseStyle->{FontSize->24,FontColor->Black}]&,
+frames];
+If[movieFlag,Export[dir<>"/data/"<>movieName<>".avi",frames]];
+frames];
+
 
 
 (* ::Subsection:: *)
