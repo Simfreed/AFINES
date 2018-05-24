@@ -213,12 +213,12 @@ frames
 ];
 
 (*mix up amotors and pmotors*)
-drawmixed[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,np_: 11,acolor_: Red,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3]:=
+drawmixed[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,np_: 11,acolor_: Red,amotcol_:Black,pmotcol_:Green,bgcol_:White,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3]:=
 Module[{},(*Generate Image Time Series,make into movie*)
 mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
 frames={};
 If[actins!={},AppendTo[frames,Map[actin[#,acolor]&,actins,{2}]]];
-If[links!={},AppendTo[frames,Map[link[#,mll]&,links,{2}]]];
+If[links!={},AppendTo[frames,Map[link[#,mll,acolor]&,links,{2}]]];
 
 If[polar,
 If[actins!={},
@@ -231,8 +231,8 @@ AppendTo[frames,Map[radactin[#,Lighter[Blue],rad]&,lksb,{2}]]]]];
 
 
 If[amotors!={}&&pmotors!={},
-amotorfs=Map[amotor,amotors,{2}];
-pmotorfs=Map[pmotor[#,Green]&,pmotors,{2}];
+amotorfs=Map[amotor[#,fov[[1]]/2,amotcol]&,amotors,{2}];
+pmotorfs=Map[amotor[#,fov[[1]]/2,pmotcol]&,pmotors,{2}];
 allmotorfs=Table[Join[amotorfs[[t]],pmotorfs[[t]]],{t,Length[amotorfs]}];
 AppendTo[frames,RandomSample/@allmotorfs],
 If[amotors!={},AppendTo[frames,Map[amotor,amotors,{2}]],
@@ -251,6 +251,7 @@ maxx=fov[[1,2]];
 miny=fov[[2,1]];
 maxy=fov[[2,2]]];
 frames=Map[Show[#,Frame->True,PlotRange->{{minx,maxx},{miny,maxy}},
+Background->bgcol,
 (*FrameLabel\[Rule]{"x (\[Mu]m)","y (\[Mu]m)","t = "<>ToString[dt*skipFrames*(t-1)]<>" s "},*)
 FrameTicks->None,Ticks->None,BaseStyle->{FontSize->24,FontColor->Black}]&,
 frames];
