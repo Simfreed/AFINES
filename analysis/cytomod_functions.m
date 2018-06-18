@@ -814,6 +814,18 @@ dist=dist+Norm[rijP[motpos-lks[[lkix,1;;2]],fov]];
 dist
 ];
 
+distFromPointedEnd[lks_,fidx_,mot_,fov_]:=Module[{},
+motpos=If[mot[[5]]==fidx,mot[[1;;2]],mot[[1;;2]]+mot[[3;;4]]];
+lkix=If[mot[[5]]==fidx,mot[[7]],mot[[8]]]+1;
+flinks=Cases[lks,_?((#[[5]]==fidx)&),{1},Heads->False];
+dist=Total[Norm/@(flinks[[Length[flinks];;(lkix+1);;-1,3;;4]])];
+dist=dist+Norm[rijP[motpos-lks[[lkix+1,1;;2]],fov]];
+dist
+];
+
+
+
+
 
 
 
@@ -821,16 +833,94 @@ dist
 (*Spacer Domain Lengths*)
 
 
-ClearAll[BreakSortedList,BreakRelabel,DomainMerge];
+ClearAll[BreakSortedList,BreakRelabel,DomainMerge,XlinkSequences];
 BreakSortedList[x_,rc_]:=Module[{},breaks=Flatten@Position[Differences[x],_?((#>rc)&)]+1;
 secns=Table[x[[breaks[[i]];;breaks[[i+1]]-1]],{i,Length[breaks]-1}];
 If[Length[breaks]>0,Join[{x[[1;;(breaks[[1]]-1)]]},secns,{x[[breaks[[-1]];;]]}],{x}]];
 
 BreakRelabel[x_,rc_]:={x[[1]],#}&/@BreakSortedList[x[[2]],rc];
 
-DomainMerge[dompos_,nc_,rc_]:=Module[{},doms=SequenceCases[dompos,{p:Repeated[{_,1}]|Repeated[{_,2}]}:>{{p}[[1,2]],{p}[[All,1]]}];
+XlinkSequences[x_,labelIdx_:1,dataIdx_:2]:=Module[{},
+If[Length[x]==0,
+{},
+breaks=Join[{1},Flatten@Position[Differences[x[[All,labelIdx]]],_?((#!=0)&)]+1,{Length[x]+1}];
+Table[
+(*If[
+x[[breaks[[i]],labelIdx]]!=0,*)
+{x[[breaks[[i]],labelIdx]],Flatten[x[[breaks[[i]];;(breaks[[i+1]]-1),dataIdx]]]},
+(*Nothing
+]*)
+{i,1,Length[breaks]-1}
+]
+]
+];
+
+LatticeXlinkSequences[x_,labelIdx_:2]:=Module[{},
+If[Length[x]==0,
+{},
+breaks=Join[{1},Flatten@Position[Differences[x[[All,labelIdx]]],_?((#!=0)&)]+1,{Length[x]+1}];
+Table[x[[breaks[[i]];;(breaks[[i+1]]-1)]],{i,1,Length[breaks]-1}]
+]
+];
+
+
+LatticeDomainMerge[dompos_,nc_,rc_]:=Module[{},
+domsprev={};
+doms=LatticeXlinkSequences[dompos];
+Print["calculated doms once"];
+k=0;
+While[domsprev!=doms,
+k=k+1;
+Print[ToString[k]<>"th iter"];
+domsprev=doms;
+
+(*fill in gaps that are shorter than rc and surrounded by same domains*)
+gapPos=Flatten@Position[doms,_?((#[[1,2]]==0)&),{1},Heads->False];
+gapPos=If[gapPos[[1]]==1,Delete[gapPos,1],gapPos];
+gapPos=If[gapPos[[-1]]==Length[doms],Delete[gapPos,-1],gapPos];
+
+Do[
+doms[[pos]]=If[
+doms[[pos-1,1,2]]==doms[[pos+1,1,2]]&& (doms[[pos+1,1,1]]-doms[[pos-1,-1,1]])<rc,
+{doms[[pos,All,1]],ConstantArray[doms[[pos-1,1,2]],Length[doms[[pos]]]]}\[Transpose],
+doms[[pos]]
+];,
+{pos,gapPos}
+];
+Print["filled in short gaps"];
+
+
+(*remerge domains*)
+doms=LatticeXlinkSequences[Flatten[doms,1]];
+Print["remerged domains"];
+
+(*replace short domains with gaps*)
+shortDomainsPos=Flatten@Position[doms,_?((Length[#]<nc && #[[1,2]]!=0)&),{1},Heads->False];
+Do[
+gap={doms[[pos,All,1]],ConstantArray[0,Length[doms[[pos]]]]}\[Transpose];
+doms[[pos]]=gap;,
+{pos,shortDomainsPos}
+];
+Print["replaced short domains with gaps"];
+
+(*remerge domains*)
+doms=LatticeXlinkSequences[Flatten[doms,1]];
+Print["remerged domains"];
+
+
+];
+
+doms
+];
+
+
+
+DomainMerge[dompos_,nc_,rc_]:=Module[{},
+(*doms=SequenceCases[dompos,{p:Repeated[{_,1}]|Repeated[{_,2}]}:>{{p}[[1,2]],{p}[[All,1]]}];*)
+doms=XlinkSequences[dompos,2,1];
 doms1=DeleteCases[doms,_?((Length[#[[2]]]<nc)&)];
-doms2=SequenceCases[doms1,{p:Repeated[{1,_}]|Repeated[{2,_}]}:>{{p}[[1,1]],Flatten[{p}[[All,2]]]}];
+(*doms2=SequenceCases[doms1,{p:Repeated[{1,_}]|Repeated[{2,_}]}:>{{p}[[1,1]],Flatten[{p}[[All,2]]]}];*)
+doms2=XlinkSequences[doms1,1,2];
 doms3=Flatten[BreakRelabel[#,rc]&/@doms2,1];
 doms4=DeleteCases[doms3,_?((Length[#[[2]]]<nc)&)];
 p1=Position[doms4[[All,1]],1];
@@ -838,3 +928,4 @@ p2=Position[doms4[[All,1]],2];
 {doms4[[Flatten@p1,2]],doms4[[Flatten@p2,2]]}];
 
 DomainLengths[doms_]:=doms[[All,-1]]-doms[[All,1]];
+
