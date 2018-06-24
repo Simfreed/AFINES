@@ -243,6 +243,19 @@ void motor_ensemble<motor_type>::motor_write(ostream& fout)
     } 
 }
 
+template <class motor_type>
+void motor_ensemble<motor_type>::motor_write_doubly_bound(ostream& fout)
+{
+    array<int, 2> doubly_bound {1,1};
+
+    for (unsigned int i=0; i<n_motors.size(); i++) {
+        if (n_motors[i]->get_states() == doubly_bound){
+            fout<<n_motors[i]->write();
+            fout<<"\t"<<i;
+        }
+    } 
+}
+
 
 template <class motor_type>
 void motor_ensemble<motor_type>::add_motor(motor_type * m)
@@ -289,6 +302,12 @@ double motor_ensemble<motor_type>::get_kinetic_energy(){
 template <class motor_type>
 void motor_ensemble<motor_type>::print_ensemble_thermo(){
     cout<<"\nAll Motors\t:\tKE = "<<ke<<"\tPEs = "<<pe<<"\tPEb = "<<0<<"\tTE = "<<(ke+pe);
+}
+
+template <class motor_type>
+void motor_ensemble<motor_type>::set_binding_two(double kon2, double koff2, double kend2){
+    for(unsigned int i = 0; i < n_motors.size(); i++)
+        n_motors[i]->set_binding_two(kon2, koff2, kend2);
 }
 
 void spacer_ensemble::set_bending(double modulus, double ang){

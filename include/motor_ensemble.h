@@ -59,6 +59,8 @@ class motor_ensemble
         double get_kinetic_energy(); 
 
         void motor_write(ostream& fout);
+        
+        void motor_write_doubly_bound(ostream& fout);
 
         void print_ensemble_thermo();
         
@@ -69,6 +71,8 @@ class motor_ensemble
         void set_shear(double g);
         
         void kill_heads(int i);
+        
+        void set_binding_two(double, double, double);
 
     protected:
 

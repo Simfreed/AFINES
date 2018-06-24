@@ -128,6 +128,8 @@ class filament
         
         void set_l0_max(double);
         
+        void set_len_max(double);
+        
         void set_l0_min(double);
         
         void set_kgrow(double);
@@ -146,7 +148,7 @@ class filament
         
         double kb, temperature, dt, fracture_force, damp, kToverLp, bd_prefactor, kinetic_energy;
         double gamma, max_shear, delrx, y_thresh;
-        double link_l0, l0_max, l0_min, kgrow, lgrow;
+        double link_l0, l0_max, l0_min, kgrow, lgrow, len_max;
         
         array<double,2> fov;
         array<int,2> nq;

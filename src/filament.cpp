@@ -706,6 +706,11 @@ void filament::set_l0_max(double lmax)
     l0_max = lmax;
 }
 
+void filament::set_len_max(double lmax)
+{
+    len_max = lmax;
+}
+
 void filament::set_l0_min(double lmin)
 {
     l0_min = lmin;
@@ -771,7 +776,8 @@ void filament::grow(double dL)
 
 void filament::update_length()
 {
-    if ( rng(0,1) < kgrow*dt){
+    int n = this->get_nlinks() - 1;
+    if ( (n*link_l0 + links[0]->get_l0()) < len_max && rng(0,1) < kgrow*dt){
         grow(lgrow);
     }
     /*else if (rnd(0,1

@@ -45,12 +45,12 @@ int main(int argc, char* argv[]){
     
     double link_length, polymer_bending_modulus, link_stretching_stiffness, fene_pct, fracture_force; // Links
 
-    double spacer1_length, spacer1_v=0, spacer1_density, spacer1_stiffness, s1_kon, s1_kend, s1_koff,
+    double spacer1_length, spacer1_v=0, spacer1_density, spacer1_stiffness, s1_kon, s1_kend, s1_koff, s1_koff2,
            s1_stall, s1_cut, s1_bend, s1_ang;// Active Motors (i.e., "myosin")
     string spacer1_pos_str; 
     
     double spacer2_length, spacer2_density, spacer2_stiffness, // Passive Mtors (i.e., cross_linkers)
-            spacer2_v=0, s2_kon, s2_kend, s2_koff, s2_stall, s2_cut, s2_bend, s2_ang; 
+            spacer2_v=0, s2_kon, s2_kend, s2_koff, s2_koff2, s2_stall, s2_cut, s2_bend, s2_ang; 
     string spacer2_pos_str;
     
     string config_file, actin_in, spacer1_in, spacer2_in;                                                // Input configuration
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
     bool restart;
     double restart_time;
     
-    double kgrow, lgrow, l0min, l0max;
+    double kgrow, lgrow, l0min, l0max, fil_len_max;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -106,9 +106,10 @@ int main(int argc, char* argv[]){
         ("spacer1_pos_str", po::value<string> (&spacer1_pos_str)->default_value(""), "Starting positions of motors, commas delimit coordinates; semicolons delimit positions")
         ("spacer2_pos_str", po::value<string> (&spacer2_pos_str)->default_value(""), "Starting positions of crosslinks, commas delimit coordinates; semicolons delimit positions")
         
-        ("s1_kon", po::value<double>(&s1_kon)->default_value(100),"xlink 1 on rate")
-        ("s1_koff", po::value<double>(&s1_koff)->default_value(20),"xlink 1 off rate")
-        ("s1_kend", po::value<double>(&s1_kend)->default_value(20),"xlink 1 off rate at filament end")
+        ("s1_kon", po::value<double>(&s1_kon)->default_value(2),"xlink 1 on rate")
+        ("s1_koff", po::value<double>(&s1_koff)->default_value(0.1),"xlink 1 off rate")
+        ("s1_kend", po::value<double>(&s1_kend)->default_value(0.1),"xlink 1 off rate at filament end")
+        ("s1_koff2", po::value<double>(&s1_koff2)->default_value(0.1),"xlink 1 off rate when both heads bound")
         ("spacer1_length", po::value<double>(&spacer1_length)->default_value(0.15),"filamin rest length (um)")
         ("spacer1_stiffness", po::value<double>(&spacer1_stiffness)->default_value(1),"xlink 1 spring stiffness (pN/um)")
         ("spacer1_v", po::value<double>(&spacer1_v)->default_value(0),"xlink 1 velocity (um/s)")
@@ -119,9 +120,10 @@ int main(int argc, char* argv[]){
         ("s1_bend", po::value<double>(&s1_bend)->default_value(0.04),"bending force constant of spacer  (pN) (10kT/um by default)")
         ("s1_ang", po::value<double>(&s1_ang)->default_value(pi/2),"equilibrium angle of spacer1-filament system")
         
-        ("s2_kon", po::value<double>(&s2_kon)->default_value(100),"xlink 2 on rate")
-        ("s2_koff", po::value<double>(&s2_koff)->default_value(20),"xlink 2 off rate")
-        ("s2_kend", po::value<double>(&s2_kend)->default_value(20),"xlink 2 off rate at filament end")
+        ("s2_kon", po::value<double>(&s2_kon)->default_value(2),"xlink 2 on rate")
+        ("s2_koff", po::value<double>(&s2_koff)->default_value(0.1),"xlink 2 off rate")
+        ("s2_kend", po::value<double>(&s2_kend)->default_value(0.1),"xlink 2 off rate at filament end")
+        ("s2_koff2", po::value<double>(&s2_koff2)->default_value(0.1),"xlink 2 off rate when both heads bound")
         ("spacer2_length", po::value<double>(&spacer2_length)->default_value(0.03),"xlink 2 rest length (um) (default: filamin)")
         ("spacer2_stiffness", po::value<double>(&spacer2_stiffness)->default_value(1),"xlink 2 spring stiffness (pN/um)")
        
@@ -169,6 +171,7 @@ int main(int argc, char* argv[]){
         ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
         ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
         ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
+        ("fil_len_max", po::value<double>(&fil_len_max)->default_value(1000), "length at which filament stops growing")
         
         ; 
     
@@ -225,8 +228,8 @@ int main(int argc, char* argv[]){
     
     afile  = tdir + "/actins.txt";
     lfile  = tdir + "/links.txt";
-    amfile = tdir + "/amotors.txt";
-    pmfile = tdir + "/pmotors.txt";
+    amfile = tdir + "/spacers1_bound.txt";
+    pmfile = tdir + "/spacers2_bound.txt";
     thfile = ddir + "/filament_e.txt";
     pefile = ddir + "/pe.txt";
     
@@ -331,7 +334,7 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd, rmax, kexv); 
     }
   
-    net->set_growing(kgrow, lgrow, l0min, l0max);
+    net->set_growing(kgrow, lgrow, l0min, l0max, fil_len_max);
 
     if (s2_intersect_flag) spacer2_pos_vec = net->link_link_intersections(spacer2_length, s2_linkage_prob); 
     if (s1_intersect_flag) spacer1_pos_vec = net->link_link_intersections(spacer1_length, s1_linkage_prob); 
@@ -349,6 +352,8 @@ int main(int argc, char* argv[]){
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
                 s1_kend, s1_stall, s1_cut, viscosity, bnd_cnd);
     big_xlinks->set_bending(s1_bend, s1_ang);
+    big_xlinks->set_binding_two(s1_kon, s1_koff2, s1_koff2);
+
     if (s1_dead_head_flag) big_xlinks->kill_heads(s1_dead_head);
 
     cout<<"Adding xlink 2s (crosslinkers) ...\n";
@@ -363,6 +368,7 @@ int main(int argc, char* argv[]){
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
                 s2_kend, s2_stall, s2_cut, viscosity, bnd_cnd);
     small_xlinks->set_bending(s2_bend, s2_ang);
+    small_xlinks->set_binding_two(s2_kon, s2_koff2, s2_koff2);
     if (s2_dead_head_flag) small_xlinks->kill_heads(s2_dead_head);
 
     // Write the full configuration file
@@ -401,17 +407,19 @@ int main(int argc, char* argv[]){
             if (t>tinit) time_str ="\n";
             time_str += "t = "+to_string(t);
             
-            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
-            net->write_actins(file_a);
+//            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
+//            net->write_actins(file_a);
             
             file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_links(file_l);
             
             file_am << time_str<<"\tN = "<<to_string(big_xlinks->get_nmotors());
-            big_xlinks->motor_write(file_am);
+//          big_xlinks->motor_write(file_am);
+            big_xlinks->motor_write_doubly_bound(file_am);
             
             file_pm << time_str<<"\tN = "<<to_string(small_xlinks->get_nmotors());
-            small_xlinks->motor_write(file_pm);
+//          small_xlinks->motor_write(file_pm);
+            small_xlinks->motor_write_doubly_bound(file_pm);
             
             file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
             net->write_thermo(file_th);
