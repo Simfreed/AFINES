@@ -60,6 +60,7 @@ spacer::spacer( array<double, 3> pos,
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // tensile force on the spring  
+    b_eng       = {0,0}; // filament / xlink bending energy
     
     b_force[0]  = {0,0}; //b_force[0] = bending force on head 0 due to h0-h1-link angle in cartesian coords
     b_force[1]  = {0,0}; //b_force[1] = bending force on head 1 due to h1-h0-link angle in cartesian coords
@@ -152,6 +153,7 @@ spacer::spacer( array<double, 4> pos,
     shear       = 0;
     tension     = 0;
     force       = {0,0}; // force on the spring  
+    b_eng       = {0,0}; // filament / xlink bending energy
     
     b_force[0]  = {0,0}; //b_force[0] = bending force on head 0 due to h0-h1-link angle in cartesian coords
     b_force[1]  = {0,0}; //b_force[1] = bending force on head 1 due to h1-h0-link angle in cartesian coords
@@ -365,7 +367,6 @@ double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> ne
     }
     
     double delE = 0.5*mk*stretch*stretch + bend_eng - this->get_stretching_energy() - b_eng[hd];
-
     if( delE > 0 )
         prob *= exp(-delE/temperature);
     
