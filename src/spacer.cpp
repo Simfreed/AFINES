@@ -319,6 +319,91 @@ void spacer::brownian_relax(int hd)
 
 }
 
+void spacer::update_unattached()
+{
+    double new_rnd_x = rng_n(0,1), new_rnd_y = rng(0,1) new_rnd_th = rng_n(0,1);
+    double w  = bd_rot_prefactor*(new_rnd_th +  prv_rnd_th);
+    double vx = bd_prefactor*(new_rnd_x + prv_rnd_x);
+    double vy = bd_prefactor*(new_rnd_y + prv_rnd_y);
+
+    array<double, 2> pos = pos_bc(BC, actin_network->get_delrx(), dt, fov, {vx, vy}, {x + vx*dt, y + vy*dt});
+
+    th += w*dt;
+    x = pos[0];
+    y = pos[1];
+
+}
+
+void spacer::update_head_pos_unattached()
+{
+    hx[0] = x - 0.5*mld*cos(th);
+    hx[1] = x + 0.5*mld*cos(th);
+    hy[0] = y - 0.5*mld*sin(th);
+    hy[1] = y + 0.5*mld*sin(th)
+}
+
+//check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
+bool motor::attach(int hd)
+{
+    double not_off_prob = 0, onrate = kon;
+    double mf_rand = rng(0,1.0);
+    array<double, 2> intPoint;
+    if (state[pr(hd)] == 1)
+        onrate = kon2;
+    
+    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_binding_points(hx, hy, hd);
+
+    if(!dist_sorted.empty()){
+        
+
+        for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
+        {
+            if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
+                break;
+
+            //head can't bind to the same filament link the other head is bound to
+            else if(allowed_bind(hd, it->second)){
+                
+                intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
+                not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);
+                 
+                if (mf_rand < not_off_prob) 
+                {
+                    //update state
+                    state[hd] = 1;
+                    f_index[hd] = (it->second).at(0);
+                    this->set_l_index(hd, (it->second).at(1));
+                    
+                    //record displacement of head and orientation of link for future unbinding move
+                    ldir_bind[hd] = actin_network->get_direction(f_index[hd], l_index[hd]);
+                    bind_disp[hd] = rij_bc(BC, intPoint[0]-hx[hd], intPoint[1]-hy[hd], fov[0], fov[1], actin_network->get_delrx());
+
+                    //update head position
+                    hx[hd] = intPoint[0];
+                    hy[hd] = intPoint[1];
+
+                    //update relative head position
+                    pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
+                                              actin_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
+                                              actin_network->get_delrx());
+                    
+                    //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
+                    at_barbed_end[hd] = false; 
+
+                    return true;
+                }
+            }
+        }
+    }	
+    return false;
+} 
+
+
+
+
+
+
+
 void spacer::actin_update()
 {
     if (state[0]==1) this->actin_update_hd(0, { force[0] + b_force[0][0],  force[1] + b_force[0][1]});
@@ -377,4 +462,103 @@ bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
 {
 //    cout<<"\nDEBUG: using spacer allowed bind";
     return (fl_idx[0] != f_index[pr(hd)]);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void spacer::shake(int m)
+{
+  int nlist,list[2];
+  double v[6]
+  double invmass0,invmass1;
+
+  // local atom IDs and constraint distances
+
+  int i0 = atom->map(shake_atom[m][0]);
+  int i1 = atom->map(shake_atom[m][1]);
+  double bond1 = bond_distance[shake_type[m][0]];
+
+  // r01 = distance vec between atoms, with PBC
+
+  double r01[3];
+  r01[0] = x[i0][0] - x[i1][0];
+  r01[1] = x[i0][1] - x[i1][1];
+  r01[2] = x[i0][2] - x[i1][2];
+  domain->minimum_image(r01);
+
+  // s01 = distance vec after unconstrained update, with PBC
+
+  double s01[3];
+  s01[0] = xshake[i0][0] - xshake[i1][0];
+  s01[1] = xshake[i0][1] - xshake[i1][1];
+  s01[2] = xshake[i0][2] - xshake[i1][2];
+  domain->minimum_image(s01);
+
+  // scalar distances between atoms
+
+  double r01sq = r01[0]*r01[0] + r01[1]*r01[1] + r01[2]*r01[2];
+  double s01sq = s01[0]*s01[0] + s01[1]*s01[1] + s01[2]*s01[2];
+
+  // a,b,c = coeffs in quadratic equation for lamda
+
+  if (rmass) {
+    invmass0 = 1.0/rmass[i0];
+    invmass1 = 1.0/rmass[i1];
+  } else {
+    invmass0 = 1.0/mass[type[i0]];
+    invmass1 = 1.0/mass[type[i1]];
+  }
+
+  double a = (invmass0+invmass1)*(invmass0+invmass1) * r01sq;
+  double b = 2.0 * (invmass0+invmass1) *
+    (s01[0]*r01[0] + s01[1]*r01[1] + s01[2]*r01[2]);
+  double c = s01sq - bond1*bond1;
+
+  // error check
+
+  double determ = b*b - 4.0*a*c;
+  if (determ < 0.0) {
+    error->warning(FLERR,"Shake determinant < 0.0",0);
+    determ = 0.0;
+  }
+
+  // exact quadratic solution for lamda
+
+  double lamda,lamda1,lamda2;
+  lamda1 = (-b+sqrt(determ)) / (2.0*a);
+  lamda2 = (-b-sqrt(determ)) / (2.0*a);
+
+  if (fabs(lamda1) <= fabs(lamda2)) lamda = lamda1;
+  else lamda = lamda2;
+
+  // update forces if atom is owned by this processor
+
+  lamda /= dtfsq;
+
+  if (i0 < nlocal) {
+    f[i0][0] += lamda*r01[0];
+    f[i0][1] += lamda*r01[1];
+    f[i0][2] += lamda*r01[2];
+  }
+
+  if (i1 < nlocal) {
+    f[i1][0] -= lamda*r01[0];
+    f[i1][1] -= lamda*r01[1];
+    f[i1][2] -= lamda*r01[2];
+  }
+
+  if (evflag) {
+    nlist = 0;
+    if (i0 < nlocal) list[nlist++] = i0;
+    if (i1 < nlocal) list[nlist++] = i1;
+
+    v[0] = lamda*r01[0]*r01[0];
+    v[1] = lamda*r01[1]*r01[1];
+    v[2] = lamda*r01[2]*r01[2];
+    v[3] = lamda*r01[0]*r01[1];
+    v[4] = lamda*r01[0]*r01[2];
+    v[5] = lamda*r01[1]*r01[2];
+
+    v_tally(nlist,list,2.0,v);
+  }
 }

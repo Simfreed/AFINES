@@ -123,11 +123,63 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
 
 }
 
+//given a motor position, and a quadrant
+//update the map of {f, l} -- > dist
+void filament_ensemble::update_dth_map(set<pair<double, array<int,2>>>& t_map, const array<int, 2>& mq, array<double,2> hx, array<double,2> hy){
+    
+    array<int, 2> fl;
+    array<double, 2> dths;
+    
+    for (int i = 0; i < int(links_per_quad[mq[0]]->at(mq[1])->size()); i++){
+
+        fl = links_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, link_index}
+
+        if (fls.find(fl) == fls.end()){
+            network[fl[0]]->get_link(fl[1])->calc_rot_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the link closest to (x,y)
+            dist = network[fl[0]]->get_link(fl[1])->get_dth(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            //cout<<"\nDEBUG : dist = "<<dist;
+
+            t_map.insert(pair<double, array<int, 2> >(dist, fl));
+            fls.insert(fl);
+        }
+    }
+
+}
+
 //given motor head position, return a map between  
 //  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
 //  and their corresponding DISTANCES to the link at that distance 
 
 set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
+{
+    fls.clear();
+    set<pair<double, array<int, 2>>> t_map;
+    int mqx = coord2quad_floor(fov[0], nq[0], x);
+    int mqy = coord2quad_floor(fov[1], nq[1], y);
+    
+    int xp1 = mqx + 1;
+    int yp1 = mqy + 1;
+
+    if (xp1 >= nq[0] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) xp1 = 0;
+    if (yp1 >= nq[1] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) yp1 = 0;
+    
+    update_dist_map(t_map, {mqx, mqy}, x, y);
+    if (xp1 < nq[0]) 
+        update_dist_map(t_map, {xp1, mqy}, x, y);
+    if (yp1 < nq[1]) 
+        update_dist_map(t_map, {mqx, yp1}, x, y);
+    if (xp1 < nq[0] && yp1 < nq[1])
+        update_dist_map(t_map, {xp1, yp1}, x, y);
+
+    return t_map;
+}
+
+//given motor head position, return a map between  
+//  the INDICES (i.e., {i, j} for the j'th link of the i'th filament)
+//  the intersection points 
+//  the dths required to get there
+
+set<pair<double, array<int, 2>>> filament_ensemble::get_binding_points(array<double, 2> hx, array<double, 2> hy, int hd)
 {
     fls.clear();
     set<pair<double, array<int, 2>>> t_map;
