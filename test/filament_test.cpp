@@ -947,7 +947,7 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[0], 25,tol);
+    BOOST_CHECK_CLOSE(pos[0], -25,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
 
     f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
@@ -964,7 +964,7 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
     BOOST_CHECK_CLOSE(pos[0], 1,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[1], 25,tol);
+    BOOST_CHECK_CLOSE(pos[1], -25,tol);
     BOOST_CHECK_CLOSE(pos[0], 1,tol);
 
     delete f;
@@ -1019,8 +1019,8 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     BOOST_CHECK_CLOSE(pos[1], -24,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[0], 1, tol);
-    BOOST_CHECK_CLOSE(pos[1], 25,tol);
+    BOOST_CHECK_CLOSE(pos[0], -3, tol);
+    BOOST_CHECK_CLOSE(pos[1], -25,tol);
     
     f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     f->update_delrx(strain*xrange/2);
@@ -1038,7 +1038,7 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[0], 25,tol);
+    BOOST_CHECK_CLOSE(pos[0], -25,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
     
     delete f;
