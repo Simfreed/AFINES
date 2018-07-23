@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# #!/usr/bin/env python
 import sys
 import copy
 
@@ -22,7 +22,7 @@ fil_index = -1
 for i in range(nparts):
     
     line        = dat.readline()
-    coords      = map(float, line.rstrip().split('\t'))
+    coords      = [float(c) for c in line.rstrip().split('\t')]
     prv_traj[i] = coords 
     
     coords_adj  = copy.copy(coords)
@@ -42,7 +42,7 @@ for i in range(nparts):
         coords_adj[0] += 2*nbndx[i]*maxx 
         coords_adj[1] += 2*nbndy[i]*maxy
 
-    out.write('\t'.join(map(str, coords_adj))+'\n')
+    out.write('\t'.join(list(map(str, coords_adj)))+'\n')
     fil_index = coords[3]
 
 count = 0
@@ -54,7 +54,7 @@ for line in dat:
     
     else: 
         n = count % (nparts+1) - 1
-        coords = map(float, line.rstrip().split('\t'))
+        coords = [float(c) for c in line.rstrip().split('\t')]
 
         dx = coords[0] - prv_traj[n][0]
         dy = coords[1] - prv_traj[n][1]
@@ -67,7 +67,7 @@ for line in dat:
         coords_adj = copy.copy(coords)
         coords_adj[0] += 2*nbndx[n]*maxx 
         coords_adj[1] += 2*nbndy[n]*maxy
-        out.write('\t'.join(map(str, coords_adj))+'\n')
+        out.write('\t'.join(list(map(str, coords_adj)))+'\n')
         prv_traj[n] = coords
     
     count += 1
