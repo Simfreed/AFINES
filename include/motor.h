@@ -69,9 +69,9 @@ class motor
 
         void step_twoheads();
 
-        void actin_update_hd(int hd, array<double, 2> f);
+        void filament_update_hd(int hd, array<double, 2> f);
         
-        void actin_update();
+        void filament_update();
 
         void update_shape();
         
@@ -131,7 +131,7 @@ class motor
         
         string BC;
         
-        filament_ensemble* actin_network;
+        filament_ensemble* filament_network;
         
 };
 

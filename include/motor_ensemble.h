@@ -19,7 +19,6 @@
 //=====================================
 //included dependences
 #include "motor.h"
-#include "vector"
 
 //motor ensemble class
 

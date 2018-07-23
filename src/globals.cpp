@@ -93,7 +93,7 @@ array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox)
     //Allen and Tildesley, page 30
     double rxij = dx - xbox * roundhalfup(dx / xbox);
     double ryij = dy - ybox * roundhalfup(dy / ybox);
-    return {rxij, ryij};
+    return {{rxij, ryij}};
 }
 
 array<double, 2> rij_xperiodic(double dx, double dy, double xbox, double ybox)
@@ -102,7 +102,7 @@ array<double, 2> rij_xperiodic(double dx, double dy, double xbox, double ybox)
     //Allen and Tildesley, page 30
     double rxij = dx - xbox * roundhalfup(dx / xbox);
     double ryij = dy;
-    return {rxij, ryij};
+    return {{rxij, ryij}};
 }
 
 array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox, double delrx)
@@ -114,7 +114,7 @@ array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox
     rxij = dx   - cory * delrx;
     rxij = rxij - roundhalfup(rxij / xbox) * xbox;
     ryij = dy   - cory * ybox;
-    return {rxij, ryij};
+    return {{rxij, ryij}};
 }
 
 double dist_bc(string bc, double dx, double dy, double xbox, double ybox, double delrx){
@@ -132,7 +132,7 @@ array<double, 2> rij_bc(string bc, double dx, double dy, double xbox, double ybo
     else if (bc =="LEES-EDWARDS")
         return rij_lees_edwards(dx, dy, xbox, ybox, delrx);
     else
-        return {dx, dy};
+        return {{dx, dy}};
 
 }
 
@@ -162,9 +162,9 @@ double my_velocity(double vel0, double force, double fstall)
 array<double, 2> cm_bc(string bc, const vector<double>& xi, const vector<double>& yi, double xbox, double ybox, double delrx)
 {
     if (bc == "PERIODIC" || bc == "LEES-EDWARDS")
-        return {mean_periodic(xi, xbox) , mean_periodic(yi, ybox)};
+        return {{mean_periodic(xi, xbox) , mean_periodic(yi, ybox)}};
     else
-        return {mean(xi), mean(yi)};
+        return {{mean(xi), mean(yi)}};
 }
 
 double mean(const vector<double>& nums)
@@ -483,7 +483,7 @@ array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 
         }
     }
     
-    return {xnew, ynew};
+    return {{xnew, ynew}};
 
 }
 
@@ -529,7 +529,7 @@ boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>& 
         y = (a1*c2 - a2*c1)/det;
         if (x >= mmx1.first && x >= mmx2.first && x <= mmx1.second && x <= mmx2.second &&
             y >= mmy1.first && y >= mmy2.first && y <= mmy1.second && y <= mmy2.second){
-            ans = {x,y};
+            ans = {{x,y}};
             return ans;
         }
     }
@@ -553,11 +553,11 @@ boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double del
     rij12 = rij_bc(bc, r2[0] - r1[0], r2[1] - r1[1], fov[0], fov[1], delrx);
     rij13 = rij_bc(bc, r3[0] - r1[0], r3[1] - r1[1], fov[0], fov[1], delrx);
     rij34 = rij_bc(bc, r4[0] - r3[0], r4[1] - r3[1], fov[0], fov[1], delrx);
-    rij14 = {rij13[0] + rij34[0], rij13[1] + rij34[1]};
+    rij14 = {{rij13[0] + rij34[0], rij13[1] + rij34[1]}};
 
-    boost::optional<array<double, 2> > inter = seg_seg_intersection({0,0}, rij12, rij13, rij14);
+    boost::optional<array<double, 2> > inter = seg_seg_intersection({{0,0}}, rij12, rij13, rij14);
     if (inter){
-        return pos_bc(bc, delrx, 0, fov, {0,0}, {inter->at(0) + r1[0], inter->at(1) + r1[1]}); 
+        return pos_bc(bc, delrx, 0, fov, {{0,0}}, {{inter->at(0) + r1[0], inter->at(1) + r1[1]}}); 
     }
     else 
         return boost::none;
@@ -593,7 +593,7 @@ double angBC(double ang)
 std::string quads_error_message(std::string title, vector<array<int, 2> > equads, vector< array<int, 2> > aquads)
 {
 
-    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal Link Quadrants : \n";
+    cout<<"\nTEST "<< title<< ": Expected Quadrants : don't equal spring Quadrants : \n";
     cout<<"\nActual Quadrants:"; 
     for_each(aquads.begin(), aquads.end(), intarray_printer);
     cout<<"\nExpected Quadrants:"; 

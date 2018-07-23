@@ -324,31 +324,31 @@ int main(int argc, char* argv[]){
     cout<<"\nCreating actin network..";
     filament_ensemble * net;
     if (actin_pos_vec.size() == 0 && actin_in.size() == 0){
-        net = new filament_ensemble(npolymer, nmonomer, nmonomer_extra, extra_bead_prob, {xrange, yrange}, {xgrid, ygrid}, dt, 
+        net = new filament_ensemble(npolymer, nmonomer, nmonomer_extra, extra_bead_prob, {{xrange, yrange}}, {{xgrid, ygrid}}, dt, 
                 temperature, actin_length, viscosity, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd, myseed); 
     }else{
-        net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
+        net = new filament_ensemble(actin_pos_vec, {{xrange, yrange}}, {{xgrid, ygrid}}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd); 
     }
    
-    if (link_intersect_flag) p_motor_pos_vec = net->link_link_intersections(p_motor_length, p_linkage_prob); 
-    if (motor_intersect_flag) a_motor_pos_vec = net->link_link_intersections(a_motor_length, a_linkage_prob); 
+    if (link_intersect_flag) p_motor_pos_vec = net->spring_spring_intersections(p_motor_length, p_linkage_prob); 
+    if (motor_intersect_flag) a_motor_pos_vec = net->spring_spring_intersections(a_motor_length, a_linkage_prob); 
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding active motors...";
     motor_ensemble * myosins;
     
     if (a_motor_pos_vec.size() == 0 && a_motor_in.size() == 0)
-        myosins = new motor_ensemble( a_motor_density, {xrange, yrange}, dt, temperature, 
+        myosins = new motor_ensemble( a_motor_density, {{xrange, yrange}}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_position_arrs, bnd_cnd);
     else
-        myosins = new motor_ensemble( a_motor_pos_vec, {xrange, yrange}, dt, temperature, 
+        myosins = new motor_ensemble( a_motor_pos_vec, {{xrange, yrange}}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_cut, viscosity, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
@@ -357,11 +357,11 @@ int main(int argc, char* argv[]){
     motor_ensemble * crosslks; 
     
     if(p_motor_pos_vec.size() == 0 && p_motor_in.size() == 0)
-        crosslks = new motor_ensemble( p_motor_density, {xrange, yrange}, dt, temperature, 
+        crosslks = new motor_ensemble( p_motor_density, {{xrange, yrange}}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
                 p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_position_arrs, bnd_cnd);
     else
-        crosslks = new motor_ensemble( p_motor_pos_vec, {xrange, yrange}, dt, temperature, 
+        crosslks = new motor_ensemble( p_motor_pos_vec, {{xrange, yrange}}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
                 p_m_kend, p_m_stall, p_m_cut, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
@@ -411,11 +411,11 @@ int main(int argc, char* argv[]){
             if (t>tinit) time_str ="\n";
             time_str += "t = "+to_string(t);
             
-            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
-            net->write_actins(file_a);
+            file_a << time_str<<"\tN = "<<to_string(net->get_nbeads());
+            net->write_beads(file_a);
 
-            file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
-            net->write_links(file_l);
+            file_l << time_str<<"\tN = "<<to_string(net->get_nsprings());
+            net->write_springs(file_l);
 
             file_am << time_str<<"\tN = "<<to_string(myosins->get_nmotors());
             myosins->motor_write(file_am);

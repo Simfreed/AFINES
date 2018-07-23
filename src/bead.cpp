@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------
- actin.cpp : object describing a circular bead
+ bead.cpp : object describing a circular bead
  
  Copyright (C) 2016 
  Created by: Simon Freedman, Shiladitya Banerjee, Glen Hocky, Aaron Dinner
@@ -11,27 +11,25 @@
  (at your option) any later version. See ../LICENSE for details. 
 -------------------------------------------------------------------*/
 
-#include "actin.h"
+#include "bead.h"
 #include "globals.h"
 
-actin::actin(){}
+bead::bead(){}
 
-actin::actin(double xcm, double ycm, double len, double vis)
+bead::bead(double xcm, double ycm, double len, double vis)
 {
-    //now i will make these spherical
     x=xcm;
     y=ycm;
     ld=len; //radius
     a_vis=vis;
     friction = 6*pi*a_vis*ld;
    
-    force = {0,0};
-    velocity = {0,0};
+    force = {{0,0}};
+    velocity = {{0,0}};
 }
 
-actin::actin(const actin& other){
+bead::bead(const bead& other){
     
-    //cout<<"\nDEBUG: calling copy constructor"; 
     x = other.x;
     y = other.y;
     ld = other.ld;
@@ -41,38 +39,37 @@ actin::actin(const actin& other){
     velocity = other.velocity;
 }
 
-actin::~actin(){ 
-    //cout<<"DELETING ACTIN\n";
+bead::~bead(){ 
 };
 
 
-array<double,2> actin::get_force()
+array<double,2> bead::get_force()
 {
     return force;
 }
 
-array<double,2> actin::get_velocity()
+array<double,2> bead::get_velocity()
 {
     return velocity;
 }
 
-double actin::get_vsquared()
+double bead::get_vsquared()
 {
     return velocity[0]*velocity[0] + velocity[1]*velocity[1];
 }
 
-double actin::get_length()
+double bead::get_length()
 {
     return ld;
 }
 
-void actin::update_velocity(double v1, double v2)
+void bead::update_velocity(double v1, double v2)
 {
     velocity[0]+=v1;
     velocity[1]+=v2;
 }
 
-void actin::update_force(double f1, double f2)
+void bead::update_force(double f1, double f2)
 {
     if(f1 == f1 && f2 == f2 && std::isfinite(f1) && std::isfinite(f2)){
         force[0]+=f1;
@@ -83,39 +80,39 @@ void actin::update_force(double f1, double f2)
     }
 }
 
-void actin::reset_velocity()
+void bead::reset_velocity()
 {
     velocity[0] = 0;
     velocity[1] = 0;
 }
 
-void actin::reset_force()
+void bead::reset_force()
 {
     force[0] = 0;
     force[1] = 0;
 }
 
-double actin::get_xcm()
+double bead::get_xcm()
 {
     return x;
 }
 
-double actin::get_ycm()
+double bead::get_ycm()
 {
     return y;
 }
 
-void actin::set_xcm(double xcm)
+void bead::set_xcm(double xcm)
 {
     x = xcm;
 }
 
-void actin::set_ycm(double ycm)
+void bead::set_ycm(double ycm)
 {
     y = ycm;
 }
 
-bool actin::operator==(const actin& that) 
+bool bead::operator==(const bead& that) 
 {
     double err = eps; 
     return (close( this->x , that.x , err) && close( this->y , that.y , err) &&
@@ -125,12 +122,12 @@ bool actin::operator==(const actin& that)
            );
 }
 
-string actin::write()
+string bead::write()
 {
     return "\n" + std::to_string(x) + "\t" + std::to_string(y) + "\t" + std::to_string(ld);
 }
 
-string actin::to_string()
+string bead::to_string()
 {
     return "x : " + std::to_string(x) + "\ty : " + std::to_string(y) +
            "\tld : " + std::to_string(ld) + "\ta_vis : "+ std::to_string(a_vis) + 
@@ -138,10 +135,10 @@ string actin::to_string()
  
 }
 
-double actin::get_viscosity(){
+double bead::get_viscosity(){
     return a_vis;
 }
 
-double actin::get_friction(){
+double bead::get_friction(){
     return friction;
 }

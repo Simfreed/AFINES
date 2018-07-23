@@ -1,5 +1,5 @@
 /*
- *  actin.cpp
+ *  bead.cpp
  *  
  *
  *  Created by Shiladitya Banerjee on 9/3/13.
@@ -17,25 +17,23 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
 #include "globals.h"
 
 //=====================================
-//actin rod class
-class actin
+//filament bead class
+class bead
 {
     public:
 
-        actin();
+        bead();
         
-        actin(double xcm, double ycm, double len, double vis); 
+        bead(double xcm, double ycm, double len, double vis); 
         
-        actin(double xcm, double ycm, double vx, double vy, double len, double vis); 
+        bead(double xcm, double ycm, double vx, double vy, double len, double vis); 
         
-        actin(const actin& other);
+        bead(const bead& other);
         
-        ~actin();
+        ~bead();
     
         void update();
 
@@ -71,7 +69,7 @@ class actin
         
         string to_string();
         
-        bool operator==(const actin& that);    
+        bool operator==(const bead& that);    
         
 
     private:
