@@ -1001,7 +1001,7 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     f->add_actin(act1, link_length, stretching_stiffness,1);
     f->add_actin(act2, link_length, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(5-link_length)*(5-link_length));
+    BOOST_CHECK_CLOSE(f->get_stretching_energy(), 0.5*stretching_stiffness*(5-link_length)*(5-link_length),tol);
     
     f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     f->update_delrx(strain*xrange/2);
