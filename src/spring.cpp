@@ -60,14 +60,15 @@ void spring::step(string bc, double shear_dist)
     hy[1] = fil->get_bead(aindex[1])->get_ycm();
 
     disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
-    phi=atan2(disp[1],disp[0]);
+    phi = atan2(disp[1],disp[0]);
     llen = hypot(disp[0], disp[1]);
 
 }
 
 void spring::update_force(string bc, double shear_dist)
 {
-    force = {{kl*(disp[0]-l0*cos(phi)), kl*(disp[1]-l0*sin(phi))}};
+    double kf = kl*(1-l0/llen);
+    force = {{kf*disp[0], kf*disp[1]}};
 }
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
@@ -82,14 +83,15 @@ void spring::update_force_fraenkel_fene(string bc, double shear_dist)
     else{
         scaled_ext = (max_ext - eps_ext)/max_ext;
     }
-    klp = kl/(1-scaled_ext*scaled_ext);
-    force = {{klp*(disp[0]-l0*cos(phi)), klp*(disp[1]-l0*sin(phi))}};
+
+    klp = kl/(1-scaled_ext*scaled_ext)*(1-l0/llen);
+    force = {{klp*disp[0], klp*disp[1]}};
 
 }
 
 void spring::update_force_marko_siggia(string bc, double shear_dist, double kToverLp)
 {
-    double xrat = disp[0]/(l0*cos(phi)), yrat = disp[1]/(l0*sin(phi));
+    double xrat = llen/l0, yrat = llen/l0;
     if (xrat != xrat || xrat == 1) xrat = 0;
     if (yrat != yrat || yrat == 1) yrat = 0;
     force = {{kToverLp*(0.25/((1-xrat)*(1-xrat))-0.25+xrat), kToverLp*(0.25/((1-yrat)*(1-yrat))-0.25+yrat)}};  
@@ -178,7 +180,8 @@ void spring::quad_update(string bc, double delrx){
     quad.clear();
     int xlower, xupper, ylower, yupper;
     
-    if(fabs(phi) < pi/2)//if(hx[0] <= hx[1])
+    if(fabs(phi) < pi/2)
+//    if(hx[0] <= hx[1])
     {
         xlower = coord2quad_floor(fov[0], nq[0], hx[0]);
         xupper = coord2quad_ceil(fov[0], nq[0], hx[1]);
@@ -190,6 +193,7 @@ void spring::quad_update(string bc, double delrx){
     };
     
     if(phi >= 0) //hy[0] <= hy[1])
+//    if (hy[0] <= hy[1])
     {
         ylower = coord2quad_floor(fov[1], nq[1], hy[0]);
         yupper = coord2quad_ceil(fov[1], nq[1], hy[1]);
@@ -251,7 +255,7 @@ vector<array<int, 2> > spring::get_quadrants()
 
 array<double, 2> spring::get_direction()
 {
-    return {{cos(phi), sin(phi)}};
+    return {{disp[0]/llen, disp[1]/llen}};
 }
 
 double spring::get_stretching_energy(){

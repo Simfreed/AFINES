@@ -19,6 +19,15 @@ normal_distribution<double> distribution(0,1);
 //uniform_real_distribution<double> distribution(-0.5,0.5);
 
 /*generic functions to be used below*/
+
+//source: www.cplusplus.com/forum/articles/3638/ 
+template <typename FloatType>
+FloatType roundhalfup( const FloatType& value)
+{
+    return floor(value+0.5);
+}
+
+
 double rng(double start, double end)
 {
 	return start+(end-start)*((double)rand()/(RAND_MAX));
@@ -82,8 +91,8 @@ array<double, 2> rij_periodic(double dx, double dy, double xbox, double ybox)
 {
     //Using the minimum image convention
     //Allen and Tildesley, page 30
-    double rxij = dx - xbox * round(dx / xbox);
-    double ryij = dy - ybox * round(dy / ybox);
+    double rxij = dx - xbox * roundhalfup(dx / xbox);
+    double ryij = dy - ybox * roundhalfup(dy / ybox);
     return {{rxij, ryij}};
 }
 
@@ -91,7 +100,7 @@ array<double, 2> rij_xperiodic(double dx, double dy, double xbox, double ybox)
 {
     //Using the minimum image convention
     //Allen and Tildesley, page 30
-    double rxij = dx - xbox * round(dx / xbox);
+    double rxij = dx - xbox * roundhalfup(dx / xbox);
     double ryij = dy;
     return {{rxij, ryij}};
 }
@@ -101,9 +110,9 @@ array<double, 2> rij_lees_edwards(double dx, double dy, double xbox, double ybox
     //Using the minimum image convention
     //Allen and Tildesley, page 247 
     double cory, rxij, ryij;
-    cory = round(dy / ybox);
+    cory = roundhalfup(dy / ybox);
     rxij = dx   - cory * delrx;
-    rxij = rxij - round(rxij / xbox) * xbox;
+    rxij = rxij - roundhalfup(rxij / xbox) * xbox;
     ryij = dy   - cory * ybox;
     return {{rxij, ryij}};
 }
@@ -426,14 +435,14 @@ array<double, 2> pos_bc(string bc, double delrx, double dt, const array<double, 
        
     if(bc == "PERIODIC")
     {
-        xnew = xnew - fov[0] * round(xnew / fov[0]);
-        ynew = ynew - fov[1] * round(ynew / fov[1]);
+        xnew = xnew - fov[0] * roundhalfup(xnew / fov[0]);
+        ynew = ynew - fov[1] * roundhalfup(ynew / fov[1]);
     }
     else if(bc == "LEES-EDWARDS")
     {
-        double cory = round(ynew/fov[1]);
+        double cory = roundhalfup(ynew/fov[1]);
         xnew = xnew - delrx  * cory;
-        xnew = xnew - fov[0] * round(xnew / fov[0]);
+        xnew = xnew - fov[0] * roundhalfup(xnew / fov[0]);
         ynew = ynew - fov[1] * cory;
     }
     
@@ -520,8 +529,6 @@ boost::optional<array<double, 2> > seg_seg_intersection(const array<double, 2>& 
         y = (a1*c2 - a2*c1)/det;
         if (x >= mmx1.first && x >= mmx2.first && x <= mmx1.second && x <= mmx2.second &&
             y >= mmy1.first && y >= mmy2.first && y <= mmy1.second && y <= mmy2.second){
-//            cout<<"\nDEBUG: segments : \n\t("<<r1[0]<<","<<r1[1]<<") --> ("<<r2[0]<<","<<r2[1]<<") and \n\t("<<
-//                                               s1[0]<<","<<s1[1]<<") --> ("<<s2[0]<<","<<s2[1]<<") intersect"; 
             ans = {{x,y}};
             return ans;
         }
