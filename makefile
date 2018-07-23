@@ -17,7 +17,7 @@ CFLAGS_DEBUG := -Wall -Wunused -Wunreachable-code -std=c++11 -DBOOST_TEST_DYN_LI
 
 # BOOST_SUFFIX := -mt
 LIB := -L ${BOOST_ROOT} -lboost_unit_test_framework${BOOST_SUFFIX} -lboost_program_options${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX} -lboost_system${BOOST_SUFFIX}
-INC := -I include  -isystem /usr/include/ -isystem /usr/local/include/ -isystem /opt/local/include/
+INC := -I include # -isystem /usr/include/  -isystem /usr/local/include/ -isystem /opt/local/include/
 
 #NOW := $(shell date +"%c" | tr ' :' '_')
 
