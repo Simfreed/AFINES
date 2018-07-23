@@ -52,6 +52,8 @@ class motor_ensemble
         
         double get_potential_energy();
 
+ 	double get_kinetic_energy(); 
+
         void motor_write(ostream& fout);
 
         void print_ensemble_thermo();
