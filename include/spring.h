@@ -77,7 +77,7 @@ class spring
 
         void set_aindex1(int i);
         
-        double get_distance(string bc, double shear_dist, double xp, double yp);
+        double get_distance_sq(string bc, double shear_dist, double xp, double yp);
 
         double get_int_angle(double xp, double yp);
         

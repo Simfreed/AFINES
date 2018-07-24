@@ -102,7 +102,7 @@ void filament_ensemble::quad_update_serial()
 void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, const array<int, 2>& mq, double x, double y){
     
     array<int, 2> fl;
-    double dist;
+    double dist_sq;
     
     for (int i = 0; i < int(springs_per_quad[mq[0]]->at(mq[1])->size()); i++){
 
@@ -110,10 +110,10 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
 
         if (fls.find(fl) == fls.end()){
             network[fl[0]]->get_spring(fl[1])->calc_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the spring closest to (x,y)
-            dist = network[fl[0]]->get_spring(fl[1])->get_distance(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            dist_sq = network[fl[0]]->get_spring(fl[1])->get_distance_sq(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
             //cout<<"\nDEBUG : dist = "<<dist;
 
-            t_map.insert(pair<double, array<int, 2> >(dist, fl));
+            t_map.insert(pair<double, array<int, 2> >(dist_sq, fl));
             fls.insert(fl);
         }
     }
@@ -152,13 +152,13 @@ set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 set<pair<double, array<int,2>>> filament_ensemble::get_dist_all(double x, double y)
 {
     set<pair<double, array<int,2>>> t_map;
-    double dist=0;
+    double dist_sq=0;
     for (int f = 0; f < int(network.size()); f++){
         for (int l=0; l < network[f]->get_nsprings(); l++){
                 network[f]->get_spring(l)->calc_intpoint(network[f]->get_BC(), delrx, x, y); //calculate the point on the spring closest to (x,y)
-                dist = network[f]->get_spring(l)->get_distance(network[f]->get_BC(), delrx, x, y); //store the distance to that point
+                dist_sq = network[f]->get_spring(l)->get_distance_sq(network[f]->get_BC(), delrx, x, y); //store the distance to that point
                 // t_map[dist] = {f,l}; 
-                t_map.insert(pair<double, array<int, 2>>(dist, {{f, l}}));
+                t_map.insert(pair<double, array<int, 2>>(dist_sq, {{f, l}}));
         }
     }
     

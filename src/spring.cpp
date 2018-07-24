@@ -215,9 +215,10 @@ void spring::quad_update(string bc, double delrx){
 
 //shortest(perpendicular) distance between an arbitrary point and the spring
 //SO : 849211
-double spring::get_distance(string bc, double delrx, double xp, double yp)
+double spring::get_distance_sq(string bc, double delrx, double xp, double yp)
 {
-    return dist_bc(bc, intpoint[0]-xp, intpoint[1]-yp, fov[0], fov[1], delrx);
+    array<double, 2> dr = rij_bc(bc, intpoint[0]-xp, intpoint[1]-yp, fov[0], fov[1], delrx);
+    return dr[0]*dr[0] + dr[1]*dr[1];
 }
 
 array<double,2> spring::get_intpoint()

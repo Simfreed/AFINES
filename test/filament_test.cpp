@@ -229,11 +229,11 @@ BOOST_AUTO_TEST_CASE( get_beads_test )
     vector<bead *> rods9to13 = f->get_beads(9, 13);
     vector<bead *> rodsAll   = f->get_beads(0, nrod);
     
-    BOOST_CHECK_EQUAL(rods0to0.size(), 0);
-    BOOST_CHECK_EQUAL(rods0to3.size(), 3);
-    BOOST_CHECK_EQUAL(rods5to7.size(), 2);
-    BOOST_CHECK_EQUAL(rods9to13.size(), 1);
-    BOOST_CHECK_EQUAL(rodsAll.size(), 10);
+    BOOST_CHECK_EQUAL(int(rods0to0.size()), 0);
+    BOOST_CHECK_EQUAL(int(rods0to3.size()), 3);
+    BOOST_CHECK_EQUAL(int(rods5to7.size()), 2);
+    BOOST_CHECK_EQUAL(int(rods9to13.size()), 1);
+    BOOST_CHECK_EQUAL(int(rodsAll.size()), 10);
 
 
     //check that everythings the same with the original filament
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     vector<filament *> newfils = f->fracture(5);
     
     BOOST_CHECK_MESSAGE( *f==*fcheck, "\nFilament not the same after it was fractured.\n"<<fcheck->to_string()<<"\ndoes not equal\n"<<f->to_string());
-    BOOST_CHECK_EQUAL(newfils.size(), 2);
+    BOOST_CHECK_EQUAL(int(newfils.size()), 2);
 
     f1 = new filament({{startx, starty, startphi}}, 6, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 

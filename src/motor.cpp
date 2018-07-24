@@ -41,7 +41,8 @@ motor::motor( array<double, 3> pos,
     stall_force   = fstall;
     temperature   = temp;
     
-    max_bind_dist = rcut;
+    max_bind_dist    = rcut;
+    max_bind_dist_sq = rcut*rcut;
 
     mld         = mlen;
     dt          = delta_t;
@@ -126,7 +127,8 @@ motor::motor( array<double, 4> pos,
     stall_force = fstall;
     temperature = temp;
 
-    max_bind_dist = rcut;
+    max_bind_dist    = rcut;
+    max_bind_dist_sq = rcut*rcut;
     
     mld         = mlen;
     dt          = delta_t;
@@ -250,14 +252,14 @@ bool motor::attach(int hd)
     double mf_rand = rng_u();
     array<double, 2> intPoint;
     
-//    set<pair<double, array<int, 2> > > dist_sorted = filament_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
-    set<pair<double, array<int, 2> > > dist_sorted = filament_network->get_dist(hx[hd], hy[hd]);
+//    set<pair<double, array<int, 2> > > dist_sq_sorted = filament_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
+    set<pair<double, array<int, 2> > > dist_sq_sorted = filament_network->get_dist(hx[hd], hy[hd]);
 
-    if(!dist_sorted.empty()){
+    if(!dist_sq_sorted.empty()){
         
-        for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
+        for (set<pair<double, array<int, 2>>>::iterator it=dist_sq_sorted.begin(); it!=dist_sq_sorted.end(); ++it)
         {
-            if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
+            if (it->first > max_bind_dist_sq) //since it's sorted, all the others will be farther than max_bind_dist too
                 break;
 
             //head can't bind to the same filament spring the other head is bound to
