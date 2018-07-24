@@ -60,7 +60,6 @@ void spring::step(string bc, double shear_dist)
     hy[1] = fil->get_bead(aindex[1])->get_ycm();
 
     disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
-    phi = atan2(disp[1],disp[0]);
     llen = hypot(disp[0], disp[1]);
 
 }
@@ -131,10 +130,6 @@ double spring::get_fene_ext(){
     return max_ext/l0;
 }
 
-double spring::get_angle(){
-    return phi;
-}
-
 double spring::get_length(){
     return llen;
 }
@@ -180,8 +175,7 @@ void spring::quad_update(string bc, double delrx){
     quad.clear();
     int xlower, xupper, ylower, yupper;
     
-    if(fabs(phi) < pi/2)
-//    if(hx[0] <= hx[1])
+    if (disp[0] >= 0)
     {
         xlower = coord2quad_floor(fov[0], nq[0], hx[0]);
         xupper = coord2quad_ceil(fov[0], nq[0], hx[1]);
@@ -192,8 +186,7 @@ void spring::quad_update(string bc, double delrx){
         xupper = coord2quad_ceil(fov[0], nq[0], hx[0]);
     };
     
-    if(phi >= 0) //hy[0] <= hy[1])
-//    if (hy[0] <= hy[1])
+    if (disp[1] >=0 )
     {
         ylower = coord2quad_floor(fov[1], nq[1], hy[0]);
         yupper = coord2quad_ceil(fov[1], nq[1], hy[1]);

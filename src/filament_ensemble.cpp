@@ -165,12 +165,6 @@ set<pair<double, array<int,2>>> filament_ensemble::get_dist_all(double x, double
     return t_map;
 }
 
-double filament_ensemble::get_angle(int fil, int spring)
-{
-    return network[fil]->get_spring(spring)->get_angle();
-}
-
- 
 double filament_ensemble::get_llength(int fil, int spring)
 {
     return network[fil]->get_spring(spring)->get_length();
@@ -509,8 +503,7 @@ void filament_ensemble::update()
 vector<vector<double> > filament_ensemble::spring_spring_intersections(double len, double prob){
 
     vector< vector<double> > itrs;
-    double ang;
-    array<double, 2> r1, r2, s1, s2;
+    array<double, 2> r1, r2, s1, s2, direc;
     pair<double, double> mmx1, mmy1, mmx2, mmy2;
     boost::optional<array<double, 2> > inter;
     string bcf1; 
@@ -535,8 +528,8 @@ vector<vector<double> > filament_ensemble::spring_spring_intersections(double le
                     inter = seg_seg_intersection_bc(bcf1, delrx, fov, r1, r2, s1, s2);
                     
                     if (inter && rng(0,1) <= prob){
-                        ang = network[f2]->get_spring(l2)->get_angle();
-                        itrs.push_back({inter->at(0), inter->at(1), len*cos(ang), len*sin(ang), 
+                        direc = network[f2]->get_spring(l2)->get_direction();
+                        itrs.push_back({inter->at(0), inter->at(1), len*direc[0], len*direc[1], 
                                 double(f1), double(f2), double(l1), double(l2)}); 
                     }
                 }

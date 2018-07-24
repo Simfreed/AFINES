@@ -48,7 +48,6 @@ motor::motor( array<double, 3> pos,
     kon         = ron*dt;
     koff        = roff*dt;
     kend        = rend*dt;
-    mphi        = pos[2];
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     l_index     = mylindex; //spring index for each head
@@ -68,8 +67,8 @@ motor::motor( array<double, 3> pos,
     force       = {{0,0}}; // force on the spring  
     kinetic_energy = 0; //assume m = 1
     
-    array<double, 2> posH0 = boundary_check(0, pos[0]-0.5*mld*cos(mphi), pos[1]-0.5*mld*sin(mphi)); 
-    array<double, 2> posH1 = boundary_check(1, pos[0]+0.5*mld*cos(mphi), pos[1]+0.5*mld*sin(mphi)); 
+    array<double, 2> posH0 = boundary_check(0, pos[0]-0.5*mld*cos(pos[2]), pos[1]-0.5*mld*sin(pos[2])); 
+    array<double, 2> posH1 = boundary_check(1, pos[0]+0.5*mld*cos(pos[2]), pos[1]+0.5*mld*sin(pos[2])); 
     hx[0] = posH0[0];
     hy[0] = posH0[1];
     hx[1] = posH1[0];
@@ -361,7 +360,6 @@ void motor::update_angle()
 {
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
     len  = hypot(disp[0], disp[1]);
-    mphi = atan2(disp[1],disp[0]);
 }
 
 
@@ -550,13 +548,13 @@ string motor::to_string()
     string out ="";
 
     sprintf(buffer, "\
-            \nhead 0 position = (%f, %f)\t head 1 position=(%f,%f)\t angle = %f\
+            \nhead 0 position = (%f, %f)\t head 1 position=(%f,%f)\
             \nstate = (%d, %d)\t f_index = (%d, %d)\t l_index = (%d, %d)\
             \nviscosity = %f\t max binding distance = %f\t stiffness = %f\t stall force = %f\t length = %f\
             \nkon = %f\t koff = %f\t kend = %f\t dt = %f\t temp = %f\t damp = %f\
             \nfov = (%f, %f)\t distance from end of spring = (%f, %f)\
             shear = %f\t tension = (%f, %f)\n",
-            hx[0], hy[0], hx[1], hy[1], mphi,
+            hx[0], hy[0], hx[1], hy[1],
             state[0],  state[1], f_index[0],  f_index[1], l_index[0],  l_index[1], 
             vs, max_bind_dist, mk, stall_force, mld,
             kon, koff, kend, dt, temperature, damp, 

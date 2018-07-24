@@ -98,7 +98,7 @@ class spring
 
     protected:
 
-        double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen;//, force;
+        double xcm, ycm, l0, kl, max_ext, eps_ext, llen;//, force;
        
         array<double,2> fov, hx, hy;
         array<double, 2> disp, force, intpoint;

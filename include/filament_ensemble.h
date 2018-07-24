@@ -79,8 +79,6 @@ class filament_ensemble
        
         double get_ycm(int fil, int spring);
 
-        double get_angle(int fil, int spring);
-
         double get_llength(int fil, int spring);
        
         double get_bead_friction();

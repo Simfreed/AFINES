@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads )
     vector<filament *> newfils;
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
-    
+    f->init_ubend(); 
     double e0 = f->get_bending_energy(), e1;
     for (int t = 0; t < nsteps; t++){
         //cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
@@ -1075,6 +1075,7 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads_periodic )
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
     
+    f->init_ubend(); 
     double e0 = f->get_bending_energy(), e1;
     for (int t = 0; t < nsteps; t++){
         //cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";

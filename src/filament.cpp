@@ -31,6 +31,7 @@ filament::filament(){
     damp = infty;
     y_thresh=2;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
+    this->init_ubend();
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -49,6 +50,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     damp            = infty;
     y_thresh        = 1;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
+    this->init_ubend();
 
 }
 
@@ -100,6 +102,7 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
     
     }
    
+    this->init_ubend();
 }
 
 filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2> mynq, double spring_length, 
@@ -141,6 +144,7 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
     
     bd_prefactor = sqrt(temperature/(2*dt*damp));
 
+    this->init_ubend();
 }
 
 filament::~filament(){
@@ -340,10 +344,10 @@ void filament::pull_on_ends(double f)
     int last = beads.size() - 1; 
     array<double, 2> dr = rij_bc(BC, beads[last]->get_xcm() - beads[0]->get_xcm(),  
                                      beads[last]->get_ycm() - beads[0]->get_ycm(), fov[0], fov[1], delrx);
-    double ang = atan2( dr[1], dr[0]);
+    double len = hypot(dr[0], dr[1]);
     
-    beads[ 0  ]->update_force(-0.5*f*cos(ang), -0.5*f*sin(ang));
-    beads[last]->update_force( 0.5*f*cos(ang),  0.5*f*sin(ang));
+    beads[ 0  ]->update_force(-0.5*f*dr[0]/len, -0.5*f*dr[1]/len);
+    beads[last]->update_force( 0.5*f*dr[0]/len,  0.5*f*dr[1]/len);
 }
 
 void filament::affine_pull(double f)
@@ -352,9 +356,9 @@ void filament::affine_pull(double f)
     int last = beads.size() - 1; 
     array<double, 2> dr = rij_bc(BC, beads[last]->get_xcm() - beads[0]->get_xcm(),  
                                      beads[last]->get_ycm() - beads[0]->get_ycm(), fov[0], fov[1], delrx);
-    double ang = atan2( dr[1], dr[0]);
+    double len = hypot(dr[0], dr[1]);
     //cout<<"\nDEBUG: angle = "<<ang;
-    double frac, fcos = f*cos(ang), fsin = f*sin(ang);
+    double frac, fcos = f*dr[0]/len, fsin = f*dr[1]/len;
 
     for (int i = 0; i <= last; i++){
         frac = (double(i)/double(last)-0.5);
@@ -482,8 +486,27 @@ void filament::set_BC(string s){
 }
 
 inline double filament::angle_between_springs(int i, int j){
-    double theta = springs[i]->get_angle() - springs[j]->get_angle();
-    return theta - 2*pi*floor(theta/(2*pi)+0.5); // Keep angles between -Pi and Pi
+  
+    array<double, 2> delr1, delr2;
+    double rsq1,rsq2,r1,r2, c;
+
+    // 1st bond
+    delr1 = springs[i]->get_disp();
+    rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
+    r1    = sqrt(rsq1);
+
+    // 2nd bond
+    delr2 = springs[j]->get_disp();
+    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
+    r2    = sqrt(rsq2);
+
+    // cos angle
+    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
+    if (c > 1.0) c = 1.0;
+    if (c < -1.0) c = -1.0;
+
+    return acos(c);
+
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -500,6 +523,8 @@ void filament::lammps_bending_update()
   rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
   r1    = sqrt(rsq1);
 
+  double theta = 0, totThetaSq = 0;
+
   for (int n = 0; n < int(springs.size())-1; n++) {
     
     // 2nd bond
@@ -515,9 +540,12 @@ void filament::lammps_bending_update()
 
     s = sqrt(1.0 - c*c);
     if (s < maxSmallAngle) s = maxSmallAngle;
+    
+    theta = acos(c) - pi;
+    totThetaSq += theta*theta;
 
     // force
-    a   = -kb * (acos(c) - pi) / s; //Note, in this implementation, Lp = kb/kT 
+    a   = -kb * theta / s; //Note, in this implementation, Lp = kb/kT 
     a11 = a*c / rsq1;
     a12 = -a / (r1*r2);
     a22 = a*c / rsq2;
@@ -539,6 +567,8 @@ void filament::lammps_bending_update()
     r1    = r2;
 
   }
+
+  ubend = kb*totThetaSq/2;
 }
 
 void filament::fwd_bwd_bending_update()
@@ -619,19 +649,27 @@ int filament::get_nsprings(){
 }
 
 double filament::get_bending_energy(){
-    
-    double sum = 0, theta;
+   
+    return ubend;
 
-    if (springs.size() < 2) return 0;
+}
 
-    for (unsigned int i = 0; i < springs.size() - 1; i++)
-    {
-        theta = angle_between_springs(i+1, i);//springs[i+1]->get_angle() - springs[i]->get_angle();
-        sum += theta*theta;
+void filament::init_ubend(){
+   
+
+    if (springs.size() < 2) 
+        ubend = 0;
+    else{
+        double sum = 0, theta;
+
+        for (unsigned int i = 0; i < springs.size() - 1; i++)
+        {
+            theta = angle_between_springs(i+1, i);
+            sum += theta*theta;
+        }
+        
+        ubend = kb*sum/2;
     }
-    
-    return kb*sum/2;
-
 }
 
 double filament::get_stretching_energy()
