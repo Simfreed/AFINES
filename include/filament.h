@@ -125,7 +125,7 @@ class filament
 
     protected:
         
-        double kb, temperature, dt, fracture_force, kinetic_energy, damp, kToverLp, bd_prefactor, ubend;
+        double kb, temperature, dt, fracture_force, fracture_force_sq, kinetic_energy, damp, kToverLp, bd_prefactor, ubend;
         double gamma, max_shear, delrx, y_thresh;
 
         array<double,2> fov;

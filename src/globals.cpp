@@ -33,6 +33,11 @@ double rng(double start, double end)
 	return start+(end-start)*((double)rand()/(RAND_MAX));
 }
 
+double rng_u()
+{
+	return (double)rand()/(RAND_MAX);
+}
+
 int pr(int num)
 {
 	if (num==0) {
@@ -58,18 +63,6 @@ void set_seed(int s){
 double rng_n()
 {
     return distribution(generator);
-
-}
-
-double rng_n(double mean, double var)
-{
-    double U = 0, V, Z;
-    
-    while(U==0) U = rng(0,1);
-    V = rng(0,1);
-    Z = sqrt(-2 * log(U)) * sin(2 * pi * V);
-    
-    return mean+var*Z;
 
 }
 

@@ -37,6 +37,7 @@ spring::spring(double len, double stretching_stiffness, double max_ext_ratio, fi
 
     force = {{0,0}};
     intpoint = {{0,0}};
+    llensq = l0*l0;
     llen = l0;
 }
 spring::~spring(){ 
@@ -59,8 +60,9 @@ void spring::step(string bc, double shear_dist)
     hy[0] = fil->get_bead(aindex[0])->get_ycm();
     hy[1] = fil->get_bead(aindex[1])->get_ycm();
 
-    disp = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
-    llen = hypot(disp[0], disp[1]);
+    disp   = rij_bc(bc, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], shear_dist); 
+    llensq = disp[0]*disp[0] + disp[1]*disp[1];
+    llen   = sqrt(llensq);
 
 }
 
@@ -74,7 +76,7 @@ void spring::update_force(string bc, double shear_dist)
  * Adapted by placing a cutoff, similar to how it's done in LAMMPS src/bond_fene.cpp*/
 void spring::update_force_fraenkel_fene(string bc, double shear_dist)
 {
-    double ext = abs(l0 - hypot(disp[0], disp[1]));
+    double ext = abs(l0 - llen);
     double scaled_ext, klp;
     if (max_ext - ext > eps_ext ){
         scaled_ext = ext/max_ext;
@@ -132,6 +134,10 @@ double spring::get_fene_ext(){
 
 double spring::get_length(){
     return llen;
+}
+
+double spring::get_length_sq(){
+    return llensq;
 }
 
 std::string spring::write(string bc, double shear_dist){
@@ -257,7 +263,7 @@ double spring::get_stretching_energy(){
 
 double spring::get_stretching_energy_fene(string bc, double shear_dist)
 {
-    double ext = abs(l0 - hypot(disp[0], disp[1]));
+    double ext = abs(l0 - llen);
     
     if (max_ext - ext > eps_ext )
         return -0.5*kl*max_ext*max_ext*log(1-(ext/max_ext)*(ext/max_ext));

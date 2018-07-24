@@ -247,7 +247,7 @@ bool motor::allowed_bind(int hd, array<int, 2> fl_idx){
 bool motor::attach(int hd)
 {
     double not_off_prob = 0;
-    double mf_rand = rng(0,1.0);
+    double mf_rand = rng_u();
     array<double, 2> intPoint;
     
 //    set<pair<double, array<int, 2> > > dist_sorted = filament_network->get_dist_all(hx[hd], hy[hd]);//if not using neighbor lists
@@ -310,7 +310,7 @@ void motor::update_force()
 
 void motor::update_force_fraenkel_fene()
 {
-    double ext = abs(mld - hypot(disp[0], disp[1]));
+    double ext = abs(mld - len);
     double scaled_ext, mkp;
     
     if (max_ext - ext > eps_ext )
@@ -327,7 +327,7 @@ void motor::update_force_fraenkel_fene()
 void motor::brownian_relax(int hd)
 {
     
-    double new_rnd_x= rng_n(0,1), new_rnd_y = rng_n(0,1);
+    double new_rnd_x= rng_n(), new_rnd_y = rng_n();
     
     double vx =  pow(-1,hd)*force[0] / damp + bd_prefactor*(new_rnd_x + prv_rnd_x[hd]);
     double vy =  pow(-1,hd)*force[1] / damp + bd_prefactor*(new_rnd_y + prv_rnd_y[hd]);
@@ -527,7 +527,7 @@ double motor::get_stretching_energy(){
 
 double motor::get_stretching_energy_fene()
 {
-    double ext = abs(mld - hypot(disp[0], disp[1]));
+    double ext = abs(mld - len);
     
     if (max_ext - ext > eps_ext )
         return -0.5*mk*max_ext*max_ext*log(1-(ext/max_ext)*(ext/max_ext));

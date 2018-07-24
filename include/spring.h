@@ -38,9 +38,9 @@ class spring
         double get_kl();
         
         double get_length();
+        
+        double get_length_sq();
        
-        double get_angle();
-
         double get_l0();
         
         double get_fene_ext();
@@ -98,7 +98,7 @@ class spring
 
     protected:
 
-        double xcm, ycm, l0, kl, max_ext, eps_ext, llen;//, force;
+        double xcm, ycm, l0, kl, max_ext, eps_ext, llen, llensq;//, force;
        
         array<double,2> fov, hx, hy;
         array<double, 2> disp, force, intpoint;

@@ -32,6 +32,7 @@ filament::filament(){
     y_thresh=2;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
     this->init_ubend();
+    fracture_force_sq = fracture_force*fracture_force;
 }
 
 filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
@@ -51,6 +52,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     y_thresh        = 1;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
     this->init_ubend();
+    fracture_force_sq = fracture_force*fracture_force;
 
 }
 
@@ -98,11 +100,12 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
         springs[j-1]->update_force(BC, delrx);
         
         // Calculate the Next angle on the bead polymer
-        if (!isStraight) phi += rng_n(0, variance);
+        if (!isStraight) phi += sqrt(variance)*rng_n();
     
     }
    
     this->init_ubend();
+    fracture_force_sq = fracture_force*fracture_force;
 }
 
 filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2> mynq, double spring_length, 
@@ -145,6 +148,7 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
     bd_prefactor = sqrt(temperature/(2*dt*damp));
 
     this->init_ubend();
+    fracture_force_sq = fracture_force*fracture_force;
 }
 
 filament::~filament(){
@@ -275,14 +279,16 @@ void filament::update_positions_range(int lo, int hi)
 vector<filament *> filament::update_stretching(double t)
 {
     vector<filament *> newfilaments;
-
+    array<double, 2> spring_force;
     if(springs.size() == 0)
         return newfilaments;
    
     for (unsigned int i=0; i < springs.size(); i++) {
         springs[i]->update_force(BC, delrx);
+        spring_force = springs[i]->get_force();
         //springs[i]->update_force_fraenkel_fene(BC, delrx);
-        if (hypot(springs[i]->get_force()[0], springs[i]->get_force()[1]) > fracture_force){
+        if (spring_force[0]*spring_force[0]+spring_force[1]*spring_force[1] > fracture_force_sq){
+//        if ((springs[i]->get_force()[0], springs[i]->get_force()[1]) > fracture_force){
             newfilaments = this->fracture(i);
             break;
         }
@@ -488,17 +494,15 @@ void filament::set_BC(string s){
 inline double filament::angle_between_springs(int i, int j){
   
     array<double, 2> delr1, delr2;
-    double rsq1,rsq2,r1,r2, c;
+    double r1,r2, c;
 
     // 1st bond
     delr1 = springs[i]->get_disp();
-    rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
-    r1    = sqrt(rsq1);
+    r1    = springs[i]->get_length();
 
     // 2nd bond
     delr2 = springs[j]->get_disp();
-    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
-    r2    = sqrt(rsq2);
+    r2    = springs[j]->get_length();
 
     // cos angle
     c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
@@ -520,8 +524,8 @@ void filament::lammps_bending_update()
     
   // 1st bond
   delr1 = springs[0]->get_neg_disp();
-  rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
-  r1    = sqrt(rsq1);
+  rsq1  = springs[0]->get_length_sq();
+  r1    = springs[0]->get_length();
 
   double theta = 0, totThetaSq = 0;
 
@@ -529,8 +533,8 @@ void filament::lammps_bending_update()
     
     // 2nd bond
     delr2 = springs[n+1]->get_disp();
-    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
-    r2    = sqrt(rsq2);
+    rsq2  = springs[n+1]->get_length_sq();
+    r2    = springs[n+1]->get_length();
 
     // angle (cos and sin)
     c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
@@ -571,72 +575,11 @@ void filament::lammps_bending_update()
   ubend = kb*totThetaSq/2;
 }
 
-void filament::fwd_bwd_bending_update()
-{
-  array<double, 2> delr1, delr2;
-  double rsq1,rsq2,r1,r2,c,c1,c2,c3,cost,sint;//,s,coeff;
-
-  // 1st bond
-  delr1 = springs[0]->get_disp();
-  rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];///Caa
-  r1    = sqrt(rsq1);
-
-  for (int n = 1; n < int(beads.size())-1; n++) {
-
-    // 2nd bond
-    delr2 = springs[n]->get_disp();
-    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];//Ca+1a+1
-    r2    = sqrt(rsq2); 
-
-    // angle (cos and sin)
-
-    if (r1 < eps || r2 < eps ) // bad news, probably inaccurate results
-        continue;
-
-    c  = delr1[0]*delr2[0] + delr1[1]*delr2[1];//Caa+1
-    
-    cost = c /(r1*r2); // negative because cos(pi-theta) = -cos(theta)
-
-    if (cost > 1.0) cost = 1.0;
-    if (cost < -1.0) cost = -1.0;
-
-    sint = sqrt(1.0 - cost*cost);
-    if (sint < maxSmallAngle) sint = maxSmallAngle;
-
-    c1 = kb*acos(cost)/(sint*r1*r2);
-    c2 = c/rsq2;
-    c3 = c/rsq1;
-    beads[n]->update_force(
-            c1*( delr2[0]*(1+c2) - delr1[0]*(1+c3) ),
-            c1*( delr2[1]*(1+c2) - delr1[1]*(1+c3) )
-            );
-
-    /*
-    
-    // force
-    coeff = -2*kb*acos(cost)/s;
-
-    // Allen and Tildesley Appendix C, eq C.13 middle
-    // (top and bottom of C.13 cancels out when going fwd and bwd; middle doubles
-
-    beads[n]->update_force(
-            coeff*( c*( delr2[0] / rsq2 - delr1[0] / rsq1 ) - ( delr2[0] - delr1[0] )/( r1*r2 ) ),
-            coeff*( c*( delr2[1] / rsq2 - delr1[1] / rsq1 ) - ( delr2[1] - delr1[1] )/( r1*r2 ) )
-            );
-    */    
-    // 1st bond of next iteration
-    delr1 = delr2;
-    rsq1  = rsq2;
-    r1    = r2;
-  }
-}
-
 //wrapper, for fwd_bending_update (and bwd bending update if I ever make it)
 void filament::update_bending(double t)
 {
     if(springs.size() > 1 && kb > 0){
           this->lammps_bending_update();
-//          this->fwd_bwd_bending_update();
     }
 }
 
