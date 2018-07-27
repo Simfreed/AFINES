@@ -101,7 +101,7 @@ class spring
         double xcm, ycm, l0, kl, max_ext, eps_ext, llen, llensq;//, force;
        
         array<double,2> fov, hx, hy;
-        array<double, 2> disp, force, intpoint;
+        array<double, 2> disp, force, intpoint, direc;
 
         array<int, 2> nq, half_nq, aindex;
          

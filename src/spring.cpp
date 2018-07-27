@@ -64,12 +64,17 @@ void spring::step(string bc, double shear_dist)
     llensq = disp[0]*disp[0] + disp[1]*disp[1];
     llen   = sqrt(llensq);
 
+    if (llen != 0)
+        direc = {{disp[0]/llen, disp[1]/llen}};
+    else
+        direc = {{0, 0}};
+
 }
 
 void spring::update_force(string bc, double shear_dist)
 {
-    double kf = kl*(1-l0/llen);
-    force = {{kf*disp[0], kf*disp[1]}};
+    double kf = kl*(llen-l0);
+    force = {{kf*direc[0], kf*direc[1]}};
 }
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
@@ -85,8 +90,8 @@ void spring::update_force_fraenkel_fene(string bc, double shear_dist)
         scaled_ext = (max_ext - eps_ext)/max_ext;
     }
 
-    klp = kl/(1-scaled_ext*scaled_ext)*(1-l0/llen);
-    force = {{klp*disp[0], klp*disp[1]}};
+    klp = kl/(1-scaled_ext*scaled_ext)*(llen-l0);
+    force = {{klp*direc[0], klp*direc[1]}};
 
 }
 
@@ -255,7 +260,7 @@ vector<array<int, 2> > spring::get_quadrants()
 
 array<double, 2> spring::get_direction()
 {
-    return {{disp[0]/llen, disp[1]/llen}};
+    return direc;
 }
 
 double spring::get_stretching_energy(){
