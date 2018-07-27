@@ -1,5 +1,4 @@
 #include "bead.h"
-//#include "globals.h"
 #define BOOST_TEST_MODULE bead_test
 #include <boost/test/unit_test.hpp>
 
@@ -10,8 +9,6 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_EQUAL( a->get_ycm(), 0.5);                   // 1 //
     BOOST_CHECK_EQUAL( a->get_length(), 0.75);                // 1 //
     BOOST_CHECK_EQUAL( a->get_viscosity(), 1.25);               
-    BOOST_CHECK_EQUAL( a->get_velocity()[0], 0);               
-    BOOST_CHECK_EQUAL( a->get_velocity()[1], 0);               
     BOOST_CHECK_EQUAL( a->get_force()[0], 0);               
     BOOST_CHECK_EQUAL( a->get_force()[1], 0);               
     BOOST_CHECK_CLOSE( a->get_friction(), 17.6715, 0.001);               
@@ -35,27 +32,6 @@ BOOST_AUTO_TEST_CASE( force_test)
     a.reset_force();
     BOOST_CHECK_EQUAL( a.get_force()[0], 0);               
     BOOST_CHECK_EQUAL( a.get_force()[1], 0);               
-}
-
-BOOST_AUTO_TEST_CASE( velocity_test)
-{
-    bead a(0.25, 0.5, 0.75, 1.25);
-    array<double, 2> v1 = {{3.5,-6.7}};
-    array<double, 2> v2 = {{-2,1}};
-    array<double, 2> vtot = {{v1[0]+v2[0],v1[1]+v2[1]}};
-    double vtotsq = dot(vtot[0], vtot[1], vtot[0], vtot[1]);
-
-    a.update_velocity(v1[0], v1[1]);
-    BOOST_CHECK_EQUAL( a.get_velocity()[0] , v1[0]); 
-    BOOST_CHECK_EQUAL( a.get_velocity()[1] , v1[1]); 
-    a.update_velocity(v2[0], v2[1]);
-    BOOST_CHECK_EQUAL( a.get_velocity()[0] , vtot[0]); 
-    BOOST_CHECK_EQUAL( a.get_velocity()[1] , vtot[1]); 
-    BOOST_CHECK_EQUAL( a.get_vsquared() , vtotsq); 
-    
-    a.reset_velocity();
-    BOOST_CHECK_EQUAL( a.get_velocity()[0], 0);               
-    BOOST_CHECK_EQUAL( a.get_velocity()[1], 0);               
 }
 
 BOOST_AUTO_TEST_CASE( pos_test)
