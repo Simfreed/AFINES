@@ -192,18 +192,6 @@ vector<vector<array<int,2> > > filament::get_quadrants()
     
     return quads;
 }
-/*
-multimap<int, array<int, 2> > filament::get_quadrants()
-{
-    //should return a map between bead and x, y coords of quadrant
-    multipmap<int, array<int, 2> > quads;
-    for (unsigned int i=0; i < springs.size(); i++){ 
-        springs[i]->quad_update(BC, delrx);
-        quads.push_back(springs[i]->get_quadrants());
-    }
-    
-    return quads;
-}*/
 
 void filament::set_y_thresh(double y){
     y_thresh = y;
