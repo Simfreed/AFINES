@@ -304,7 +304,8 @@ bool motor::attach(int hd)
 void motor::update_force()
 { 
     tension = mk*(len - mld);
-    force = {{tension*disp[0]/len, tension*disp[1]/len}};
+    force = {{tension*direc[0], tension*direc[1]}};
+//    force = {{tension*disp[0]/len, tension*disp[1]/len}};
 }
 
 /* Taken from hsieh, jain, larson, jcp 2006; eqn (5)
@@ -320,8 +321,8 @@ void motor::update_force_fraenkel_fene()
     else
         scaled_ext = (max_ext - eps_ext)/max_ext;
     
-    mkp = mk/(1-scaled_ext*scaled_ext)*(1-mld/len);
-    force = {{mkp*disp[0], mkp*disp[1]}};
+    mkp = mk/(1-scaled_ext*scaled_ext)*(len-mld);
+    force = {{mkp*direc[0], mkp*direc[1]}};
 
 }
 
@@ -352,7 +353,7 @@ void motor::kill_head(int hd)
 
 void motor::relax_head(int hd)
 {
-    array<double, 2> newpos = boundary_check(hd, hx[pr(hd)] - pow(-1, hd)*mld*disp[0]/len, hy[pr(hd)] - pow(-1, hd)*mld*disp[1]/len);
+    array<double, 2> newpos = boundary_check(hd, hx[pr(hd)] - pow(-1, hd)*mld*direc[0], hy[pr(hd)] - pow(-1, hd)*mld*direc[1]);
     hx[hd] = newpos[0];
     hy[hd] = newpos[1];
 }
@@ -360,8 +361,12 @@ void motor::relax_head(int hd)
 
 void motor::update_angle()
 {
-    disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
-    len  = hypot(disp[0], disp[1]);
+    disp  = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
+    len   = hypot(disp[0], disp[1]);
+    if ( len != 0 ) 
+        direc = {{disp[0]/len, disp[1]/len}};
+    else
+        direc = {{0, 0}};
 }
 
 

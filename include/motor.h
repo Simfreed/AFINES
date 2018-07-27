@@ -120,7 +120,7 @@ class motor
         double mld, vs, stall_force, max_bind_dist, max_bind_dist_sq, mk, kon, koff, kend, dt, temperature, 
                damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, len;
         
-        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
+        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, direc;
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 

@@ -518,64 +518,63 @@ inline double filament::angle_between_springs(int i, int j){
 /* --------------------------------------------------------------------------------- */
 void filament::lammps_bending_update()
 {
-  array<double, 2> delr1, delr2;
-  double f1[2], f3[2];
-  double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
-    
-  // 1st bond
-  delr1 = springs[0]->get_neg_disp();
-  rsq1  = springs[0]->get_length_sq();
-  r1    = springs[0]->get_length();
+    array<double, 2> delr1, delr2;
+    double f1[2], f3[2];
+    double rsq1,rsq2,r1,r2,c,s,a,a11,a12,a22;
 
-  double theta = 0, totThetaSq = 0;
+    // 1st bond
+    delr1 = springs[0]->get_neg_disp();
+    rsq1  = springs[0]->get_length_sq();
+    r1    = springs[0]->get_length();
 
-  for (int n = 0; n < int(springs.size())-1; n++) {
-    
-    // 2nd bond
-    delr2 = springs[n+1]->get_disp();
-    rsq2  = springs[n+1]->get_length_sq();
-    r2    = springs[n+1]->get_length();
+    double theta = 0, totThetaSq = 0;
 
-    // angle (cos and sin)
-    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
-    
-    if (c > 1.0) c = 1.0;
-    if (c < -1.0) c = -1.0;
+    for (int n = 0; n < int(springs.size())-1; n++) {
 
-    s = sqrt(1.0 - c*c);
-    if (s < maxSmallAngle) s = maxSmallAngle;
-    
-    theta = acos(c) - pi;
-    totThetaSq += theta*theta;
+        // 2nd bond
+        delr2 = springs[n+1]->get_disp();
+        rsq2  = springs[n+1]->get_length_sq();
+        r2    = springs[n+1]->get_length();
 
-    // force
-    a   = -kb * theta / s; //Note, in this implementation, Lp = kb/kT 
-    a11 = a*c / rsq1;
-    a12 = -a / (r1*r2);
-    a22 = a*c / rsq2;
-  
-    f1[0] = a11*delr1[0] + a12*delr2[0];
-    f1[1] = a11*delr1[1] + a12*delr2[1];
-    f3[0] = a22*delr2[0] + a12*delr1[0];
-    f3[1] = a22*delr2[1] + a12*delr1[1];
-    //cout<<"\nDEBUG: f1x, f1y, f3x f3y = "<<f1[0]<<" , "<<f1[1]<<" , "<<f3[0]<<" , "<<f3[1];
-                
-    // apply force to each of 3 atoms
-    beads[n  ]->update_force(f1[0], f1[1]);
-    beads[n+1]->update_force(-f1[0] - f3[0], -f1[1] - f3[1]);
-    beads[n+2]->update_force(f3[0], f3[1]);
+        // angle (cos and sin)
+        c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
 
-    // 1st bond, next iteration
-    delr1 = {{-delr2[0], -delr2[1]}};
-    rsq1  = rsq2;
-    r1    = r2;
+        if (c > 1.0) c = 1.0;
+        if (c < -1.0) c = -1.0;
 
-  }
+        s = sqrt(1.0 - c*c);
+        if (s < maxSmallAngle) s = maxSmallAngle;
 
-  ubend = kb*totThetaSq/2;
+        theta = acos(c) - pi;
+        totThetaSq += theta*theta;
+
+        // force
+        a   = -kb * theta / s; //Note, in this implementation, Lp = kb/kT 
+        a11 = a*c / rsq1;
+        a12 = -a / (r1*r2);
+        a22 = a*c / rsq2;
+
+        f1[0] = a11*delr1[0] + a12*delr2[0];
+        f1[1] = a11*delr1[1] + a12*delr2[1];
+        f3[0] = a22*delr2[0] + a12*delr1[0];
+        f3[1] = a22*delr2[1] + a12*delr1[1];
+        //cout<<"\nDEBUG: f1x, f1y, f3x f3y = "<<f1[0]<<" , "<<f1[1]<<" , "<<f3[0]<<" , "<<f3[1];
+
+        // apply force to each of 3 atoms
+        beads[n  ]->update_force(f1[0], f1[1]);
+        beads[n+1]->update_force(-f1[0] - f3[0], -f1[1] - f3[1]);
+        beads[n+2]->update_force(f3[0], f3[1]);
+
+        // 1st bond, next iteration
+        delr1 = {{-delr2[0], -delr2[1]}};
+        rsq1  = rsq2;
+        r1    = r2;
+
+    }
+
+    ubend = kb*totThetaSq/2;
 }
 
-//wrapper, for fwd_bending_update (and bwd bending update if I ever make it)
 void filament::update_bending(double t)
 {
     if(springs.size() > 1 && kb > 0){
