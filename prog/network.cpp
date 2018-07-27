@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     int xgrid, ygrid;
     double grid_factor; 
     
-    int    count, nframes, nmsgs, n_bw_shear;                                  //Time 
+    int    count, nframes, nmsgs, n_bw_shear, quad_update_period;            //Time 
     double t, tinit, tfinal, dt;
     
     double viscosity, temperature;                                          //Environment
@@ -168,6 +168,7 @@ int main(int argc, char* argv[]){
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
+        ("quad_update_period", po::value<int>(&quad_update_period)->default_value(1), "number of timesteps between actin/link/motor position updates to update quadrants")
         
         ("diff_strain_flag", po::value<bool>(&diff_strain_flag)->default_value(false), "flag to turn on linear differential strain")
         ("osc_strain_flag", po::value<bool>(&osc_strain_flag)->default_value(false), "flag to turn on oscillatory differential strain")
@@ -471,6 +472,9 @@ int main(int argc, char* argv[]){
 
         //update network
         net->update();//updates all forces, velocities and positions of filaments
+
+        if ( ! quad_off_flag && count % quad_update_period == 0)
+            net->quad_update_serial();
 
         //update cross linkers
         if (static_cl_flag)

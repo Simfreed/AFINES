@@ -490,9 +490,6 @@ void filament_ensemble::update()
         network[f]->update_positions();
     }
     
-    if (!quad_off_flag)
-        this->quad_update_serial();
-    
     this->update_energies();
     
     t += dt;
