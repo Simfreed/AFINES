@@ -575,7 +575,13 @@ int coord2quad_ceil(double fov, int nq, double coord)
 
 int coord2quad(double fov, int nq, double coord)
 {
-    return min(int(round((coord+fov/2)*nq/fov)), nq);
+    double c2 = coord/fov + 0.5;
+    if (c2 >= 1)
+        return nq - 1;
+    else if (c2 <= 0)
+        return 0;
+    else 
+        return int(round(c2*(nq-1.0)));
 }
 
 double angBC(double ang)
