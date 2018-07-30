@@ -1,5 +1,5 @@
 /*
- *  link.h
+ *  spring.h
  *
  *  Created by Simon Freedman on 9/10/2014
  *  Copyright 2014 University of Chicago. All rights reserved.
@@ -18,20 +18,18 @@ class filament;
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
 #include "globals.h"
 #include "motor.h"
 //=====================================
-//Link class
-class Link
+//spring class
+class spring
 {
     public:
-        Link();
+        spring();
         
-        Link(double len, double stiffness, double max_ext, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
+        spring(double len, double stiffness, double max_ext, filament* f, array<int, 2> aindex, array<double, 2> fov, array<int, 2> nq);
         
-        virtual ~Link();
+        virtual ~spring();
 
         array<double, 2> get_hx();
         
@@ -40,11 +38,9 @@ class Link
         double get_kl();
         
         double get_length();
- 
-        //double get_link_length(); 
+        
+        double get_length_sq();
        
-        double get_angle();
-
         double get_l0();
         
         double get_fene_ext();
@@ -65,9 +61,9 @@ class Link
         
         void filament_update();
         
-        bool operator==(const Link& that);    
+        bool operator==(const spring& that);    
         
-        bool is_similar(const Link& that);    
+        bool is_similar(const spring& that);    
 
         void update_force(string bc, double shear_dist);
 
@@ -85,7 +81,7 @@ class Link
         
         void set_l0(double myl0);
         
-        double get_distance(string bc, double shear_dist, double xp, double yp);
+        double get_distance_sq(string bc, double shear_dist, double xp, double yp);
 
         double get_int_angle(double xp, double yp);
         
@@ -96,7 +92,7 @@ class Link
  
 	//void calc_r_c(string bc, double delrx, double x, double y); 
 
-    	bool get_line_intersect(string bc, double delrx, Link *l2); 
+    	bool get_line_intersect(string bc, double delrx, spring *l2); 
         
         double get_r_c(string bc, double delrx, double x, double y); 
 
@@ -140,10 +136,10 @@ class Link
         map<motor *, int> & get_mots();
     protected:
 
-        double xcm, ycm, phi, l0, kl, max_ext, eps_ext, llen, r_c;//, force;
+        double xcm, ycm, l0, kl, max_ext, eps_ext, llen, llensq, r_c;//, force;
        
         array<double,2> fov, hx, hy;
-        array<double, 2> disp, force, intpoint, point;
+        array<double,2> disp, force, intpoint, direc, point;
 
         array<int, 2> nq, half_nq, aindex;
          

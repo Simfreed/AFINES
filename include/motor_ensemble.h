@@ -20,7 +20,6 @@
 //included dependences
 #include "motor.h"
 #include "spacer.h"
-#include "vector"
 
 //motor ensemble class
 template <class motor_type>
