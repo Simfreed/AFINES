@@ -1,8 +1,5 @@
 #define BOOST_TEST_MODULE filament_test
 
-#include "globals.h"
-#include "Link.h"
-#include "actin.h"
 #include "filament.h"
 #include <boost/test/unit_test.hpp>
 
@@ -19,19 +16,19 @@
 
         void update_shear(); 
         
-        actin * get_actin(int i);
+        bead * get_bead(int i);
 
         vector<vector<vector<int> > > get_quadrants();
         
         string write_rods();
         
-        string write_links();
+        string write_springs();
         
         string to_string();
         
         bool operator==(const filament& that);    
     
-        vector<actin *> get_actins(unsigned int first, unsigned int last);
+        vector<bead *> get_beads(unsigned int first, unsigned int last);
         
         void update_forces(int index, double f1, double f2, double f3);
 */
@@ -46,8 +43,8 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     int     nrod                = 10;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -57,40 +54,40 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     double  startx = 0, starty = 0, startphi = 0;
     
     filament * f; 
-    Link l; 
-    actin a; 
+    spring l; 
+    bead a; 
    
-    f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
-    //Expect to have actins  at (0, 0), (1, 0), (2, 0), ..., (9, 0)
-    //Expect to have links at (0.5, 0), (1.5, 0), (2.5, 0), ...., (8.5, 0)
+    //Expect to have beads  at (0, 0), (1, 0), (2, 0), ..., (9, 0)
+    //Expect to have springs at (0.5, 0), (1.5, 0), (2.5, 0), ...., (8.5, 0)
     
     for (int i = 0; i < nrod - 1; i++){
-        a = actin( i, 0, actin_length, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid});
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        a = bead( i, 0, bead_length, viscosity );
+        BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        l = spring( spring_len, stretching_stiffness, 1, f, {{i, i+1}}, {{xrange, yrange}}, {{xgrid, ygrid}});
+        BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
-    a = actin( (nrod - 1), 0, actin_length, viscosity );
-    BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
+    a = bead( (nrod - 1), 0, bead_length, viscosity );
+    BOOST_CHECK_MESSAGE( a == *(f->get_bead((nrod - 1))), "\n" + f->get_bead((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
 
     delete f;
     
     startx=-1; starty = 0; startphi= 3*pi/2;
 
-    f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
-    //Expect to have actin monomers at (-1, 0), (-1, -1), (-1, -2), ..., (-1, -9)
+    //Expect to have bead monomers at (-1, 0), (-1, -1), (-1, -2), ..., (-1, -9)
     for (int i = 0; i < nrod-1; i++){
-        a = actin( -1 , -i, actin_length, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        a = bead( -1 , -i, bead_length, viscosity );
+        BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        l = spring( spring_len, stretching_stiffness, 1, f, {{i, i+1}}, {{xrange, yrange}}, {{xgrid, ygrid}} );
+        BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
-    a = actin( -1, -(nrod - 1), actin_length, viscosity );
-    BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
+    a = bead( -1, -(nrod - 1), bead_length, viscosity );
+    BOOST_CHECK_MESSAGE( a == *(f->get_bead((nrod - 1))), "\n" + f->get_bead((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
 
     delete f;
 
@@ -106,8 +103,8 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     int     nrod                = 10;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -116,30 +113,30 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     string  bc                  = "REFLECTIVE";
     
     filament * f; 
-    Link l; 
-    actin a;
-    vector<actin *> rodvec;
+    spring l; 
+    bead a;
+    vector<bead *> rodvec;
 
-    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, link_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
+    f = new filament(rodvec, {{xrange, yrange}}, {{xgrid, ygrid}}, spring_len, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
     delete f; 
     
     for (int i = 0; i < nrod; i++){
-        rodvec.push_back(new actin( i, 0, actin_length, viscosity ));
+        rodvec.push_back(new bead( i, 0, bead_length, viscosity ));
     }
 
-    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, link_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
+    f = new filament(rodvec, {{xrange, yrange}}, {{xgrid, ygrid}}, spring_len, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
     //Expect to have rods  at (0, 0), (2, 0), (4, 0), ..., (18, 0)
-    //Expect to have links at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
+    //Expect to have springs at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
     
     for (int i = 0; i < nrod-1; i++){
-        a = actin( i, 0, actin_length, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        a = bead( i, 0, bead_length, viscosity );
+        BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        l = spring( spring_len, stretching_stiffness, 1, f, {{i, i+1}}, {{xrange, yrange}}, {{xgrid, ygrid}} );
+        BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     
-    a = actin( (nrod - 1), 0, actin_length, viscosity );
-    BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
+    a = bead( (nrod - 1), 0, bead_length, viscosity );
+    BOOST_CHECK_MESSAGE( a == *(f->get_bead((nrod - 1))), "\n" + f->get_bead((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
     
     delete f;
     for(unsigned int i=0; i<rodvec.size(); i++)
@@ -154,11 +151,11 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     int     xgrid               = (int)(2*xrange);
     int     ygrid               = (int)(2*yrange);
     
-    int     nactin              = 5;
+    int     nbead              = 5;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -168,21 +165,21 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     double  startx = 0, starty = 0, startphi = 0;
     
     filament * f; 
-    Link l; 
-    actin a; 
+    spring l; 
+    bead a; 
    
-    f = new filament({startx, starty, startphi}, nactin, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     vector<vector<array<int,2> > > quads, expected_quads;
     quads = f->get_quadrants();
 
-    for(int i = 0; i < nactin - 1; i++){
+    for(int i = 0; i < nbead - 1; i++){
         expected_quads.push_back(vector<array<int,2> >() );
-        expected_quads[i].push_back({2*i+xgrid/2, ygrid/2});
-        expected_quads[i].push_back({2*i+1+xgrid/2, ygrid/2});
-        expected_quads[i].push_back({2*i+2+xgrid/2, ygrid/2});
+        expected_quads[i].push_back({{2*i+xgrid/2, ygrid/2}});
+        expected_quads[i].push_back({{2*i+1+xgrid/2, ygrid/2}});
+        expected_quads[i].push_back({{2*i+2+xgrid/2, ygrid/2}});
     }
 
     cout<<"\nFilament Quadrants:"; 
@@ -195,9 +192,9 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     BOOST_CHECK_MESSAGE(expected_quads == quads, "\nExpected quadrants not equal to filament quadrants");
     delete f;  
 }
-BOOST_AUTO_TEST_CASE( get_actins_test )
+BOOST_AUTO_TEST_CASE( get_beads_test )
 {
-/*vector<actin *> get_actins(unsigned int first, unsigned int last);*/      
+/*vector<bead *> get_beads(unsigned int first, unsigned int last);*/      
     
     double  xrange              = 50;
     double  yrange              = 50;
@@ -207,8 +204,8 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     int     nrod                = 10;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -217,57 +214,57 @@ BOOST_AUTO_TEST_CASE( get_actins_test )
     
     double startx = 0, starty = 0, startphi = 0;
     filament * f; 
-    Link l; 
-    actin a; 
+    spring l; 
+    bead a; 
 
     startx=-1; starty = 0; startphi= 3*pi/2;
 
-    f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
-    vector<actin *> rods0to0  = f->get_actins(0,0);
-    vector<actin *> rods0to3  = f->get_actins(0, 3);
-    vector<actin *> rods5to7  = f->get_actins(5, 7);
-    vector<actin *> rods9to13 = f->get_actins(9, 13);
-    vector<actin *> rodsAll   = f->get_actins(0, nrod);
+    vector<bead *> rods0to0  = f->get_beads(0,0);
+    vector<bead *> rods0to3  = f->get_beads(0, 3);
+    vector<bead *> rods5to7  = f->get_beads(5, 7);
+    vector<bead *> rods9to13 = f->get_beads(9, 13);
+    vector<bead *> rodsAll   = f->get_beads(0, nrod);
     
-    BOOST_CHECK_EQUAL(rods0to0.size(), 0);
-    BOOST_CHECK_EQUAL(rods0to3.size(), 3);
-    BOOST_CHECK_EQUAL(rods5to7.size(), 2);
-    BOOST_CHECK_EQUAL(rods9to13.size(), 1);
-    BOOST_CHECK_EQUAL(rodsAll.size(), 10);
+    BOOST_CHECK_EQUAL(int(rods0to0.size()), 0);
+    BOOST_CHECK_EQUAL(int(rods0to3.size()), 3);
+    BOOST_CHECK_EQUAL(int(rods5to7.size()), 2);
+    BOOST_CHECK_EQUAL(int(rods9to13.size()), 1);
+    BOOST_CHECK_EQUAL(int(rodsAll.size()), 10);
 
 
     //check that everythings the same with the original filament
-    //Expect to have actin monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
+    //Expect to have bead monomers at (-1, 0), (-1, -2), (-1, -4), ..., (-1, -18)
     for (int i = 0; i < nrod-1; i++){
-        a = actin( -1 , -i, actin_length, viscosity );
-        BOOST_CHECK_MESSAGE( a == *(f->get_actin(i)), "\n" + f->get_actin(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = Link( link_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
-        BOOST_CHECK_MESSAGE( l == *(f->get_link(i)), "\nLink : " + f->get_link(i)->to_string() + "\ndoes not equal\nLink : " + l.to_string() );
+        a = bead( -1 , -i, bead_length, viscosity );
+        BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
+        l = spring( spring_len, stretching_stiffness, 1, f, {{i, i+1}}, {{xrange, yrange}}, {{xgrid, ygrid}} );
+        BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
-    a = actin( -1, -(nrod - 1), actin_length, viscosity );
-    BOOST_CHECK_MESSAGE( a == *(f->get_actin((nrod - 1))), "\n" + f->get_actin((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
+    a = bead( -1, -(nrod - 1), bead_length, viscosity );
+    BOOST_CHECK_MESSAGE( a == *(f->get_bead((nrod - 1))), "\n" + f->get_bead((nrod - 1))->to_string() + "\ndoes not equal\n" + a.to_string() );
 
     //check the rods arrays
     for (int i = 0; i < 3; i++){
-        a = actin( -1 , -i, actin_length, viscosity );
+        a = bead( -1 , -i, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(rods0to3[i]), "\n" + rods0to3[i]->to_string() + "\ndoes not equal\n" + a.to_string() );
     }
     
     for (int i = 5; i < 7; i++){
-        a = actin( -1 , -i, actin_length, viscosity );
+        a = bead( -1 , -i, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(rods5to7[i-5]), "\n" + rods5to7[i-5]->to_string() + "\ndoes not equal\n" + a.to_string() );
     }
     
     for (int i = 9; i < nrod; i++){
-        a = actin( -1 , -i, actin_length, viscosity );
+        a = bead( -1 , -i, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(rods9to13[i-9]), "\n" + rods9to13[i-9]->to_string() + "\ndoes not equal\n" + a.to_string() );
     }
     
     for (int i = 0; i < nrod; i++){
-        a = actin( -1 , -i, actin_length, viscosity );
+        a = bead( -1 , -i, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(rodsAll[i]), "\n" + rodsAll[i]->to_string() + "\ndoes not equal\n" + a.to_string() );
     }
      
@@ -301,8 +298,8 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     int     nrod                = 10;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
@@ -311,26 +308,26 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     double startx = 0, starty = 0, startphi = 0;
     
     filament *f, *f1, *f2, *f2a, *f2b, *fcheck; 
-    Link l; 
-    actin a; 
+    spring l; 
+    bead a; 
 
-    f      = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f      = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
-    fcheck = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    fcheck = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     vector<filament *> newfils = f->fracture(5);
     
     BOOST_CHECK_MESSAGE( *f==*fcheck, "\nFilament not the same after it was fractured.\n"<<fcheck->to_string()<<"\ndoes not equal\n"<<f->to_string());
-    BOOST_CHECK_EQUAL(newfils.size(), 2);
+    BOOST_CHECK_EQUAL(int(newfils.size()), 2);
 
-    f1 = new filament({startx, starty, startphi}, 6, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f1 = new filament({{startx, starty, startphi}}, 6, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
-    f2 = new filament({startx + 6, starty, startphi}, 4, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f2 = new filament({{startx + 6, starty, startphi}}, 4, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
     //check that the new filaments are the ones we expect
@@ -338,11 +335,11 @@ BOOST_AUTO_TEST_CASE( fracture_test)
     BOOST_CHECK_MESSAGE(*(newfils[0]) == *f1, "\n" + newfils[0]->to_string() + "\ndoes not equal\n" + f1->to_string());
     BOOST_CHECK_MESSAGE(*(newfils[1]) == *f2, "\n" + newfils[1]->to_string() + "\ndoes not equal\n" + f2->to_string());
 
-    f2a = new filament({startx + 6, starty, startphi}, 3, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f2a = new filament({{startx + 6, starty, startphi}}, 3, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
-    f2b = new filament({startx + 9, starty, startphi}, 1, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+    f2b = new filament({{startx + 9, starty, startphi}}, 1, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     vector<filament *> newfils2 = newfils[1]->fracture(2);
     BOOST_CHECK_MESSAGE(*(newfils2[0]) == *f2a, "\n" + newfils2[0]->to_string() + "\ndoes not equal\n" + f2a->to_string());
@@ -376,8 +373,8 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
 {
     //Check if the angle between two rods is smaller after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -391,13 +388,13 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
    
     cout<<"\n----------STRETCHING TEST, TWO BEADS----------\n"; 
     cout<<"\nINITIALLY STRETCHED SPRING\n";
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
 
-    actin * act1 = new actin(0, 0, actin_length, viscosity);
-    actin * act2 = new actin(2, 0, actin_length, viscosity); 
+    bead * act1 = new bead(0, 0, bead_length, viscosity);
+    bead * act2 = new bead(2, 0, bead_length, viscosity); 
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
 
     cout<<"\nfilament configuration (t = 0)\n"<<f->to_string();
     
@@ -424,13 +421,13 @@ BOOST_AUTO_TEST_CASE( stretching_test_two_beads )
 
     cout<<"\nINITIALLY SQUISHED SPRING\n";
     
-    f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
+    f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
 
-    act1 = new actin(0, 0, actin_length, viscosity);
-    act2 = new actin(0.5, 0, actin_length, viscosity); 
+    act1 = new bead(0, 0, bead_length, viscosity);
+    act2 = new bead(0.5, 0, bead_length, viscosity); 
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
 
     cout<<"\nfilament configuration (t = 0)\n"<<f->to_string();
     
@@ -465,8 +462,8 @@ BOOST_AUTO_TEST_CASE( stretching_test_three_beads )
 {
     //Check if the stretching energy decreases after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -480,13 +477,13 @@ BOOST_AUTO_TEST_CASE( stretching_test_three_beads )
    
     
     cout<<"\n----------STRETCHING TEST, THREE BEADS----------\n";
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
-    actin * act1 = new actin(0, 0, actin_length, viscosity);
-    actin * act2 = new actin(0, 1.5, actin_length, viscosity);
-    actin * act3 = new actin(0, 2, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
-    f->add_actin(act3, link_length, stretching_stiffness,1);
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
+    bead * act1 = new bead(0, 0, bead_length, viscosity);
+    bead * act2 = new bead(0, 1.5, bead_length, viscosity);
+    bead * act3 = new bead(0, 2, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
+    f->add_bead(act3, spring_len, stretching_stiffness,1);
     
     double e0 = numeric_limits<double>::max(), e1;
     vector<filament *> newfils;
@@ -516,8 +513,8 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads )
     //Check if the angle between two rods is smaller after some small number of integration steps
     //Check if the stretching energy decreases after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -531,18 +528,18 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads )
    
     cout<<"\n----------BENDING TEST, THREE BEADS----------\n";
     
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
-    actin * act1 = new actin(0, 0, actin_length, viscosity);
-    actin * act2 = new actin(1, 0, actin_length, viscosity);
-    actin * act3 = new actin(1, 1, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
-    f->add_actin(act3, link_length, stretching_stiffness,1);
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
+    bead * act1 = new bead(0, 0, bead_length, viscosity);
+    bead * act2 = new bead(1, 0, bead_length, viscosity);
+    bead * act3 = new bead(1, 1, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
+    f->add_bead(act3, spring_len, stretching_stiffness,1);
 
     vector<filament *> newfils;
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
-    
+    f->init_ubend(); 
     double e0 = f->get_bending_energy(), e1;
     for (int t = 0; t < nsteps; t++){
         //cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
@@ -573,8 +570,8 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
     //Check if the angle between two rods is smaller after some small number of integration steps
     //Check if the stretching energy decreases after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -588,13 +585,13 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads )
    
     cout<<"\n----------BENDING AND STRETCHING TEST, THREE BEADS----------\n";
     
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
-    actin * act1 = new actin(0, 0, actin_length, viscosity);
-    actin * act2 = new actin(0, 1.5, actin_length, viscosity);
-    actin * act3 = new actin(0.5, 1.5, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
-    f->add_actin(act3, link_length, stretching_stiffness,1);
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
+    bead * act1 = new bead(0, 0, bead_length, viscosity);
+    bead * act2 = new bead(0, 1.5, bead_length, viscosity);
+    bead * act3 = new bead(0.5, 1.5, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
+    f->add_bead(act3, spring_len, stretching_stiffness,1);
 
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);
@@ -635,10 +632,10 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
     double yrange = 50;
     int xgrid = (int)(2*xrange);
     int ygrid = (int)(2*yrange);
-    double actin_length = 0.5;
+    double bead_length = 0.5;
     double dt = 1e-3;
     double temp = 0;
-    double link_length = 1;
+    double spring_len = 1;
     double viscosity = 0.5;
     double stretching_stiffness = 0.4;
     double bending_stiffness = 0.04; 
@@ -649,8 +646,8 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
     cout<<"\n----------BENDING AND STRETCHING TEST, TWELVE BEADS----------\n";
     double startx = 0, starty = 0, startphi = 0;
     
-    f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, false, actin_length, link_length, stretching_stiffness, 1, 
+    f = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, false, bead_length, spring_len, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
     vector<filament *> newfils = f->update_stretching(0);
@@ -681,8 +678,8 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
 {
     //Check if the angle between two rods is smaller after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -700,13 +697,13 @@ BOOST_AUTO_TEST_CASE(energy_test_12_rods)
 
     cout<<"\n----------SHEARING TEST, TWO BEADS----------\n"; 
     cout<<"\nSHEARING SPRING\n";
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "REFLECTIVE"); 
 
-    actin * act1 = new actin(0, 0, actin_length, viscosity);
-    actin * act2 = new actin(0, 1, actin_length, viscosity); 
+    bead * act1 = new bead(0, 0, bead_length, viscosity);
+    bead * act2 = new bead(0, 1, bead_length, viscosity); 
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
 
     cout<<"\nfilament configuration (t = 0)\n"<<f->to_string();
     
@@ -745,17 +742,17 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_test )
     int     ygrid               = (int)(2*yrange);
     double  dt                  = 1;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
-    double  viscosity           = 1/(6*pi*actin_length);
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
+    double  viscosity           = 1/(6*pi*bead_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
     string  bc                  = "REFLECTIVE";
    
-    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
-    actin * act1 = new actin(24, 0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
+    filament * f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    bead * act1 = new bead(24, 0, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
 
     f->update_forces(0,3,0);
     f->update_positions();
@@ -790,17 +787,17 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_pos_test )
     int     ygrid               = (int)(2*yrange);
     double  dt                  = 1;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
-    double  viscosity           = 1/(6*pi*actin_length);
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
+    double  viscosity           = 1/(6*pi*bead_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
     string  bc                  = "PERIODIC";
    
-    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
-    actin * act1 = new actin(24, 0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
+    filament * f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    bead * act1 = new bead(24, 0, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
 
     f->update_forces(0,3,0);
     f->update_positions();
@@ -834,19 +831,19 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_pos_test )
     int     ygrid               = (int)(2*yrange);
     double  dt                  = 1;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
-    double  viscosity           = 1/(6*pi*actin_length);
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
+    double  viscosity           = 1/(6*pi*bead_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
     string  bc                  = "LEES-EDWARDS";
     double  strain              = 0.2;
 
-    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    filament * f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
 
-    actin * act1 = new actin(0, -23, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
+    bead * act1 = new bead(0, -23, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
     
     f->update_forces(0,0,-3);
     f->update_positions();
@@ -882,9 +879,9 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_stretch_test )
     int     ygrid               = (int)(2*yrange);
     double  dt                  = 1;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
-    double  viscosity           = 1/(6*pi*actin_length);
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
+    double  viscosity           = 1/(6*pi*bead_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -892,14 +889,14 @@ BOOST_AUTO_TEST_CASE( reflective_bnd_cnd_stretch_test )
   
     double tol                  = 0.001;
 
-    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
-    actin * act1 = new actin(24, 1, actin_length, viscosity);
-    actin * act2 = new actin(-23, 1, actin_length, viscosity);
+    filament * f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    bead * act1 = new bead(24, 1, bead_length, viscosity);
+    bead * act2 = new bead(-23, 1, bead_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(47-link_length)*(47-link_length));
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(47-spring_len)*(47-spring_len));
     f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -22,tol);
@@ -924,47 +921,47 @@ BOOST_AUTO_TEST_CASE( periodic_bnd_cnd_stretch_test )
     int     ygrid               = (int)(2*yrange);
     double  dt                  = 1;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
-    double  viscosity           = 1/(6*pi*actin_length);
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
+    double  viscosity           = 1/(6*pi*bead_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
     string  bc                  = "PERIODIC";
     double  tol                 = 0.001;
 
-    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
-    actin * act1 = new actin(24, 1, actin_length, viscosity);
-    actin * act2 = new actin(-23, 1, actin_length, viscosity);
+    filament * f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    bead * act1 = new bead(24, 1, bead_length, viscosity);
+    bead * act2 = new bead(-23, 1, bead_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-spring_len)*(3-spring_len));
     f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -24,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[0], 25,tol);
+    BOOST_CHECK_CLOSE(pos[0], -25,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
 
-    f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
-    act1 = new actin(1, 24, actin_length, viscosity);
-    act2 = new actin(1, -23, actin_length, viscosity);
+    f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    act1 = new bead(1, 24, bead_length, viscosity);
+    act2 = new bead(1, -23, bead_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-spring_len)*(3-spring_len));
     f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[1], -24,tol);
     BOOST_CHECK_CLOSE(pos[0], 1,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[1], 25,tol);
+    BOOST_CHECK_CLOSE(pos[1], -25,tol);
     BOOST_CHECK_CLOSE(pos[0], 1,tol);
 
     delete f;
@@ -982,9 +979,9 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     int     ygrid               = (int)(2*yrange);
     double  dt                  = 1;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
-    double  viscosity           = 1/(6*pi*actin_length);
+    double  spring_len         = 1;
+    double  bead_length        = spring_len/2;
+    double  viscosity           = 1/(6*pi*bead_length);
     double  stretching_stiffness= 1;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
@@ -992,53 +989,53 @@ BOOST_AUTO_TEST_CASE( lees_edwards_bnd_cnd_stretch_test )
     double  tol                 = 0.001;
     double  strain              = 0.16; //this makes the initial distance sqrt[3^2 + 4^2] = 5
 
-    filament * f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    filament * f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     f->update_delrx(strain*xrange/2);
 
-    actin * act1 = new actin(1, 24, actin_length, viscosity);
-    actin * act2 = new actin(1,-23, actin_length, viscosity);
+    bead * act1 = new bead(1, 24, bead_length, viscosity);
+    bead * act2 = new bead(1,-23, bead_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(5-link_length)*(5-link_length));
+    BOOST_CHECK_CLOSE(f->get_stretching_energy(), 0.5*stretching_stiffness*(5-spring_len)*(5-spring_len),tol);
     
-    f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     f->update_delrx(strain*xrange/2);
 
-    act1 = new actin(1, 24, actin_length, viscosity);
-    act2 = new actin(-3,-23, actin_length, viscosity);
+    act1 = new bead(1, 24, bead_length, viscosity);
+    act2 = new bead(-3,-23, bead_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-spring_len)*(3-spring_len));
     f->update_positions();
     array<double, 2> pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -3,tol);
     BOOST_CHECK_CLOSE(pos[1], -24,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[0], 1, tol);
-    BOOST_CHECK_CLOSE(pos[1], 25,tol);
+    BOOST_CHECK_CLOSE(pos[0], -3, tol);
+    BOOST_CHECK_CLOSE(pos[1], -25,tol);
     
-    f = new filament({xrange,yrange}, {xgrid,ygrid}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
+    f = new filament({{xrange,yrange}}, {{xgrid,ygrid}}, dt, temp, 0, fracture_force, bending_stiffness, bc); 
     f->update_delrx(strain*xrange/2);
     
-    act1 = new actin(24, 1, actin_length, viscosity);
-    act2 = new actin(-23, 1, actin_length, viscosity);
+    act1 = new bead(24, 1, bead_length, viscosity);
+    act2 = new bead(-23, 1, bead_length, viscosity);
     
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
     f->update_stretching(0);
-    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-link_length)*(3-link_length));
+    BOOST_CHECK_EQUAL(f->get_stretching_energy(), 0.5*stretching_stiffness*(3-spring_len)*(3-spring_len));
     f->update_positions();
     pos = f->get_bead_position(0);
     BOOST_CHECK_CLOSE(pos[0], -24,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
     
     pos = f->get_bead_position(1);
-    BOOST_CHECK_CLOSE(pos[0], 25,tol);
+    BOOST_CHECK_CLOSE(pos[0], -25,tol);
     BOOST_CHECK_CLOSE(pos[1], 1,tol);
     
     delete f;
@@ -1051,8 +1048,8 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads_periodic )
     //Check if the angle between two rods is smaller after some small number of integration steps
     //Check if the stretching energy decreases after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -1066,18 +1063,19 @@ BOOST_AUTO_TEST_CASE( bending_test_three_beads_periodic )
    
     cout<<"\n----------BENDING TEST, THREE BEADS----------\n";
     
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "PERIODIC"); 
-    actin * act1 = new actin(24.5, 0, actin_length, viscosity);
-    actin * act2 = new actin(-24.5, 0, actin_length, viscosity);
-    actin * act3 = new actin(-24.5, 1, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
-    f->add_actin(act3, link_length, stretching_stiffness,1);
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "PERIODIC"); 
+    bead * act1 = new bead(24.5, 0, bead_length, viscosity);
+    bead * act2 = new bead(-24.5, 0, bead_length, viscosity);
+    bead * act3 = new bead(-24.5, 1, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
+    f->add_bead(act3, spring_len, stretching_stiffness,1);
 
     vector<filament *> newfils;
     cout<<"\nINITIAL CONFIGURATION\n";
     cout<<f->to_string();
     
+    f->init_ubend(); 
     double e0 = f->get_bending_energy(), e1;
     for (int t = 0; t < nsteps; t++){
         //cout<<"\nAngle at time "<<t<<" : "<<a0<<"\n";
@@ -1108,8 +1106,8 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
     //Check if the angle between two rods is smaller after some small number of integration steps
     //Check if the stretching energy decreases after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -1123,13 +1121,13 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_periodic )
    
     cout<<"\n----------BENDING AND STRETCHING TEST, THREE BEADS----------\n";
     
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "PERIODIC"); 
-    actin * act1 = new actin(0, 24, actin_length, viscosity);
-    actin * act2 = new actin(-1, -24.5, actin_length, viscosity);
-    actin * act3 = new actin(1.5, -24.0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
-    f->add_actin(act3, link_length, stretching_stiffness,1);
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "PERIODIC"); 
+    bead * act1 = new bead(0, 24, bead_length, viscosity);
+    bead * act2 = new bead(-1, -24.5, bead_length, viscosity);
+    bead * act3 = new bead(1.5, -24.0, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
+    f->add_bead(act3, spring_len, stretching_stiffness,1);
 
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);
@@ -1168,8 +1166,8 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
     //Check if the angle between two rods is smaller after some small number of integration steps
     //Check if the stretching energy decreases after some small number of integration steps
     double  viscosity               = 0.5;
-    double  actin_length            = 0.5;
-    double  link_length             = 1;
+    double  bead_length            = 0.5;
+    double  spring_len             = 1;
     double  stretching_stiffness    = 1; 
     double  bending_stiffness       = 0.04; 
     double  dt                      = 1e-3;
@@ -1184,16 +1182,16 @@ BOOST_AUTO_TEST_CASE( total_energy_test_three_beads_lees_edwards )
     
     cout<<"\n----------BENDING AND STRETCHING TEST, THREE BEADS, LE, "<<strain<<" Strain----------\n";
     
-    filament * f = new filament({fovx,fovy}, {nx,ny}, dt, temp, 0, frac, bending_stiffness, "LEES-EDWARDS"); 
+    filament * f = new filament({{fovx, fovy}}, {{nx, ny}}, dt, temp, 0, frac, bending_stiffness, "LEES-EDWARDS"); 
     f->update_delrx(strain*fovx/2);
     f->update_shear(0);
 
-    actin * act1 = new actin(0, 24, actin_length, viscosity);
-    actin * act2 = new actin(-1, -24.5, actin_length, viscosity);
-    actin * act3 = new actin(1.5, -24.0, actin_length, viscosity);
-    f->add_actin(act1, link_length, stretching_stiffness,1);
-    f->add_actin(act2, link_length, stretching_stiffness,1);
-    f->add_actin(act3, link_length, stretching_stiffness,1);
+    bead * act1 = new bead(0, 24, bead_length, viscosity);
+    bead * act2 = new bead(-1, -24.5, bead_length, viscosity);
+    bead * act3 = new bead(1.5, -24.0, bead_length, viscosity);
+    f->add_bead(act1, spring_len, stretching_stiffness,1);
+    f->add_bead(act2, spring_len, stretching_stiffness,1);
+    f->add_bead(act3, spring_len, stretching_stiffness,1);
 
     vector<filament *> newfils = f->update_stretching(0);
     f->update_bending(0);

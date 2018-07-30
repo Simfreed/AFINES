@@ -1,5 +1,5 @@
 /*
- *  actin.cpp
+ *  bead.cpp
  *  
  *
  *  Created by Shiladitya Banerjee on 9/3/13.
@@ -17,25 +17,21 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
 #include "globals.h"
 
 //=====================================
-//actin rod class
-class actin
+//filament bead class
+class bead
 {
     public:
 
-        actin();
+        bead();
         
-        actin(double xcm, double ycm, double len, double vis); 
+        bead(double xcm, double ycm, double len, double vis); 
         
-        actin(double xcm, double ycm, double vx, double vy, double len, double vis); 
+        bead(const bead& other);
         
-        actin(const actin& other);
-        
-        ~actin();
+        ~bead();
     
         void update();
 
@@ -45,24 +41,16 @@ class actin
         
         double get_ycm();
         
-        void update_velocity(double vx, double vy);
-        
         void update_force(double f1, double f2);
-        
-        void reset_velocity();
         
         void reset_force();
 
-        array<double,2> get_velocity();
-        
         array<double,2> get_force();
 
         double get_friction();
         
         double get_viscosity();
 
-        double get_vsquared();
-        
         void set_xcm(double xcm);
 
         void set_ycm(double ycm);
@@ -71,14 +59,14 @@ class actin
         
         string to_string();
         
-        bool operator==(const actin& that);    
+        bool operator==(const bead& that);    
         
 
     private:
         
-        double x, y, ld, a_vis, friction;
+        double x, y, rad, visc, friction;
 
-        array<double, 2> force, velocity;
+        array<double, 2> force;
         
 };
 

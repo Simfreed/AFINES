@@ -17,13 +17,7 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
-#include "map"
-//#include <multimap>
 #include "filament.h"
-#include <boost/functional/hash.hpp>
-#include <boost/scoped_array.hpp>
 //=====================================
 //filament network class
 class filament_ensemble
@@ -32,13 +26,18 @@ class filament_ensemble
         
         filament_ensemble();
 
+        filament_ensemble(int npolymer, int nbeads_min, int nbeads_max, double nbeads_prob,
+                array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+                double rad, double vis, double spring_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, 
+                double frac_force, string bc, double seed);
+
         filament_ensemble(double density, array<double,2> myfov, array<int, 2> mynq, double delta_t, double temp, 
-                double len, double vis, int nactin,
-                double link_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
+                double len, double vis, int nbead,
+                double spring_len, vector<array<double, 3> > pos_sets, double stretching, double ext, double bending, double frac_force, 
                 string bc, double seed, double RMAX, double A);
         
-        filament_ensemble(vector< vector<double> > actins, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
-                double vis, double link_len, double stretching, double ext, double bending, double frac_force, string bc, double RMAX, double A); 
+        filament_ensemble(vector< vector<double> > beads, array<double,2> myfov, array<int,2> mynq, double delta_t, double temp,
+                double vis, double spring_len, double stretching, double ext, double bending, double frac_force, string bc, double RMAX, double A); 
         
         ~filament_ensemble();
         
@@ -54,7 +53,7 @@ class filament_ensemble
 
         void update_quads_per_filament(int);
 
-        void reset_n_links(int);
+        void reset_n_springs(int);
 
         void update_dist_map(set<pair<double, array<int, 2>>>& t_map, const array<int, 2>& mquad, double x, double y);
         
@@ -66,25 +65,23 @@ class filament_ensemble
         
         set<pair<double, array<int,2>>> get_dist_all(double x, double y);
         
-        array<double,2> get_direction(int fil, int link);
+        array<double,2> get_direction(int fil, int spring);
 
-        array<double,2> get_start(int fil, int link);
+        array<double,2> get_start(int fil, int spring);
         
-        array<double,2> get_end(int fil, int link);
+        array<double,2> get_end(int fil, int spring);
         
-        array<double,2> get_force(int fil, int actin);
+        array<double,2> get_force(int fil, int bead);
         
-        double get_int_direction(int fil, int link, double xp, double yp);
+        double get_int_direction(int fil, int spring, double xp, double yp);
 
-        double get_xcm(int fil, int link);
+        double get_xcm(int fil, int spring);
        
-        double get_ycm(int fil, int link);
+        double get_ycm(int fil, int spring);
 
-        double get_angle(int fil, int link);
-
-        double get_llength(int fil, int link);
+        double get_llength(int fil, int spring);
        
-        double get_actin_friction();
+        double get_bead_friction();
         
         double get_delrx();
         
@@ -96,13 +93,13 @@ class filament_ensemble
         
         double get_kinetic_energy_vir(); 
         
-        int get_nactins();
+        int get_nbeads();
         
-        int get_nlinks();
+        int get_nsprings();
         
         int get_nfilaments();
 
-        vector<vector<double> > link_link_intersections(double cllen, double prob);
+        vector<vector<double> > spring_spring_intersections(double cllen, double prob);
 
         void update_shear();
         
@@ -122,19 +119,19 @@ class filament_ensemble
 
         void update_positions_range(int lo, int hi);
         
-        void update_forces(int fil, int actin, double f2, double f3);
+        void update_forces(int fil, int bead, double f2, double f3);
 
-	void update_link_forces(int f); 
+        void update_spring_forces(int f); 
 
-  	void update_link_forces_from_quads(); 
+        void update_spring_forces_from_quads(); 
 
-      	void update_force_between_filaments(double n1, double l1, double n2, double l2); 
- 
-   	void update_excluded_volume(int f); 
+        void update_force_between_filaments(double n1, double l1, double n2, double l2); 
 
-        void write_actins(ofstream& fout);
+        void update_excluded_volume(int f); 
+
+        void write_beads(ofstream& fout);
         
-        void write_links(ofstream& fout);
+        void write_springs(ofstream& fout);
         
         void write_thermo(ofstream& fout);
         
@@ -176,9 +173,9 @@ class filament_ensemble
     
     protected:
 
-        double t, dt, temperature, link_ld, visc, min_time;
+        double t, dt, temperature, spring_rest_len, visc, min_time;
         double gamma, shear_stop, shear_dt, shear_speed, delrx;
-        double max_links_per_quad_per_filament, max_links_per_quad; 
+        double max_springs_per_quad_per_filament, max_springs_per_quad; 
         bool straight_filaments = false, quad_off_flag;
         double pe_stretch, pe_bend, pe_exv, ke_vir;
         string BC;
@@ -191,19 +188,8 @@ class filament_ensemble
         array<int, 2> nq, half_nq;
         vector<int> broken_filaments, empty_vector;
         
-        //links_per_quad[{x,y}] => {{f_1, l_1}, {f_1, l_2},...,{f_k, l_j},...} means that link l_j on filament f_k is located at quadrant {x,y}
-        //n_links_per_quad[{x,y}] => kmax means that kmax links are indexed to {x,y} 
-        vector< vector < vector< array<int, 2 > >* > * > links_per_quad;
-        vector< vector < int >* > n_links_per_quad;
-        
-//        boost::scoped_array< boost::scoped_array < boost::scoped_array < array<int, 2 > >* > * > links_per_quad;
-//        boost::scoped_array< boost::scoped_array < int >* > n_links_per_quad;
-
-        /* per_quad_per_filament does the same thing as above, but for a specific filament. useful for parallelization,
-         * if implemented.
-        vector<map<array<int, 2>, vector<int>*> * > links_per_quad_per_filament; 
-        vector<map<array<int, 2>, int> * > n_links_per_quad_per_filament; 
-        */
+        vector< vector < vector< array<int, 2 > >* > * > springs_per_quad;
+        vector< vector < int >* > n_springs_per_quad;
         
         vector<array<int, 2>* > all_quads;
         vector<filament *> network;

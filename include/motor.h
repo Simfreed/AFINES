@@ -69,9 +69,9 @@ class motor
 
         void step_twoheads();
 
-        void actin_update_hd(int hd, array<double, 2> f);
+        void filament_update_hd(int hd, array<double, 2> f);
         
-        void actin_update();
+        void filament_update();
 
         void update_shape();
         
@@ -117,10 +117,10 @@ class motor
     
     public:
 
-        double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
-               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension;
+        double mld, vs, stall_force, max_bind_dist, max_bind_dist_sq, mk, kon, koff, kend, dt, temperature, 
+               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, len;
         
-        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
+        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, direc;
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 
@@ -131,7 +131,7 @@ class motor
         
         string BC;
         
-        filament_ensemble* actin_network;
+        filament_ensemble* filament_network;
         
 };
 
