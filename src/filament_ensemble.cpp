@@ -504,28 +504,26 @@ void filament_ensemble::update_spring_forces_from_quads()
     //The loop will go through thee values of spring_per_quad() [x][y][i], where x: 0-nq[0], y: 0-nq[1], i: 0-m_springs_per_quad
     //The pairs found in he nieghbor list are then saved in a vector array. 
     //On subsequent loops, this value will be searched for in order to ensure no repeats in the force calculation.  
-     
+
     array <int,2> spring_1; 
     array <int,2> spring_2; 
-    int set; 
-    int f1, f2, l1, l2; 
+    int f1, f2, l1, l2, nsprings_at_quad; 
     double par1, par2;   
-    int nsprings, dim;  
-
-    nsprings = this->get_nsprings(); 
-    dim = nsprings; 
-
-    vector<vector<int>> int_lks (dim, vector<int> (dim, 0));    
+    int max_nsprings = network.size()*nsprings_per_fil_max;
+    
+    vector<vector<int>> int_lks (max_nsprings, vector<int> (max_nsprings, 0));    
 
     for(int x = 0; x < nq[0]; x++) 
     {   
         for(int y = 0; y < nq[1]; y++) 
         { 
-            for(int i = 0; i < nsprings; i++) 
+            nsprings_at_quad = int(springs_per_quad[x]->at(y)->size());
+            
+            for(int i = 0; i < nsprings_at_quad; i++) 
             {   
                 spring_1 = springs_per_quad[x]->at(y)->at(i); 
 
-                for(int j = i+1; j < nsprings; j++) 
+                for(int j = i+1; j < nsprings_at_quad; j++) 
                 {   
                     spring_2 = springs_per_quad[x]->at(y)->at(j);
 
@@ -537,20 +535,21 @@ void filament_ensemble::update_spring_forces_from_quads()
                     par1 = f1*(network[f1]->get_nsprings()) + l1; 
                     par2 = f2*(network[f2]->get_nsprings()) + l2;
 
-                    set = int_lks[par1][par2]; 
-
-                    if(set == 0)
+                    if ( f1 == f2 && abs(l1 - l2) < 2 ) // adjacent springs would yield excluded volume interactions between the same bead
+                        continue;
+                    else
                     {
-                        int_lks[par1][par2] = 1; 
-                        int_lks[par2][par1] = 1; 
+                        par1 = f1*nsprings_per_fil_max + l1; 
+                        par2 = f2*nsprings_per_fil_max + l2;
 
-                        if(f1 != f2)
-                        {   
+                        if ( ! int_lks[par1][par2] )
+                        {
+                            int_lks[par1][par2] = 1; 
+                            int_lks[par2][par1] = 1; 
+
                             this->update_force_between_filaments(f1, l1, f2, l2);
                         }
-                        else{continue;}
-                    } 
-                    else{continue;}
+                    }
                 }
             }
         }
@@ -568,17 +567,17 @@ void filament_ensemble::update_spring_forces(int f)
 
     for(int i = 0; i < lks_sz; i++) 
     {   
-	for(int g = f+1; g < net_sz; g++)
-	{
-	    oth_lks_sz = network[g]->get_nsprings(); 
+        for(int g = f+1; g < net_sz; g++)
+        {
+            oth_lks_sz = network[g]->get_nsprings(); 
 
-	    for(int j = 0; j < oth_lks_sz; j++) 
-	    {
-		this->update_force_between_filaments(f, i, g, j); 
-   	    }
-	}
+            for(int j = 0; j < oth_lks_sz; j++) 
+            {
+                this->update_force_between_filaments(f, i, g, j); 
+            }
+        }
     } 
-    
+
 }
 void filament_ensemble::update_force_between_filaments(double n1, double l1, double n2, double l2)
 { 
@@ -618,10 +617,10 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
     index = 0; 
 
     for(int k = 1; k < 4; k++){
-  	if(r_c[k] < r){
-	    r = r_c[k]; 
+        if(r_c[k] < r){
+            r = r_c[k]; 
             index = k; 
-	}
+        }
     }   
 
     spring *L2 = network[n2]->get_spring(l2);  
@@ -629,54 +628,54 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 
     if(r < rmax)
     {
-        if(intersect == false)
-	{ 
+        if( !intersect )
+        { 
             if(index == 0)
             {  
-	        r = r_c[0]; 
-		x1 = hx_2[0];
-		y1 = hy_2[0];
-		x2 = p1[0];
-		y2 = p1[1];
-		len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
-		length = len[0];         
-	    }
-	    else if(index == 1)
-	    {
-		r = r_c[1]; 
-		x1 = hx_2[1];
-		y1 = hy_2[1];
-		x2 = p2[0]; 
-		y2 = p2[1];
-		len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
-		length = len[0];
-	    }
-	    else if(index == 2)
-	    {
-	        r = r_c[2];   
-	        x1 = hx_1[0]; 
-	        y1 = hy_1[0]; 
-	        x2 = p3[0];
-	        y2 = p3[1];
-	        len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
-	        length = len[1]; 
-	    }
-	    else if(index == 3)
-	    {
-	        r = r_c[3]; 
-		x1 = hx_1[1];
-		y1 = hy_1[1];
-		x2 = p4[0];
-		y2 = p4[1];
-		len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
-		length = len[1]; 
-	    }
+                r = r_c[0]; 
+                x1 = hx_2[0];
+                y1 = hy_2[0];
+                x2 = p1[0];
+                y2 = p1[1];
+                len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
+                length = len[0];         
+            }
+            else if(index == 1)
+            {
+                r = r_c[1]; 
+                x1 = hx_2[1];
+                y1 = hy_2[1];
+                x2 = p2[0]; 
+                y2 = p2[1];
+                len1 = dist_bc(BC, (hx_1[0]-x2), (hy_1[0]-y2), fov[0], fov[1], delrx);
+                length = len[0];
+            }
+            else if(index == 2)
+            {
+                r = r_c[2];   
+                x1 = hx_1[0]; 
+                y1 = hy_1[0]; 
+                x2 = p3[0];
+                y2 = p3[1];
+                len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
+                length = len[1]; 
+            }
+            else if(index == 3)
+            {
+                r = r_c[3]; 
+                x1 = hx_1[1];
+                y1 = hy_1[1];
+                x2 = p4[0];
+                y2 = p4[1];
+                len1 = dist_bc(BC, (hx_2[0]-x2), (hy_2[0]-y2), fov[0], fov[1], delrx);
+                length = len[1]; 
+            }
 
-	    dist = rij_bc(BC, (x2-x1), (y2-y1), fov[0], fov[1], delrx); 
-	    len2 = length - len1; 
-	    r_1 = (len2/length);
-	    r_2 = (len1/length);
- 
+            dist = rij_bc(BC, (x2-x1), (y2-y1), fov[0], fov[1], delrx); 
+            len2 = length - len1; 
+            r_1 = (len2/length);
+            r_2 = (len1/length);
+
             Fx1 = 2*kexv*dist[0]*b*((1/r) - b); 
             Fx2 = -Fx1;
             Fy1 = 2*kexv*dist[1]*b*((1/r) - b);
@@ -686,43 +685,43 @@ void filament_ensemble::update_force_between_filaments(double n1, double l1, dou
 
             if(index == 0)
             {
-            	network[n1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
-            	network[n1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
-            	network[n2]->update_forces(l2, Fx2, Fy2);
-   	    }
+                network[n1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
+                network[n1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
+                network[n2]->update_forces(l2, Fx2, Fy2);
+            }
             else if(index == 1)
             {
-            	network[n1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
-            	network[n1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
-            	network[n2]->update_forces(l2+1, Fx2, Fy2);
+                network[n1]->update_forces(l1, Fx1*r_1, Fy1*r_1);
+                network[n1]->update_forces(l1+1, Fx1*r_2, Fy1*r_2);
+                network[n2]->update_forces(l2+1, Fx2, Fy2);
             }
             else if(index == 2)
             {
-            	network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
-            	network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
-            	network[n1]->update_forces(l1, Fx2, Fy2);
-      	    }
-   	    else if(index == 3)
-       	    {
-            	network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
-            	network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
-            	network[n1]->update_forces(l1+1, Fx2, Fy2);
-      	    } 
-    	}
-        else if(intersect == true) 
-	{ 
-	    Fx1 = 2*kexv/(rmax*sqrt(2)); 
-  	    Fx2 = -Fx1; 
- 	    Fy1 = 2*kexv/(rmax*sqrt(2)); 
-	    Fy2 = -Fy1; 
+                network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
+                network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
+                network[n1]->update_forces(l1, Fx2, Fy2);
+            }
+            else if(index == 3)
+            {
+                network[n2]->update_forces(l2, Fx1*r_1, Fy1*r_1);
+                network[n2]->update_forces(l2+1, Fx1*r_2, Fy1*r_2);
+                network[n1]->update_forces(l1+1, Fx2, Fy2);
+            } 
+        }
+        else
+        { 
+            Fx1 = 2*kexv/(rmax*sqrt(2)); 
+            Fx2 = -Fx1; 
+            Fy1 = 2*kexv/(rmax*sqrt(2)); 
+            Fy2 = -Fy1; 
 
-	    pe_exv += kexv*pow((1-r*b),2);   
+            pe_exv += kexv*pow((1-r*b),2);   
 
             network[n1]->update_forces(l1, Fx1, Fy1); 
-  	    network[n1]->update_forces(l1+1, Fx1, Fy1); 
- 	    network[n2]->update_forces(l2, Fx2, Fy2); 
- 	    network[n2]->update_forces(l2+1, Fx2, Fy2); 
-	}   
+            network[n1]->update_forces(l1+1, Fx1, Fy1); 
+            network[n2]->update_forces(l2, Fx2, Fy2); 
+            network[n2]->update_forces(l2+1, Fx2, Fy2); 
+        }   
     }
 }
 
@@ -861,6 +860,7 @@ filament_ensemble::filament_ensemble(int npolymer, int nbeads_min, int nbeads_ex
     int nbeads = 0;
     binomial_distribution<int> distribution(nbeads_extra, nbeads_extra_prob);
     default_random_engine generator(seed+2);
+    nsprings_per_fil_max = 0;
 
     int s = pos_sets.size();
     double x0, y0, phi0;
@@ -875,13 +875,12 @@ filament_ensemble::filament_ensemble(int npolymer, int nbeads_min, int nbeads_ex
             
             nbeads = nbeads_min + distribution(generator);
             network.push_back(new filament({{x0,y0,phi0}}, nbeads, fov, nq, visc, dt, temp, straight_filaments, rad, spring_rest_len, stretching, ext, bending, frac_force, bc) );
+            nsprings_per_fil_max = max(nsprings_per_fil_max, nbeads - 1);
         }
     }
     
     //Neighbor List Initialization
     quad_off_flag = false;
-    max_springs_per_quad              = npolymer*(nbeads-1);
-    max_springs_per_quad_per_filament = nbeads - 1;
     
     //this->nlist_init();
     this->nlist_init_serial();
@@ -945,9 +944,8 @@ filament_ensemble::filament_ensemble(double density, array<double,2> myfov, arra
     
     //Neighbor List Initialization
     quad_off_flag = false;
-    max_springs_per_quad              = npolymer*(nbeads-1);
-    max_springs_per_quad_per_filament = nbeads - 1;
-    
+    nsprings_per_fil_max = nbeads-1;
+
     //this->nlist_init();
     this->nlist_init_serial();
     
@@ -984,7 +982,7 @@ filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double
     vector<bead *> avec;
     
     nq = mynq;
-    
+    nsprings_per_fil_max = 0;
     for (int i=0; i < s; i++){
         
         if (beads[i][3] != fil_idx && avec.size() > 0){
@@ -1008,8 +1006,6 @@ filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double
     avec.clear();
    
     quad_off_flag = false;
-    max_springs_per_quad              = beads.size();
-    max_springs_per_quad_per_filament = int(ceil(beads.size() / (fil_idx + 1)))- 1;
     //this->nlist_init();
     this->nlist_init_serial();
     this->update_energies();

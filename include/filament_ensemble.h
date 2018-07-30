@@ -175,7 +175,7 @@ class filament_ensemble
 
         double t, dt, temperature, spring_rest_len, visc, min_time;
         double gamma, shear_stop, shear_dt, shear_speed, delrx;
-        double max_springs_per_quad_per_filament, max_springs_per_quad; 
+        int nsprings_per_fil_max;
         bool straight_filaments = false, quad_off_flag;
         double pe_stretch, pe_bend, pe_exv, ke_vir;
         string BC;

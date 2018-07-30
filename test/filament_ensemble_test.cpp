@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     spring l; 
     bead a; 
    
-    f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
+    f = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     //Expect to have beads  at (0, 0), (1, 0), (2, 0), ..., (9, 0)
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     for (int i = 0; i < nrod - 1; i++){
         a = bead( i, 0, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = spring( spring_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid});
+        l = spring( spring_length, stretching_stiffness, 1, f, {i, i+1}, {{xrange, yrange}}, {{xgrid, ygrid}});
         BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     a = bead( (nrod - 1), 0, bead_length, viscosity );
@@ -51,14 +51,14 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     
     startx=-1; starty = 0; startphi= 3*pi/2;
 
-    f = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
+    f = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     //Expect to have bead monomers at (-1, 0), (-1, -1), (-1, -2), ..., (-1, -9)
     for (int i = 0; i < nrod-1; i++){
         a = bead( -1 , -i, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = spring( spring_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        l = spring( spring_length, stretching_stiffness, 1, f, {i, i+1}, {{xrange, yrange}}, {{xgrid, ygrid}} );
         BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     a = bead( -1, -(nrod - 1), bead_length, viscosity );
@@ -92,21 +92,21 @@ BOOST_AUTO_TEST_CASE( fracture_constructor )
     bead a;
     vector<bead *> rodvec;
 
-    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, spring_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
+    f = new filament(rodvec, {{xrange, yrange}}, {{xgrid, ygrid}}, spring_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
     delete f; 
     
     for (int i = 0; i < nrod; i++){
         rodvec.push_back(new bead( i, 0, bead_length, viscosity ));
     }
 
-    f = new filament(rodvec, {xrange, yrange}, {xgrid, ygrid}, spring_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
+    f = new filament(rodvec, {{xrange, yrange}}, {{xgrid, ygrid}}, spring_length, stretching_stiffness, 1, bending_stiffness, dt, temp, fracture_force, shear, bc);
     //Expect to have rods  at (0, 0), (2, 0), (4, 0), ..., (18, 0)
     //Expect to have springs at (-1, 0), (1, 0), (3, 0), ...., (19, 0)
     
     for (int i = 0; i < nrod-1; i++){
         a = bead( i, 0, bead_length, viscosity );
         BOOST_CHECK_MESSAGE( a == *(f->get_bead(i)), "\n" + f->get_bead(i)->to_string() + "\ndoes not equal\n" + a.to_string() );
-        l = spring( spring_length, stretching_stiffness, 1, f, {i, i+1}, {xrange, yrange}, {xgrid, ygrid} );
+        l = spring( spring_length, stretching_stiffness, 1, f, {i, i+1}, {{xrange, yrange}}, {{xgrid, ygrid}} );
         BOOST_CHECK_MESSAGE( l == *(f->get_spring(i)), "\nspring : " + f->get_spring(i)->to_string() + "\ndoes not equal\nspring : " + l.to_string() );
     }
     
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     spring l; 
     bead a; 
    
-    f = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+    f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
 
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     BOOST_CHECK_MESSAGE(expected_quads == quads, "\nExpected quadrants not equal to filament quadrants");
     delete f;  
 }
-BOOST_AUTO_TEST_CASE( Filament_enseble_update_spring_forces_from_quads ){ 
+BOOST_AUTO_TEST_CASE( filament_ensemble_update_spring_forces_from_quads ){ 
 
     //Check forces after one time-step to make sure they match expected values 
     double  viscosity               = 0.5;
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( Filament_enseble_update_spring_forces_from_quads ){
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 	
     double f1_1_ex[2] = {0, 1.3634300623459383}; 
     double f2_1_ex[2] = {0, 1.3634300623459383}; 
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE( Filament_ensemble_update_test ){
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
     double x_s[2][2]; 
     double y_s[2][2]; 
     double x_ev[2][2]={{-0.5, 0.5}, {0.0,0.0}}; 
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE( Get_r_c_test )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     //array <double, 4> r_c;
     double delrx;  
@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE( Get_r_c_test_2 )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);   
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);   
 
     array <double,4> r_c; 
     array <double,4> r_c_exp; 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE( Get_r_c_test_3 )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     array <double,4> r_c;
     array <double,4> r_c_exp;
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE( get_line_intersect_test )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     bool test;  
     bool exp = false;
@@ -520,7 +520,7 @@ BOOST_AUTO_TEST_CASE( get_line_intersect_test_2 )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     bool test;
     bool exp = true;
@@ -559,7 +559,7 @@ BOOST_AUTO_TEST_CASE( get_line_intersect_test_3 )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     bool test;
     bool exp = false;
@@ -598,7 +598,7 @@ BOOST_AUTO_TEST_CASE( get_line_intersect_test_4 )
 
     filament_ensemble * network;
 
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     bool test;
     bool exp = true;
@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE( test_update_potential )
     cout<<"\n----------Filament_Ensemble_Force_Test_----------\n";
     
     filament_ensemble * network;
-    network = new filament_ensemble(act, {fovx,fovy}, {nx,ny}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
+    network = new filament_ensemble(act, {{fovx,fovy}}, {{nx,ny}}, dt, temp, viscosity, spring_length, stretching_stiffness, ext, bending_stiffness, frac, bc, rmax, a);
 
     network->update(); 
 
