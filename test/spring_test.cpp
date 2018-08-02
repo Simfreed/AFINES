@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     a_quads.clear(); 
     
     //B
-    startphi = 7*pi/4; startx = 0; starty = 3;
+    startphi = 7*pi/4; startx = 0; starty = 2.999;
    
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
@@ -286,10 +286,17 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
     
     BOOST_CHECK_MESSAGE(a_quads == e_quads, "\nTEST 6B: Expected Quadrants : don't equal spring Quadrants : \n");
-    a_quads.clear();
+    
+    if (a_quads != e_quads){
+        cout<<"\nspring Quadrants:"; 
+        for_each(a_quads.begin(), a_quads.end(), intarray_printer);
+        cout<<"\nExpected Quadrants:"; 
+        for_each(e_quads.begin(), e_quads.end(), intarray_printer);
+    }
+    a_quads.clear(); 
     
     //C
-    startphi = -3*pi/4; startx = 3; starty = 3;
+    startphi = -3*pi/4; startx = 2.999; starty = 2.999;
    
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
@@ -301,10 +308,17 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
     
     BOOST_CHECK_MESSAGE(a_quads == e_quads, "\nTEST 6C: Expected Quadrants : don't equal spring Quadrants : \n");
+    
+    if (a_quads != e_quads){
+        cout<<"\nspring Quadrants:"; 
+        for_each(a_quads.begin(), a_quads.end(), intarray_printer);
+        cout<<"\nExpected Quadrants:"; 
+        for_each(e_quads.begin(), e_quads.end(), intarray_printer);
+    }
     a_quads.clear(); 
     
     //D
-    startphi = -5*pi/4; startx = 3; starty = 0;
+    startphi = -5*pi/4; startx = 2.999; starty = 0;
    
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
@@ -316,11 +330,19 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     copy(quads.begin(), quads.end(), inserter(a_quads, a_quads.end()));
     
     BOOST_CHECK_MESSAGE(a_quads == e_quads, "\nTEST 6D: Expected Quadrants : don't equal spring Quadrants : \n");
+    
+    if (a_quads != e_quads){
+        cout<<"\nspring Quadrants:"; 
+        for_each(a_quads.begin(), a_quads.end(), intarray_printer);
+        cout<<"\nExpected Quadrants:"; 
+        for_each(e_quads.begin(), e_quads.end(), intarray_printer);
+    }
+    a_quads.clear(); 
     delete f;
     
     //TEST 7: periodic boundaries
     //A : right
-    startx = 24.5, starty = 0, startphi = 0, spring_length=1, bead_length=0.5;
+    startx = 24.501, starty = 0, startphi = 0, spring_length=1, bead_length=0.5;
     
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
@@ -333,12 +355,13 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({{xgrid - 1 , ygrid/2}});
     expected_quads.push_back({{0         , ygrid/2}});
     expected_quads.push_back({{1         , ygrid/2}});
+    expected_quads.push_back({{2         , ygrid/2}});
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7A : Expected Quadrants : don't equal spring Quadrants : \n");
     quads.clear();
     delete f;
     
     //B : left
-    startx = -24.5, starty = 0, startphi = pi;
+    startx = -24.499, starty = 0, startphi = pi;
     
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
@@ -353,7 +376,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     delete f;
     
     //B : top
-    startx = 0, starty = 24.5, startphi = pi/2.0;
+    startx = 0, starty = 24.501, startphi = pi/2.0;
     
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
@@ -366,6 +389,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     expected_quads.push_back({{xgrid/2 , 99}});
     expected_quads.push_back({{xgrid/2 , 0}});
     expected_quads.push_back({{xgrid/2 , 1}});
+    expected_quads.push_back({{xgrid/2 , 2}});
     BOOST_CHECK_MESSAGE(quads == expected_quads, "\nTEST 7C : Expected Quadrants : don't equal spring Quadrants : \n");
     cout<<"\nspring Quadrants:"; 
     for_each(quads.begin(), quads.end(), intarray_printer);
@@ -374,7 +398,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     quads.clear();
     delete f;
     
-    startx = 0, starty = -24.5, startphi = 3*pi/2.0;
+    startx = 0, starty = -24.499, startphi = 3*pi/2.0;
     
     f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
