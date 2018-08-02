@@ -559,7 +559,11 @@ boost::optional<array<double, 2> > seg_seg_intersection_bc(string bc, double del
 
 int coord2quad_floor(double fov, int nq, double coord)
 {
-    return floor(nq*(coord/fov+0.5));
+    int q = floor(nq*(coord/fov+0.5));
+    if (q == nq) 
+        return 0;
+    else 
+        return q;
 }
 
 int coord2quad_ceil(double fov, int nq, double coord)
@@ -569,8 +573,6 @@ int coord2quad_ceil(double fov, int nq, double coord)
         return 0;
     else 
         return q;
-
-    //return min(int(ceil((coord+fov/2)*nq/fov)), nq);
 }
 
 int coord2quad(double fov, int nq, double coord)

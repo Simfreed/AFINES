@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
     double  fracture_force      = 100;
     string  bc                  = "REFLECTIVE";
     
-    double  startx = 0, starty = 0, startphi = 0;
+    double  startx = 0.001, starty = 0, startphi = 0;
     
     filament * f; 
     spring l; 
@@ -180,6 +180,7 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
         expected_quads[i].push_back({{2*i+xgrid/2, ygrid/2}});
         expected_quads[i].push_back({{2*i+1+xgrid/2, ygrid/2}});
         expected_quads[i].push_back({{2*i+2+xgrid/2, ygrid/2}});
+        expected_quads[i].push_back({{2*i+3+xgrid/2, ygrid/2}});
     }
 
     cout<<"\nFilament Quadrants:"; 
