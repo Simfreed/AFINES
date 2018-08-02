@@ -990,7 +990,7 @@ filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double
             network.push_back( new filament( avec, fov, nq, spring_rest_len, stretching, ext, bending, delta_t, temp, frac_force, 0, bc) );
             
             sa = avec.size();
-            nlinks_per_fil_max = max(nlinks_per_fil_max, sa - 1);
+            nsprings_per_fil_max = max(nsprings_per_fil_max, sa - 1);
             for (j = 0; j < sa; j++) delete avec[j];
             avec.clear();
             
@@ -1021,14 +1021,14 @@ filament_ensemble::filament_ensemble(vector<vector<double> > beads, array<double
     fls = { };
 }
 
-void filament_ensemble::set_growing(double kgrow, double lgrow, double l0min, double l0max, int nlinks_max)
+void filament_ensemble::set_growing(double kgrow, double lgrow, double l0min, double l0max, int nsprings_max)
 {
-    nlinks_per_fil_max = nlinks_max;
+    nsprings_per_fil_max = nsprings_max;
     for (int i = 0; i < int(network.size()); i++){
         network[i]->set_kgrow(kgrow);
         network[i]->set_lgrow(lgrow);
         network[i]->set_l0_min(l0min);
         network[i]->set_l0_max(l0max);
-        network[i]->set_nlinks_max(nlinks_max);
+        network[i]->set_nsprings_max(nsprings_max);
     }
 }

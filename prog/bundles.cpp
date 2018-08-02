@@ -337,8 +337,8 @@ int main(int argc, char* argv[]){
   
     net->set_growing(kgrow, lgrow, l0min, l0max, nlink_max);
 
-    if (s2_intersect_flag) spacer2_pos_vec = net->link_link_intersections(spacer2_length, s2_linkage_prob); 
-    if (s1_intersect_flag) spacer1_pos_vec = net->link_link_intersections(spacer1_length, s1_linkage_prob); 
+    if (s2_intersect_flag) spacer2_pos_vec = net->spring_spring_intersections(spacer2_length, s2_linkage_prob); 
+    if (s1_intersect_flag) spacer1_pos_vec = net->spring_spring_intersections(spacer1_length, s1_linkage_prob); 
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding xlink 1s...";
@@ -411,8 +411,8 @@ int main(int argc, char* argv[]){
 //            file_a << time_str<<"\tN = "<<to_string(net->get_nactins());
 //            net->write_actins(file_a);
             
-            file_l << time_str<<"\tN = "<<to_string(net->get_nlinks());
-            net->write_links(file_l);
+            file_l << time_str<<"\tN = "<<to_string(net->get_nsprings());
+            net->write_springs(file_l);
             
             file_am << time_str<<"\tN = "<<to_string(big_xlinks->get_nmotors());
 //          big_xlinks->motor_write(file_am);
@@ -422,7 +422,7 @@ int main(int argc, char* argv[]){
 //          small_xlinks->motor_write(file_pm);
             small_xlinks->motor_write_doubly_bound(file_pm);
             
-            file_th << time_str<<"\tN = "<<to_string(net->get_nlinks());
+            file_th << time_str<<"\tN = "<<to_string(net->get_nsprings());
             net->write_thermo(file_th);
 
             file_pe << net->get_stretching_energy()<<"\t"<<net->get_bending_energy()<<"\t"<<

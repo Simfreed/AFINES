@@ -7,11 +7,11 @@ BOOST_AUTO_TEST_CASE( constructors_test )
 {
 
     double tol = 0.001;
-    double bead_density = 0;
+    double bead_density = 1;
     array<double, 2> fov = {{50,50}};
-    array<int, 2> nq = {{2,2}}, state = {{0,0}}, findex = {{0,0}}, lindex = {{0, 0}};
+    array<int, 2> nq = {{2,2}}, state = {{0,0}}, findex = {{0,0}}, lindex = {{-1, -1}};
     vector<array<double, 3> > pos_sets;
-    int nbead = 2;
+    int nbead = 3;
 
     double dt = 1, temp = 0, vis = 0;
     string bc = "REFLECTIVE";
@@ -27,6 +27,7 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     
     filament_ensemble * f = new filament_ensemble(bead_density, fov, nq, dt, temp, 
             bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed, 0, 0);
+    cout<<"\nDEBUG: nfilaments = "<<f->get_nfilaments();
     motor  m = motor(array<double, 3>{{1, 1, 3.1416/2}}, motor_len, f, state, 
             findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     cout<<"\nDEBUG: created motors";
@@ -37,19 +38,23 @@ BOOST_AUTO_TEST_CASE( constructors_test )
     BOOST_CHECK_EQUAL( m.get_states()[0], 0);
     BOOST_CHECK_EQUAL( m.get_states()[1], 0);
     
-    bead_density = nbead/(fov[0]*fov[1]);
-    pos_sets.push_back({{-0.5,0,0}});
+    //delete f;
 
-    delete f;
+    //bead_density = nbead/(fov[0]*fov[1]);
+    //pos_sets.push_back({{-0.5,0,0}});
 
-    f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed, 0, 0);
+    //f = new filament_ensemble(bead_density, fov, nq, dt, temp, bead_rad, vis, nbead, spring_len, pos_sets, stretching, 1, bending, frac_force, bc, seed, 0, 0);
     state = {{1,0}};
+    lindex = {{0,-1}};
+    f->get_filament(0)->get_spring(0);
+    cout<<"\nDEBUG: got to line 50";
 
     motor m2 = motor(array<double, 3>{{1, 1, 0}}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL( m2.get_states()[0], 1);
     BOOST_CHECK_EQUAL( m2.get_states()[1], 0);
     
     state = {{0,1}};
+    lindex = {{-1,0}};
     motor m3 = motor(array<double, 3>{{1, 1, 0}}, motor_len, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     BOOST_CHECK_EQUAL( m3.get_states()[0], 0);
     BOOST_CHECK_EQUAL( m3.get_states()[1], 1);

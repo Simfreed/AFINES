@@ -129,9 +129,9 @@ class motor
         
         string write();
         
-        void remove_from_link(int hd);
+        void remove_from_spring(int hd);
 
-        void add_to_link(int hd);
+        void add_to_spring(int hd);
         
         void inc_l_index(int hd);
     
@@ -147,7 +147,7 @@ class motor
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 
-        array<int,2> state, f_index, l_index, link_mot_idx;
+        array<int,2> state, f_index, l_index, spring_mot_idx;
         
         map<vector<int>, double> dist;
         array<bool, 2> at_barbed_end;

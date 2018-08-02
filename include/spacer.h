@@ -52,7 +52,7 @@ class spacer : public motor {
         
         int get_further_end(int, int, int);
 
-        array<double, 2> disp_from_actin(int, int, int);
+        array<double, 2> disp_from_bead(int, int, int);
 
         void update_bending(int);
         
@@ -60,7 +60,7 @@ class spacer : public motor {
 
         virtual void brownian_relax(int hd);
 
-        void actin_update();
+        void filament_update();
 
         virtual double metropolis_prob(int hd, array<int, 2> flidx, array<double, 2> newpos, double maxRate);
         

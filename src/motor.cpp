@@ -56,12 +56,12 @@ motor::motor( array<double, 3> pos,
     state       = mystate;
     f_index     = myfindex; //filament index for each head
     
+    filament_network = network;
     init_l_index(0, mylindex[0]);
     init_l_index(1, mylindex[1]);
 
     fov         = myfov;
     BC          = bc; 
-    filament_network = network;
     damp        = (6*pi*vis*mld);
     bd_prefactor= sqrt(temperature/(2*damp*dt)); 
 
@@ -148,11 +148,11 @@ motor::motor( array<double, 4> pos,
     
     state       = mystate;
     f_index     = myfindex; //filament index for each head
+    filament_network = network;
     init_l_index(0, mylindex[0]);
     init_l_index(1, mylindex[1]);
     fov         = myfov;
     BC          = bc; 
-    filament_network = network;
     damp        =(6*pi*vis*mld);
     bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
@@ -560,11 +560,6 @@ double motor::get_kinetic_energy(){
     return kinetic_energy;
 }
 
-double motor::get_angle(){
-    return mphi;
-}
-
-
 string motor::to_string()
 {
     char buffer[1000];
@@ -588,8 +583,9 @@ string motor::to_string()
 void motor::init_l_index(int hd, int idx)
 {
     l_index[hd] = idx;
-    if (idx != -1)
-        this->add_to_link(hd);
+//    if (idx != -1)
+    if (state[hd] == 1)
+        this->add_to_spring(hd);
 }
 
 void motor::set_f_index(int hd, int idx)
@@ -600,24 +596,24 @@ void motor::set_f_index(int hd, int idx)
 void motor::set_l_index(int hd, int idx)
 {
     /* cases: 
-            initially unbound, then binds (l_index == -1) ==> add_to_link
-            initially bound, unbinds (idx = -1) ==> remove_from_link
+            initially unbound, then binds (l_index == -1) ==> add_to_spring
+            initially bound, unbinds (idx = -1) ==> remove_from_spring
             initially bound, switches (otherwise) ==> both
     */
 //    cout<<"\nDEBUG: changing l_index["<<hd<<"] of "<<this<<" from "<<l_index[hd]<<" to "<<idx;
     
     if (l_index[hd] == -1){
         l_index[hd] = idx;
-        this->add_to_link(hd);
+        this->add_to_spring(hd);
     }
     else if(idx == -1){
-        this->remove_from_link(hd);
+        this->remove_from_spring(hd);
         l_index[hd] = idx;
     }
     else{
-        this->remove_from_link(hd);
+        this->remove_from_spring(hd);
         l_index[hd] = idx;
-        this->add_to_link(hd);
+        this->add_to_spring(hd);
     }
 }
 
@@ -631,14 +627,14 @@ double motor::get_pos_a_end(int hd)
     return pos_a_end[hd];
 }
 
-void motor::add_to_link(int hd)
+void motor::add_to_spring(int hd)
 {
-    actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->add_mot(this, hd);     
+    filament_network->get_filament(f_index[hd])->get_spring(l_index[hd])->add_mot(this, hd);     
 }
 
-void motor::remove_from_link(int hd)
+void motor::remove_from_spring(int hd)
 {
-    actin_network->get_filament(f_index[hd])->get_link(l_index[hd])->remove_mot(this);
+    filament_network->get_filament(f_index[hd])->get_spring(l_index[hd])->remove_mot(this);
 }
 
 string motor::write()
@@ -651,8 +647,8 @@ string motor::write()
 
 void motor::inc_l_index(int hd){
 //    this->set_l_index(hd, l_index[hd]+1);
-/* NOTE: this function DOES NOT add the motor to a different link; it just increments the l_index of the link
- * in cases where the link pointer hasn't changed*/
+/* NOTE: this function DOES NOT add the motor to a different spring; it just increments the l_index of the spring
+ * in cases where the spring pointer hasn't changed*/
     l_index[hd] += 1;
 }
 void motor::identify()

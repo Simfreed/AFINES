@@ -1,4 +1,5 @@
 #include "filament.h"
+#include "filament_ensemble.h"
 #define BOOST_TEST_MODULE spring_test
 #include <boost/test/unit_test.hpp>
 
@@ -396,85 +397,85 @@ BOOST_AUTO_TEST_CASE( get_quadrants_test )
 BOOST_AUTO_TEST_CASE( add_mot_test )
 {
     //Filament ENSEMBLE
-    array<double, 2> fov = {50,50};
-    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    array<double, 2> fov = {{50,50}};
+    array<int, 2> nq = {{2,2}}, state = {{0,0}}, findex = {{-1,-1}}, lindex = {{-1, -1}};
     vector<vector<double> > actin_sets;
 
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double actin_rad = 0.5, link_len = 1;
+    double actin_rad = 0.5, spring_len = 1;
     double v0 = 0.25;
     
     double mstiff = 0, stretching = 0, bending = 0; //spring constants
     double kon = 0, koff = 2, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
-    vector<double> pos1={23.6,0,actin_rad,0},pos2={24.6,0,actin_rad,0},pos3={-24.4,0,actin_rad,0};
+    vector<double> pos1={{23.6,0,actin_rad,0}},pos2={{24.6,0,actin_rad,0}},pos3={{-24.4,0,actin_rad,0}};
     actin_sets.push_back(pos1);
     actin_sets.push_back(pos2);
     actin_sets.push_back(pos3);
-    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    filament_ensemble * f = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc, 0, 0);
     
-    Link * l0 = f->get_filament(0)->get_link(0);
-    Link * l1 = f->get_filament(0)->get_link(1);
+    spring * l0 = f->get_filament(0)->get_spring(0);
+    spring * l1 = f->get_filament(0)->get_spring(1);
     
     double mx = -24.875, my = 0.5, mang = pi/2, mlen = 1;
     
-    motor * m = new motor(array<double, 3>{mx, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    motor * m = new motor(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
-    map<motor *, int> * mots0 = l0->get_mots();
-    map<motor *, int> * mots1 = l1->get_mots();
+//    map<motor *, int> l0->get_mots() = l0->get_mots();
+//    map<motor *, int> l1->get_mots() = l1->get_mots();
 
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor(s) on link 0 that haven't been added");
-    BOOST_CHECK_MESSAGE(mots1->size() == 0, "\n"+std::to_string(mots1->size())+" motor(s) on link 1 that haven't been added");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor(s) on spring 0 that haven't been added");
+    BOOST_CHECK_MESSAGE(l1->get_mots().size() == 0, "\n"+std::to_string(l1->get_mots().size())+" motor(s) on spring 1 that haven't been added");
     m->set_f_index(0,0);
     m->set_l_index(0,0);
-    BOOST_CHECK_MESSAGE(mots0->at(m) == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots0->size() == 1, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots1->size() == 0, "\nmotor on link 1 without being added");
+    BOOST_CHECK_MESSAGE(l0->get_mots()[m] == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 1, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l1->get_mots().size() == 0, "\nmotor on spring 1 without being added");
     m->set_l_index(0,1);
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots1->at(m) == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots1->size() == 1, "\nmotor not on link 1 after added");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l1->get_mots()[m] == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l1->get_mots().size() == 1, "\nmotor not on spring 1 after added");
     m->set_l_index(0,-1);
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots1->size() == 0, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l1->get_mots().size() == 0, "\nmotor not added to spring correctly");
 
     //increment l_index test
     m->set_f_index(0,0);
     m->set_l_index(0,0);
-    BOOST_CHECK_MESSAGE(mots0->at(m) == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots0->size() == 1, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots1->size() == 0, "\nmotor on link 1 without being added");
+    BOOST_CHECK_MESSAGE(l0->get_mots()[m] == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 1, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l1->get_mots().size() == 0, "\nmotor on spring 1 without being added");
     m->set_l_index(0,1);
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor link index not incremented");
-    BOOST_CHECK_MESSAGE(mots1->at(m) == 0, "\nmotor link index not incremented");
-    BOOST_CHECK_MESSAGE(mots1->size() == 1, "\nmotor link index not incremented");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor spring index not incremented");
+    BOOST_CHECK_MESSAGE(l1->get_mots()[m] == 0, "\nmotor spring index not incremented");
+    BOOST_CHECK_MESSAGE(l1->get_mots().size() == 1, "\nmotor spring index not incremented");
     m->set_l_index(0,-1);
   
     //add / remove motor test
     
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor(s) on link 0 that haven't been added");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor(s) on spring 0 that haven't been added");
     l0->add_mot(m, 0);
-    BOOST_CHECK_MESSAGE(mots0->at(m) == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots0->size() == 1, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots()[m] == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 1, "\nmotor not added to spring correctly");
     l0->remove_mot(m);
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor not added to spring correctly");
     
     //add / remove motor test
-    motor * m2 = new motor(array<double, 3>{mx+1, my, mang}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor(s) on link 0 that haven't been added");
+    motor * m2 = new motor(array<double, 3>{{mx+1, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor(s) on spring 0 that haven't been added");
     l0->add_mot(m, 0);
     l0->add_mot(m2, 0);
-    BOOST_CHECK_MESSAGE(mots0->at(m) == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots0->at(m2) == 0, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots0->size() == 2, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots()[m] == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().at(m2) == 0, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 2, "\nmotor not added to spring correctly");
     l0->remove_mot(m);
-    BOOST_CHECK_MESSAGE(mots0->size() == 1, "\nmotor not added to link correctly");
-    BOOST_CHECK_MESSAGE(mots0->at(m2) == 0, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 1, "\nmotor not added to spring correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().at(m2) == 0, "\nmotor not added to spring correctly");
     l0->remove_mot(m2);
-    BOOST_CHECK_MESSAGE(mots0->size() == 0, "\nmotor not added to link correctly");
+    BOOST_CHECK_MESSAGE(l0->get_mots().size() == 0, "\nmotor not added to spring correctly");
 
     //delete l0;
     //delete l1;

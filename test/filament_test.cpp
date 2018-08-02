@@ -1234,30 +1234,30 @@ BOOST_AUTO_TEST_CASE( grow_test_l0)
     int     xgrid = (int)(2*xrange), ygrid = (int)(2*yrange), nrod = 10;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_length         = 1;
+    double  bead_length        = spring_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
     string  bc                  = "REFLECTIVE";
     double startx = 0, starty = 0, startphi = 0;
-    double l0max = 2*link_length, lgrow = 0.5;
+    double l0max = 2*spring_length, lgrow = 0.5;
 
     filament * f;
-    Link l; 
-    actin a; 
+    spring l; 
+    bead a; 
 
     f      = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
     f->set_l0_max(l0max);
     f->grow(lgrow);
 
-    BOOST_CHECK_MESSAGE( f->get_link(0)->get_l0()==link_length+lgrow, "\nbarbed end didn't grow");
-    BOOST_CHECK_MESSAGE( f->get_nlinks() == nrod-1, "\ndifferent # of links than expected");
-    BOOST_CHECK_MESSAGE( f->get_nactins() == nrod, "\ndifferent # of beads than expected");
+    BOOST_CHECK_MESSAGE( f->get_spring(0)->get_l0()==spring_length+lgrow, "\nbarbed end didn't grow");
+    BOOST_CHECK_MESSAGE( f->get_nsprings() == nrod-1, "\ndifferent # of springs than expected");
+    BOOST_CHECK_MESSAGE( f->get_nbeads() == nrod, "\ndifferent # of beads than expected");
 
     delete f;
     
@@ -1270,39 +1270,39 @@ BOOST_AUTO_TEST_CASE( grow_test_add_bead)
     int     xgrid = (int)(2*xrange), ygrid = (int)(2*yrange), nbead = 3;
     double  dt                  = 1e-3;
     double  temp                = 0;
-    double  link_length         = 1;
-    double  actin_length        = link_length/2;
+    double  spring_length         = 1;
+    double  bead_length        = spring_length/2;
     double  viscosity           = 0.5;
     double  stretching_stiffness= 100;
     double  bending_stiffness   = 1; 
     double  fracture_force      = 100;
     string  bc                  = "PERIODIC";
     double startx = 0, starty = 0, startphi = 0;
-    double l0max = 2*link_length, lgrow = 1.5;
+    double l0max = 2*spring_length, lgrow = 1.5;
 
     filament * f;
-    Link l; 
-    actin a; 
+    spring l; 
+    bead a; 
 
     f      = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
-            viscosity, dt, temp, true, actin_length, link_length, stretching_stiffness, 1, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
    
     cout<<f->to_string();
-    BOOST_CHECK_MESSAGE( f->get_nlinks() == nbead-1, "\ndifferent # of links than expected");
-    BOOST_CHECK_MESSAGE( f->get_nactins() == nbead, "\ndifferent # of beads than expected");
+    BOOST_CHECK_MESSAGE( f->get_nsprings() == nbead-1, "\ndifferent # of springs than expected");
+    BOOST_CHECK_MESSAGE( f->get_nbeads() == nbead, "\ndifferent # of beads than expected");
     
     f->set_l0_max(l0max);
     f->grow(lgrow);
 
-    BOOST_CHECK_MESSAGE( f->get_nlinks() == nbead, "\ndifferent # of links than expected");
-    BOOST_CHECK_MESSAGE( f->get_nactins() == nbead + 1, "\ndifferent # of beads than expected");
+    BOOST_CHECK_MESSAGE( f->get_nsprings() == nbead, "\ndifferent # of springs than expected");
+    BOOST_CHECK_MESSAGE( f->get_nbeads() == nbead + 1, "\ndifferent # of beads than expected");
 
-    for (int i = 0; i < f->get_nlinks(); i++){
-        cout<<"\nDEBUG: checking link "<<i;
-        BOOST_CHECK_MESSAGE( f->get_link(i)->get_l0()==link_length, "\nl0 is wrong");
+    for (int i = 0; i < f->get_nsprings(); i++){
+        cout<<"\nDEBUG: checking spring "<<i;
+        BOOST_CHECK_MESSAGE( f->get_spring(i)->get_l0()==spring_length, "\nl0 is wrong");
         array<int, 2> check = {i, i+1};
-        BOOST_CHECK_MESSAGE( f->get_link(i)->get_aindex()==check, "\naindex is wrong");
+        BOOST_CHECK_MESSAGE( f->get_spring(i)->get_aindex()==check, "\naindex is wrong");
     }
 
     delete f;
@@ -1314,28 +1314,28 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     //Filament ENSEMBLE
     array<double, 2> fov = {50,50};
     array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
-    vector<vector<double> > actin_sets;
+    vector<vector<double> > bead_sets;
 
     double dt = 1, temp = 0.004, vis = 0;
     string bc = "PERIODIC";
     
-    double actin_rad = 0.5, link_len = 1;
+    double bead_rad = 0.5, spring_len = 1;
     double v0 = 0;
     
     double mstiff = 0.4, stretching = 0, bending = 0; //spring constants
     double kon = 10000, koff = 0, kend = 0, fstall = 3.85, rcut = 1;
     double frac_force = 10000000;
     
-    vector<double> pos1={0,0,actin_rad,0},pos2={1,0,actin_rad,0},pos3={2,0,actin_rad,0},pos4={3,0,actin_rad,0};
-    actin_sets.push_back(pos1);
-    actin_sets.push_back(pos2);
-    actin_sets.push_back(pos3);
-    actin_sets.push_back(pos4);
-    filament_ensemble * fe = new filament_ensemble(actin_sets, fov, nq, dt, temp, vis, link_len, stretching, 1, bending, frac_force, bc);
+    vector<double> pos1={0,0,bead_rad,0},pos2={1,0,bead_rad,0},pos3={2,0,bead_rad,0},pos4={3,0,bead_rad,0};
+    bead_sets.push_back(pos1);
+    bead_sets.push_back(pos2);
+    bead_sets.push_back(pos3);
+    bead_sets.push_back(pos4);
+    filament_ensemble * fe = new filament_ensemble(bead_sets, fov, nq, dt, temp, vis, spring_len, stretching, 1, bending, frac_force, bc,0,0);
     fe->quad_update_serial(); 
     filament * f = fe->get_filament(0);
     
-    f->set_l0_max(2*link_len);
+    f->set_l0_max(2*spring_len);
 
     double mx1 = -0.05, mx2 = 0.5, mx3 = 1.5, my = 0.5, mang = pi/2, mlen = 1;
     
@@ -1347,81 +1347,81 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     m2->attach(0);
     m3->attach(0);
    
-    map<motor*, int>  mots0 = f->get_link(0)->get_mots();
-    map<motor*, int>  mots1 = f->get_link(1)->get_mots();
-    map<motor*, int>  mots2 = f->get_link(2)->get_mots();
+    map<motor*, int>  mots0 = f->get_spring(0)->get_mots();
+    map<motor*, int>  mots1 = f->get_spring(1)->get_mots();
+    map<motor*, int>  mots2 = f->get_spring(2)->get_mots();
 
 
-    BOOST_CHECK_MESSAGE(mots0.size() == 2, "\ninitially not two mots on link 0");
-    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nwrong number of motors initially on link 1");
-    BOOST_CHECK_MESSAGE(mots2.size() == 0, "\nwrong number of motors initially on link 0");
+    BOOST_CHECK_MESSAGE(mots0.size() == 2, "\ninitially not two mots on spring 0");
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nwrong number of motors initially on spring 1");
+    BOOST_CHECK_MESSAGE(mots2.size() == 0, "\nwrong number of motors initially on spring 0");
     
     BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\ninitialized wrong");
     BOOST_CHECK_MESSAGE(mots0.at(m2) == 0, "\ninitialized wrong");
     BOOST_CHECK_MESSAGE(mots1.at(m3) == 0, "\ninitialized wrong");
     
-    BOOST_CHECK_MESSAGE(f->get_nlinks() == 3, "\nwrong number of links initially");
-    BOOST_CHECK_MESSAGE(f->get_nactins() == 4, "\nwrong number of actins initially");
+    BOOST_CHECK_MESSAGE(f->get_nsprings() == 3, "\nwrong number of springs initially");
+    BOOST_CHECK_MESSAGE(f->get_nbeads() == 4, "\nwrong number of beads initially");
 
     // case 1: grows, but not enough to add a bead
     f->grow(0.5);
     
-    BOOST_CHECK_MESSAGE(mots0.size() == 2, "\ninitially not two mots on link 0");
-    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nwrong number of motors initially on link 1");
-    BOOST_CHECK_MESSAGE(mots2.size() == 0, "\nwrong number of motors initially on link 2");
+    BOOST_CHECK_MESSAGE(mots0.size() == 2, "\ninitially not two mots on spring 0");
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nwrong number of motors initially on spring 1");
+    BOOST_CHECK_MESSAGE(mots2.size() == 0, "\nwrong number of motors initially on spring 2");
     
     BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\ninitialized wrong");
     BOOST_CHECK_MESSAGE(mots0.at(m2) == 0, "\ninitialized wrong");
     BOOST_CHECK_MESSAGE(mots1.at(m3) == 0, "\ninitialized wrong");
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_l0() == 1.5, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_l0() == link_len, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(2)->get_l0() == link_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(0)->get_l0() == 1.5, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(1)->get_l0() == spring_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(2)->get_l0() == spring_len, "\ninitialized wrong");
     
-    BOOST_CHECK_MESSAGE(f->get_nlinks() == 3, "\nwrong number of links initially");
-    BOOST_CHECK_MESSAGE(f->get_nactins() == 4, "\nwrong number of actins initially");
+    BOOST_CHECK_MESSAGE(f->get_nsprings() == 3, "\nwrong number of springs initially");
+    BOOST_CHECK_MESSAGE(f->get_nbeads() == 4, "\nwrong number of beads initially");
     
-    BOOST_CHECK_MESSAGE(m1->get_l_index()[0] == 0, "\nm1 on wrong link");
-    BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 0, "\nm2 on wrong link");
-    BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 1, "\nm3 on wrong link");
+    BOOST_CHECK_MESSAGE(m1->get_l_index()[0] == 0, "\nm1 on wrong spring");
+    BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 0, "\nm2 on wrong spring");
+    BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 1, "\nm3 on wrong spring");
     
     // case 1: grows, but enough to add a bead
     f->grow(0.5);
     
-    BOOST_CHECK_MESSAGE(f->get_nlinks() == 4, "\nwrong number of links");
-    BOOST_CHECK_MESSAGE(f->get_nactins() == 5, "\nwrong number of actins");
+    BOOST_CHECK_MESSAGE(f->get_nsprings() == 4, "\nwrong number of springs");
+    BOOST_CHECK_MESSAGE(f->get_nbeads() == 5, "\nwrong number of beads");
     
-    mots0 = f->get_link(0)->get_mots();
-    mots1 = f->get_link(1)->get_mots();
-    mots2 = f->get_link(2)->get_mots();
-    map<motor*, int> mots3 = f->get_link(3)->get_mots();
+    mots0 = f->get_spring(0)->get_mots();
+    mots1 = f->get_spring(1)->get_mots();
+    mots2 = f->get_spring(2)->get_mots();
+    map<motor*, int> mots3 = f->get_spring(3)->get_mots();
     
-    BOOST_CHECK_MESSAGE(mots0.size() == 1, "\nafter link add "+std::to_string(mots0.size())+ " mots on link 0");
-    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nafter link add "+std::to_string(mots1.size())+ " mots on link 1");
-    BOOST_CHECK_MESSAGE(mots2.size() == 1, "\nafter link add "+std::to_string(mots2.size())+ " mots on link 2");
-    BOOST_CHECK_MESSAGE(mots3.size() == 0, "\nafter link add "+std::to_string(mots3.size())+ " mots on link 3");
+    BOOST_CHECK_MESSAGE(mots0.size() == 1, "\nafter spring add "+std::to_string(mots0.size())+ " mots on spring 0");
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nafter spring add "+std::to_string(mots1.size())+ " mots on spring 1");
+    BOOST_CHECK_MESSAGE(mots2.size() == 1, "\nafter spring add "+std::to_string(mots2.size())+ " mots on spring 2");
+    BOOST_CHECK_MESSAGE(mots3.size() == 0, "\nafter spring add "+std::to_string(mots3.size())+ " mots on spring 3");
     
-    BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\nm1 not on link 0");
-    BOOST_CHECK_MESSAGE(mots1.at(m2) == 0, "\nm2 not on link 1");
-    BOOST_CHECK_MESSAGE(mots2.at(m3) == 0, "\nm3 not on link 2");
+    BOOST_CHECK_MESSAGE(mots0.at(m1) == 0, "\nm1 not on spring 0");
+    BOOST_CHECK_MESSAGE(mots1.at(m2) == 0, "\nm2 not on spring 1");
+    BOOST_CHECK_MESSAGE(mots2.at(m3) == 0, "\nm3 not on spring 2");
     
-    BOOST_CHECK_MESSAGE(f->get_link(0)->get_l0() == link_len, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(1)->get_l0() == link_len, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(2)->get_l0() == link_len, "\ninitialized wrong");
-    BOOST_CHECK_MESSAGE(f->get_link(3)->get_l0() == link_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(0)->get_l0() == spring_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(1)->get_l0() == spring_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(2)->get_l0() == spring_len, "\ninitialized wrong");
+    BOOST_CHECK_MESSAGE(f->get_spring(3)->get_l0() == spring_len, "\ninitialized wrong");
    
-    BOOST_CHECK_MESSAGE(m1->get_l_index()[0] == 0, "\nm1 on wrong link");
-    BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 1, "\nm2 on wrong link");
-    BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 2, "\nm3 on wrong link");
+    BOOST_CHECK_MESSAGE(m1->get_l_index()[0] == 0, "\nm1 on wrong spring");
+    BOOST_CHECK_MESSAGE(m2->get_l_index()[0] == 1, "\nm2 on wrong spring");
+    BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 2, "\nm3 on wrong spring");
 
     cout<<"\nDEBUG testing motor detachment";
     m2->detach_head(0,{mx2,my});
-    mots1 = f->get_link(1)->get_mots();
-    BOOST_CHECK_MESSAGE(mots1.size() == 0, "\nafter link detached, "+std::to_string(mots1.size())+ " mots on link 1");
+    mots1 = f->get_spring(1)->get_mots();
+    BOOST_CHECK_MESSAGE(mots1.size() == 0, "\nafter spring detached, "+std::to_string(mots1.size())+ " mots on spring 1");
     
     m2->attach(0);
-    mots1 = f->get_link(1)->get_mots();
-    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nafter link reattached, "+std::to_string(mots1.size())+ " mots on link 1");
+    mots1 = f->get_spring(1)->get_mots();
+    BOOST_CHECK_MESSAGE(mots1.size() == 1, "\nafter spring reattached, "+std::to_string(mots1.size())+ " mots on spring 1");
 
     delete m1;
     delete m2;

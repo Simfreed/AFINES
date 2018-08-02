@@ -31,7 +31,7 @@ filament::filament(){
     damp = infty;
     y_thresh=2;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
-    link_l0 = 1;
+    spring_l0 = 1;
     this->init_ubend();
     fracture_force_sq = fracture_force*fracture_force;
 }
@@ -54,7 +54,7 @@ filament::filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, do
     damp            = infty;
     y_thresh        = 1;
     bd_prefactor = sqrt(temperature/(2*dt*damp));
-    link_l0      = 1;
+    spring_l0      = 1;
     this->init_ubend();
     fracture_force_sq = fracture_force*fracture_force;
 
@@ -75,7 +75,7 @@ filament::filament(array<double, 3> startpos, int nbead, array<double, 2> myfov,
     BC = bdcnd;
     kb = bending_stiffness;
     kinetic_energy  = 0;
-    link_l0 = linkLength;
+    spring_l0 = spring_length;
     
     damp = 6*pi*beadRadius*visc;
     y_thresh = 1;
@@ -129,7 +129,7 @@ filament::filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2>
     nq = mynq;
     y_thresh = 1;
     kinetic_energy = 0;
-    link_l0 = linkLength;
+    spring_l0 = spring_length;
 
     if (beadvec.size() > 0)
     {
@@ -660,9 +660,9 @@ void filament::set_l0_max(double lmax)
     l0_max = lmax;
 }
 
-void filament::set_nlinks_max(int nmax)
+void filament::set_nsprings_max(int nmax)
 {
-    nlinks_max = nmax;
+    nsprings_max = nmax;
 }
 
 void filament::set_l0_min(double lmin)
@@ -672,51 +672,51 @@ void filament::set_l0_min(double lmin)
 
 void filament::grow(double dL)
 {
-    double lb = links[0]->get_l0();
+    double lb = springs[0]->get_l0();
     if ( lb + dL < l0_max ){
-        links[0]->set_l0(lb + dL);
-        links[0]->step(BC, delrx);
+        springs[0]->set_l0(lb + dL);
+        springs[0]->step(BC, delrx);
     }
     else{
         double x2, y2, pos;
-        array<double, 2> dir = links[0]->get_direction();
-        x2 = actins[1]->get_xcm();
-        y2 = actins[1]->get_ycm();
+        array<double, 2> dir = springs[0]->get_direction();
+        x2 = beads[1]->get_xcm();
+        y2 = beads[1]->get_ycm();
         //add a bead
-        array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-link_l0*dir[0], y2-link_l0*dir[1]});
-        actins.insert(actins.begin()+1, new actin(newpos[0], newpos[1], actins[0]->get_ld(), actins[0]->get_viscosity()));
+        array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-spring_l0*dir[0], y2-spring_l0*dir[1]});
+        beads.insert(beads.begin()+1, new bead(newpos[0], newpos[1], beads[0]->get_length(), beads[0]->get_viscosity()));
         prv_rnds.insert(prv_rnds.begin()+1, {0,0});
-        //shift all links from "1" onward forward
+        //shift all springs from "1" onward forward
         //move backward; otherwise i'll just keep pushing all the motors to the pointed end, i think
-        for (int i = int(links.size()-1); i > 0; i--){
-            links[i]->inc_aindex();
-            links[i]->step(BC, delrx);
-            //shift all xlinks on these links forward
-            //lmots = links[i]->get_mots();
-            for (map<motor *, int>::iterator it = links[i]->get_mots().begin(); it != links[i]->get_mots().end(); ++it)
+        for (int i = int(springs.size()-1); i > 0; i--){
+            springs[i]->inc_aindex();
+            springs[i]->step(BC, delrx);
+            //shift all xsprings on these springs forward
+            //lmots = springs[i]->get_mots();
+            for (map<motor *, int>::iterator it = springs[i]->get_mots().begin(); it != springs[i]->get_mots().end(); ++it)
             {
                 it->first->inc_l_index(it->second);
             }
             
         }
-        //add link "1" 
-        links.insert(links.begin()+1, new Link(link_l0, links[0]->get_kl(), links[0]->get_max_ext(), this, {1, 2}, fov, nq));
-        links[1]->step(BC, delrx);
+        //add spring "1" 
+        springs.insert(springs.begin()+1, new spring(spring_l0, springs[0]->get_kl(), springs[0]->get_max_ext(), this, {1, 2}, fov, nq));
+        springs[1]->step(BC, delrx);
         //reset l0 at barbed end
-        links[0]->set_l0(link_l0);
-        links[0]->step(BC, delrx);
+        springs[0]->set_l0(spring_l0);
+        springs[0]->step(BC, delrx);
         
-        //adjust motors and xlinks on first link
-        map<motor *, int> mots0 = links[0]->get_mots();
+        //adjust motors and xsprings on first spring
+        map<motor *, int> mots0 = springs[0]->get_mots();
         vector<motor *> mots1;
         for (map<motor *, int>::iterator it = mots0.begin(); it != mots0.end(); ++it)
         {
             pos = it->first->get_pos_a_end()[it->second];
-            if (pos < link_l0){
+            if (pos < spring_l0){
                 mots1.push_back(it->first);
             }
             else{
-                it->first->set_pos_a_end(it->second, pos - link_l0);
+                it->first->set_pos_a_end(it->second, pos - spring_l0);
             }
         }
         int hd;
@@ -730,7 +730,7 @@ void filament::grow(double dL)
 
 void filament::update_length()
 {
-    if ( this->get_nlinks() + 1 <= nlinks_max && rng(0,1) < kgrow*dt){
+    if ( this->get_nsprings() + 1 <= nsprings_max && rng(0,1) < kgrow*dt){
         grow(lgrow);
     }
 }

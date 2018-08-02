@@ -127,7 +127,7 @@ class filament
         
         void set_l0_max(double);
         
-        void set_nlinks_max(int);
+        void set_nsprings_max(int);
         
         void set_l0_min(double);
         
@@ -147,8 +147,8 @@ class filament
         
         double kb, temperature, dt, fracture_force, fracture_force_sq, kinetic_energy, damp, kToverLp, bd_prefactor, ubend;
         double gamma, max_shear, delrx, y_thresh;
-        double link_l0, l0_max, l0_min, kgrow, lgrow;
-        int nlinks_max;
+        double spring_l0, l0_max, l0_min, kgrow, lgrow;
+        int nsprings_max;
         
         array<double,2> fov;
         array<int,2> nq;

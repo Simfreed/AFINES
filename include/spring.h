@@ -96,7 +96,7 @@ class spring
         
         double get_r_c(string bc, double delrx, double x, double y); 
 
-	array<double,2> get_point(); 
+        array<double,2> get_point(); 
         
         vector<array<int,2> > get_quadrants();
        

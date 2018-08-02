@@ -411,7 +411,6 @@ void spring::inc_aindex()
 
 void spring::add_mot(motor * mot, int hd)
 {
-//    cout<<"\nDEBUG: adding mot "<<mot<<" to mots on spring "<<this;
     mots[mot] = hd;
 }
 
