@@ -275,6 +275,7 @@ bool motor::attach(int hd)
 
             //head can't bind to the same filament spring the other head is bound to
             else if(allowed_bind(hd, it->second)){
+                //cout<<"\nDEBUG: dist = "<<sqrt(it->first)<<" {f,l} = {"<<(it->second).at(0)<<" , "<<(it->second).at(1)<<"}";
                 
                 intPoint = filament_network->get_filament((it->second).at(0))->get_spring((it->second).at(1))->get_intpoint();
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);

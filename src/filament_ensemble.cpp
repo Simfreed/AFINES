@@ -125,23 +125,11 @@ set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 {
     fls.clear();
     set<pair<double, array<int, 2>>> t_map;
-    int mqx = coord2quad_floor(fov[0], nq[0], x);
-    int mqy = coord2quad_floor(fov[1], nq[1], y);
     
-    int xp1 = mqx + 1;
-    int yp1 = mqy + 1;
-
-    if (xp1 >= nq[0] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) xp1 = 0;
-    if (yp1 >= nq[1] && (network[0]->get_BC() == "PERIODIC" || network[0]->get_BC() == "LEES-EDWARDS")) yp1 = 0;
+    int mqx = coord2quad(fov[0], nq[0], x);
+    int mqy = coord2quad(fov[1], nq[1], y);
     
     update_dist_map(t_map, {{mqx, mqy}}, x, y);
-    if (xp1 < nq[0]) 
-        update_dist_map(t_map, {{xp1, mqy}}, x, y);
-    if (yp1 < nq[1]) 
-        update_dist_map(t_map, {{mqx, yp1}}, x, y);
-    if (xp1 < nq[0] && yp1 < nq[1])
-        update_dist_map(t_map, {{xp1, yp1}}, x, y);
-
     return t_map;
 }
 
