@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
     int xgrid, ygrid;
     double grid_factor; 
     
-    int    count, nframes, nmsgs;
+    int    count, nframes, nmsgs, quad_update_period;
     double t, tinit, tfinal, dt;
     
     double viscosity, temperature;                                          //Environment
@@ -65,6 +65,7 @@ int main(int argc, char* argv[]){
 
     double rmax; 
     double kexv; 
+
     bool restart;
     double restart_time;
     
@@ -166,6 +167,7 @@ int main(int argc, char* argv[]){
         
         ("static_cl_flag", po::value<bool>(&static_cl_flag)->default_value(false), "flag to indicate compeletely static xlinks; i.e, no walking, no detachment")
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
+        ("quad_update_period", po::value<int>(&quad_update_period)->default_value(1), "number of timesteps between actin/link/motor position updates to update quadrants")
         
         //Options for filament growth
         ("kgrow", po::value<double>(&kgrow)->default_value(0), "rate of filament growth")
@@ -323,13 +325,13 @@ int main(int argc, char* argv[]){
     cout<<"\nCreating actin network..";
     filament_ensemble * net;
     if (actin_pos_vec.size() == 0 && actin_in.size() == 0){
-        net = new filament_ensemble(actin_density, {xrange, yrange}, {xgrid, ygrid}, dt, 
+        net = new filament_ensemble(actin_density, {{xrange, yrange}}, {{xgrid, ygrid}}, dt, 
                 temperature, actin_length, viscosity, nmonomer, link_length, 
                 actin_position_arrs, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd, myseed, rmax, kexv); 
     }else{
-        net = new filament_ensemble(actin_pos_vec, {xrange, yrange}, {xgrid, ygrid}, dt, 
+        net = new filament_ensemble(actin_pos_vec, {{xrange, yrange}}, {{xgrid, ygrid}}, dt, 
                 temperature, viscosity, link_length, 
                 link_stretching_stiffness, fene_pct, link_bending_stiffness,
                 fracture_force, bnd_cnd, rmax, kexv); 
@@ -450,6 +452,8 @@ int main(int argc, char* argv[]){
         //update network
         net->update();//updates all forces, velocities and positions of filaments
 
+        if ( ! quad_off_flag && count % quad_update_period == 0)
+            net->quad_update_serial();
         //update cross linkers
         if (static_cl_flag)
             small_xlinks->motor_update();
