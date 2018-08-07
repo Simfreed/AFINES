@@ -1249,7 +1249,7 @@ BOOST_AUTO_TEST_CASE( grow_test_l0)
     spring l; 
     bead a; 
 
-    f      = new filament({startx, starty, startphi}, nrod, {xrange, yrange}, {xgrid, ygrid}, 
+    f      = new filament({{startx, starty, startphi}}, nrod, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
     
@@ -1285,7 +1285,7 @@ BOOST_AUTO_TEST_CASE( grow_test_add_bead)
     spring l; 
     bead a; 
 
-    f      = new filament({startx, starty, startphi}, nbead, {xrange, yrange}, {xgrid, ygrid}, 
+    f      = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
             viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
             bending_stiffness, fracture_force, bc);
    
@@ -1302,7 +1302,7 @@ BOOST_AUTO_TEST_CASE( grow_test_add_bead)
     for (int i = 0; i < f->get_nsprings(); i++){
         cout<<"\nDEBUG: checking spring "<<i;
         BOOST_CHECK_MESSAGE( f->get_spring(i)->get_l0()==spring_length, "\nl0 is wrong");
-        array<int, 2> check = {i, i+1};
+        array<int, 2> check = {{i, i+1}};
         BOOST_CHECK_MESSAGE( f->get_spring(i)->get_aindex()==check, "\naindex is wrong");
     }
 
@@ -1313,8 +1313,8 @@ BOOST_AUTO_TEST_CASE( grow_test_add_bead)
 BOOST_AUTO_TEST_CASE( grow_fil_test )
 {
     //Filament ENSEMBLE
-    array<double, 2> fov = {50,50};
-    array<int, 2> nq = {2,2}, state = {0,0}, findex = {-1,-1}, lindex = {-1, -1};
+    array<double, 2> fov = {{50,50}};
+    array<int, 2> nq = {{2,2}}, state = {{0,0}}, findex = {{-1,-1}}, lindex = {{-1, -1}};
     vector<vector<double> > bead_sets;
 
     double dt = 1, temp = 0.004, vis = 0;
@@ -1327,7 +1327,7 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     double kon = 10000, koff = 0, kend = 0, fstall = 3.85, rcut = 1;
     double frac_force = 10000000;
     
-    vector<double> pos1={0,0,bead_rad,0},pos2={1,0,bead_rad,0},pos3={2,0,bead_rad,0},pos4={3,0,bead_rad,0};
+    vector<double> pos1={{0,0,bead_rad,0}},pos2={{1,0,bead_rad,0}},pos3={{2,0,bead_rad,0}},pos4={{3,0,bead_rad,0}};
     bead_sets.push_back(pos1);
     bead_sets.push_back(pos2);
     bead_sets.push_back(pos3);
@@ -1340,9 +1340,9 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
 
     double mx1 = -0.05, mx2 = 0.5, mx3 = 1.5, my = 0.5, mang = pi/2, mlen = 1;
     
-    motor * m1 = new motor(array<double, 3>{mx1, my, mang}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-    motor * m2 = new motor(array<double, 3>{mx2, my, mang}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-    motor * m3 = new motor(array<double, 3>{mx3, my, mang}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    motor * m1 = new motor(array<double, 3>{{mx1, my, mang}}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    motor * m2 = new motor(array<double, 3>{{mx2, my, mang}}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+    motor * m3 = new motor(array<double, 3>{{mx3, my, mang}}, mlen, fe, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
    
     m1->attach(0);
     m2->attach(0);
@@ -1416,7 +1416,7 @@ BOOST_AUTO_TEST_CASE( grow_fil_test )
     BOOST_CHECK_MESSAGE(m3->get_l_index()[0] == 2, "\nm3 on wrong spring");
 
     cout<<"\nDEBUG testing motor detachment";
-    m2->detach_head(0,{mx2,my});
+    m2->detach_head(0,{{mx2,my}});
     mots1 = f->get_spring(1)->get_mots();
     BOOST_CHECK_MESSAGE(mots1.size() == 0, "\nafter spring detached, "+std::to_string(mots1.size())+ " mots on spring 1");
     

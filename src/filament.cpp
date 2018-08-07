@@ -683,9 +683,9 @@ void filament::grow(double dL)
         x2 = beads[1]->get_xcm();
         y2 = beads[1]->get_ycm();
         //add a bead
-        array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {0, 0}, {x2-spring_l0*dir[0], y2-spring_l0*dir[1]});
+        array<double, 2> newpos = pos_bc(BC, delrx, dt, fov, {{0, 0}}, {{x2-spring_l0*dir[0], y2-spring_l0*dir[1]}});
         beads.insert(beads.begin()+1, new bead(newpos[0], newpos[1], beads[0]->get_length(), beads[0]->get_viscosity()));
-        prv_rnds.insert(prv_rnds.begin()+1, {0,0});
+        prv_rnds.insert(prv_rnds.begin()+1, {{0, 0}});
         //shift all springs from "1" onward forward
         //move backward; otherwise i'll just keep pushing all the motors to the pointed end, i think
         for (int i = int(springs.size()-1); i > 0; i--){
@@ -700,7 +700,7 @@ void filament::grow(double dL)
             
         }
         //add spring "1" 
-        springs.insert(springs.begin()+1, new spring(spring_l0, springs[0]->get_kl(), springs[0]->get_max_ext(), this, {1, 2}, fov, nq));
+        springs.insert(springs.begin()+1, new spring(spring_l0, springs[0]->get_kl(), springs[0]->get_max_ext(), this, {{1, 2}}, fov, nq));
         springs[1]->step(BC, delrx);
         //reset l0 at barbed end
         springs[0]->set_l0(spring_l0);

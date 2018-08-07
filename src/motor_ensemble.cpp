@@ -246,7 +246,7 @@ void motor_ensemble<motor_type>::motor_write(ostream& fout)
 template <class motor_type>
 void motor_ensemble<motor_type>::motor_write_doubly_bound(ostream& fout)
 {
-    array<int, 2> doubly_bound {1,1};
+    array<int, 2> doubly_bound {{1,1}};
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
         if (n_motors[i]->get_states() == doubly_bound){

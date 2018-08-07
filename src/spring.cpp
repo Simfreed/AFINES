@@ -268,8 +268,8 @@ double spring::get_r_c(string bc, double delrx, double x, double y)
 	
     if(l2 == 0)
     {
-        point = {hx[0], hy[0]};
-	pos = {x,y};
+        point = {{hx[0], hy[0]}};
+	pos = {{x,y}};
         dx = pos[0] - point[0];
         dy = pos[1] - point[1];
         r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);  
@@ -280,25 +280,25 @@ double spring::get_r_c(string bc, double delrx, double x, double y)
 
         if(tp < 0)
         {
-            point = {hx[0], hy[0]};
-            pos = {x,y};
+            point = {{hx[0], hy[0]}};
+            pos = {{x,y}};
             dx = pos[0] - point[0];
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
         }
         else if(tp > 1.0)
         {
-            point = {hx[1], hy[1]};
-            pos = {x,y};
+            point = {{hx[1], hy[1]}};
+            pos = {{x,y}};
             dx = pos[0] - point[0];
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
         }
         else
         {
-            proj = {hx[0] + tp*disp[0], hy[0] + tp*disp[1]};
-            point = pos_bc(bc, delrx, 0, fov, {0,0}, proj);
-            pos = {x,y}; 
+            proj = {{hx[0] + tp*disp[0], hy[0] + tp*disp[1]}};
+            point = pos_bc(bc, delrx, 0, fov, {{0,0}}, proj);
+            pos = {{x,y}}; 
             dx = pos[0] - point[0];
             dy = pos[1] - point[1];
             r_c = dist_bc(bc, dx, dy, fov[0], fov[1], delrx);
@@ -406,7 +406,7 @@ array<int, 2> spring::get_aindex(){
 // functions for growing
 void spring::inc_aindex()
 {
-    aindex = {aindex[0]+1, aindex[1]+1};
+    aindex = {{aindex[0]+1, aindex[1]+1}};
 }
 
 void spring::add_mot(motor * mot, int hd)
