@@ -97,7 +97,7 @@ motor::motor( array<double, 3> pos,
 
     if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
-                                   filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+                filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
         ldir_bind[0] = filament_network->get_direction(f_index[0], l_index[0]);
 
     }
@@ -275,7 +275,7 @@ bool motor::attach(int hd)
 
             //head can't bind to the same filament spring the other head is bound to
             else if(allowed_bind(hd, it->second)){
-                //cout<<"\nDEBUG: dist = "<<sqrt(it->first)<<" {f,l} = {"<<(it->second).at(0)<<" , "<<(it->second).at(1)<<"}";
+            //    cout<<"\nDEBUG: dist = "<<sqrt(it->first)<<" {f,l} = {"<<(it->second).at(0)<<" , "<<(it->second).at(1)<<"}";
                 
                 intPoint = filament_network->get_filament((it->second).at(0))->get_spring((it->second).at(1))->get_intpoint();
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);

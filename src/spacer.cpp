@@ -32,7 +32,8 @@ spacer::spacer( array<double, 3> pos,
     stall_force   = fstall;
     temperature   = temp;
 
-    max_bind_dist = rcut;
+    max_bind_dist    = rcut;
+    max_bind_dist_sq = rcut*rcut;
 
     mld         = mlen;
     dt          = delta_t;
@@ -44,18 +45,21 @@ spacer::spacer( array<double, 3> pos,
     kend2       = rend*dt;
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    l_index     = mylindex; //spring index for each head
+    
+    filament_network = network;
+    init_l_index(0, mylindex[0]);
+    init_l_index(1, mylindex[1]);
+    
     fov         = myfov;
     BC          = bc; 
-    filament_network = network;
     damp        =(6*pi*vis*mld);
     bd_prefactor= sqrt(temperature/(2*damp*dt)); 
-    
+
     /****for FENE motors******/
     max_ext     = max_ext_ratio*mlen;
     eps_ext     = 0.01*max_ext;
     /*************************/
-    
+
     shear       = 0;
     tension     = 0;
     force       = {{0,0}}; // tensile force on the spring  
@@ -85,6 +89,7 @@ spacer::spacer( array<double, 3> pos,
     bind_disp[1]=  {{0,0}};
 
     at_barbed_end = {{false, false}};
+
     if (state[0] == 1){
         pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
                 filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
@@ -125,6 +130,7 @@ spacer::spacer( array<double, 4> pos,
     temperature = temp;
 
     max_bind_dist = rcut;
+    max_bind_dist_sq = rcut*rcut;
     
     mld         = mlen;
     dt          = delta_t;
@@ -134,12 +140,14 @@ spacer::spacer( array<double, 4> pos,
     kon2        = ron*dt;
     koff2       = roff*dt;
     kend2       = rend*dt;
+
     state       = mystate;
     f_index     = myfindex; //filament index for each head
-    l_index     = mylindex; //spring index for each head
+    filament_network = network;
+    init_l_index(0, mylindex[0]);
+    init_l_index(1, mylindex[1]);
     fov         = myfov;
     BC          = bc; 
-    filament_network = network;
     damp        =(6*pi*vis*mld);
     bd_prefactor= sqrt(temperature/(2*damp*dt)); 
     
@@ -195,7 +203,7 @@ spacer::spacer( array<double, 4> pos,
 
 }
 
- spacer::~spacer(){};
+spacer::~spacer(){};
 
 void spacer::set_bending(double force_constant, double ang){
     kb  = force_constant;
@@ -375,4 +383,9 @@ bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
 {
 //    cout<<"\nDEBUG: using spacer allowed bind";
     return (fl_idx[0] != f_index[pr(hd)]);
+}
+
+array<double, 2> spacer::get_bending_energy()
+{
+    return b_eng;
 }

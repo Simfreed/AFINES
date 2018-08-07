@@ -65,6 +65,8 @@ class spacer : public motor {
         virtual double metropolis_prob(int hd, array<int, 2> flidx, array<double, 2> newpos, double maxRate);
         
         virtual bool allowed_bind(int hd, array<int, 2> flidx);
+        
+        array<double,2> get_bending_energy();
 
     private:
 
