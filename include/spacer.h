@@ -70,10 +70,11 @@ class spacer : public motor {
 
     private:
 
-        double x, y, th, prv_rnd_vx, prv_rnd_vy, prv_rnd_w;
+        double th, prv_rnd_x, prv_rnd_y, prv_rnd_th;
         double kb, th0; 
         array<array<double, 2>,2 > b_force;        
         array<double, 2> b_eng;
+        array<double, 2> cm;
 };
 
 #endif

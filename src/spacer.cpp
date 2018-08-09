@@ -216,6 +216,8 @@ void spacer::update_force()
     if (state[0] == 1 && state[1] == 1){
         update_bending(0);
         update_bending(1);
+
+        update_shake_force();
     }
     else
     {
@@ -225,12 +227,13 @@ void spacer::update_force()
 
     update_angle(); // need to recalculate this, since heads might've moved
 
-    tension = mk*(len - mld);
-    force = {{tension*direc[0], tension*direc[1]}};
+    //tension = mk*(len - mld);
+    //force = {{tension*direc[0], tension*direc[1]}};
     
 }
-  //Measure distance to FARTHER END of bead filament that the spacer is bound to
-  //
+
+//Measure distance to FARTHER END of bead filament that the spacer is bound to
+//
 int spacer::get_further_end(int hd, int findex, int lindex)
 {
     return (pos_a_end[hd] > 0.5*filament_network->get_llength(findex, lindex));
@@ -307,45 +310,60 @@ void spacer::identify(){
     cout<<"I am a spacer";
 }
 
-void spacer::brownian_relax(int hd)
+void spacer::update_unattached()
 {
     //cout<<"\nDEBUG: using spacer brownian_relax()";
     
-    double new_rnd_x= rng_n(), new_rnd_y = rng_n();
+    double new_rnd_x= rng_n(), new_rnd_y = rng_n(), new_rnd_th = rng(n);
+    double vx =  bd_prefactor*(new_rnd_x + prv_rnd_x);
+    double vy =  bd_prefactor*(new_rnd_y + prv_rnd_y);
+    double w =  rot_bd_prefactor*(new_rnd_th + prv_rnd_th);
     
-    double vx =  (pow(-1,hd)*force[0] + b_force[hd][0]) / damp + bd_prefactor*(new_rnd_x + prv_rnd_x[hd]);
-    double vy =  (pow(-1,hd)*force[1] + b_force[hd][1]) / damp + bd_prefactor*(new_rnd_y + prv_rnd_y[hd]);
-    kinetic_energy = vx*vx + vy*vy;    
-    array<double, 2> pos = boundary_check(hd, hx[hd] + vx*dt, hy[hd] + vy*dt);
-    hx[hd] = pos[0];
-    hy[hd] = pos[1];
+    //kinetic_energy = vx*vx + vy*vy;    
+    cm = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{vx, vy}}, {{x+vx*dt, y+vy*dt}});
+    th = th + w*dt;
+    update_direc();
+    update_hx_hy();
 
-    prv_rnd_x[hd] = new_rnd_x;
-    prv_rnd_y[hd] = new_rnd_y;
-
-}
-
-void spacer::update_unattached()
-{
-    double new_rnd_x = rng_n(0,1), new_rnd_y = rng(0,1) new_rnd_th = rng_n(0,1);
-    double w  = bd_rot_prefactor*(new_rnd_th +  prv_rnd_th);
-    double vx = bd_prefactor*(new_rnd_x + prv_rnd_x);
-    double vy = bd_prefactor*(new_rnd_y + prv_rnd_y);
-
-    array<double, 2> pos = pos_bc(BC, actin_network->get_delrx(), dt, fov, {vx, vy}, {x + vx*dt, y + vy*dt});
-
-    th += w*dt;
-    x = pos[0];
-    y = pos[1];
+    prv_rnd_x = new_rnd_x;
+    prv_rnd_y = new_rnd_y;
+    prv_rnd_w = new_rnd_w;
 
 }
 
-void spacer::update_head_pos_unattached()
+void spacer::update_one_attached(int at_hd)
 {
-    hx[0] = x - 0.5*mld*cos(th);
-    hx[1] = x + 0.5*mld*cos(th);
-    hy[0] = y - 0.5*mld*sin(th);
-    hy[1] = y + 0.5*mld*sin(th)
+    double new_rnd_th = rng(n);
+    double w =  rot_bd_prefactor*(new_rnd_th + prv_rnd_th);
+    
+    th = th + w*dt/2;
+    update_direc();
+   
+    int hd_sgn = pow(-1, at_hd);
+    array<double, 2> dr = {{hd_sgn*rad*direc[0], hd_sgn*rad*direc[1]}};
+    array<double, 2> cm_new = {{hx[at_hd] + dr[0], hy[at_hd] + dr[1]}};
+    cm = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{(cm_new[0] - cm[0])/dt, (cm_new[1]-cm[1])/dt}}, cm_new);
+    
+    array<double, 2> un_hd_pos = {{cm[0] + dr[0], cm[1] + dr[1]}};
+    un_hd_pos = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0,0}}, un_hd_pos);
+    hx[pr(hd)] = un_hd_pos[0];
+    hy[pr(hd)] = un_hd_pos[1];
+
+    prv_rnd_w = new_rnd_w;
+}
+
+void spacer::update_direc()
+{
+    direc = {{cos(th), sin(th)}}; 
+}
+
+void spacer::update_hx_hy()
+{
+    array<double, 2> dr = {{rad*direc[0], rad*direc[1]}}; 
+    array<double, 2> r0 = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0,0}}, {{cm[0] - dr[0], cm[1]-dr[1]}});
+    array<double, 2> r1 = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0,0}}, {{cm[0] + dr[0], cm[1]+dr[1]}});
+    hx = {{r0[0], r1[0]}};
+    hy = {{r0[1], r1[1]}};
 }
 
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
