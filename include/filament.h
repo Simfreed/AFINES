@@ -17,14 +17,11 @@
 
 //=====================================
 //included dependences
-#include "string"
-#include "vector"
-#include "actin.h"
-#include "Link.h"
-#include "globals.h"
+#include "bead.h"
+#include "spring.h"
 
 //=====================================
-//actin filament class
+//bead filament class
 class filament
 {
     public:
@@ -32,11 +29,11 @@ class filament
         filament(array<double, 2> myfov, array<int, 2> mynq, double deltat, double temp, double shear, 
                 double frac, double bending_stiffness, string bndcnd);
         
-        filament(array<double, 3> startpos, int nactin, array<double,2> myfov, array<int,2> mynq,
+        filament(array<double, 3> startpos, int nbead, array<double,2> myfov, array<int,2> mynq,
                 double vis, double deltat, double temp, bool isStraight,
-                double actinLength, double linkLength, double stretching, double ext, double bending, double fracture, string bc); 
+                double beadLength, double spring_length, double stretching, double ext, double bending, double fracture, string bc); 
 
-        filament(vector<actin *> actinvec, array<double, 2> myfov, array<int, 2> mynq, double linkLength, double stretching_stiffness, double ext, double bending_stiffness, 
+        filament(vector<bead *> beadvec, array<double, 2> myfov, array<int, 2> mynq, double spring_length, double stretching_stiffness, double ext, double bending_stiffness, 
                 double deltat, double temp, double fracture, double gamma, string bc);
        
         filament();
@@ -69,18 +66,18 @@ class filament
         
         void update(double t);
         
-        actin * get_actin(int i);
+        bead * get_bead(int i);
         
-        Link * get_link(int i);
+        spring * get_spring(int i);
 
-        int get_nlinks();
+        int get_nsprings();
 
         vector<vector<array<int, 2> > > get_quadrants();
         //multimap<int, array<int, 2> > > get_quadrants();
 
-        string write_actins(int fil);
+        string write_beads(int fil);
         
-        string write_links(int fil);
+        string write_springs(int fil);
         
         string to_string();
         
@@ -88,7 +85,7 @@ class filament
         
         double get_end2end();
 
-        vector<actin *> get_actins(unsigned int first, unsigned int last);
+        vector<bead *> get_beads(unsigned int first, unsigned int last);
         
         vector<filament *> fracture(int node);
         
@@ -96,19 +93,19 @@ class filament
         
         bool operator==(const filament& that);
         
-        void add_actin(actin * a, double l0, double kl, double me);
+        void add_bead(bead * a, double l0, double kl, double me);
         
         void set_BC(string s);
 
         string get_BC();
        
-        inline double angle_between_links(int i, int j);
+        inline double angle_between_springs(int i, int j);
 
         void fwd_bwd_bending_update();
         
         void lammps_bending_update();
         
-        int get_nactins();
+        int get_nbeads();
 
         double get_bending_energy();
 
@@ -123,12 +120,14 @@ class filament
         double get_potential_energy();
         
         double get_total_energy();
+        
+        void init_ubend();
     
         void print_thermo();
         
         void set_l0_max(double);
         
-        void set_nlinks_max(int);
+        void set_nsprings_max(int);
         
         void set_l0_min(double);
         
@@ -146,16 +145,16 @@ class filament
 
     protected:
         
-        double kb, temperature, dt, fracture_force, damp, kToverLp, bd_prefactor, kinetic_energy;
+        double kb, temperature, dt, fracture_force, fracture_force_sq, kinetic_energy, damp, kToverLp, bd_prefactor, ubend;
         double gamma, max_shear, delrx, y_thresh;
-        double link_l0, l0_max, l0_min, kgrow, lgrow;
-        int nlinks_max;
+        double spring_l0, l0_max, l0_min, kgrow, lgrow;
+        int nsprings_max;
         
         array<double,2> fov;
         array<int,2> nq;
         vector<array<double, 2> > prv_rnds;
-        vector<actin *> actins;
-        vector<Link *> links;
+        vector<bead *> beads;
+        vector<spring *> springs;
         string BC;
 };
 

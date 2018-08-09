@@ -55,9 +55,9 @@ motor_ensemble<motor_type>::motor_ensemble(double mdensity, array<double, 2> myf
             motory = rng(-0.5*(fov[1]*alpha-mld),0.5*(fov[1]*alpha-mld));
             mang   = rng(0,2*pi);
         }
-        motor_pos = {motorx, motory, mang};
+        motor_pos = {{motorx, motory, mang}};
 
-        n_motors.push_back(new motor_type( motor_pos, mld, f_network,{0, 0}, {-1,-1}, {-1,-1}, fov, delta_t, temp, 
+        n_motors.push_back(new motor_type( motor_pos, mld, f_network,{{0, 0}}, {{-1,-1}}, {{-1,-1}}, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
         
     }
@@ -89,12 +89,12 @@ motor_ensemble<motor_type>::motor_ensemble(vector<vector<double> > motors, array
 
     for (int i=0; i< nm; i++) {
         
-        motor_pos = {motors[i][0], motors[i][1], motors[i][2], motors[i][3]};
+        motor_pos = {{motors[i][0], motors[i][1], motors[i][2], motors[i][3]}};
         
-        f_index = {int(motors[i][4]), int(motors[i][5])};
-        l_index = {int(motors[i][6]), int(motors[i][7])};
+        f_index = {{int(motors[i][4]), int(motors[i][5])}};
+        l_index = {{int(motors[i][6]), int(motors[i][7])}};
 
-        state = {f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1};  
+        state = {{f_index[0] == -1 && l_index[0] == -1 ? 0 : 1, f_index[1] == -1 && l_index[1] == -1 ? 0 : 1}};  
 
         n_motors.push_back(new motor_type( motor_pos, mld, f_network, state, f_index, l_index, fov, delta_t, temp, 
                     v0, stiffness, max_ext_ratio, ron, roff, rend, fstall, rcut, vis, BC));
@@ -203,7 +203,7 @@ void motor_ensemble<motor_type>::motor_walk(double t)
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
             //n_motors[i]->update_force_fraenkel_fene();
-            n_motors[i]->actin_update();
+            n_motors[i]->filament_update();
         }
     
     }
@@ -228,7 +228,7 @@ void motor_ensemble<motor_type>::motor_update()
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
             //n_motors[i]->update_force_fraenkel_fene();
-            n_motors[i]->actin_update();
+            n_motors[i]->filament_update();
     
     }
     this->update_energies();
@@ -246,7 +246,7 @@ void motor_ensemble<motor_type>::motor_write(ostream& fout)
 template <class motor_type>
 void motor_ensemble<motor_type>::motor_write_doubly_bound(ostream& fout)
 {
-    array<int, 2> doubly_bound {1,1};
+    array<int, 2> doubly_bound {{1,1}};
 
     for (unsigned int i=0; i<n_motors.size(); i++) {
         if (n_motors[i]->get_states() == doubly_bound){

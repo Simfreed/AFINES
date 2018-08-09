@@ -71,9 +71,9 @@ class motor
 
         void step_twoheads();
 
-        void actin_update_hd(int hd, array<double, 2> f);
+        void filament_update_hd(int hd, array<double, 2> f);
         
-        void actin_update();
+        void filament_update();
 
         void update_shape();
         
@@ -129,9 +129,9 @@ class motor
         
         string write();
         
-        void remove_from_link(int hd);
+        void remove_from_spring(int hd);
 
-        void add_to_link(int hd);
+        void add_to_spring(int hd);
         
         void inc_l_index(int hd);
     
@@ -139,22 +139,22 @@ class motor
 
     public:
 
-        double mphi,mld, vs, stall_force, max_bind_dist, mk, kon, koff, kend, dt, temperature, 
-               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension,
+        double mld, vs, stall_force, max_bind_dist, max_bind_dist_sq, mk, kon, koff, kend, dt, temperature, 
+               damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, len,
                kon2, koff2, kend2;
         
-        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp;
+        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, direc;
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 
-        array<int,2> state, f_index, l_index, link_mot_idx;
+        array<int,2> state, f_index, l_index, spring_mot_idx;
         
         map<vector<int>, double> dist;
         array<bool, 2> at_barbed_end;
         
         string BC;
         
-        filament_ensemble* actin_network;
+        filament_ensemble* filament_network;
         
 };
 

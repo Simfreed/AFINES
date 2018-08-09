@@ -61,6 +61,7 @@ const double infty = 1e10;
 const double actin_mass_density = 2.6e-14; //miligram / micron
 /*generic functions to be used below*/
 void set_seed(int s);
+double rng_u();
 double rng(double start, double end);
 int pr(int num);
 double rng_exp(double mean);

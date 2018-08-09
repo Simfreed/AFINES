@@ -1,22 +1,17 @@
 (* ::Package:: *)
 
 #!/software/mathematica-10.2-x86_ 64/bin/MathematicaScript -script
-(* Given: 
-    links.dat file
-actins.dat file
-field of view
-# segments per filament
-velocities from divergence calculation*)
-
 
 dir=$ScriptCommandLine[[2]];
 fov=If[Length[$ScriptCommandLine]>2,ToExpression/@{$ScriptCommandLine[[3]],$ScriptCommandLine[[4]]},{50,50}];
 ti=If[Length[$ScriptCommandLine]>4,ToExpression[$ScriptCommandLine[[5]]],1];
 tf=If[Length[$ScriptCommandLine]>5,ToExpression[$ScriptCommandLine[[6]]],-1];
+parts=If[Length[$ScriptCommandLine]>6,$ScriptCommandLine[[7]],"amotors_ext"];
+
 
 Import["/home/simonfreedman/Code/cytomod/analysis/cytomod_functions.m"];
 Print["Loaded Functions"];
-amots = pts2[dir, "amotors_ext"];
+amots = pts2[dir, parts];
 If[Length[Dimensions[amots]] == 1, amots = amots[[1 ;; -2]]];
 Print["Imported Motors"];
 amots=amots[[ti;;Min[tf,Length[amots]]]]

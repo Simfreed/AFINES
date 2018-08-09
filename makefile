@@ -12,12 +12,12 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 OBJECTS_DEBUG := $(patsubst $(SRCDIR)/%,$(BUILDDIR_DEBUG)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-CFLAGS := -O3 -Wall -Wno-missing-braces -Wno-unused-local-typedefs -Wno-deprecated-declarations -std=c++11 -DBOOST_TEST_DYN_LINK # -fopenmp
-CFLAGS_DEBUG := -Wall -std=c++11 -DBOOST_TEST_DYN_LINK -pg 
+CFLAGS := -O3 -Wall -Wno-unused-local-typedefs -Wno-deprecated-declarations -std=c++11 -DBOOST_TEST_DYN_LINK -march=native# -fopenmp
+CFLAGS_DEBUG := -Wall -Wunused -Wunreachable-code -std=c++11 -DBOOST_TEST_DYN_LINK -pg 
 
 # BOOST_SUFFIX := -mt
 LIB := -L ${BOOST_ROOT} -lboost_unit_test_framework${BOOST_SUFFIX} -lboost_program_options${BOOST_SUFFIX} -lboost_filesystem${BOOST_SUFFIX} -lboost_system${BOOST_SUFFIX}
-INC := -I include  -I /usr/include/ -I /usr/local/include/ -I /opt/local/include/
+INC := -I include # -isystem /usr/include/  -isystem /usr/local/include/ -isystem /opt/local/include/
 
 #NOW := $(shell date +"%c" | tr ' :' '_')
 
@@ -72,11 +72,11 @@ motorwalk: $(OBJECTS)
 
 
 # Tests
-actin_tester: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) test/actin_test.cpp $(INC) $(LIB) -o bin/actin_tester
+bead_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/bead_test.cpp $(INC) $(LIB) -o bin/bead_tester
 
-link_tester: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) test/link_test.cpp $(INC) $(LIB) -o bin/link_tester
+spring_tester: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) test/spring_test.cpp $(INC) $(LIB) -o bin/spring_tester
 
 filament_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/filament_test.cpp $(INC) $(LIB) -o bin/filament_tester
@@ -93,6 +93,6 @@ spacer_tester: $(OBJECTS)
 motor_ensemble_tester: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) test/motor_ensemble_test.cpp $(INC) $(LIB) -o bin/motor_ensemble_tester
 
-test:actin_tester link_tester filament_tester motor_tester # filament_ensemble_tester motor_ensemble_tester
+test:bead_tester spring_tester filament_tester motor_tester
 
 .PHONY: clean

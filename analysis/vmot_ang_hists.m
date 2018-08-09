@@ -10,16 +10,17 @@ velocities from divergence calculation*)
 
 
 dir=$ScriptCommandLine[[2]];
-ti=ToExpression[$ScriptCommandLine[[3]]];
-tf=ToExpression[$ScriptCommandLine[[4]]];
-dth=ToExpression[$ScriptCommandLine[[5]]];
-zval=ToExpression[$ScriptCommandLine[[6]]];
-dts=Map[ToExpression,$ScriptCommandLine[[7;;-1]]];
+parts=$ScriptCommandLine[[3]];
+ti=ToExpression[$ScriptCommandLine[[4]]];
+tf=ToExpression[$ScriptCommandLine[[5]]];
+dth=ToExpression[$ScriptCommandLine[[6]]];
+zval=ToExpression[$ScriptCommandLine[[7]]];
+dts=Map[ToExpression,$ScriptCommandLine[[8;;-1]]];
 
 Import["/home/simonfreedman/Code/cytomod/analysis/cytomod_functions.m"];
 Print["Loaded Functions"];
 (*Uses unrolled trajectory, to avoid boundary defects*)
-mots=pts2[dir,"amotors_ext"];
+mots=pts2[dir, parts];
 Print["imported mots; dimensions: "<>ToString[Dimensions@mots]];
 cms=mots[[ti;;tf,All,1;;2]]+0.5*mots[[ti;;tf,All,3;;4]];
 Print["calculated center of masses; dimensions: "<>ToString[Dimensions@cms]];

@@ -10,7 +10,7 @@ vxsz=If[Length[$ScriptCommandLine]>4,ToExpression[$ScriptCommandLine[[5]]],0.1];
 nsb=If[Length[$ScriptCommandLine]>5,ToExpression[$ScriptCommandLine[[6]]],10];
 thresh=If[Length[$ScriptCommandLine]>6,ToExpression[$ScriptCommandLine[[7]]],1];
 fov=If[Length[$ScriptCommandLine]>7,ToExpression/@{$ScriptCommandLine[[8]],$ScriptCommandLine[[9]]},{50,50}];
-dt=If[Length[$ScriptCommandLine]>8,ToExpression/@{$ScriptCommandLine[[9]],$ScriptCommandLine[[9]]},1];
+dt=If[Length[$ScriptCommandLine]>9,ToExpression[$ScriptCommandLine[[10]]],1];
 
 
 bx=fov[[1]];
