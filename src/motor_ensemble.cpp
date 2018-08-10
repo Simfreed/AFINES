@@ -170,29 +170,28 @@ void motor_ensemble::motor_walk(double t)
         array<int, 2> s = n_motors[i]->get_states();
         
         if (t >= tMove){
-           
-            if (s[0] == 1)         
-                n_motors[i]->step_onehead(0);
-            else if (s[0] == 0)    
-            {
-                attached = n_motors[i]->attach(0);
-                if (!attached)
-                    n_motors[i]->brownian_relax(0);
-            }
             
-            if (s[1] == 1)         
-                n_motors[i]->step_onehead(1);
-            else if (s[1] == 0)
-            {
-                attached = n_motors[i]->attach(1);
-                if (!attached) 
-                    n_motors[i]->brownian_relax(1);
-            }
-
+            //Dynamics
+            if (s[0] == 0)
+                n_motors[i]->brownian_relax(0);
+            if (s[1] == 0)
+                n_motors[i]->brownian_relax(1);
+            
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
-            //n_motors[i]->update_force_fraenkel_fene();
             n_motors[i]->filament_update();
+            
+            //Attachment or Movement + Detachment
+            if (s[0] == 0)
+                n_motors[i]->attach(0);
+            else
+                n_motors[i]->step_onehead(0);
+
+            if (s[1] == 0)
+                n_motors[i]->attach(1);
+            else 
+                n_motors[i]->step_onehead(1);
+
         }
     
     }
