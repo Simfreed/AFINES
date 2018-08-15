@@ -117,29 +117,6 @@ void filament_ensemble::update_dist_map(set<pair<double, array<int,2>>>& t_map, 
 
 }
 
-//given a motor position, and a quadrant
-//update the map of {f, l} -- > dist
-void filament_ensemble::update_dth_map(set<pair<double, array<int,2>>>& t_map, const array<int, 2>& mq, array<double,2> hx, array<double,2> hy){
-    
-    array<int, 2> fl;
-    array<double, 2> dths;
-    
-    for (int i = 0; i < int(springs_per_quad[mq[0]]->at(mq[1])->size()); i++){
-
-        fl = springs_per_quad[mq[0]]->at(mq[1])->at(i); //fl  = {filament_index, spring_index}
-
-        if (fls.find(fl) == fls.end()){
-//            network[fl[0]]->get_spring(fl[1])->calc_rot_intpoint(network[fl[0]]->get_BC(), delrx, x, y); //calculate the point on the spring closest to (x,y)
-//            dist = network[fl[0]]->get_spring(fl[1])->get_dth(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
-            //cout<<"\nDEBUG : dist = "<<dist;
-
-//            t_map.insert(pair<double, array<int, 2> >(dist, fl));
-//            fls.insert(fl);
-        }
-    }
-
-}
-
 //given motor head position, return a map between  
 //  the INDICES (i.e., {i, j} for the j'th spring of the i'th filament)
 //  and their corresponding DISTANCES to the spring at that distance 
@@ -161,10 +138,28 @@ set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 //  the intersection points 
 //  the dths required to get there
 
-set<pair<double, array<int, 2>>> filament_ensemble::get_binding_points(array<double, 2> hx, array<double, 2> hy, int hd)
+set<pair<double, array<int, 2>>> filament_ensemble::get_binding_points(array<double, 2> cm, double rad)
 {
     fls.clear();
     set<pair<double, array<int, 2>>> t_map;
+    
+    int mqx = coord2quad(fov[0], nq[0], hx[hd]);
+    int mqy = coord2quad(fov[1], nq[1], hy[hd]);
+    
+    //update_dth_map(t_map, {{mqx, mqy}}, hx, hy);
+    for (int i = 0; i < int(springs_per_quad[mqx]->at(mqy)->size()); i++){
+
+        fl = springs_per_quad[mqx]->at(mqy)->at(i); //fl  = {filament_index, spring_index}
+
+        if (fls.find(fl) == fls.end()){
+            fls.insert(fl);
+            vector<array<double,2>> inters = network[fl[0]]->get_spring(fl[1])->get_rot_intersections(network[fl[0]]->get_BC(), cm, rad); //retrieve possible binding points 
+            //dth = network[fl[0]]->get_spring(fl[1])->get_dth(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
+            //cout<<"\nDEBUG : dist = "<<dist;
+            for (array<double, 2> pos : inters) 
+                t_map.insert(pair<array<double,2>, array<int, 2> >(pos, fl));
+        }
+    }
 
     return t_map;
 }

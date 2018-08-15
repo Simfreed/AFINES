@@ -38,9 +38,10 @@ spring::spring(double len, double stretching_stiffness, double max_ext_ratio, fi
     force = {{0,0}};
     intpoint = {{0,0}};
     point = {{0,0}}; 
-    
+
     llen = l0;
     llensq = l0*l0;
+
 }
 
 spring::~spring(){ 
@@ -426,15 +427,64 @@ map<motor *, int> & spring::get_mots()
     map<motor *, int> &ptr = mots;
     return ptr;
 }
-/*
-int spring::get_n_mots(){
-    return int(mots.size());
-}
 
-motor * spring::get_mot(int i){
-    return mots[i];
-}
+//intersections between line and circle
+//so: 1073336
+vecotr<array<double, 2>> spring::get_rot_intersections(string bc, double delrx, array<double, 2> cm, double rad)
+{
+    vector<array<double, 2>> inters = {};
+    
+    array<double, 2> f = rij_bc(bc, hx[0] - cm[0], hy[1] - cm[1], fov[0], fov[1], delrx); 
+    double a = dot( disp, disp ) ;
+    double b = 2*dot( f, disp ) ;
+    double c = dot( f, f ) - rad*rad ;
 
-int spring::get_mot_hd(int i){
-    return mot_hds[i];
-}*/
+    double discriminant = b*b-4*a*c;
+    if( discriminant < 0 )
+    {
+        // no intersection
+    }
+    else
+    {
+        // ray didn't totally miss sphere,
+        // so there is a solution to
+        // the equation.
+
+        discriminant = sqrt( discriminant );
+
+        // either solution may be on or off the ray so need to test both
+        // t1 is always the smaller value, because BOTH discriminant and
+        // a are nonnegative.
+        double t0 = (-b - discriminant)/(2*a);
+        double t1 = (-b + discriminant)/(2*a);
+
+        // 3x HIT cases:
+        //          -o->             --|-->  |            |  --|->
+        // Impale(t1 hit,t2 hit), Poke(t1 hit,t2>1), ExitWound(t1<0, t2 hit), 
+
+        // 3x MISS cases:
+        //       ->  o                     o ->              | -> |
+        // FallShort (t1>1,t2>1), Past (t1<0,t2<0), CompletelyInside(t1<0, t2>1)
+
+        if( t0 >= 0 && t0 <= 1 )
+        {
+            // t1 is the intersection, and it's closer than t2
+            // (since t1 uses -b - discriminant)
+            // Impale, Poke
+            inters.push_back(pos_bc(bc, delrx, 0, fov, {{0,0}}, hx[0] + t0*disp[0], hy[0] + t0*disp[1]));
+        }
+
+        // here t1 didn't intersect so we are either started
+        // inside the sphere or completely past it
+        if( t1 >= 0 && t1 <= 1 )
+        {
+            // ExitWound
+            inters.push_back(pos_bc(bc, delrx, 0, fov, {{0,0}}, hx[0] + t1*disp[0], hy[0] + t1*disp[1]));
+        }
+
+        // no intn: FallShort, Past, CompletelyInside
+        //return false ;
+    }
+
+    return inters;
+}

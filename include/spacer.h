@@ -75,6 +75,7 @@ class spacer : public motor {
         array<array<double, 2>,2 > b_force;        
         array<double, 2> b_eng;
         array<double, 2> cm;
+        array<double, 2> bind_rot;
 };
 
 #endif

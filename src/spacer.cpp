@@ -87,6 +87,8 @@ spacer::spacer( array<double, 3> pos,
 
     bind_disp[0] = {{0,0}};
     bind_disp[1]=  {{0,0}};
+    
+    bind_rot = {{0,0}};
 
     at_barbed_end = {{false, false}};
 
@@ -104,7 +106,7 @@ spacer::spacer( array<double, 3> pos,
     
     prv_rnd_x = {{0,0}};
     prv_rnd_y = {{0,0}};
-
+    
 }
 
 
@@ -183,6 +185,8 @@ spacer::spacer( array<double, 4> pos,
     ldir_bind[1] = {{0,0}};
     bind_disp[0] = {{0,0}};
     bind_disp[1] = {{0,0}};
+    
+    bind_rot = {{0,0}};
 
     at_barbed_end = {{false, false}};
 
@@ -357,6 +361,12 @@ void spacer::update_direc()
     direc = {{cos(th), sin(th)}}; 
 }
 
+void spacer::update_th_from_pos()
+{
+    array<double, 2> disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
+    th = atan2(disp[1], disp[0]);
+}
+
 void spacer::update_hx_hy()
 {
     array<double, 2> dr = {{rad*direc[0], rad*direc[1]}}; 
@@ -375,20 +385,17 @@ bool motor::attach(int hd)
     if (state[pr(hd)] == 1)
         onrate = kon2;
     
-    set<pair<double, array<int, 2> > > dist_sorted = actin_network->get_binding_points(hx, hy, hd);
+    set<pair<array<double, 2>, array<int, 2> > > dist_sorted = actin_network->get_binding_points({{hx[pr(hd)], hy[pr(hd)]}}, mld);
 
     if(!dist_sorted.empty()){
         
 
         for (set<pair<double, array<int, 2>>>::iterator it=dist_sorted.begin(); it!=dist_sorted.end(); ++it)
         {
-            if (it->first > max_bind_dist) //since it's sorted, all the others will be farther than max_bind_dist too
-                break;
-
             //head can't bind to the same filament link the other head is bound to
-            else if(allowed_bind(hd, it->second)){
+            if(allowed_bind(hd, it->second)){
                 
-                intPoint = actin_network->get_filament((it->second).at(0))->get_link((it->second).at(1))->get_intpoint();
+                intPoint = it->first;
                 not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);
                  
                 if (mf_rand < not_off_prob) 
@@ -398,13 +405,15 @@ bool motor::attach(int hd)
                     f_index[hd] = (it->second).at(0);
                     this->set_l_index(hd, (it->second).at(1));
                     
-                    //record displacement of head and orientation of link for future unbinding move
-                    ldir_bind[hd] = actin_network->get_direction(f_index[hd], l_index[hd]);
-                    bind_disp[hd] = rij_bc(BC, intPoint[0]-hx[hd], intPoint[1]-hy[hd], fov[0], fov[1], actin_network->get_delrx());
-
                     //update head position
                     hx[hd] = intPoint[0];
                     hy[hd] = intPoint[1];
+                    double thprev = th;
+                    update_th_from_pos();
+                    update_direc();
+
+                    //record rotation of head for future unbinding move
+                    bind_rot[hd] = th - thprev;
 
                     //update relative head position
                     pos_a_end[hd]=dist_bc(BC, actin_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
@@ -444,7 +453,7 @@ double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> ne
 {
 //    cout<<"\nDEBUG: using spacer metropolis_prob";
     double prob = maxprob;
-    double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], filament_network->get_delrx()) - mld; 
+//    double stretch  = dist_bc(BC, newpos[0] - hx[pr(hd)], newpos[1] - hy[pr(hd)], fov[0], fov[1], filament_network->get_delrx()) - mld; 
     
     array<double, 2> delr1, delr2;
     double r1, r2, c, dth, bend_eng = 0;
@@ -470,7 +479,8 @@ double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> ne
         
     }
     
-    double delE = 0.5*mk*stretch*stretch + bend_eng - this->get_stretching_energy() - b_eng[hd];
+//    double delE = 0.5*mk*stretch*stretch + bend_eng - this->get_stretching_energy() - b_eng[hd];
+    double delE = bend_eng - b_eng[hd];
     if( delE > 0 )
         prob *= exp(-delE/temperature);
     
@@ -483,103 +493,111 @@ bool spacer::allowed_bind(int hd, array<int, 2> fl_idx)
     return (fl_idx[0] != f_index[pr(hd)]);
 }
 
+array<double, 2> spacer::generate_off_pos(int hd)
+{
+    
+    double thnew = th + bind_rot[hd];
+    return pos_bc(BC, filament_network->get_delrx(), 0, fov, {{0,0}}, {{hx[pr(hd)] + mld*cos(thnew), hy[pr(hd)] + mld*sin(thnew)}}); 
+
+} 
+
 /* ---------------------------------------------------------------------- */
 
 void spacer::shake(int m)
 {
-  int nlist,list[2];
-  double v[6]
-  double invmass0,invmass1;
+    int nlist,list[2];
+    double v[6]
+        double invmass0,invmass1;
 
-  // local atom IDs and constraint distances
+    // local atom IDs and constraint distances
 
-  int i0 = atom->map(shake_atom[m][0]);
-  int i1 = atom->map(shake_atom[m][1]);
-  double bond1 = bond_distance[shake_type[m][0]];
+    int i0 = atom->map(shake_atom[m][0]);
+    int i1 = atom->map(shake_atom[m][1]);
+    double bond1 = bond_distance[shake_type[m][0]];
 
-  // r01 = distance vec between atoms, with PBC
+    // r01 = distance vec between atoms, with PBC
 
-  double r01[3];
-  r01[0] = x[i0][0] - x[i1][0];
-  r01[1] = x[i0][1] - x[i1][1];
-  r01[2] = x[i0][2] - x[i1][2];
-  domain->minimum_image(r01);
+    double r01[3];
+    r01[0] = x[i0][0] - x[i1][0];
+    r01[1] = x[i0][1] - x[i1][1];
+    r01[2] = x[i0][2] - x[i1][2];
+    domain->minimum_image(r01);
 
-  // s01 = distance vec after unconstrained update, with PBC
+    // s01 = distance vec after unconstrained update, with PBC
 
-  double s01[3];
-  s01[0] = xshake[i0][0] - xshake[i1][0];
-  s01[1] = xshake[i0][1] - xshake[i1][1];
-  s01[2] = xshake[i0][2] - xshake[i1][2];
-  domain->minimum_image(s01);
+    double s01[3];
+    s01[0] = xshake[i0][0] - xshake[i1][0];
+    s01[1] = xshake[i0][1] - xshake[i1][1];
+    s01[2] = xshake[i0][2] - xshake[i1][2];
+    domain->minimum_image(s01);
 
-  // scalar distances between atoms
+    // scalar distances between atoms
 
-  double r01sq = r01[0]*r01[0] + r01[1]*r01[1] + r01[2]*r01[2];
-  double s01sq = s01[0]*s01[0] + s01[1]*s01[1] + s01[2]*s01[2];
+    double r01sq = r01[0]*r01[0] + r01[1]*r01[1] + r01[2]*r01[2];
+    double s01sq = s01[0]*s01[0] + s01[1]*s01[1] + s01[2]*s01[2];
 
-  // a,b,c = coeffs in quadratic equation for lamda
+    // a,b,c = coeffs in quadratic equation for lamda
 
-  if (rmass) {
-    invmass0 = 1.0/rmass[i0];
-    invmass1 = 1.0/rmass[i1];
-  } else {
-    invmass0 = 1.0/mass[type[i0]];
-    invmass1 = 1.0/mass[type[i1]];
-  }
+    if (rmass) {
+        invmass0 = 1.0/rmass[i0];
+        invmass1 = 1.0/rmass[i1];
+    } else {
+        invmass0 = 1.0/mass[type[i0]];
+        invmass1 = 1.0/mass[type[i1]];
+    }
 
-  double a = (invmass0+invmass1)*(invmass0+invmass1) * r01sq;
-  double b = 2.0 * (invmass0+invmass1) *
-    (s01[0]*r01[0] + s01[1]*r01[1] + s01[2]*r01[2]);
-  double c = s01sq - bond1*bond1;
+    double a = (invmass0+invmass1)*(invmass0+invmass1) * r01sq;
+    double b = 2.0 * (invmass0+invmass1) *
+        (s01[0]*r01[0] + s01[1]*r01[1] + s01[2]*r01[2]);
+    double c = s01sq - bond1*bond1;
 
-  // error check
+    // error check
 
-  double determ = b*b - 4.0*a*c;
-  if (determ < 0.0) {
-    error->warning(FLERR,"Shake determinant < 0.0",0);
-    determ = 0.0;
-  }
+    double determ = b*b - 4.0*a*c;
+    if (determ < 0.0) {
+        error->warning(FLERR,"Shake determinant < 0.0",0);
+        determ = 0.0;
+    }
 
-  // exact quadratic solution for lamda
+    // exact quadratic solution for lamda
 
-  double lamda,lamda1,lamda2;
-  lamda1 = (-b+sqrt(determ)) / (2.0*a);
-  lamda2 = (-b-sqrt(determ)) / (2.0*a);
+    double lamda,lamda1,lamda2;
+    lamda1 = (-b+sqrt(determ)) / (2.0*a);
+    lamda2 = (-b-sqrt(determ)) / (2.0*a);
 
-  if (fabs(lamda1) <= fabs(lamda2)) lamda = lamda1;
-  else lamda = lamda2;
+    if (fabs(lamda1) <= fabs(lamda2)) lamda = lamda1;
+    else lamda = lamda2;
 
-  // update forces if atom is owned by this processor
+    // update forces if atom is owned by this processor
 
-  lamda /= dtfsq;
+    lamda /= dtfsq;
 
-  if (i0 < nlocal) {
-    f[i0][0] += lamda*r01[0];
-    f[i0][1] += lamda*r01[1];
-    f[i0][2] += lamda*r01[2];
-  }
+    if (i0 < nlocal) {
+        f[i0][0] += lamda*r01[0];
+        f[i0][1] += lamda*r01[1];
+        f[i0][2] += lamda*r01[2];
+    }
 
-  if (i1 < nlocal) {
-    f[i1][0] -= lamda*r01[0];
-    f[i1][1] -= lamda*r01[1];
-    f[i1][2] -= lamda*r01[2];
-  }
+    if (i1 < nlocal) {
+        f[i1][0] -= lamda*r01[0];
+        f[i1][1] -= lamda*r01[1];
+        f[i1][2] -= lamda*r01[2];
+    }
 
-  if (evflag) {
-    nlist = 0;
-    if (i0 < nlocal) list[nlist++] = i0;
-    if (i1 < nlocal) list[nlist++] = i1;
+    if (evflag) {
+        nlist = 0;
+        if (i0 < nlocal) list[nlist++] = i0;
+        if (i1 < nlocal) list[nlist++] = i1;
 
-    v[0] = lamda*r01[0]*r01[0];
-    v[1] = lamda*r01[1]*r01[1];
-    v[2] = lamda*r01[2]*r01[2];
-    v[3] = lamda*r01[0]*r01[1];
-    v[4] = lamda*r01[0]*r01[2];
-    v[5] = lamda*r01[1]*r01[2];
+        v[0] = lamda*r01[0]*r01[0];
+        v[1] = lamda*r01[1]*r01[1];
+        v[2] = lamda*r01[2]*r01[2];
+        v[3] = lamda*r01[0]*r01[1];
+        v[4] = lamda*r01[0]*r01[2];
+        v[5] = lamda*r01[1]*r01[2];
 
-    v_tally(nlist,list,2.0,v);
-  }
+        v_tally(nlist,list,2.0,v);
+    }
 }
 array<double, 2> spacer::get_bending_energy()
 {

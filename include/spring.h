@@ -82,6 +82,8 @@ class spring
         void set_l0(double myl0);
         
         double get_distance_sq(string bc, double shear_dist, double xp, double yp);
+        
+        array<double,2> get_dths(string bc, double shear_dist, array<double, 2> hx, array<double, 2> hy);
 
         double get_int_angle(double xp, double yp);
         
@@ -89,8 +91,8 @@ class spring
         array<double,2> get_intpoint();
 
         void calc_intpoint(string bc, double shear_dist, double xp, double yp);
- 
-	//void calc_r_c(string bc, double delrx, double x, double y); 
+        
+        vector<array<double,2>> get_rot_intersections(string bc, double shear_dist, array<double, 2> cm, double rad);
 
     	bool get_line_intersect(string bc, double delrx, spring *l2); 
         
