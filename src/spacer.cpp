@@ -319,10 +319,10 @@ void spacer::update_unattached()
 {
     //cout<<"\nDEBUG: using spacer brownian_relax()";
     
-    double new_rnd_x= rng_n(), new_rnd_y = rng_n(), new_rnd_th = rng(n);
+    double new_rnd_x = rng_n(), new_rnd_y = rng_n(), new_rnd_th = rng(n);
     double vx =  bd_prefactor*(new_rnd_x + prv_rnd_x);
     double vy =  bd_prefactor*(new_rnd_y + prv_rnd_y);
-    double w =  rot_bd_prefactor*(new_rnd_th + prv_rnd_th);
+    double w  =  rot_bd_prefactor*(new_rnd_th + prv_rnd_th);
     
     //kinetic_energy = vx*vx + vy*vy;    
     cm = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{vx, vy}}, {{x+vx*dt, y+vy*dt}});
@@ -438,12 +438,26 @@ bool motor::attach(int hd)
 
 void spacer::filament_update()
 {
-    if (state[0]==1) this->filament_update_hd(0, {{ force[0] + b_force[0][0],  force[1] + b_force[0][1]}});
-    if (state[1]==1) this->filament_update_hd(1, {{-force[0] + b_force[1][0], -force[1] + b_force[1][1]}});
+    vx0 = b_force[0][0]/damp;
+    vy0 = b_force[0][1]/damp;
+    vx1 = b_force[1][0]/damp;
+    vy1 = b_force[1][1]/damp;
+
+    unconstrained_pos0 = pos_bc(BC, delrx, dt, fov, {{vx, vy}}, {{hx[0] + vx0*dt, hy[0] + vy0*dt}});
+    unconstrained_pos1 = pos_bc(BC, delrx, dt, fov, {{vx, vy}}, {{hx[1] + vx1*dt, hy[1] + vy1*dt}});
+    array<double, 2> unconstrained_disp = rij_bc(BC, 
+            unconstrained_pos1[0] - unconstrained_pos0[0], 
+            unconstrained_pos1[1] - unconstrained_pos0[1], fov[0], fov[1], filament_network->get_delrx()); 
+    
+    this->update_shake_force(unconstrained_disp);
+
+    this->filament_update_hd(0, {{ force[0] + b_force[0][0],  force[1] + b_force[0][1]}});
+    this->filament_update_hd(1, {{-force[0] + b_force[1][0], -force[1] + b_force[1][1]}});
     
     //reset bending force
     b_force[0] = {{0,0}};
     b_force[1] = {{0,0}};
+    force      = {{0,0}};
 }
 
 array<array<double, 2>,2> spacer::get_b_force()
@@ -507,19 +521,19 @@ array<double, 2> spacer::generate_off_pos(int hd)
 
 /* ---------------------------------------------------------------------- */
 
-void spacer::shake(int m)
+void spacer::shake_force(array<double, 2> udisp)
 {
     //int nlist,list[2];
     //double v[6]
-    double invmass0,invmass1;
+    //double invmass0,invmass1;
 
     // local atom IDs and constraint distances
-    -->i0 = head 0;
-    -->i1 = head 1;
-    --> bond1 = mld;
+    //-->i0 = head 0;
+    //-->i1 = head 1;
+    //--> bond1 = mld;
 
-    r01 = prev displacement vector;
-    s01 = current displacement vector;
+    //r01 = prev displacement vector;
+    //s01 = current displacement vector;
     
     //int i0 = atom->map(shake_atom[m][0]);
     //int i1 = atom->map(shake_atom[m][1]);
@@ -543,7 +557,7 @@ void spacer::shake(int m)
 
     // scalar distances between atoms
     array<double, 2> r01 = disp_prev;
-    array<double, 2> s01 = disp;
+    array<double, 2> s01 = udisp;
 
     double r01sq = r01[0]*r01[0] + r01[1]*r01[1]; //+ r01[2]*r01[2];
     double s01sq = s01[0]*s01[0] + s01[1]*s01[1]; //+ s01[2]*s01[2];
