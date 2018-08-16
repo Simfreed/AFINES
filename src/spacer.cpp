@@ -253,55 +253,56 @@ array<double, 2> spacer::disp_from_bead(int hd, int findex, int aindex)
 
 void spacer::update_bending(int hd)
 {
-  array<double, 2> delr1, delr2;
-  double f1[2], f3[2];
-  double rsq1,rsq2,r1,r2,c,s,dth,a,a11,a12,a22;
-  
-  int bead_further_end = get_further_end(hd, f_index[hd], l_index[hd]);
+    array<double, 2> delr1, delr2;
+    double f1[2], f3[2];
+    double rsq1,rsq2,r1,r2,c,s,dth,a,a11,a12,a22;
 
-  // 1st bond
-  delr1 = disp_from_bead(hd, f_index[hd], l_index[hd] + bead_further_end); 
-  rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
-  r1    = sqrt(rsq1);
+    int bead_further_end = get_further_end(hd, f_index[hd], l_index[hd]);
 
-  // 2nd bond
-  delr2 = {{pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]}};
-  rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
-  r2    = sqrt(rsq2);
+    // 1st bond
+    delr1 = disp_from_bead(hd, f_index[hd], l_index[hd] + bead_further_end); 
+    rsq1  = delr1[0]*delr1[0] + delr1[1]*delr1[1];
+    r1    = sqrt(rsq1);
 
-  // angle (cos and sin)
-  c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
-    
-  if (c > 1.0) c = 1.0;
-  if (c < -1.0) c = -1.0;
+    // 2nd bond
+    delr2 = {{pow(-1, hd)*disp[0], pow(-1, hd)*disp[1]}};
+    rsq2  = delr2[0]*delr2[0] + delr2[1]*delr2[1];
+    r2    = sqrt(rsq2);
 
-  s = sqrt(1.0 - c*c);
-  if (s < maxSmallAngle) s = maxSmallAngle;
+    // angle (cos and sin)
+    c = (delr1[0]*delr2[0] + delr1[1]*delr2[1]) / (r1*r2);
 
-  dth = acos(c) - th0;
+    if (c > 1.0) c = 1.0;
+    if (c < -1.0) c = -1.0;
 
-  // force
-  a   = -kb * dth / s; 
-  a11 = a*c / rsq1;
-  a12 = -a / (r1*r2);
-  a22 = a*c / rsq2;
+    s = sqrt(1.0 - c*c);
+    if (s < maxSmallAngle) s = maxSmallAngle;
 
-  f1[0] = a11*delr1[0] + a12*delr2[0];
-  f1[1] = a11*delr1[1] + a12*delr2[1];
-  f3[0] = a22*delr2[0] + a12*delr1[0];
-  f3[1] = a22*delr2[1] + a12*delr1[1];
+    dth = acos(c) - th0;
 
-  // apply force to each of 3 atoms
-  
-  filament_network->update_forces(f_index[hd], l_index[hd] + bead_further_end, f1[0], f1[1]);
-  b_force[hd][0] += (-f1[0] - f3[0]);
-  b_force[hd][1] += (-f1[1] - f3[1]);
-  b_force[pr(hd)][0] += f3[0];
-  b_force[pr(hd)][1] += f3[1];
-  
-  b_eng[hd] = kb*dth*dth/(r1+r2);
+    // force
+    a   = -kb * dth / s; 
+    a11 = a*c / rsq1;
+    a12 = -a / (r1*r2);
+    a22 = a*c / rsq2;
+
+    f1[0] = a11*delr1[0] + a12*delr2[0];
+    f1[1] = a11*delr1[1] + a12*delr2[1];
+    f3[0] = a22*delr2[0] + a12*delr1[0];
+    f3[1] = a22*delr2[1] + a12*delr1[1];
+
+    // apply force to each of 3 atoms
+
+    filament_network->update_forces(f_index[hd], l_index[hd] + bead_further_end, f1[0], f1[1]);
+    b_force[hd][0] += (-f1[0] - f3[0]);
+    b_force[hd][1] += (-f1[1] - f3[1]);
+    b_force[pr(hd)][0] += f3[0];
+    b_force[pr(hd)][1] += f3[1];
+
+    b_eng[hd] = kb*dth*dth/(r1+r2);
 
 }
+
 double spacer::get_kb(){
     return kb;
 }
@@ -422,6 +423,9 @@ bool motor::attach(int hd)
                     
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false; 
+                    
+                    if (state[pr(hd)] == 1)
+                        disp_prev = disp;
 
                     return true;
                 }
@@ -505,50 +509,58 @@ array<double, 2> spacer::generate_off_pos(int hd)
 
 void spacer::shake(int m)
 {
-    int nlist,list[2];
-    double v[6]
-        double invmass0,invmass1;
+    //int nlist,list[2];
+    //double v[6]
+    double invmass0,invmass1;
 
     // local atom IDs and constraint distances
+    -->i0 = head 0;
+    -->i1 = head 1;
+    --> bond1 = mld;
 
-    int i0 = atom->map(shake_atom[m][0]);
-    int i1 = atom->map(shake_atom[m][1]);
-    double bond1 = bond_distance[shake_type[m][0]];
+    r01 = prev displacement vector;
+    s01 = current displacement vector;
+    
+    //int i0 = atom->map(shake_atom[m][0]);
+    //int i1 = atom->map(shake_atom[m][1]);
+    //double bond1 = bond_distance[shake_type[m][0]];
 
     // r01 = distance vec between atoms, with PBC
 
-    double r01[3];
-    r01[0] = x[i0][0] - x[i1][0];
-    r01[1] = x[i0][1] - x[i1][1];
-    r01[2] = x[i0][2] - x[i1][2];
-    domain->minimum_image(r01);
+    //double r01[3];
+    //r01[0] = x[i0][0] - x[i1][0];
+    //r01[1] = x[i0][1] - x[i1][1];
+    //r01[2] = x[i0][2] - x[i1][2];
+    //domain->minimum_image(r01);
 
     // s01 = distance vec after unconstrained update, with PBC
 
-    double s01[3];
-    s01[0] = xshake[i0][0] - xshake[i1][0];
-    s01[1] = xshake[i0][1] - xshake[i1][1];
-    s01[2] = xshake[i0][2] - xshake[i1][2];
-    domain->minimum_image(s01);
+    //double s01[3];
+    //s01[0] = xshake[i0][0] - xshake[i1][0];
+    //s01[1] = xshake[i0][1] - xshake[i1][1];
+    //s01[2] = xshake[i0][2] - xshake[i1][2];
+    //domain->minimum_image(s01);
 
     // scalar distances between atoms
+    array<double, 2> r01 = disp_prev;
+    array<double, 2> s01 = disp;
 
-    double r01sq = r01[0]*r01[0] + r01[1]*r01[1] + r01[2]*r01[2];
-    double s01sq = s01[0]*s01[0] + s01[1]*s01[1] + s01[2]*s01[2];
+    double r01sq = r01[0]*r01[0] + r01[1]*r01[1]; //+ r01[2]*r01[2];
+    double s01sq = s01[0]*s01[0] + s01[1]*s01[1]; //+ s01[2]*s01[2];
 
     // a,b,c = coeffs in quadratic equation for lamda
-
-    if (rmass) {
+    invmass0 = damp;
+    invmass1 = damp;
+    /*if (rmass) {
         invmass0 = 1.0/rmass[i0];
         invmass1 = 1.0/rmass[i1];
     } else {
         invmass0 = 1.0/mass[type[i0]];
         invmass1 = 1.0/mass[type[i1]];
-    }
-
-    double a = (invmass0+invmass1)*(invmass0+invmass1) * r01sq;
-    double b = 2.0 * (invmass0+invmass1) *
-        (s01[0]*r01[0] + s01[1]*r01[1] + s01[2]*r01[2]);
+    }*/
+    double invm = 1/(damp*dt);
+    double a = invm*invm * r01sq; //not sure why this is r01sq instead of mld^2 like in Frenk&Smit p.413
+    double b = 2.0 * invm * dot(s01, r01);
     double c = s01sq - bond1*bond1;
 
     // error check
@@ -565,26 +577,31 @@ void spacer::shake(int m)
     lamda1 = (-b+sqrt(determ)) / (2.0*a);
     lamda2 = (-b-sqrt(determ)) / (2.0*a);
 
-    if (fabs(lamda1) <= fabs(lamda2)) lamda = lamda1;
-    else lamda = lamda2;
+    if (fabs(lamda1) <= fabs(lamda2)) 
+        lamda = lamda1;
+    else 
+        lamda = lamda2;
 
     // update forces if atom is owned by this processor
 
-    lamda /= dtfsq;
+    //lamda /= dtfsq;
+    lamda /= (dt*dt);
 
-    if (i0 < nlocal) {
-        f[i0][0] += lamda*r01[0];
-        f[i0][1] += lamda*r01[1];
-        f[i0][2] += lamda*r01[2];
-    }
+    //if (i0 < nlocal) {
+    force[0] += lamda*r01[0];
+    force[1] += lamda*r01[1];
+    //f[i0][2] += lamda*r01[2];
+    //}
 
-    if (i1 < nlocal) {
-        f[i1][0] -= lamda*r01[0];
-        f[i1][1] -= lamda*r01[1];
-        f[i1][2] -= lamda*r01[2];
-    }
+    //if (i1 < nlocal) {
+    //f[i1][0] -= lamda*r01[0];
+    //f[i1][1] -= lamda*r01[1];
+    //f[i1][2] -= lamda*r01[2];
+    //}
 
-    if (evflag) {
+    disp_prev = disp;
+
+    /*if (evflag) {
         nlist = 0;
         if (i0 < nlocal) list[nlist++] = i0;
         if (i1 < nlocal) list[nlist++] = i1;
@@ -597,7 +614,7 @@ void spacer::shake(int m)
         v[5] = lamda*r01[1]*r01[2];
 
         v_tally(nlist,list,2.0,v);
-    }
+    }*/
 }
 array<double, 2> spacer::get_bending_energy()
 {
