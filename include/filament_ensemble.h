@@ -64,7 +64,8 @@ class filament_ensemble
         filament * get_filament(int index);
 
         set<pair<double, array<int,2>>> get_dist(double x, double y);
-        set<pair<double, array<int,2>>> get_binding_points(array<double,2> hx, array<double,2> hy, int hd);
+        
+        set<pair<array<double, 2>, array<int, 2>>> get_binding_points(array<double,2> cm, double rad);
         
         set<pair<double, array<int,2>>> get_dist_all(double x, double y);
         

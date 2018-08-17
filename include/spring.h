@@ -92,7 +92,7 @@ class spring
 
         void calc_intpoint(string bc, double shear_dist, double xp, double yp);
         
-        vector<array<double,2>> get_rot_intersections(string bc, double shear_dist, array<double, 2> cm, double rad);
+        array<double, 4> get_rot_intersections(string bc, double shear_dist, array<double, 2> cm, double rad);
 
     	bool get_line_intersect(string bc, double delrx, spring *l2); 
         

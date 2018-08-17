@@ -58,8 +58,6 @@ class spacer : public motor {
         
         array<array<double, 2>,2> get_b_force();
 
-        virtual void brownian_relax(int hd);
-
         void filament_update();
 
         virtual double metropolis_prob(int hd, array<int, 2> flidx, array<double, 2> newpos, double maxRate);
@@ -68,14 +66,30 @@ class spacer : public motor {
         
         array<double,2> get_bending_energy();
 
+        void update_direc();
+
+        void update_th_from_pos();
+
+        void update_hx_hy();
+
+        void update_shake_force();
+        
+        void update_unattached();
+
+        void update_one_attached(int hd);
+        
+        array<double, 2> generate_off_pos(int hd);
+
+        bool attach(int hd);
+
+        void brownian_relax(int hd);
+
     private:
 
-        double th, prv_rnd_x, prv_rnd_y, prv_rnd_th;
+        double th, prv_rnd_x, prv_rnd_y, prv_rnd_th, rot_bd_prefactor;
         double kb, th0; 
         array<array<double, 2>,2 > b_force;        
-        array<double, 2> b_eng;
-        array<double, 2> cm;
-        array<double, 2> bind_rot;
+        array<double, 2> cm, b_eng, bind_rot, disp_prev;
 };
 
 #endif

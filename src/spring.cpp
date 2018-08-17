@@ -430,9 +430,10 @@ map<motor *, int> & spring::get_mots()
 
 //intersections between line and circle
 //so: 1073336
-vecotr<array<double, 2>> spring::get_rot_intersections(string bc, double delrx, array<double, 2> cm, double rad)
+array<double, 4> spring::get_rot_intersections(string bc, double delrx, array<double, 2> cm, double rad)
 {
-    vector<array<double, 2>> inters = {};
+    array<double, 4> inters = {{infty, infty, infty, infty}};
+    array<double, 2> inter;
     
     array<double, 2> f = rij_bc(bc, hx[0] - cm[0], hy[1] - cm[1], fov[0], fov[1], delrx); 
     double a = dot( disp, disp ) ;
@@ -471,7 +472,9 @@ vecotr<array<double, 2>> spring::get_rot_intersections(string bc, double delrx, 
             // t1 is the intersection, and it's closer than t2
             // (since t1 uses -b - discriminant)
             // Impale, Poke
-            inters.push_back(pos_bc(bc, delrx, 0, fov, {{0,0}}, hx[0] + t0*disp[0], hy[0] + t0*disp[1]));
+            inter = pos_bc(bc, delrx, 0, fov, {{0,0}}, {{hx[0] + t0*disp[0], hy[0] + t0*disp[1]}});
+            inters[0] = inter[0];
+            inters[1] = inter[1];
         }
 
         // here t1 didn't intersect so we are either started
@@ -479,7 +482,9 @@ vecotr<array<double, 2>> spring::get_rot_intersections(string bc, double delrx, 
         if( t1 >= 0 && t1 <= 1 )
         {
             // ExitWound
-            inters.push_back(pos_bc(bc, delrx, 0, fov, {{0,0}}, hx[0] + t1*disp[0], hy[0] + t1*disp[1]));
+            inter = pos_bc(bc, delrx, 0, fov, {{0,0}}, {{hx[0] + t1*disp[0], hy[0] + t1*disp[1]}});
+            inters[2] = inter[0];
+            inters[3] = inter[1];
         }
 
         // no intn: FallShort, Past, CompletelyInside

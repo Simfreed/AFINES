@@ -373,8 +373,12 @@ void motor::relax_head(int hd)
 
 void motor::update_angle()
 {
+    if (state[0] == 1) this->update_position_attached(0);  // update absolute position, as filaments may have moved
+    if (state[1] == 1) this->update_position_attached(1);  
+
     disp  = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
     len   = hypot(disp[0], disp[1]);
+
     if ( len != 0 ) 
         direc = {{disp[0]/len, disp[1]/len}};
     else
@@ -417,7 +421,8 @@ void motor::step_onehead(int hd)
     
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment
-    if ( event(off_prob) ) this->detach_head(hd, hpos_new);
+    if ( event(off_prob) ) 
+        this->detach_head(hd, hpos_new);
     else{
 
         //calculate motor velocity
@@ -430,7 +435,6 @@ void motor::step_onehead(int hd)
             }
             this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
         }
-        if (state[hd] == 1) this->update_position_attached(hd);  // update absolute position
     }
 }
 

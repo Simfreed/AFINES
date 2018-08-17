@@ -138,13 +138,15 @@ set<pair<double, array<int, 2>>> filament_ensemble::get_dist(double x, double y)
 //  the intersection points 
 //  the dths required to get there
 
-set<pair<double, array<int, 2>>> filament_ensemble::get_binding_points(array<double, 2> cm, double rad)
+set<pair<array<double, 2>, array<int, 2>>> filament_ensemble::get_binding_points(array<double, 2> cm, double rad)
 {
     fls.clear();
-    set<pair<double, array<int, 2>>> t_map;
+    set<pair<array<double,2> , array<int, 2>>> t_map;
+    array<int, 2> fl;
+    double dist_sq;
     
-    int mqx = coord2quad(fov[0], nq[0], hx[hd]);
-    int mqy = coord2quad(fov[1], nq[1], hy[hd]);
+    int mqx = coord2quad(fov[0], nq[0], cm[0]);
+    int mqy = coord2quad(fov[1], nq[1], cm[1]);
     
     //update_dth_map(t_map, {{mqx, mqy}}, hx, hy);
     for (int i = 0; i < int(springs_per_quad[mqx]->at(mqy)->size()); i++){
@@ -153,11 +155,13 @@ set<pair<double, array<int, 2>>> filament_ensemble::get_binding_points(array<dou
 
         if (fls.find(fl) == fls.end()){
             fls.insert(fl);
-            vector<array<double,2>> inters = network[fl[0]]->get_spring(fl[1])->get_rot_intersections(network[fl[0]]->get_BC(), cm, rad); //retrieve possible binding points 
+            array<double, 4> inters = network[fl[0]]->get_spring(fl[1])->get_rot_intersections(network[fl[0]]->get_BC(), delrx, cm, rad); //retrieve possible binding points 
             //dth = network[fl[0]]->get_spring(fl[1])->get_dth(network[fl[0]]->get_BC(), delrx, x, y); //store the distance to that point
             //cout<<"\nDEBUG : dist = "<<dist;
-            for (array<double, 2> pos : inters) 
-                t_map.insert(pair<array<double,2>, array<int, 2> >(pos, fl));
+            if (inters[0] < infty)
+                t_map.insert(pair<array<double,2>, array<int, 2> >({{inters[0], inters[1]}}, fl));
+            if (inters[2] < infty)
+                t_map.insert(pair<array<double,2>, array<int, 2> >({{inters[2], inters[3]}}, fl));
         }
     }
 
