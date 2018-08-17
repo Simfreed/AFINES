@@ -435,7 +435,7 @@ array<double, 4> spring::get_rot_intersections(string bc, double delrx, array<do
     array<double, 4> inters = {{infty, infty, infty, infty}};
     array<double, 2> inter;
     
-    array<double, 2> f = rij_bc(bc, hx[0] - cm[0], hy[1] - cm[1], fov[0], fov[1], delrx); 
+    array<double, 2> f = rij_bc(bc, hx[0] - cm[0], hy[0] - cm[1], fov[0], fov[1], delrx); 
     double a = dot( disp, disp ) ;
     double b = 2*dot( f, disp ) ;
     double c = dot( f, f ) - rad*rad ;

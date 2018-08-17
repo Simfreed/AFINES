@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
     ofstream o_file, file_a, file_am, file_pm, file_l, file_th, file_pe;
     ios_base::openmode write_mode = ios_base::out;
 
-    bool s2_intersect_flag, s1_intersect_flag, s1_dead_head_flag, s2_dead_head_flag, static_cl_flag, quad_off_flag;
+    bool s2_intersect_flag, s1_intersect_flag, s1_dead_head_flag, s2_dead_head_flag, static_cl_flag, quad_off_flag, write_unbound_flag;
     double s2_linkage_prob, s1_linkage_prob;                                              
     int s1_dead_head, s2_dead_head;
 
@@ -169,6 +169,8 @@ int main(int argc, char* argv[]){
         ("quad_off_flag", po::value<bool>(&quad_off_flag)->default_value(false), "flag to turn off neighbor list updating")
         ("quad_update_period", po::value<int>(&quad_update_period)->default_value(1), "number of timesteps between actin/link/motor position updates to update quadrants")
         
+        ("write_unbound_flag", po::value<bool>(&write_unbound_flag)->default_value(false), "if true, all spacer positions written, if false only doubly bound written")
+        
         //Options for filament growth
         ("kgrow", po::value<double>(&kgrow)->default_value(0), "rate of filament growth")
         ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
@@ -228,11 +230,14 @@ int main(int argc, char* argv[]){
     tdir   = dir  + "/txt_stack";
     ddir   = dir  + "/data";
     fs::path dir1(tdir.c_str()), dir2(ddir.c_str());
-    
+   
+
+    string fname_add = write_unbound_flag? "" : "_bound";
+
     afile  = tdir + "/actins.txt";
     lfile  = tdir + "/links.txt";
-    amfile = tdir + "/spacers1_bound.txt";
-    pmfile = tdir + "/spacers2_bound.txt";
+    amfile = tdir + "/spacers1"+fname_add+".txt";
+    pmfile = tdir + "/spacers2"+fname_add+".txt";
     thfile = ddir + "/filament_e.txt";
     pefile = ddir + "/pe.txt";
     
@@ -417,12 +422,18 @@ int main(int argc, char* argv[]){
             net->write_springs(file_l);
             
             file_am << time_str<<"\tN = "<<to_string(big_xlinks->get_nmotors());
-//          big_xlinks->motor_write(file_am);
-            big_xlinks->motor_write_doubly_bound(file_am);
+            
+            if (write_unbound_flag)
+                big_xlinks->motor_write(file_am);
+            else
+                big_xlinks->motor_write_doubly_bound(file_am);
             
             file_pm << time_str<<"\tN = "<<to_string(small_xlinks->get_nmotors());
-//          small_xlinks->motor_write(file_pm);
-            small_xlinks->motor_write_doubly_bound(file_pm);
+            
+            if (write_unbound_flag)
+                small_xlinks->motor_write(file_pm);
+            else
+                small_xlinks->motor_write_doubly_bound(file_pm);
             
             file_th << time_str<<"\tN = "<<to_string(net->get_nsprings());
             net->write_thermo(file_th);

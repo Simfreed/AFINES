@@ -509,6 +509,64 @@ BOOST_AUTO_TEST_CASE( add_mot_test )
 
 }
 
+BOOST_AUTO_TEST_CASE( get_rot_intersections )
+{
+    double  xrange              = 50;
+    double  yrange              = 50;
+    int     xgrid               = (int)(2*xrange);
+    int     ygrid               = (int)(2*yrange);
+    
+    int     nbead              = 2;
+    double  dt                  = 1e-3;
+    double  temp                = 0;
+    double  spring_length         = 1;
+    double  bead_length        = spring_length/2;
+    double  viscosity           = 0.5;
+    double  stretching_stiffness= 100;
+    double  bending_stiffness   = 1; 
+    double  fracture_force      = 100;
+    string  bc                  = "PERIODIC";
+    double delrx = 0;
+    double eps = 1e-5; 
+    double  startx = 0, starty = 0, startphi = 0;
+    
+    filament * f; 
+    bead a; 
+   
+    f = new filament({{startx, starty, startphi}}, nbead, {{xrange, yrange}}, {{xgrid, ygrid}}, 
+            viscosity, dt, temp, true, bead_length, spring_length, stretching_stiffness, 1, 
+            bending_stiffness, fracture_force, bc);
+
+    /* CASE 1: no intersections */ 
+    spring * l = f->get_spring(0);
+    array<double, 4> inters = l->get_rot_intersections(bc, delrx, {{-1,0}},0.5);
+    for (int i = 0; i < 4; i++)
+        BOOST_CHECK_MESSAGE(inters[i] >= infty, "\nfound intersection when it should have: inters["<<i<<"] = "<<inters[i]);
+   
+    /* CASE 2: one intersection */
+    inters = l->get_rot_intersections(bc, delrx, {{-0.25,0}},0.5);
+    if(inters[0]<infty)
+    {
+        BOOST_CHECK_MESSAGE((fabs(inters[0]-0.25) <= eps), "\ndidn't find intersection when it should have: inters[0] = "<<inters[0]);
+        BOOST_CHECK_MESSAGE((fabs(inters[1]) <= eps), "\ndidn't find intersection when it should have: inters[1] = "<<inters[1]);
+        for (int i = 2; i < 4; i++)
+            BOOST_CHECK_MESSAGE(inters[i] >= infty, "\nfound intersection when it should have: inters["<<i<<"] = "<<inters[i]);
+    }else{
+        BOOST_CHECK_MESSAGE((fabs(inters[2]-0.25) <= eps), "\ndidn't find intersection when it should have: inters[2] = "<<inters[2]);
+        BOOST_CHECK_MESSAGE((fabs(inters[3]) <= eps), "\ndidn't find intersection when it should have: inters[3] = "<<inters[3]);
+        for (int i = 0; i < 2; i++)
+            BOOST_CHECK_MESSAGE(inters[i] >= infty, "\nfound intersection when it should have: inters["<<i<<"] = "<<inters[i]);
+    }
+
+    /* CASE 3: two intersections */
+    inters = l->get_rot_intersections(bc, delrx, {{0.5,0}},0.25);
+    BOOST_CHECK_MESSAGE(fabs(inters[0]-0.25) <= eps, "\ndidn't find intersection when it should have: inters[0] = "<<inters[0]);
+    BOOST_CHECK_MESSAGE(fabs(inters[1]) <= eps, "\ndidn't find intersection when it should have: inters[1] = "<<inters[1]);
+    BOOST_CHECK_MESSAGE(fabs(inters[2]-0.75) <= eps, "\ndidn't find intersection when it should have: inters[2] = "<<inters[2]);
+    BOOST_CHECK_MESSAGE(fabs(inters[3]) <= eps, "\ndidn't find intersection when it should have: inters[3] = "<<inters[3]);
+
+    delete f;
+}
 BOOST_AUTO_TEST_CASE( force_test)
 {
 }
