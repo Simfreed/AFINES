@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
     double v0 = 0;
     
     double mstiff = 1, stretching = 0, bending = 0; //spring constants
-    double kon = 0.5, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
+    double kon = 0.25, koff = 0, kend = 0, fstall = 3.85, rcut = 0.063;
     double frac_force = 0;
     
     //pos_sets.push_back({{0,0,0}});
@@ -308,11 +308,12 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
     f->quad_update_serial(); 
     
     //attachment
-    double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15, posx, posy;
+    double mx = 0, my = 0.074, mang = pi/2, mlen = 0.15, posx, posy;
     spacer m = spacer(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     array<int, 15> num_attached; 
-    int nevents = 1000;
-    int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
+    int nevents = 10000;
+    double koneff = 2*kon; //because can bind at two points
+    int threesig = int(3*sqrt(koneff*(1-koneff)*double(nevents)));
     for (int i = 0; i < nbead-1; i++){
         mx = i + 0.35;
         num_attached[i]=0;
@@ -321,34 +322,22 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         for (int j = 0; j < nevents; j++){
             m = spacer(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
             m.attach(0); //should attach to {{f_index, l_index}} = {{1, 2}}, because the distance between head 0 and that spring is 0
+                         //rotating spacers have no cost to rotate, so could flip upside down to bind....
             num_attached[i] += m.get_states()[0];
             if (m.get_states()[0] == 1){
                 posx += m.get_hx()[0];
                 posy += m.get_hy()[0];
             }
         }
-        cout<<"\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )";
-        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
-    }
- 
-    my=0.075; mlen=0.15;
-    kon=0.05;
-    nevents = 10000;
-    threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
-    for (int i = 0; i < nbead-1; i++){
-        mx = i + 0.5;
-        num_attached[i]=0;
-        for (int j = 0; j < nevents; j++){
-            m = spacer(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
-            m.attach(0); //should attach to {{f_index, l_index}} = {{1, 2}}, because the distance between head 0 and that spring is 0
-            num_attached[i] += m.get_states()[0];
-        }
-        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+        
+        BOOST_CHECK_MESSAGE(fabs(num_attached[i] - int(nevents*koneff))<threesig,
+                "\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )"); 
     }
     
-    kon=0.9;
+    my=0.074; mlen=0.15;
+    kon=0.05; koneff = 2*kon;
     nevents = 10000;
-    threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
+    threesig = int(3*sqrt(koneff*(1-koneff)*double(nevents)));
     for (int i = 0; i < nbead-1; i++){
         mx = i + 0.5;
         num_attached[i]=0;
@@ -357,7 +346,22 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
             m.attach(0); //should attach to {{f_index, l_index}} = {{1, 2}}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
-        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*koneff), threesig); 
+    }
+    
+    
+    kon=0.9; koneff = fmin(2*kon,1); 
+    nevents = 10000;
+    threesig = max(int(3*sqrt(koneff*(1-koneff)*double(nevents))),1);
+    for (int i = 0; i < nbead-1; i++){
+        mx = i + 0.5;
+        num_attached[i]=0;
+        for (int j = 0; j < nevents; j++){
+            m = spacer(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
+            m.attach(0); //should attach to {{f_index, l_index}} = {{1, 2}}, because the distance between head 0 and that spring is 0
+            num_attached[i] += m.get_states()[0];
+        }
+        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*koneff), threesig); 
     }
     
     //detachment
@@ -416,6 +420,7 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots )
         }
         BOOST_CHECK_SMALL(num_detached[i] - int(nevents*koff), threesig); 
     }
+    /**/
     
 }   
 
@@ -604,13 +609,22 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
     cout<<f->get_filament(0)->to_string();
     
     //attachment
-    double mx = 0, my = 0.075, mang = pi/2, mlen = 0.15, posx, posy;
+    double mx = 0, my = 0.074, mang = pi/2, mlen = 0.15, posx, posy;
+    double koneff = fmin(2*kon,1);
     spacer m = spacer(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     array<int, 11> num_attached; 
     int nevents = 10000;
-    int threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
     for (int i = 0; i <= int(spring_len); i++){
+        
         mx = i - 5;
+        
+        if (i==0 || i == spring_len) //endpoints only have one attachment point
+            koneff = kon;
+        else 
+            koneff = fmin(2*kon,1);
+        
+        int threesig = fmax(int(3*sqrt(koneff*(1-koneff)*double(nevents))),1);
+        
         num_attached[i]=0;
         posx=0;
         posy=0;
@@ -623,14 +637,21 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
                 posy += m.get_hy()[0];
             }
         }
-        cout<<"\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )";
-        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+        BOOST_CHECK_MESSAGE(abs(num_attached[i] - int(nevents*koneff))<threesig,
+            "\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )"
+                ); 
     }
-    
+     
     kon=0.05;
     nevents = 10000;
-    threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
     for (int i = 0; i <= int(spring_len); i++){
+        
+        if (i==0 || i == spring_len) //endpoints only have one attachment point
+            koneff = kon;
+        else 
+            koneff = fmin(2*kon,1);
+        
+        int threesig = fmax(int(3*sqrt(koneff*(1-koneff)*double(nevents))),1);
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
@@ -638,13 +659,21 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
             m.attach(0); //should attach to {{f_index, l_index}} = {{1, 2}}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
-        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+        BOOST_CHECK_MESSAGE(abs(num_attached[i] - int(nevents*koneff))< threesig,
+                "\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )"
+                ); 
     }
     
     kon=0.9;
     nevents = 10000;
-    threesig = int(3*sqrt(kon*(1-kon)*double(nevents)));
+    
     for (int i = 0; i <= int(spring_len); i++){
+        if (i==0 || i == spring_len) //endpoints only have one attachment point
+            koneff = kon;
+        else 
+            koneff = fmin(2*kon,1);
+        
+        int threesig = fmax(int(3*sqrt(koneff*(1-koneff)*double(nevents))),1);
         mx = i - 5;
         num_attached[i]=0;
         for (int j = 0; j < nevents; j++){
@@ -652,9 +681,11 @@ BOOST_AUTO_TEST_CASE( attach_difft_spots_rig )
             m.attach(0); //should attach to {{f_index, l_index}} = {{1, 2}}, because the distance between head 0 and that spring is 0
             num_attached[i] += m.get_states()[0];
         }
-        BOOST_CHECK_SMALL(num_attached[i] - int(nevents*kon), threesig); 
+        BOOST_CHECK_MESSAGE(abs(num_attached[i] - int(nevents*koneff))< threesig,
+                "\nmx = "<<mx<<";\tnum_attached = "<<num_attached[i]<<";\t(<x>, <y>) = ( "<<posx/num_attached[i]<<" , "<<posy/num_attached[i]<<" )"
+                ); 
     }
-
+    /**/
 }
 /* Functions to test : 
         void attach(int hd);

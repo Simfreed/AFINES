@@ -454,6 +454,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.475, tol);
     m.step_onehead(0); 
+    m.update_angle();
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
@@ -471,6 +472,7 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.475, tol);
     m.step_onehead(0); 
+    m.update_angle();
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
@@ -589,6 +591,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
     m.attach(0); //should attach to {{f_index, l_index}} = {{0, 2}}, because the distance between head 0 and that spring is 0
+    m.update_angle();
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
@@ -627,6 +630,7 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     
     m.step_onehead(0);
     m.step_onehead(1);
+    m.update_angle();
     
     //koff = kend = 0 so shouldn't detach
     //filaments and motor are perpendicular so velocity = v0
@@ -706,6 +710,7 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     m.update_force();
     m.step_onehead(0);
     m.step_onehead(1);
+    m.update_angle();
     /*##################################*/
 
     //force is near 0, so each head just move v0*dt = 0.25
@@ -791,6 +796,7 @@ BOOST_AUTO_TEST_CASE( force_attached )
     m.update_force();
     m.step_onehead(0);
     m.step_onehead(1);
+    m.update_angle();
     /*##################################*/
 
     //force is near 0, so each head just move v0*dt = 0.25
