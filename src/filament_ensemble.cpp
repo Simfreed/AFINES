@@ -152,6 +152,7 @@ set<pair<array<double, 2>, array<int, 2>>> filament_ensemble::get_binding_points
     for (int i = 0; i < int(springs_per_quad[mqx]->at(mqy)->size()); i++){
 
         fl = springs_per_quad[mqx]->at(mqy)->at(i); //fl  = {filament_index, spring_index}
+        //cout<<"\nDEBUG: filament "<<fl[0]<<" nearby.";
 
         if (fls.find(fl) == fls.end()){
             fls.insert(fl);
@@ -162,6 +163,7 @@ set<pair<array<double, 2>, array<int, 2>>> filament_ensemble::get_binding_points
                 t_map.insert(pair<array<double,2>, array<int, 2> >({{inters[0], inters[1]}}, fl));
             if (inters[2] < infty)
                 t_map.insert(pair<array<double,2>, array<int, 2> >({{inters[2], inters[3]}}, fl));
+            //cout<<"\nDEBUG: inters = { " <<inters[0]<<" , "<<inters[1]<<" , "<<inters[2]<<" , "<<inters[3]<<" }";
         }
     }
 
