@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
+    m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], spring_len);
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
+    m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     // Else ( new position isn't more than filament length
     //  (a) motor moves to appropriate new position
     pos = 0.375;
-    m.update_pos_a_end(0, pos); 
+    m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
+    m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 1);
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
-    m.update_pos_a_end(0, pos); 
+    m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     // Else ( new position isn't more than filament length
     //  (a) motor moves to appropriate new position
     pos = 0.375;
-    m.update_pos_a_end(0, pos); 
+    m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.update_pos_a_end(1, pos); 
+    m.update_pos_rat(1, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], spring_len);
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
-    m.update_pos_a_end(1, pos); 
+    m.update_pos_rat(1, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.125, tol);
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     // Else ( new position isn't more than filament length
     //  (a) motor moves to appropriate new position
     pos = 0.375;
-    m.update_pos_a_end(1, pos); 
+    m.update_pos_rat(1, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
     BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], pos, tol);

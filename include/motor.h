@@ -107,7 +107,9 @@ class motor
 
         void detach_head_without_moving(int hd);
         
-        void update_pos_a_end(int hd, double pos);
+        void update_pos_rat(int hd, double pos);
+        
+        void update_pos_rat(int hd);
 
         inline void reflect(double t, double gamma, double x1, double x2, double y1, double y2);
         
@@ -143,7 +145,7 @@ class motor
                damp, shear, max_ext, eps_ext, kinetic_energy, bd_prefactor, tension, len,
                kon2, koff2, kend2;
         
-        array<double,2> hx, hy, pos_a_end, fov, prv_rnd_x, prv_rnd_y, force, disp, direc;
+        array<double,2> hx, hy, pos_rat, fov, prv_rnd_x, prv_rnd_y, force, disp, direc;
 
         array<array<double, 2>, 2> ldir_bind, bind_disp;
 

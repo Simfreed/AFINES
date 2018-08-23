@@ -171,6 +171,8 @@ class filament_ensemble
         
         void update();
         
+        void update_forces();
+        
         void update_energies();
         
         void turn_quads_off();

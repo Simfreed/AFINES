@@ -56,6 +56,8 @@ class filament
         
         vector<filament *> update_stretching(double t);
         
+        void update_brownian();
+        
         void update_bending(double);
         
         void update_positions();
@@ -136,12 +138,16 @@ class filament
         void set_lgrow(double);
         
         array<double,2> get_bead_position(int bead);
+        
+        array<double, 2> get_predicted_position(int b);
 
         void update_length();
 
         void grow(double);
 
         void shrink(double);
+
+        array<double, 2> get_brownian_force(int bead);
 
     protected:
         
@@ -153,6 +159,7 @@ class filament
         array<double,2> fov;
         array<int,2> nq;
         vector<array<double, 2> > prv_rnds;
+        vector<array<double, 2> > brownian_force;
         vector<bead *> beads;
         vector<spring *> springs;
         string BC;

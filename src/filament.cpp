@@ -203,32 +203,46 @@ void filament::set_y_thresh(double y){
     y_thresh = y;
 }
 
+void filament::update_brownian()
+{
+    double fx_brn, fy_brn;
+    array<double, 2> new_rnds;
+    int sa = int(beads.size());
+    for (int i = 0; i < sa; i++){
+        
+        new_rnds = {{rng_n(), rng_n()}};
+        
+        fx_brn = bd_prefactor*damp*(new_rnds[0] + prv_rnds[i][0]);
+        fy_brn = bd_prefactor*damp*(new_rnds[1] + prv_rnds[i][1]);  
+        
+        beads[i]->update_force(fx_brn, fy_brn);
+
+        prv_rnds[i] = new_rnds;
+    }
+}
+
 void filament::update_positions()
 {
-    double vx, vy, fx, fy, fx_brn, fy_brn, x, y;
-    array<double, 2> new_rnds;
+    double vx, vy, fx, fy, x, y;
     array<double, 2> newpos;
     kinetic_energy = 0;  
     double top_y = y_thresh*fov[1]/2.; 
     int sa = int(beads.size());
     int la = int(springs.size());
+    
     for (int i = 0; i < sa; i++){
 
         if (fabs(beads[i]->get_ycm()) > top_y) continue;
      
-        new_rnds = {{rng_n(), rng_n()}};
         fx = beads[i]->get_force()[0]; 
         fy = beads[i]->get_force()[1]; 
-        fx_brn = bd_prefactor*damp*(new_rnds[0] + prv_rnds[i][0]);
-        fy_brn = bd_prefactor*damp*(new_rnds[1] + prv_rnds[i][1]);  
-        vx  = fx/damp  + fx_brn/damp;
-        vy  = fy/damp  + fy_brn/damp;
+        vx  = fx/damp;
+        vy  = fy/damp;
         //        cout<<"\nDEBUG: Fx("<<i<<") = "<<beads[i]->get_force()[0]<<"; v = ("<<vx<<" , "<<vy<<")";
         x = beads[i]->get_xcm(); 
         y = beads[i]->get_ycm(); 
-        prv_rnds[i] = new_rnds;
         //cout<<"\nDEBUG: bead force = ("<<beads[i]->get_force()[0]<<" , "<<beads[i]->get_force()[1]<<")";
-        kinetic_energy += -(0.5)*((fx*x + fy*y) + (fx_brn*x + fy_brn*y));
+        kinetic_energy += -(0.5)*(fx*x + fy*y);
 
         newpos = pos_bc(BC, delrx, dt, fov, {{vx, vy}}, {{x + vx*dt, y + vy*dt}});
         beads[i]->set_xcm(newpos[0]);
@@ -238,6 +252,18 @@ void filament::update_positions()
 
     for (int i = 0; i < la; i++)
         springs[i]->step(BC, delrx);
+
+}
+
+array<double, 2> filament::get_predicted_position(int b)
+{
+    
+    array<double, 2> frc = beads[b]->get_force();
+
+    double vx  = frc[0]/damp;
+    double vy  = frc[1]/damp;
+    
+    return pos_bc(BC, delrx, dt, fov, {{vx, vy}}, {{beads[b]->get_xcm() + vx*dt, beads[b]->get_ycm() + vy*dt}});
 
 }
 
@@ -743,3 +769,7 @@ void filament::set_lgrow(double dl){
     lgrow = dl;
 }
 
+array<double, 2> filament::get_brownian_force(int bead)
+{
+    return brownian_force[bead];
+}

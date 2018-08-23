@@ -172,7 +172,6 @@ void motor_ensemble<motor_type>::motor_walk(double t)
 
     this->check_broken_filaments();
     int nmotors_sz = int(n_motors.size());
-    bool attached;
     //#pragma omp parallel for
     
     for (int i=0; i<nmotors_sz; i++) {

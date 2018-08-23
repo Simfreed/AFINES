@@ -143,7 +143,6 @@ set<pair<array<double, 2>, array<int, 2>>> filament_ensemble::get_binding_points
     fls.clear();
     set<pair<array<double,2> , array<int, 2>>> t_map;
     array<int, 2> fl;
-    double dist_sq;
     
     int mqx = coord2quad(fov[0], nq[0], cm[0]);
     int mqy = coord2quad(fov[1], nq[1], cm[1]);
@@ -226,11 +225,15 @@ void filament_ensemble::set_straight_filaments(bool is_straight)
 void filament_ensemble::update_positions()
 {
     int net_sz = int(network.size());
+    
     for (int f = 0; f < net_sz; f++)
     {
         //if (f==0) cout<<"\nDEBUG: update_positions: using "<<omp_get_num_threads()<<" cores";  
         network[f]->update_positions();
     }
+    
+    this->update_energies(); 
+    t += dt;
 
 }
 
@@ -500,13 +503,12 @@ void filament_ensemble::update_int_forces()
 
 /* Overdamped Langevin Dynamics Integrator (Leimkuhler, 2013) */
 
-void filament_ensemble::update()
+void filament_ensemble::update_forces()
 {      
     int net_sz = network.size();
     // #pragma omp parallel for     
 
     pe_exv = 0; 
-
     this->update_spring_forces_from_quads();
 
     for (int f = 0; f < net_sz; f++){
@@ -514,12 +516,9 @@ void filament_ensemble::update()
         network[f]->update_length();
         this->update_filament_stretching(f);
         network[f]->update_bending(t);
-        network[f]->update_positions();
+        network[f]->update_brownian();
     }
  
-    this->update_energies(); 
-    
-    t += dt;
 }
 
 void filament_ensemble::update_spring_forces_from_quads()

@@ -82,8 +82,8 @@ spacer::spacer( array<double, 3> pos,
     
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
     
-    pos_a_end = {{0, 0}}; // pos_a_end = distance from pointy end -- by default 0
-                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th bead
+    pos_rat = {{0, 0}}; // pos_rat = distance from pointy end / segment length -- by default 0
+                        // i.e., if l_index[hd] = j, then pos_rat[hd]*|disp[j]| is the distance to the "j+1"th bead
     
     ldir_bind[0] = {{0,0}};
     ldir_bind[1] = {{0,0}};
@@ -96,14 +96,12 @@ spacer::spacer( array<double, 3> pos,
     at_barbed_end = {{false, false}};
 
     if (state[0] == 1){
-        pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
-                filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+        update_pos_rat(0);
         ldir_bind[0] = filament_network->get_direction(f_index[0], l_index[0]);
 
     }
     if (state[1] == 1){
-        pos_a_end[1] = dist_bc(BC, filament_network->get_end(f_index[1], l_index[1])[0] - hx[1],
-                                   filament_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
+        update_pos_rat(1);
         ldir_bind[1] = filament_network->get_direction(f_index[1], l_index[1]);
     }
     
@@ -172,8 +170,8 @@ spacer::spacer( array<double, 4> pos,
     b_force[1]  = {{0,0}}; //b_force[1] = bending force on head 1 due to h1-h0-spring angle in cartesian coords
     
     kinetic_energy = 0;
-    pos_a_end = {{0, 0}}; // pos_a_end = distance from pointy end -- by default 0
-                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th bead
+    pos_rat = {{0, 0}}; // pos_rat = distance from pointy end / segment length-- by default 0
+                        // i.e., if l_index[hd] = j, then pos_rat[hd]*|disp[hd]| is the distance to the "j+1"th bead
     
     array<double, 2> posH0 = boundary_check(0, pos[0], pos[1]); 
     array<double, 2> posH1 = boundary_check(1, pos[0]+pos[2], pos[1]+pos[3]); 
@@ -183,14 +181,12 @@ spacer::spacer( array<double, 4> pos,
     hy[1] = posH1[1];
     
     if (state[0] == 1){
-        pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
-                                   filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+        update_pos_rat(0);
         ldir_bind[0] = filament_network->get_direction(f_index[0], l_index[0]);
 
     }
     if (state[1] == 1){
-        pos_a_end[1] = dist_bc(BC, filament_network->get_end(f_index[1], l_index[1])[0] - hx[1],
-                                   filament_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
+        update_pos_rat(1);
         ldir_bind[1] = filament_network->get_direction(f_index[1], l_index[1]);
     }
     
@@ -233,6 +229,11 @@ void spacer::update_force()
         update_bending(0);
         update_bending(1);
 
+        //project bending force onto filaments
+        this->filament_update_hd(0, {{ b_force[0][0], b_force[0][1] }});
+        this->filament_update_hd(1, {{ b_force[1][0], b_force[1][1] }});
+       
+        //enforce constraints
         update_shake_force();
     }
     else
@@ -248,7 +249,7 @@ void spacer::update_force()
 //Measure distance to FARTHER END of bead filament that the spacer is bound to
 int spacer::get_further_end(int hd, int findex, int lindex)
 {
-    return (pos_a_end[hd] > 0.5*filament_network->get_llength(findex, lindex));
+    return (pos_rat[hd] > 0.5);
 }
 
 array<double, 2> spacer::disp_from_bead(int hd, int findex, int aindex)
@@ -439,9 +440,7 @@ bool spacer::attach(int hd)
                     bind_rot[hd] = th - thprev;
 
                     //update relative head position
-                    pos_a_end[hd]=dist_bc(BC, filament_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
-                                              filament_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
-                                              filament_network->get_delrx());
+                    update_pos_rat(hd);
                     
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false; 
@@ -535,22 +534,27 @@ array<double, 2> spacer::generate_off_pos(int hd)
 
 void spacer::update_shake_force()
 {
-    // local atom IDs and constraint distances
-    //s01 = unconstrained displacement vector;
-    
     // r01 = distance vec between atoms, with PBC
     array<double, 2> r01 = disp;
-    
-    // calculate potentional position of xlink if not constrained
-    // should implicitly include filament fluctuations from previous timestep
-    // s01 = distance vec after unconstrained update, with PBC
-    double vx0 = b_force[0][0]/damp;
-    double vy0 = b_force[0][1]/damp;
-    double vx1 = b_force[1][0]/damp;
-    double vy1 = b_force[1][1]/damp;
 
-    array<double, 2> unconstrained_h0 = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0, 0}}, {{hx[0] + vx0*dt, hy[0] + vy0*dt}});
-    array<double, 2> unconstrained_h1 = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0, 0}}, {{hx[1] + vx1*dt, hy[1] + vy1*dt}});
+    //get unconstrained positions of beads of links that xlink is connected to
+    //(the convention for pos_rat is measured from the pointed to the barbed end, hence pos00 is closer to pointed end)
+    array<double, 2> pos00 = filament_network->get_filament(f_index[0])->get_predicted_position(l_index[0]+1);
+    array<double, 2> pos01 = filament_network->get_filament(f_index[0])->get_predicted_position(l_index[0]);
+    array<double, 2> pos10 = filament_network->get_filament(f_index[1])->get_predicted_position(l_index[1]+1);
+    array<double, 2> pos11 = filament_network->get_filament(f_index[1])->get_predicted_position(l_index[1]);
+
+    array<double, 2> disp0 = rij_bc(BC, pos01[0]-pos00[0], pos01[1]-pos00[1], fov[0], fov[1], filament_network->get_delrx());
+    array<double, 2> disp1 = rij_bc(BC, pos11[0]-pos10[0], pos11[1]-pos10[1], fov[0], fov[1], filament_network->get_delrx());
+    
+    //calculate unconstrained position of crosslinker head using unconstrained positions of filament beads 
+    array<double, 2> unconstrained_h0 = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0, 0}}, 
+            {{pos00[0] + pos_rat[0]*disp0[0], pos00[1] + pos_rat[0]*disp0[1]}});
+    array<double, 2> unconstrained_h1 = pos_bc(BC, filament_network->get_delrx(), dt, fov, {{0, 0}}, 
+            {{pos10[0] + pos_rat[1]*disp1[0], pos10[1] + pos_rat[1]*disp1[1]}});
+    
+    //enforce constraint on crosslinker 
+    // s01 = distance vec after unconstrained update, with PBC
     array<double, 2> s01 = rij_bc(BC, 
             unconstrained_h1[0] - unconstrained_h0[0], 
             unconstrained_h1[1] - unconstrained_h0[1], fov[0], fov[1], filament_network->get_delrx()); 
@@ -560,25 +564,15 @@ void spacer::update_shake_force()
     double r01sq = r01[0]*r01[0] + r01[1]*r01[1]; //+ r01[2]*r01[2];
     double s01sq = s01[0]*s01[0] + s01[1]*s01[1]; //+ s01[2]*s01[2];
 
-    // a,b,c = coeffs in quadratic equation for lamda
-    /*if (rmass) {
-        invmass0 = 1.0/rmass[i0];
-        invmass1 = 1.0/rmass[i1];
-    } else {
-        invmass0 = 1.0/mass[type[i0]];
-        invmass1 = 1.0/mass[type[i1]];
-    }*/
     double invm = 1/(damp*dt);
     double a = invm*invm * r01sq; //not sure why this is r01sq instead of mld^2 like in Frenk&Smit p.413
     double b = 2.0 * invm * dot(s01, r01);
     double c = s01sq - mld*mld;
 
     // error check
-
     double determ = b*b - 4.0*a*c;
     if (determ < 0.0) {
         cout<<"\nWARNING: Shake determinant < 0.0; setting to 0";
-//        error->warning(FLERR,"Shake determinant < 0.0",0);
         determ = 0.0;
     }
 
@@ -594,14 +588,13 @@ void spacer::update_shake_force()
         lamda = lamda2;
 
     // update forces if atom is owned by this processor
-
-    //lamda /= dtfsq;
     lamda /= (dt*dt);
 
+    //update_force
     force[0] = -lamda*r01[0];
     force[1] = -lamda*r01[1];
 
-//    disp_prev = disp;
+    //project force onto filaments
 }
 array<double, 2> spacer::get_bending_energy()
 {

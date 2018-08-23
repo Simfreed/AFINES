@@ -84,9 +84,8 @@ motor::motor( array<double, 3> pos,
     
     disp = rij_bc(BC, hx[1]-hx[0], hy[1]-hy[0], fov[0], fov[1], filament_network->get_delrx()); 
     
-    pos_a_end = {{0, 0}}; // pos_a_end = distance from pointy end -- by default 0
-                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th bead
-    
+    pos_rat = {{0, 0}}; 
+
     ldir_bind[0] = {{0,0}};
     ldir_bind[1] = {{0,0}};
 
@@ -96,14 +95,13 @@ motor::motor( array<double, 3> pos,
     at_barbed_end = {{false, false}};
 
     if (state[0] == 1){
-        pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
-                filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+        
+        update_pos_rat(0);
         ldir_bind[0] = filament_network->get_direction(f_index[0], l_index[0]);
 
     }
     if (state[1] == 1){
-        pos_a_end[1] = dist_bc(BC, filament_network->get_end(f_index[1], l_index[1])[0] - hx[1],
-                                   filament_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
+        update_pos_rat(1);
         ldir_bind[1] = filament_network->get_direction(f_index[1], l_index[1]);
     }
     
@@ -165,8 +163,7 @@ motor::motor( array<double, 4> pos,
     tension     = 0;
     force       = {{0,0}}; // force on the spring  
     kinetic_energy = 0;
-    pos_a_end = {{0, 0}}; // pos_a_end = distance from pointy end -- by default 0
-                        // i.e., if l_index[hd] = j, then pos_a_end[hd] is the distance to the "j+1"th bead
+    pos_rat = {{0, 0}};
 
     array<double, 2> posH0 = boundary_check(0, pos[0], pos[1]); 
     array<double, 2> posH1 = boundary_check(1, pos[0]+pos[2], pos[1]+pos[3]); 
@@ -187,13 +184,11 @@ motor::motor( array<double, 4> pos,
     at_barbed_end = {{false, false}};
 
     if (state[0] == 1){
-        pos_a_end[0] = dist_bc(BC, filament_network->get_end(f_index[0], l_index[0])[0] - hx[0],
-                                   filament_network->get_end(f_index[0], l_index[0])[1] - hy[0], fov[0], fov[1], 0);
+        update_pos_rat(0);
         ldir_bind[0] = filament_network->get_direction(f_index[0], l_index[0]);
     }
     if (state[1] == 1){
-        pos_a_end[1] = dist_bc(BC, filament_network->get_end(f_index[1], l_index[1])[0] - hx[1],
-                                   filament_network->get_end(f_index[1], l_index[1])[1] - hy[1], fov[0], fov[1], 0);
+        update_pos_rat(1);
         ldir_bind[1] = filament_network->get_direction(f_index[1], l_index[1]);
     }
 
@@ -296,10 +291,7 @@ bool motor::attach(int hd)
                     hy[hd] = intPoint[1];
 
                     //update relative head position
-                    pos_a_end[hd]=dist_bc(BC, filament_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
-                                              filament_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
-                                              filament_network->get_delrx());
-                    
+                    update_pos_rat(hd);
                     //(even if its at the barbed end upon binding, could have negative velocity, so always set this to false, until it steps)
                     at_barbed_end[hd] = false; 
 
@@ -433,52 +425,57 @@ void motor::step_onehead(int hd)
                         pow(-1, hd)*dot(force, filament_network->get_direction(f_index[hd], l_index[hd])), 
                         stall_force);
             }
-            this->update_pos_a_end(hd, pos_a_end[hd]+dt*vm); // update relative position
+            this->update_pos_rat(hd, pos_rat[hd]+dt*vm/filament_network->get_llength(f_index[hd], l_index[hd])); // update relative position
         }
     }
 }
 
 
-void motor::update_pos_a_end(int hd, double pos)
+void motor::update_pos_rat(int hd)
 {
-//    cout<<"\nDEBUG: new pos = "<<pos;
-    double spring_length = filament_network->get_llength(f_index[hd],l_index[hd]);
-    if (pos >= spring_length) { // "passed" the spring
+    pos_rat[hd]=dist_bc(BC, 
+            filament_network->get_end(f_index[hd], l_index[hd])[0] - hx[hd],
+            filament_network->get_end(f_index[hd], l_index[hd])[1] - hy[hd], fov[0], fov[1], 
+            filament_network->get_delrx()) / filament_network->get_llength(f_index[hd], l_index[hd]);
+}
+
+void motor::update_pos_rat(int hd, double rat)
+{
+    if (rat >= 1) { // "passed" the spring
         if (l_index[hd] == 0){ // the barbed end of the filament
             at_barbed_end[hd] = true;
-            pos_a_end[hd] = spring_length;
+            pos_rat[hd] = 1;
         }
         else{ 
             /*Move the motor to the next spring on the filament
              *At the projected new position along that filament*/
-            this->set_l_index(hd, l_index[hd]-1);
-            pos_a_end[hd] = pos - spring_length;
+            this->set_l_index(hd, l_index[hd] - 1);
+            pos_rat[hd] = rat - 1;
         }
     }
-    else if (pos < 0) { //this shouldn't be possible if vm > 0
+    else if (rat < 0) { //this shouldn't be possible if vm > 0
         if (l_index[hd] == (filament_network->get_filament(f_index[hd])->get_nsprings() - 1)){ // the pointed end of the filament
-            pos_a_end[hd]=0; //move head to pointed end
+            pos_rat[hd]=0; //move head to pointed end
         }
         else{ 
             /*Move the motor to the previous spring on the filament
              *At the projected new position along that filament*/
             this->set_l_index(hd, l_index[hd] + 1);
-            pos_a_end[hd] = pos + filament_network->get_llength(f_index[hd],l_index[hd]);    
+            pos_rat[hd] = rat + 1;
         }
     }   
     else {
-        pos_a_end[hd] = pos;
+        pos_rat[hd] = rat;
     }
-       
 }
-
 
 void motor::update_position_attached(int hd){
 
-    double posx = filament_network->get_end(f_index[hd],l_index[hd])[0]-pos_a_end[hd]*filament_network->get_direction(f_index[hd],l_index[hd])[0];
-    double posy = filament_network->get_end(f_index[hd],l_index[hd])[1]-pos_a_end[hd]*filament_network->get_direction(f_index[hd],l_index[hd])[1];
+    array<double, 2> p0 = filament_network->get_end(f_index[hd], l_index[hd]);
+    array<double, 2> ldisp = filament_network->get_filament(f_index[hd])->get_spring(l_index[hd])->get_disp();
 
-    array<double, 2> newpos = boundary_check(hd, posx, posy);
+    //ldisp is measured i->i+1 and pos_rat is i+1->i, hence the minus
+    array<double, 2> newpos = boundary_check(hd, p0[0]-pos_rat[hd]*ldisp[0], p0[1]+pos_rat[hd]*ldisp[1]);
     
     hx[hd] = newpos[0];
     hy[hd] = newpos[1];
@@ -489,9 +486,8 @@ void motor::update_position_attached(int hd){
 
 void motor::filament_update_hd(int hd, array<double, 2> f)
 {
-    double pos_ratio = pos_a_end[hd]/filament_network->get_llength(f_index[hd], l_index[hd]);
-    filament_network->update_forces(f_index[hd], l_index[hd],   f[0] *    pos_ratio , f[1] *    pos_ratio );
-    filament_network->update_forces(f_index[hd], l_index[hd]+1, f[0] * (1-pos_ratio), f[1] * (1-pos_ratio));
+    filament_network->update_forces(f_index[hd], l_index[hd],   f[0] *    pos_rat[hd] , f[1] *    pos_rat[hd] );
+    filament_network->update_forces(f_index[hd], l_index[hd]+1, f[0] * (1-pos_rat[hd]), f[1] * (1-pos_rat[hd]));
 }
 
 
@@ -508,7 +504,7 @@ void motor::detach_head(int hd, array<double, 2> newpos)
     state[hd]=0;
     this->set_l_index(hd, -1);
     f_index[hd]=-1;
-    pos_a_end[hd]=0;
+    pos_rat[hd] = 0;
     
     hx[hd] = newpos[0];
     hy[hd] = newpos[1];
@@ -521,7 +517,7 @@ void motor::detach_head_without_moving(int hd)
     state[hd]=0;
     this->set_l_index(hd, -1);
     f_index[hd]=-1;
-    pos_a_end[hd]=0;
+    pos_rat[hd] = 0;
     
 }
 
@@ -536,7 +532,7 @@ array<int, 2> motor::get_l_index(){
 
 
 array<double, 2> motor::get_pos_a_end(){
-    return pos_a_end;
+    return {{get_pos_a_end(0), get_pos_a_end(1)}};
 }
 
 
@@ -575,13 +571,13 @@ string motor::to_string()
             \nstate = (%d, %d)\t f_index = (%d, %d)\t l_index = (%d, %d)\
             \nviscosity = %f\t max binding distance = %f\t stiffness = %f\t stall force = %f\t length = %f\
             \nkon = %f\t koff = %f\t kend = %f\t dt = %f\t temp = %f\t damp = %f\
-            \nfov = (%f, %f)\t distance from end of spring = (%f, %f)\
+            \nfov = (%f, %f)\t distance ratio from end of spring = (%f, %f)\
             shear = %f\t tension = (%f, %f)\n",
             hx[0], hy[0], hx[1], hy[1],
             state[0],  state[1], f_index[0],  f_index[1], l_index[0],  l_index[1], 
             vs, max_bind_dist, mk, stall_force, mld,
             kon, koff, kend, dt, temperature, damp, 
-            fov[0],  fov[1], pos_a_end[0], pos_a_end[1], shear, force[0], force[1]);
+            fov[0],  fov[1], pos_rat[0], pos_rat[1], shear, force[0], force[1]);
     return buffer;
 }
 
@@ -624,12 +620,12 @@ void motor::set_l_index(int hd, int idx)
 
 void motor::set_pos_a_end(int hd, double pos)
 {
-    pos_a_end[hd] = pos;
+    pos_rat[hd] = pos/filament_network->get_llength(f_index[hd], l_index[hd]);
 }
 
 double motor::get_pos_a_end(int hd)
 {
-    return pos_a_end[hd];
+    return pos_rat[hd]*filament_network->get_llength(f_index[hd],l_index[hd]);
 }
 
 void motor::add_to_spring(int hd)
