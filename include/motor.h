@@ -139,6 +139,8 @@ class motor
     
         void set_binding_two(double ron2, double roff2, double rend2);
 
+        array<double, 2> get_pos_rat();
+
     public:
 
         double mld, vs, stall_force, max_bind_dist, max_bind_dist_sq, mk, kon, koff, kend, dt, temperature, 

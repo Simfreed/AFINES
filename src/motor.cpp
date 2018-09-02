@@ -430,6 +430,9 @@ void motor::step_onehead(int hd)
     }
 }
 
+array<double, 2> motor::get_pos_rat(){
+    return pos_rat;
+}
 
 void motor::update_pos_rat(int hd)
 {
@@ -475,7 +478,7 @@ void motor::update_position_attached(int hd){
     array<double, 2> ldisp = filament_network->get_filament(f_index[hd])->get_spring(l_index[hd])->get_disp();
 
     //ldisp is measured i->i+1 and pos_rat is i+1->i, hence the minus
-    array<double, 2> newpos = boundary_check(hd, p0[0]-pos_rat[hd]*ldisp[0], p0[1]+pos_rat[hd]*ldisp[1]);
+    array<double, 2> newpos = boundary_check(hd, p0[0]-pos_rat[hd]*ldisp[0], p0[1]-pos_rat[hd]*ldisp[1]);
     
     hx[hd] = newpos[0];
     hy[hd] = newpos[1];

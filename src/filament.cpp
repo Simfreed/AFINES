@@ -704,7 +704,7 @@ void filament::grow(double dL)
         springs[0]->step(BC, delrx);
     }
     else{
-        double x2, y2, pos;
+        double x2, y2, pos, rat;
         array<double, 2> dir = springs[0]->get_direction();
         x2 = beads[1]->get_xcm();
         y2 = beads[1]->get_ycm();
@@ -737,12 +737,14 @@ void filament::grow(double dL)
         vector<motor *> mots1;
         for (map<motor *, int>::iterator it = mots0.begin(); it != mots0.end(); ++it)
         {
-            pos = it->first->get_pos_a_end()[it->second];
-            if (pos < spring_l0){
+//            pos = it->first->get_pos_a_end()[it->second];
+            rat = it->first->get_pos_rat()[it->second];
+            if (rat < 1){
                 mots1.push_back(it->first);
             }
             else{
-                it->first->set_pos_a_end(it->second, pos - spring_l0);
+                //it->first->set_pos_a_end(it->second, pos - spring_l0);
+                it->first->update_pos_rat(it->second);
             }
         }
         int hd;
@@ -750,6 +752,7 @@ void filament::grow(double dL)
         {
             hd = mots0[mots1[i]];
             mots1[i]->set_l_index(hd, 1);
+            mots1[i]->update_pos_rat(hd);
         }
     }
 }

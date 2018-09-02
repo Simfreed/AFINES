@@ -106,12 +106,12 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.1, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.1, tol);
     m.step_onehead(0); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_rat()[0], 0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
 /*
@@ -123,19 +123,19 @@ BOOST_AUTO_TEST_CASE( step_onehead )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.1, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.1, tol);
     m.step_onehead(0); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.35, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.35, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.25, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
 */
     delete f;
 }
 
-BOOST_AUTO_TEST_CASE( update_pos_a_end )
+BOOST_AUTO_TEST_CASE( update_pos_rat )
 {
     //Filament ENSEMBLE
     double tol = 0.001, zero = 1e-10;   
@@ -175,11 +175,11 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.875, tol);
     m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], spring_len);
+    BOOST_CHECK_EQUAL(m.get_pos_rat()[0], spring_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
@@ -198,11 +198,11 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //      (b) motor moves appropriate distance
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.875, tol);
     m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.125, tol);
     
     m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.875, tol);
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], pos, tol);
     
     m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 0.625, tol);
@@ -238,18 +238,18 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //  If last rod in filament and pos is greater than length, move to barbed end
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.875, tol);
     m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 1);
+    BOOST_CHECK_EQUAL(m.get_pos_rat()[0], 1);
     
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
     
     m.update_position_attached(0);
-    BOOST_CHECK_CLOSE(m.get_hx()[0], 0, tol);
-    BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
+    BOOST_CHECK_SMALL(m.get_hx()[0], zero);
+    BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
     //  Else (not last rod in filament)
     mx = -1.125;
@@ -260,11 +260,11 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //      (b) motor moves appropriate distance
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.875, tol);
     m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.125, tol);
     
     m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], -0.875, tol);
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     m.update_pos_rat(0, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], pos, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], pos, tol);
     
     m.update_position_attached(0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], -0.625, tol);
@@ -298,11 +298,11 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 0.875, tol);
     m.update_pos_rat(1, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[1], spring_len);
+    BOOST_CHECK_EQUAL(m.get_pos_rat()[1], spring_len);
     
     BOOST_CHECK_CLOSE(m.get_hx()[1], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], my + 0.5*mlen*sin(mang), tol);
@@ -321,11 +321,11 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     //      (b) motor moves appropriate distance
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.875, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 0.875, tol);
     m.update_pos_rat(1, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.125, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 0.125, tol);
     
     m.update_position_attached(1);
     BOOST_CHECK_CLOSE(m.get_hx()[1], 0.875, tol);
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE( update_pos_a_end )
     m.update_pos_rat(1, pos/spring_len); 
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 0);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], pos, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], pos, tol);
     
     m.update_position_attached(1);
     BOOST_CHECK_CLOSE(m.get_hx()[1], 0.625, tol);
@@ -452,13 +452,13 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.475, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.475, tol);
     m.step_onehead(0); 
     m.update_angle();
     BOOST_CHECK_EQUAL(m.get_states()[0], 0);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], -1);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], -1);
-    BOOST_CHECK_EQUAL(m.get_pos_a_end()[0], 0);
+    BOOST_CHECK_EQUAL(m.get_pos_rat()[0], 0);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx - 0.5*mlen*cos(mang), tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], my - 0.5*mlen*sin(mang), tol);
 
@@ -470,13 +470,13 @@ BOOST_AUTO_TEST_CASE( step_onehead_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.475, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.475, tol);
     m.step_onehead(0); 
     m.update_angle();
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.725, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.725, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 24.875, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 0, tol);
 
@@ -637,14 +637,14 @@ BOOST_AUTO_TEST_CASE( attach_twoheads_periodic )
     BOOST_CHECK_EQUAL(m.get_states()[0], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.9, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.9, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2.1, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[0], 24.875, tol);
     
     BOOST_CHECK_EQUAL(m.get_states()[1], 1);
     BOOST_CHECK_EQUAL(m.get_f_index()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 0.9, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 0.9, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[1], 2.1, tol);
     BOOST_CHECK_CLOSE(m.get_hy()[1], -24, tol);
 
@@ -690,11 +690,11 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     motor m = motor(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 2*mx, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 2*my, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 2*my, tol);
     BOOST_CHECK_SMALL(m.get_hx()[1], zero);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 2*my, tol);
     
@@ -721,11 +721,11 @@ BOOST_AUTO_TEST_CASE( step_twoheads )
     BOOST_CHECK_EQUAL(m.get_f_index()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx+v0*dt, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 2*mx+v0*dt, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx+v0*dt, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 2*my+v0*dt - 1, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 2*my+v0*dt-1, tol);
     BOOST_CHECK_SMALL(m.get_hx()[1], zero);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 2*my+v0*dt, tol);
     
@@ -776,11 +776,11 @@ BOOST_AUTO_TEST_CASE( force_attached )
     motor m = motor(array<double, 3>{{mx, my, mang}}, mlen, f, state, findex, lindex, 
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 2*mx, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 2*my, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 2*my, tol);
     BOOST_CHECK_SMALL(m.get_hx()[1], zero);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 2*my, tol);
     
@@ -807,11 +807,11 @@ BOOST_AUTO_TEST_CASE( force_attached )
     BOOST_CHECK_EQUAL(m.get_f_index()[1], 1);
     BOOST_CHECK_EQUAL(m.get_l_index()[1], 1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 2*mx+v0*dt, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 2*mx+v0*dt, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], 2*mx+v0*dt, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[1], 2*my+v0*dt - 1, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[1], 2*my+v0*dt - 1, tol);
     BOOST_CHECK_SMALL(m.get_hx()[1], zero);
     BOOST_CHECK_CLOSE(m.get_hy()[1], 2*my+v0*dt, tol);
     
@@ -856,7 +856,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], mx, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
@@ -877,7 +877,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
    
     double h0x1 = mx+v0*dt;
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x1, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], h0x1, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x1, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -910,7 +910,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
     
     double h0x2 = mx + v0*dt + v0*(1+mfx/fmax)*dt;
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x2 , tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], h0x2 , tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x2, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -938,7 +938,7 @@ BOOST_AUTO_TEST_CASE( dead_head )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     
     double h0x3 = mx + v0*dt + v0*(1+mfx/fmax)*dt + v0*(1+mfx2/fmax)*dt;
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x3 - 1, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], h0x3 - 1, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x3, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -988,7 +988,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], mx, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
@@ -1008,7 +1008,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], mx+v0*dt, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], mx+v0*dt, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx+v0*dt, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1041,7 +1041,7 @@ BOOST_AUTO_TEST_CASE( dead_head_upside_down )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 2);
     
     double h0x = mx + v0*dt + v0*(1+mfx/fmax)*dt;
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0x , tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], h0x , tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1091,7 +1091,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.5, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.5, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
@@ -1111,7 +1111,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.75, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.75, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx-v0*dt, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1143,8 +1143,8 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     
     double h0x2 = mx - v0*dt - v0*(1-mfx/fmax)*dt;
-    double h0pos_a_end = 2-h0x2; //1 - (h0x-1)
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0pos_a_end , tol);
+    double h0pos_rat = 2-h0x2; //1 - (h0x-1)
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], h0pos_rat , tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x2, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1154,10 +1154,10 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     BOOST_CHECK_CLOSE(m.get_force()[0], mfx2, tol);
     BOOST_CHECK_CLOSE(m.get_force()[1], mfy2, tol);
 
-    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_a_end, tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx + mfx2*(1-h0pos_a_end), tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_a_end, tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_a_end), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_rat, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx + mfx2*(1-h0pos_rat), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_rat, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_rat), tol);
 
     /*##################################*/
     m.step_onehead(0);
@@ -1171,8 +1171,8 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 0);
     
     double h0x3 = mx - v0*dt - v0*(1-mfx/fmax)*dt - v0*(1-mfx2/fmax)*dt;
-    //double h0pos_a_end = 2-h0x; //1 - (h0x-1)
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 1-h0x3 , tol);
+    //double h0pos_rat = 2-h0x; //1 - (h0x-1)
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 1-h0x3 , tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x3, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1182,9 +1182,9 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd )
     BOOST_CHECK_CLOSE(m.get_force()[0], mfx3, tol);
     BOOST_CHECK_CLOSE(m.get_force()[1], mfy3, tol);
 
-    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_a_end + mfx3*h0x3, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_rat + mfx3*h0x3, tol);
     BOOST_CHECK_CLOSE(f->get_force(0, 0)[0], (1-h0x3)*mfx3, tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_a_end + mfy3*h0x3, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_rat + mfy3*h0x3, tol);
     BOOST_CHECK_CLOSE(f->get_force(0, 0)[1], (1-h0x3)*mfy3, tol);
 }   
 
@@ -1221,7 +1221,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
             fov, dt, temp, v0, mstiff, 1, kon, koff, kend, fstall, rcut, vis, bc);
     //m.kill_head(1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.5, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.5, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
     
@@ -1241,7 +1241,7 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     BOOST_CHECK_EQUAL(m.get_f_index()[0], 0);
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], 0.75, tol);
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], 0.75, tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], mx-v0*dt, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1274,8 +1274,8 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     BOOST_CHECK_EQUAL(m.get_l_index()[0], 1);
     
     double h0x = mx - v0*dt - v0*(1-mfx/fmax)*dt;
-    double h0pos_a_end = 2-h0x; //1 - (h0x-1)
-    BOOST_CHECK_CLOSE(m.get_pos_a_end()[0], h0pos_a_end , tol);
+    double h0pos_rat = 2-h0x; //1 - (h0x-1)
+    BOOST_CHECK_CLOSE(m.get_pos_rat()[0], h0pos_rat , tol);
     BOOST_CHECK_CLOSE(m.get_hx()[0], h0x, tol);
     BOOST_CHECK_SMALL(m.get_hy()[0], zero);
 
@@ -1285,10 +1285,10 @@ BOOST_AUTO_TEST_CASE( dead_head_bwd_upside_down )
     BOOST_CHECK_CLOSE(m.get_force()[0], mfx2, tol);
     BOOST_CHECK_CLOSE(m.get_force()[1], mfy2, tol);
 
-    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_a_end, tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx + mfx2*(1-h0pos_a_end), tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_a_end, tol);
-    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_a_end), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[0], 0.75*mfx + mfx2*h0pos_rat, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[0], 0.25*mfx + mfx2*(1-h0pos_rat), tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 1)[1], 0.75*mfy + mfy2*h0pos_rat, tol);
+    BOOST_CHECK_CLOSE(f->get_force(0, 2)[1], 0.25*mfy + mfy2*(1-h0pos_rat), tol);
 
 }   
 
@@ -1879,7 +1879,7 @@ BOOST_AUTO_TEST_CASE( attach_detach )
 
         void detach_head(int hd);
 
-        void update_pos_a_end(int hd, double pos);
+        void update_pos_rat(int hd, double pos);
 
 */
 // EOF
