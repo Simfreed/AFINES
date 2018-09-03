@@ -460,12 +460,16 @@ int main(int argc, char* argv[]){
             big_xlinks->print_ensemble_thermo();
         }
 
-        //update network
-        net->update_forces();//updates all forces, velocities and positions of filaments
+        //update all filament forces 
+        net->update_forces();
 
-        //update forces on filaments from motors
-        small_xlinks->update_force_on_filaments();
-        big_xlinks->update_force_on_filaments();
+        //update cross linker positions, and forces on filaments
+        small_xlinks->motor_walk(t);
+        big_xlinks->motor_walk(t);
+        
+        //propogate forces from xlinks onto filaments
+        small_xlinks->update_force_on_filaments(t);
+        big_xlinks->update_force_on_filaments(t);
 
         //update network positions
         net->update_positions();
@@ -473,10 +477,6 @@ int main(int argc, char* argv[]){
         //update_neighbor lists for binding
         if ( ! quad_off_flag && count % quad_update_period == 0)
             net->quad_update_serial();
-        
-        //update cross linker positions
-        small_xlinks->motor_walk(t);
-        big_xlinks->motor_walk(t);
         
         //clear the vector of fractured filaments
         net->clear_broken();

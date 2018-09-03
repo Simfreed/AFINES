@@ -189,7 +189,7 @@ void motor_ensemble<motor_type>::motor_walk(double t)
             
             n_motors[i]->update_angle();
             n_motors[i]->update_force();
-            n_motors[i]->filament_update();
+            //n_motors[i]->filament_update();
             
             //Attachment or Movement + Detachment
             if (s[0] == 0)
@@ -206,6 +206,19 @@ void motor_ensemble<motor_type>::motor_walk(double t)
     
     }
     this->update_energies();
+    
+}
+
+template <class motor_type>
+void motor_ensemble<motor_type>::update_force_on_filaments(double t)
+{
+    int nmotors_sz = int(n_motors.size());
+    
+    for (int i=0; i<nmotors_sz; i++) {
+       
+        if (t >= tMove)
+            n_motors[i]->filament_update();
+    }
     
 }
 

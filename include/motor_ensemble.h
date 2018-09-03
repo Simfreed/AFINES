@@ -73,6 +73,8 @@ class motor_ensemble
         
         void set_binding_two(double, double, double);
 
+        void update_force_on_filaments(double);
+
     protected:
 
         double mld, gamma, tMove;
