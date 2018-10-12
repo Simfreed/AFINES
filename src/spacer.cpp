@@ -232,6 +232,11 @@ void spacer::update_force()
         //project bending force onto filaments
         this->filament_update_hd(0, {{ b_force[0][0], b_force[0][1] }});
         this->filament_update_hd(1, {{ b_force[1][0], b_force[1][1] }});
+        
+        //reset bending force
+        b_force[0] = {{0,0}};
+        b_force[1] = {{0,0}};
+        //force      = {{0,0}};
        
         //enforce constraints
         update_shake_force();
@@ -326,13 +331,18 @@ void spacer::identify(){
 
 void spacer::brownian_relax(int hd){
     
-    if ( hd == 0 && state[1] == 0)
-        this->update_unattached();
-    else if (state[1] == 1) //hd  == 0, else this func won't get called
-        this->update_one_attached(1);
-    else if (state[0] == 1) //hd == 1, else this won't get called
-        this->update_one_attached(0);
-    //else do nothing because already updated unnattached
+    if ( hd == 0 ){
+        if ( state[1] == 0 )
+            this->update_unattached();
+        else 
+            this->update_one_attached(1);
+    }
+    else
+    {
+        if (state[0] == 1)
+            this->update_one_attached();
+        //else do nothing because already updated unnattached
+    }
     
     update_hx_hy();
 
@@ -465,8 +475,8 @@ void spacer::filament_update()
         this->filament_update_hd(1, {{-force[0]/* + b_force[1][0]*/, -force[1] /*+ b_force[1][1]*/}});
 
         //reset bending force
-        b_force[0] = {{0,0}};
-        b_force[1] = {{0,0}};
+        //b_force[0] = {{0,0}};
+        //b_force[1] = {{0,0}};
         force      = {{0,0}};
     }
 }

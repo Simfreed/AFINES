@@ -210,6 +210,34 @@ void motor_ensemble<motor_type>::motor_walk(double t)
 }
 
 template <class motor_type>
+void motor_ensemble<motor_type>::update_force(double t)
+{
+
+    int nmotors_sz = int(n_motors.size());
+    
+    for (int i=0; i<nmotors_sz; i++) {
+       
+        array<int, 2> s = n_motors[i]->get_states();
+        
+        if (t >= tMove){
+            
+            //Dynamics
+            if (s[0] == 0)
+                n_motors[i]->brownian_relax(0);
+            if (s[1] == 0)
+                n_motors[i]->brownian_relax(1);
+            
+            n_motors[i]->update_angle();
+            n_motors[i]->update_force();
+            //n_motors[i]->filament_update();
+            
+        }
+    
+    }
+    this->update_energies();
+    
+}
+template <class motor_type>
 void motor_ensemble<motor_type>::update_force_on_filaments(double t)
 {
     int nmotors_sz = int(n_motors.size());

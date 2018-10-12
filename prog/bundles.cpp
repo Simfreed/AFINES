@@ -352,11 +352,11 @@ int main(int argc, char* argv[]){
     spacer_ensemble * big_xlinks;
     
     if (spacer1_pos_vec.size() == 0)
-        big_xlinks = new spacer_ensemble( spacer1_density, {xrange, yrange}, dt, temperature, 
+        big_xlinks = new spacer_ensemble( spacer1_density, {{xrange, yrange}}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
                 s1_kend, s1_stall, s1_cut, viscosity, spacer1_position_arrs, bnd_cnd);
     else
-        big_xlinks = new spacer_ensemble( spacer1_pos_vec, {xrange, yrange}, dt, temperature, 
+        big_xlinks = new spacer_ensemble( spacer1_pos_vec, {{xrange, yrange}}, dt, temperature, 
                 spacer1_length, net, spacer1_v, spacer1_stiffness, fene_pct, s1_kon, s1_koff,
                 s1_kend, s1_stall, s1_cut, viscosity, bnd_cnd);
     big_xlinks->set_bending(s1_bend, s1_ang);
@@ -368,11 +368,11 @@ int main(int argc, char* argv[]){
     spacer_ensemble * small_xlinks; 
     
     if(spacer2_pos_vec.size() == 0)
-        small_xlinks = new spacer_ensemble( spacer2_density, {xrange, yrange}, dt, temperature, 
+        small_xlinks = new spacer_ensemble( spacer2_density, {{xrange, yrange}}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
                 s2_kend, s2_stall, s2_cut, viscosity, spacer2_position_arrs, bnd_cnd);
     else
-        small_xlinks = new spacer_ensemble( spacer2_pos_vec, {xrange, yrange}, dt, temperature, 
+        small_xlinks = new spacer_ensemble( spacer2_pos_vec, {{xrange, yrange}}, dt, temperature, 
                 spacer2_length, net, spacer2_v, spacer2_stiffness, fene_pct, s2_kon, s2_kend,
                 s2_kend, s2_stall, s2_cut, viscosity, bnd_cnd);
     small_xlinks->set_bending(s2_bend, s2_ang);
@@ -462,6 +462,12 @@ int main(int argc, char* argv[]){
 
         //update all filament forces 
         net->update_forces();
+
+        /* theoretically what should happen */
+        small_xlinks->update_force();
+        small_xlinks->walk();
+        small_xlinks->update_positions();
+        small_xlinks->attach_detach();
 
         //update cross linker positions, and forces on filaments
         small_xlinks->motor_walk(t);
