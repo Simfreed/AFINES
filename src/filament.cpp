@@ -730,7 +730,7 @@ void filament::grow(double dL)
 
 void filament::update_length()
 {
-    if ( this->get_nsprings() + 1 <= nsprings_max && rng(0,1) < kgrow*dt){
+    if ( kgrow*lgrow > 0 && this->get_nsprings() + 1 <= nsprings_max && rng(0,1) < kgrow*dt){
         grow(lgrow);
     }
 }
