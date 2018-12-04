@@ -470,7 +470,8 @@ void filament_ensemble::update()
 
     pe_exv = 0; 
 
-    this->update_spring_forces_from_quads();
+    if ( kexv > 0)
+        this->update_spring_forces_from_quads();
 
     for (int f = 0; f < net_sz; f++){
         
