@@ -213,7 +213,7 @@ frames
 ];
 
 (*mix up amotors and pmotors*)
-drawmixed[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,np_: 11,acolor_: Red,amotcol_:Black,pmotcol_:Green,bgcol_:White,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3]:=
+drawmixed[actins_,links_,amotors_,pmotors_,dir_:"",movieFlag_:False,fov_: {50,50},polar_: True,np_: 11,acolor_: Red,amotcol_:Black,pmotcol_:Green,bgcol_:White,movieName_: "movie",maxLinkLength_:-1,barbedEndFactor_: 3,frameon_:True]:=
 Module[{},(*Generate Image Time Series,make into movie*)
 mll=If[maxLinkLength==-1,Abs[Min[fov]/2],maxLinkLength];
 frames={};
@@ -250,7 +250,7 @@ minx=fov[[1,1]];
 maxx=fov[[1,2]];
 miny=fov[[2,1]];
 maxy=fov[[2,2]]];
-frames=Map[Show[#,Frame->True,PlotRange->{{minx,maxx},{miny,maxy}},
+frames=Map[Show[#,Frame->frameon,PlotRange->{{minx,maxx},{miny,maxy}},
 Background->bgcol,
 (*FrameLabel\[Rule]{"x (\[Mu]m)","y (\[Mu]m)","t = "<>ToString[dt*skipFrames*(t-1)]<>" s "},*)
 FrameTicks->None,Ticks->None,BaseStyle->{FontSize->24,FontColor->Black}]&,
