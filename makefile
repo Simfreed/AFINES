@@ -52,8 +52,10 @@ debug: $(OBJECTS_DEBUG)
 	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/network.cpp $(INC) $(LIB) -o bin/afines_debug
 bundles: $(OBJECTS)
+	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS) $(OBJECTS) prog/bundles.cpp $(INC) $(LIB) -o bin/bun
 bundles_debug: $(OBJECTS_DEBUG)
+	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS_DEBUG) $(OBJECTS_DEBUG) prog/bundles.cpp $(INC) $(LIB) -o bin/bun_debug
 
 # THE FOLLOWING PROGRAMS MAY OR MAY NOT EXIST; CHECK YOUR PROG FOLDER
