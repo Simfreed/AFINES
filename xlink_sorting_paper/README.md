@@ -13,16 +13,18 @@ git checkout growing_spacer_exv
 Alternatively, from this xlink_sorting_paper directory
 ```
 tar -xvf afines.tar
+cd AFINES
 ```
-Compile via the commands
+
+Compile the program via the commands
 ```
-mkdir bin
 make bundles
 ```
-This will create the executable "bin/bun"
+This will create the executable "AFINES/bin/bun"
+Some possible compilation issues are addressed in the AFINES/README.md file.
 
 Simulation trajectories are written to ${dir}/txt_stack with metadata in ${dir}/data where "dir" can be specified using
-the --dir parameter. Further details for running simulations are available in the README.md file in the top AFINES directory.
+the --dir parameter. Further details for running simulations are available in the README.md file in the AFINES directory.
 
 ### Default parameters to be used below ###
 ```
