@@ -775,7 +775,6 @@ vector<vector<double> > filament_ensemble::spring_spring_intersections(double le
 
     vector< vector<double> > itrs;
     array<double, 2> r1, r2, s1, s2, direc;
-    pair<double, double> mmx1, mmy1, mmx2, mmy2;
     boost::optional<array<double, 2> > inter;
     string bcf1; 
     for (unsigned int f1 = 0; f1 < network.size(); f1++){
