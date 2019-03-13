@@ -22,9 +22,9 @@ pts2[dir_,parts_]:=DeleteCases[SplitBy[Import[dir<>"/txt_stack/"<>parts<>".txt",
 pts3[dir_,name_]:=Map[Internal`StringToDouble/@(StringSplit[StringTake[#,{2,-2}],", "])&,Import[dir<>"/txt_stack/"<>name<>".dat","TSV"],{2}];
 importCheck[fname_]:=
 If[
-FileExistsQ[fname],
+FileExistsQ[fname] && FileByteCount[fname]!=0,
 ToExpression[Import[fname,"TSV"]],
-Print[fname<>" doesn't exist"];{}
+Print[fname<>" doesn't exist or is empty"];{}
 ];
 pts4[dir_,parts_]:=Module[{},
 d=Import[dir<>"/txt_stack/"<>parts<>".txt","Table"];
