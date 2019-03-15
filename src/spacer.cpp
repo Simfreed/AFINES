@@ -292,7 +292,8 @@ void spacer::update_bending(int hd)
   b_force[pr(hd)][0] += f3[0];
   b_force[pr(hd)][1] += f3[1];
   
-  b_eng[hd] = kb*dth*dth/(r1+r2);
+  //b_eng[hd] = kb*dth*dth/(r1+r2);
+  b_eng[hd] = kb*dth*dth/2;
 
 }
 double spacer::get_kb(){
@@ -368,7 +369,8 @@ double spacer::metropolis_prob(int hd, array<int, 2> fl_idx, array<double, 2> ne
         if (c < -1.0) c = -1.0;
 
         dth = acos(c) - th0;
-        bend_eng = kb*dth*dth/(r1+r2);
+        //bend_eng = kb*dth*dth/(r1+r2);
+        bend_eng = kb*dth*dth/2;
         
     }
     
