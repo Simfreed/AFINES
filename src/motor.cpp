@@ -109,7 +109,7 @@ motor::motor( array<double, 3> pos,
     
     prv_rnd_x = {{0,0}};
     prv_rnd_y = {{0,0}};
-
+    
 }
 
 
@@ -199,7 +199,7 @@ motor::motor( array<double, 4> pos,
 
     prv_rnd_x = {{0,0}};
     prv_rnd_y = {{0,0}};
-
+    
 }
 
 
@@ -257,7 +257,7 @@ bool motor::allowed_bind(int hd, array<int, 2> fl_idx){
 //check for attachment of unbound heads given head index (0 for head 1, and 1 for head 2)
 bool motor::attach(int hd)
 {
-    double not_off_prob = 0, onrate = kon;
+    double not_off_prob = 0, onrate = kon, onprob=0;
     double mf_rand = rng_u();
     array<double, 2> intPoint;
     if (state[pr(hd)] == 1)
@@ -278,8 +278,11 @@ bool motor::attach(int hd)
             //    cout<<"\nDEBUG: dist = "<<sqrt(it->first)<<" {f,l} = {"<<(it->second).at(0)<<" , "<<(it->second).at(1)<<"}";
                 
                 intPoint = filament_network->get_filament((it->second).at(0))->get_spring((it->second).at(1))->get_intpoint();
-                not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);
-                 
+                //not_off_prob += metropolis_prob(hd, it->second, intPoint, onrate);
+                onprob = metropolis_prob(hd, it->second, intPoint, onrate);
+                not_off_prob += onprob;
+                
+                //cerr<<onprob<<"\t";
                 if (mf_rand < not_off_prob) 
                 {
                     //update state
@@ -308,6 +311,7 @@ bool motor::attach(int hd)
             }
         }
     }	
+    
     return false;
 } 
 
@@ -414,6 +418,7 @@ void motor::step_onehead(int hd)
         offrate = at_barbed_end[hd] ? kend2 : koff2;
     
     double off_prob = metropolis_prob(hd, {{0,0}}, hpos_new, offrate); 
+    cerr<<off_prob<<"\t";
     
     //cout<<"\nDEBUG: at barbed end? : "<<at_barbed_end[hd]<<"; off_prob = "<<off_prob;
     // attempt detachment

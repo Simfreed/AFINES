@@ -408,7 +408,7 @@ int main(int argc, char* argv[]){
 
     //Run the simulation
     while (t < tfinal) {
-        
+      
         //print to file
 	    if (t+dt/100 >= tinit && (count-unprinted_count)%n_bw_print==0) {
 	        
@@ -466,12 +466,10 @@ int main(int argc, char* argv[]){
         if ( ! quad_off_flag && count % quad_update_period == 0)
             net->quad_update_serial();
         //update cross linkers
-        if (static_cl_flag)
-            small_xlinks->motor_update();
-        else
-            small_xlinks->motor_walk(t);
-       
+        cerr<<"\nt = "<<t<<"\n";
+        small_xlinks->motor_walk(t);
         //update motors
+        cerr<<"\n";
         big_xlinks->motor_walk(t);
         
         //clear the vector of fractured filaments
