@@ -92,4 +92,11 @@ class spacer_ensemble : public motor_ensemble<spacer>
 
 };
 
+class xlink_ensemble : public motor_ensemble<motor>
+{
+    public:
+        using motor_ensemble<motor>::motor_ensemble;    
+
+};
+
 #endif

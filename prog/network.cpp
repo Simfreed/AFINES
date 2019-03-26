@@ -73,6 +73,7 @@ int main(int argc, char* argv[]){
     double restart_time;
     
     double kgrow, lgrow, l0min, l0max;
+    int nlink_max;
 
     //Options allowed only on command line
     po::options_description generic("Generic options");
@@ -186,7 +187,7 @@ int main(int argc, char* argv[]){
         ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
         ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
         ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
-        
+        ("nlink_max", po::value<int>(&nlink_max)->default_value(25), "maximum number of links allowed on filament")
         ; 
     
     //Hidden options, will be allowed both on command line and 
@@ -354,34 +355,34 @@ int main(int argc, char* argv[]){
                 fracture_force, bnd_cnd, rmax, kexv); 
     }
     
-    net->set_growing(kgrow, lgrow, l0min, l0max);
+    net->set_growing(kgrow, lgrow, l0min, l0max, nlink_max);
     if (link_intersect_flag) p_motor_pos_vec = net->spring_spring_intersections(p_motor_length, p_linkage_prob); 
     if (motor_intersect_flag) a_motor_pos_vec = net->spring_spring_intersections(a_motor_length, a_linkage_prob); 
     
     if (quad_off_flag) net->turn_quads_off();
 
     cout<<"\nAdding active motors...";
-    motor_ensemble * myosins;
+    xlink_ensemble * myosins;
     
     if (a_motor_pos_vec.size() == 0 && a_motor_in.size() == 0)
-        myosins = new motor_ensemble( a_motor_density, {{xrange, yrange}}, dt, temperature, 
+        myosins = new xlink_ensemble( a_motor_density, {{xrange, yrange}}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_cut, viscosity, a_motor_position_arrs, bnd_cnd);
     else
-        myosins = new motor_ensemble( a_motor_pos_vec, {{xrange, yrange}}, dt, temperature, 
+        myosins = new xlink_ensemble( a_motor_pos_vec, {{xrange, yrange}}, dt, temperature, 
                 a_motor_length, net, a_motor_v, a_motor_stiffness, fene_pct, a_m_kon, a_m_koff,
                 a_m_kend, a_m_stall, a_m_cut, viscosity, bnd_cnd);
     if (dead_head_flag) myosins->kill_heads(dead_head);
 
     cout<<"Adding passive motors (crosslinkers) ...\n";
-    motor_ensemble * crosslks; 
+    xlink_ensemble * crosslks; 
     
     if(p_motor_pos_vec.size() == 0 && p_motor_in.size() == 0)
-        crosslks = new motor_ensemble( p_motor_density, {{xrange, yrange}}, dt, temperature, 
+        crosslks = new xlink_ensemble( p_motor_density, {{xrange, yrange}}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
                 p_m_kend, p_m_stall, p_m_cut, viscosity, p_motor_position_arrs, bnd_cnd);
     else
-        crosslks = new motor_ensemble( p_motor_pos_vec, {{xrange, yrange}}, dt, temperature, 
+        crosslks = new xlink_ensemble( p_motor_pos_vec, {{xrange, yrange}}, dt, temperature, 
                 p_motor_length, net, p_motor_v, p_motor_stiffness, fene_pct, p_m_kon, p_m_koff,
                 p_m_kend, p_m_stall, p_m_cut, viscosity, bnd_cnd);
     if (p_dead_head_flag) crosslks->kill_heads(p_dead_head);
