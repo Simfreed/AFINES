@@ -6,7 +6,7 @@ This README file is a guide to reproducing the simulations and domain identifica
 Once these have been run, one can reproduce the specific plots, using the xlink_sorting_paper/plots.nb Mathematica Notebook. 
 
 This version of AFINES used for this paper is algorithmically described in the Supplement of the paper. 
-The code can be accessessed from the github via the command
+The code can be accessessed from the github AFINES repository via the command
 ```
 git checkout growing_spacer_exv
 ```
@@ -57,17 +57,14 @@ mmaex = /software/mathematica-10.2-x86_64/bin/MathematicaScript
 
 ### Figure 1 C-D ###
 ```
-denstot = 0.5
+s2dens  = 0.25
+nrand   = ${s2dens}*${fovx}*${fovy} - ${nfixed}
 for densrat in (0.25, 0.33, 0.5, 0.67, 0.8, 1, 1.2, 1.5, 2, 3, 4)
     for seed in (1,2,..., 20)*10^7
 ```
 ####  initialize system ####
 ```
-s1dens  = ${densrat}*${denstot}/(1+${densrat})
-s2dens  = ${denstot} - ${s1dens}
-nrand   = ${s2dens}*${fovx}*${fovy} - ${nfixed}
-x0      = -11.5
-y0      = 0.25*(${l1} + ${l2}) 
+s1dens  = ${densrat}*${s2dens}
 
 dir  = out/f1/seed${seed}_s2dens${s2dens}
 ddir = ${dir}/data
