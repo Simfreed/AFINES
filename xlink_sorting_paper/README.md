@@ -33,6 +33,7 @@ cfg2 = config/grow.cfg
 fovx = 35
 fovy = 20
 nfixed = 9
+nseg = 1
 nrand = 166
 l1 = 0.2
 l2 = 0.3
@@ -70,7 +71,7 @@ dir  = out/f1/seed${seed}_s2dens${s2dens}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 
-python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${l2} 
+python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${l2} --nseg ${nseg}
 python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${l2} --nm ${nrand} --seed ${seed}
 
 cat ${ddir}/fixed.txt ${ddir}/random.txt > ${ddir}/s2in.txt
@@ -92,21 +93,21 @@ ${mmaex} -script process/domain_length.m ${dir} ${ti} ${tf} ${ncut} ${rcut} ${lb
 ### Figure 2C (red) ###
 ``` 
 nrand = 0.25*${fovx}*${fovy} - ${nfixed}
-for lendiff in (0.000,0.010,0.027,0.05,0.1,0.2,0.5,1)
+for lendiff in (0,0.027,0.05,0.1,0.3,0.5,1)
     for seed in (1,2,..., 20)*10^7
 ```
-####  initialize system ####
+####  initialize system with long domain ####
 ```
 l2      = ${l1} + ${lendiff}
 kb2     = ${kb0} * ${l2}
 y0      = 0.25*(${l1} + ${l2}) 
 apos    ="${x0},-${y0},${pi}:${x0},${y0},${pi}"
 
-dir  = out/f2/afines/seed${seed}_ldiff${lendiff}
+dir  = out/f2/afines/ldiff_s2init/seed${seed}/ldiff${lendiff}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 
-python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${l2} 
+python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${l2} --nseg ${nseg} 
 python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${l2} --nm ${nrand} --seed ${seed}
 
 cat ${ddir}/fixed.txt ${ddir}/random.txt > ${ddir}/s2in.txt
@@ -118,16 +119,34 @@ bin/bun -c ${cfg1} --dir ${dir} --myseed ${seed} --spacer2_in ${ddir}/s2in.txt -
 ```
 Convert to lattice and find domains as in Fig. 1
 
+#### initialize system with short domain ####
+same as ''initialize system with long domain'', except replace initialization with 
+
+```
+dir  = out/f2/afines/ldiff_s1init/seed${seed}/ldiff${lendiff}
+ddir = ${dir}/data
+mkdir -p ${ddir}
+
+python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${l1} --nseg ${nseg} 
+python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${l1} --nm ${nrand} --seed ${seed}
+
+cat ${ddir}/fixed.txt ${ddir}/random.txt > ${ddir}/s1in.txt
+bin/bun -c ${cfg1} --dir ${dir} --myseed ${seed} --spacer1_in ${ddir}/s1in.txt --actin_pos_str ${apos} \
+        --spacer2_length ${l2} --s2bend ${kb2} >> ${ddir}/out 2>> ${ddir}/err
+```
+
+Convert to lattice and find domains.
+
 ### Figure 2C (black) ###
 ```
 mu = -0.008
 
-for lendiff in (0.000,0.010,0.027,0.05,0.1,0.2,0.5,1)
+for lendiff in (0,0.027,0.05,0.1,0.3,0.5,1)
     for seed in (1,2,..., 20)*10^7
 ```
 ####  initialize system ####
 ```
-dir  = out/f2/lattice/seed${seed}_ldiff${lendiff}
+dir  = out/f2/lattice/ldiff/seed${seed}/ldiff${lendiff}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 ```
@@ -140,12 +159,12 @@ Find domains as in Fig. 1
 ### Figure 2D (red) ###
 ``` 
 nrand = 0.25*${fovx}*${fovy} - ${nfixed}
-for lkb in (0.01, 0.03, 0.05, 0.068, 0.10, 0.15, 0.2, 0.25, 0.3, 0.5) 
+for lkb in (0.01, 0.03, 0.068, 0.10, 0.3, 0.5) 
     for seed in (1,2,..., 20)*10^7
 ```
-####  initialize system ####
+####  initialize system with long domain ####
 ```
-dir  = out/f2/afines/seed${seed}_lkb${lkb}
+dir  = out/f2/afines/lkb_s2init/seed${seed}/lkb${lkb}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 
@@ -161,6 +180,21 @@ bin/bun -c ${cfg1} --dir ${dir} --myseed ${seed} --spacer2_in ${ddir}/s2in.txt \
 ```
 Convert to lattice and find domains as in Fig. 1
 
+####  initialize system with short domain ####
+```
+dir  = out/f2/afines/lkb_s1init/seed${seed}/lkb${lkb}
+ddir = ${dir}/data
+mkdir -p ${ddir}
+
+python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${l1} 
+python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${l1} --nm ${nrand} --seed ${seed}
+
+cat ${ddir}/fixed.txt ${ddir}/random.txt > ${ddir}/s1in.txt
+bin/bun -c ${cfg1} --dir ${dir} --myseed ${seed} --spacer1_in ${ddir}/s1in.txt \
+        --polymer_bending_modulus ${lkb} >> ${ddir}/out 2>> ${ddir}/err
+```
+Convert to lattice and find domains as in Fig. 1
+
 ### Figure 2D (black) ###
 ```
 mu = -0.008
@@ -171,7 +205,7 @@ for lkb in (0.01, 0.03, 0.05, 0.068, 0.10, 0.15, 0.2, 0.25, 0.3, 0.5)
 ```
 ####  initialize system ####
 ```
-dir  = out/f2/lattice/seed${seed}_lkb${lkb}
+dir  = out/f2/lattice/lkb/seed${seed}/lkb${lkb}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 ```
@@ -184,17 +218,17 @@ Find domains as in Fig. 1
 ### Figure 3 ###
 Self contained in kmc.ipynb
 
-
 ### Figure 5A-B ###
 ```
-for s1dens in (0.25, 0.375, 0.5)
-    for seed in (1,2,...,5)*10^7
+s2len=0.227
+for densrat in (0.1, 0.2, 0.5, 1, 1.5, 2, 3)
+    for seed in (1,2,...,20)*10^7
         for initL (1, 2)
 ```
 ####  initialize system ####
 ```
-
-dir  = out/f5/seed${seed}_initL${initL}_s1dens${s1dens}
+s1dens = 0.25*${densrat}
+dir  = out/f5/s2len${s2len}_initL${initL}/seed${seed}/s1dens${s1dens}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 
@@ -214,26 +248,27 @@ bin/bun -c ${cfg2} --dir ${dir} --myseed ${seed} --${inputParam} ${ddir}/xl_in.t
 ```
 Convert to lattice and find domains as in Fig. 1
 
-### Figure 5D ###
+Repeat for s2len=0.3
+
+### Figure 5C-E ###
+First two lgrows are only necessary for 5C
 ```
-for lgrow in (0.01, 0.1)
-    for s1dens in (0.25, 0.375, 0.5)
-        for s1koff1 in (0.05, 0.1, 0.2, 0.5)
-            for seed in (1, 2, 3, 4, 5)*10^7
-                for initL (1, 2)
+for lgrow in (0.0025, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.07, 0.1)
+    for s1koff1 in (0.05, 0.1, 0.2)
+        for seed in (1, 2,..., 20)*10^7
+            for initL (1, 2)
 ```
 ####  initialize system ####
 ```
-dir  = out/f5/seed${seed}_initL${initL}_lgrow${lgrow}_s1dens${s1dens}_s1koff1${s1koff1}
+dir  = out/f5/s1koff1${s1koff1}_initL${initL}/seed${seed}/lgrow${lgrow}
 ddir = ${dir}/data
 mkdir -p ${ddir}
 
 lm = ${l1} if ${initL}==1 else ${l2}
 inputParam = "spacer1_in" if ${initL}==1 else "spacer2_in"
-nrandL = ${nrand} if ${initL}==2 else (${s1dens}*${fovx}*${fovy} - ${nfixed})
 
 python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${lm} 
-python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${lm} --nm ${nrandL} --seed ${seed}
+python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${lm} --nm ${nrand} --seed ${seed}
 
 cat ${ddir}/fixed.txt ${ddir}/random.txt > ${ddir}/xl_in.txt
 ```
@@ -243,42 +278,3 @@ bin/bun -c ${cfg2} --dir ${dir} --myseed ${seed} --${inputParam} ${ddir}/xl_in.t
         --s1_koff1 ${s1koff1} --spacer1_density ${s1dens} --lgrow ${lgrow} >> ${ddir}/out 2>> ${ddir}/err
 ```
 Convert to lattice and find domains as in Fig. 1
-
-### Figure 5E ###
-```
-for lgrow in (0.01, 0.1)
-    for s1dens in (0.25, 0.375, 0.5)
-        for koffrat in (2, 4)
-            for seed in (1, 2, 3, 4, 5)*10^7
-                for initL (1, 2)
-```
-####  initialize system ####
-```
-s2koff = ${koff}/${koffrat}
-s2kon  = ${kon}/${koffrat}
-dir  = out/f5/seed${seed}_initL${initL}_lgrow${lgrow}_s1dens${s1dens}_koffrat${koffrat}
-ddir = ${dir}/data
-mkdir -p ${ddir}
-
-lm = ${l1} if ${initL}==1 else ${l2}
-inputParam = "spacer1_in" if ${initL}==1 else "spacer2_in"
-nrandL = ${nrand} if ${initL}==2 else (${s1dens}*${fovx}*${fovy} - ${nfixed})
-
-python init/row_of_spacers.py ${ddir}/fixed.txt --r0 ${x0} ${y0} --dr ${drx} ${dry} --nm ${nfixed} --lm ${lm} 
-python init/random_spacers.py ${ddir}/random.txt --fov ${fovx} ${fovy} --lm ${lm} --nm ${nrandL} --seed ${seed}
-
-cat ${ddir}/fixed.txt ${ddir}/random.txt > ${ddir}/xl_in.txt
-```
-#### run simulation ####
-```
-
-bin/bun -c ${cfg2} --dir ${dir} --myseed ${seed} --${inputParam} ${ddir}/xl_in.txt \
-        --s2_kon ${s2kon} --s2_koff1 ${s2koff} --s2_koff2 ${s2koff} --s2_kend ${s2koff} \ 
-        --spacer1_density ${s1dens} --lgrow ${lgrow} >> ${ddir}/out 2>> ${ddir}/err
-```
-Convert to lattice and find domains as in Fig. 1
-
-
-
-
-
