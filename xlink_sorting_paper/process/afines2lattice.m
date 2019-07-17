@@ -23,13 +23,13 @@ Print["imported links"];
 conn1s=If[
 xlinkOutputType==1,
 pts4[dir,"spacers1_bound"],
-With[{s1s=pts2[dir,"amotors"]},Table[Cases[s1s[[t,All]],_?((#[[5]]!=-1&&#[[6]]!=-1)&),1,Heads->False],{t,Length[s1s]}]]
+With[{s1s=pts2[dir,"spacers1"]},Table[Cases[s1s[[t,All]],_?((#[[5]]!=-1&&#[[6]]!=-1)&),1,Heads->False],{t,Length[s1s]}]]
 ];
 Print["imported spacers1"];
 conn2s=If[
 xlinkOutputType==1,
 pts4[dir,"spacers2_bound"],
-With[{s2s=pts2[dir,"pmotors"]},Table[Cases[s2s[[t,All]],_?((#[[5]]!=-1&&#[[6]]!=-1)&),1,Heads->False],{t,Length[s2s]}]]
+With[{s2s=pts2[dir,"spacers2"]},Table[Cases[s2s[[t,All]],_?((#[[5]]!=-1&&#[[6]]!=-1)&),1,Heads->False],{t,Length[s2s]}]]
 ];
 Print["imported spacers2"];
 tf=Min[Join[{tf},Length/@{lks,conn1s,conn2s}]];
