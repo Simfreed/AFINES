@@ -9,7 +9,8 @@ parser.add_argument("--r0", type=float, nargs=2, help="position of head 0 of mot
 parser.add_argument("--dr", type=float, nargs=2, help="distance between mots", default=[0.1,0])
 parser.add_argument("--lm", type=float, help="length of mot", default=0.5)
 parser.add_argument("--thm", type=float, help="angle of mot", default=np.pi/2)
-parser.add_argument("--nm", type=int, help="number of motors", default=10)
+parser.add_argument("--nm", type=int, help="number of spacers", default=10)
+parser.add_argument("--nseg", type=int, help="number of actin segments to place nm spacers on", default=10)
 
 '''
 create a list of bins
@@ -18,13 +19,14 @@ calculate the divergence using rbf interpolation only in that box
 '''
 
 args = parser.parse_args()
+r    = args.r0
+out  = open(args.outfile, 'w')
 
-rest_of_pos = [args.lm*np.cos(args.thm), args.lm*np.sin(args.thm),0,1,0,0]
-r=args.r0
-out = open(args.outfile, 'w')
-for i in range(args.nm):
-    pos = r+rest_of_pos
-    out.write('\t'.join(map(str,pos))+'\n')
-    r=[r[0]+args.dr[0], r[1]+args.dr[1]]
+for s in range(args.nseg):
+    rest_of_pos = [args.lm*np.cos(args.thm), args.lm*np.sin(args.thm),0,1,s,s]
+    for i in range(args.nm):
+        pos = r+rest_of_pos
+        out.write('\t'.join(map(str,pos))+'\n')
+        r=[r[0]+args.dr[0], r[1]+args.dr[1]]
 
 out.close()
