@@ -55,6 +55,20 @@ ClearAll[amots,cms,vs];
 bcs
 ];
 
+(*reading npy files
+source: https://mathematica.stackexchange.com/questions/144770/exchanging-numpy-arrays-between-python-and-mathematica/146881#146881
+*)
+getnpy[file_]:=Module[{a,f=OpenRead[file,BinaryFormat->True],version,headerlen,header,dims,type,typ,byto},a=If[BinaryRead[f,"Byte"]==147&&BinaryReadList[f,"Character8",5]==Characters["NUMPY"],version=BinaryReadList[f,"Byte",2];
+headerlen=BinaryRead[f,"Integer16",ByteOrdering->-1];
+header=StringJoin@BinaryReadList[f,"Character8",headerlen];
+dims=StringCases[header,"'shape':"~~Whitespace~~"("~~s:{NumberString,",",Whitespace}..~~")":>ToExpression["{"~~If[StringTake[s,-1]==",",StringDrop[s,-1],s]~~"}"]][[1]];
+type=StringCases[header,"'descr':"~~Whitespace~~Shortest["'"~~s:_...~~"'"]:>s][[1]];
+byto=Switch[StringTake[type,1],"<",-1,">",1,_,$ByteOrdering];
+If[MemberQ[{"<",">","|","="},StringTake[type,1]],type=StringDrop[type,1]];
+typ=Switch[type,"f8","Real64","i8","Integer64",_,Print["unknown type",header];0];
+If[typ!=0,ArrayReshape[BinaryReadList[f,typ,ByteOrdering->byto],dims],0],Print["not a npy"];0];
+Close[f];a];
+
 
 (* ::Subsection:: *)
 (*Drawing Networks*)
