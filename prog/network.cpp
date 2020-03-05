@@ -186,7 +186,7 @@ int main(int argc, char* argv[]){
         ("kgrow", po::value<double>(&kgrow)->default_value(0), "rate of filament growth")
         ("lgrow", po::value<double>(&lgrow)->default_value(0), "additional length of filament upon growth")
         ("l0min", po::value<double>(&l0min)->default_value(0), "minimum length a link can shrink to before disappearing")
-        ("l0max", po::value<double>(&l0max)->default_value(0), "maximum length a link can grow to before breaking into two links")
+        ("l0max", po::value<double>(&l0max)->default_value(2), "maximum length a link can grow to before breaking into two links")
         ("nlink_max", po::value<int>(&nlink_max)->default_value(25), "maximum number of links allowed on filament")
         ; 
     
